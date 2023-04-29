@@ -61,6 +61,7 @@
     <test.build.dir>${project.build.directory}/test-dir</test.build.dir>
     <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
     <kerby.version>1.0.1</kerby.version>
+    <jetty.version>9.3.24.v20180605</jetty.version>
   </properties>
 
   <profiles>
@@ -72,7 +73,7 @@
       </modules>
       <!-- Default hadoop profile. Uses global properties. -->
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <activeByDefault>false</activeByDefault>
       </activation>
     </profile>
     <profile>
@@ -105,6 +106,9 @@
           <version>${hadoop.version}</version>
         </dependency>
       </dependencies>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
     </profile>
     <profile>
       <id>alluxio</id>
