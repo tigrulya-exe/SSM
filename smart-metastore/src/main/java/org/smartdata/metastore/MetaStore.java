@@ -48,6 +48,7 @@ import org.smartdata.metastore.dao.SystemInfoDao;
 import org.smartdata.metastore.dao.UserInfoDao;
 import org.smartdata.metastore.dao.WhitelistDao;
 import org.smartdata.metastore.dao.XattrDao;
+import org.smartdata.metastore.db.DBManager;
 import org.smartdata.metastore.utils.MetaStoreUtils;
 import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.model.ActionInfo;
@@ -101,7 +102,10 @@ import java.util.concurrent.locks.ReentrantLock;
 public class MetaStore implements CopyMetaService, CmdletMetaService, BackupMetaService {
   static final Logger LOG = LoggerFactory.getLogger(MetaStore.class);
 
-  private DBPool pool = null;
+  private final DBPool pool;
+
+  private final DBManager dbManager;
+
   private DBType dbType;
 
   private Map<Integer, String> mapStoragePolicyIdName = null;
@@ -135,8 +139,9 @@ public class MetaStore implements CopyMetaService, CmdletMetaService, BackupMeta
   private WhitelistDao whitelistDao;
   private final ReentrantLock accessCountLock;
 
-  public MetaStore(DBPool pool) throws MetaStoreException {
+  public MetaStore(DBPool pool, DBManager dbManager) throws MetaStoreException {
     this.pool = pool;
+    this.dbManager = dbManager;
     initDbInfo();
     ruleDao = new RuleDao(pool.getDataSource());
     cmdletDao = new CmdletDao(pool.getDataSource());
@@ -1694,31 +1699,18 @@ public class MetaStore implements CopyMetaService, CmdletMetaService, BackupMeta
   }
 
   public void dropAllTables() throws MetaStoreException {
-    Connection conn = getConnection();
     try {
-      String url = conn.getMetaData().getURL();
-      if (url.startsWith(MetaStoreUtils.SQLITE_URL_PREFIX)) {
-        MetaStoreUtils.dropAllTablesSqlite(conn);
-      } else if (url.startsWith(MetaStoreUtils.MYSQL_URL_PREFIX)) {
-        MetaStoreUtils.dropAllTablesMysql(conn, url);
-      } else {
-        throw new MetaStoreException("Unsupported database");
-      }
+      dbManager.clearDatabase();
     } catch (Exception e) {
-      throw new MetaStoreException(e);
-    } finally {
-      closeConnection(conn);
+        throw new MetaStoreException(e);
     }
   }
 
   public void initializeDataBase() throws MetaStoreException {
-    Connection conn = getConnection();
     try {
-      MetaStoreUtils.initializeDataBase(conn);
+      dbManager.initializeDatabase();
     } catch (Exception e) {
       throw new MetaStoreException(e);
-    } finally {
-      closeConnection(conn);
     }
   }
 

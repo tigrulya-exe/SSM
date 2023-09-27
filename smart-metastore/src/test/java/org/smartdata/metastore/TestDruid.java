@@ -17,8 +17,11 @@
  */
 package org.smartdata.metastore;
 
+import org.apache.hadoop.conf.Configuration;
 import org.junit.Assert;
 import org.junit.Test;
+import org.smartdata.metastore.db.DBManager;
+import org.smartdata.metastore.db.DBManagerFactory;
 import org.smartdata.metastore.utils.MetaStoreUtils;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
@@ -40,7 +43,9 @@ public class TestDruid {
     p.setProperty("url", url);
 
     DruidPool druidPool = new DruidPool(p);
-    MetaStore adapter = new MetaStore(druidPool);
+    DBManager dbManager = new DBManagerFactory()
+            .createDbManager(druidPool, new Configuration());
+    MetaStore adapter = new MetaStore(druidPool, dbManager);
 
     String rule = "file : accessCount(10m) > 20 \n\n"
         + "and length() > 3 | cache";

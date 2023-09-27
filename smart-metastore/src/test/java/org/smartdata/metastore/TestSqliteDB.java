@@ -37,7 +37,7 @@ public class TestSqliteDB extends TestDaoUtil {
   @Before
   public void initDB() throws Exception {
     initDao();
-    metaStore = new MetaStore(druidPool);
+    metaStore = createMetastore();
   }
 
   @After
@@ -48,7 +48,7 @@ public class TestSqliteDB extends TestDaoUtil {
 
   @Test
   public void testInitDB() throws Exception {
-    MetaStoreUtils.initializeDataBase(metaStore.getConnection());
+    dbManager.clearDatabase();
   }
 
   @Test

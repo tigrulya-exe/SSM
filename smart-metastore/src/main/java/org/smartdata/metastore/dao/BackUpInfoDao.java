@@ -78,7 +78,6 @@ public class BackUpInfoDao {
         "SELECT * FROM backup_file WHERE dest = ?", new Object[] {dest}, new BackUpInfoRowMapper());
   }
 
-
   public void delete(long rid) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
     final String sql = "DELETE FROM backup_file WHERE rid = ?";

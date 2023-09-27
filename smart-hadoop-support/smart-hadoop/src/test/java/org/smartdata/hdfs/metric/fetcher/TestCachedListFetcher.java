@@ -74,7 +74,7 @@ public class TestCachedListFetcher extends TestDaoUtil {
     dfs = cluster.getFileSystem();
     dfsClient = dfs.getClient();
     smartContext = new SmartContext(conf);
-    metaStore = new MetaStore(druidPool);
+    metaStore = createMetastore();
     cachedListFetcher = new CachedListFetcher(600l, dfsClient, metaStore);
   }
 

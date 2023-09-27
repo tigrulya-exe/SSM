@@ -82,6 +82,14 @@ public class SmartConfKeys {
       "smart.metastore.character.takeup.bytes";
   public static final int SMART_METASTORE_CHARACTER_TAKEUP_BYTES_DEFAULT = 1;
 
+  public static final String SMART_METASTORE_MIGRATION_CHANGELOG_PATH_KEY =
+          "smart.metastore.migration.liquibase.changelog.path";
+  public static final String SMART_METASTORE_MIGRATION_CHANGELOG_PATH_DEFAULT =
+          "db/changelog/changelog-root.xml";
+  public static final String SMART_METASTORE_MIGRATION_LABELS_KEY =
+          "smart.metastore.migration.liquibase.labels";
+  public static final String SMART_METASTORE_MIGRATION_LABELS_DEFAULT = "";
+
   // StatesManager
 
   // RuleManager

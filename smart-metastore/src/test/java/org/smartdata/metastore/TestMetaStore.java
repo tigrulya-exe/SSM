@@ -58,7 +58,7 @@ public class TestMetaStore extends TestDaoUtil {
   @Before
   public void metaInit() throws Exception {
     initDao();
-    metaStore = new MetaStore(druidPool);
+    metaStore = createMetastore();
   }
 
   @After

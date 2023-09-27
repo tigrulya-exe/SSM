@@ -36,7 +36,7 @@ public class TestRuleExecutor extends TestDaoUtil {
   public void initActionDao() throws Exception {
     initDao();
     metaStoreHelper = new MetaStoreHelper(druidPool.getDataSource());
-    adapter = new MetaStore(druidPool);
+    adapter = createMetastore();
   }
 
   @After

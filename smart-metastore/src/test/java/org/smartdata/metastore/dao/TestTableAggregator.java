@@ -51,7 +51,7 @@ public class TestTableAggregator extends DBTest {
         new XmlDataSet(getClass().getClassLoader().getResourceAsStream("accessCountTable.xml"));
     databaseTester.setDataSet(dataSet);
     databaseTester.onSetup();
-    MetaStore metaStore = new MetaStore(druidPool);
+    MetaStore metaStore = createMetastore();
     prepareFiles(metaStore);
 
     AccessCountTable result = new AccessCountTable("actual", 0L, 0L, false);
@@ -72,7 +72,7 @@ public class TestTableAggregator extends DBTest {
         new XmlDataSet(getClass().getClassLoader().getResourceAsStream("accessCountTable.xml"));
     databaseTester.setDataSet(dataSet);
     databaseTester.onSetup();
-    MetaStore metaStore = new MetaStore(druidPool);
+    MetaStore metaStore = createMetastore();
     prepareFiles(metaStore);
 
     AccessCountTable table1 = new AccessCountTable("table1", 0L, 0L, false);

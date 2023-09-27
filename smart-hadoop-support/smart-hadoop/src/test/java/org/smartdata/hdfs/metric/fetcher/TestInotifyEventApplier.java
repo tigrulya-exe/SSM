@@ -49,7 +49,7 @@ public class TestInotifyEventApplier extends TestDaoUtil {
   @Before
   public void init() throws Exception {
     initDao();
-    metaStore = new MetaStore(druidPool);
+    metaStore = createMetastore();
   }
 
   @Test

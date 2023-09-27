@@ -82,7 +82,7 @@ public abstract class TestInotifyFetcher extends TestDaoUtil {
       DFSClient client = new DFSClient(cluster.getNameNode(0)
         .getNameNodeAddress(), conf);
 
-      MetaStore metaStore = new MetaStore(druidPool);
+      MetaStore metaStore = createMetastore();
       EventApplierForTest applierForTest = new EventApplierForTest(metaStore, client);
       final InotifyEventFetcher fetcher = new InotifyEventFetcher(client, metaStore,
         Executors.newScheduledThreadPool(2), applierForTest, new Callable() {

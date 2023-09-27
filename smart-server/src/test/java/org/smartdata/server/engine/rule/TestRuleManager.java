@@ -47,7 +47,7 @@ public class TestRuleManager extends TestDaoUtil {
   public void init() throws Exception {
     initDao();
     smartConf = new SmartConf();
-    metaStore = new MetaStore(druidPool);
+    metaStore = createMetastore();
     ServerContext serverContext = new ServerContext(smartConf, metaStore);
     serverContext.setServiceMode(ServiceMode.HDFS);
     ruleManager = new RuleManager(serverContext, null, null);
