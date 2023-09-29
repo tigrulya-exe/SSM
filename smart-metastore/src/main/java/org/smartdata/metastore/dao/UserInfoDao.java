@@ -18,96 +18,24 @@
 package org.smartdata.metastore.dao;
 
 import org.smartdata.model.UserInfo;
-import org.smartdata.utils.StringUtil;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
-import javax.sql.DataSource;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class UserInfoDao {
-  private static final String TABLE_NAME = "user_info";
-  private DataSource dataSource;
+public interface UserInfoDao {
 
-  public void setDataSource(DataSource dataSource) {
-    this.dataSource = dataSource;
-  }
+  List<UserInfo> getAll();
 
-  public UserInfoDao(DataSource dataSource) {
-    this.dataSource = dataSource;
-  }
+  boolean containsUserName(String name);
 
-  public List<UserInfo> getAll() {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    return jdbcTemplate.query("SELECT * FROM " + TABLE_NAME, new UserInfoRowMapper());
-  }
+  UserInfo getByUserName(String name);
 
-  public boolean containsUserName(String name) {
-    return !list(name).isEmpty();
-  }
+  void delete(String name);
 
-  private List<UserInfo> list(String name) {
-    return new JdbcTemplate(dataSource)
-        .query(
-            "SELECT * FROM " + TABLE_NAME + " WHERE user_name = ?",
-            new Object[] {name},
-            new UserInfoRowMapper());
-  }
+  void insert(UserInfo userInfo);
 
-  public UserInfo getByUserName(String name) {
-    List<UserInfo> infos = list(name);
-    return infos.isEmpty() ? null : infos.get(0);
-  }
+  boolean authentic(UserInfo userInfo);
 
-  public void delete(String name) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    final String sql = "DELETE FROM " + TABLE_NAME + " WHERE user_name = ?";
-    jdbcTemplate.update(sql, name);
-  }
+  int newPassword(UserInfo userInfo);
 
-  public void insert(UserInfo userInfo) {
-    SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(dataSource);
-    simpleJdbcInsert.setTableName(TABLE_NAME);
-    simpleJdbcInsert.execute(toMap(new UserInfo(userInfo.getUserName(),
-        StringUtil.toSHA512String(userInfo.getUserPassword()))));
-  }
-
-  public boolean authentic (UserInfo userInfo) {
-    UserInfo origin = getByUserName(userInfo.getUserName());
-    return origin.equals(userInfo);
-  }
-
-  public int newPassword(UserInfo userInfo) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "UPDATE " + TABLE_NAME + " SET user_password = ? WHERE user_name = ?";
-    return jdbcTemplate.update(sql, StringUtil.toSHA512String(userInfo.getUserPassword()),
-        userInfo.getUserName());
-  }
-
-  public void deleteAll() {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    final String sql = "DELETE FROM " + TABLE_NAME;
-    jdbcTemplate.execute(sql);
-  }
-
-  private Map<String, Object> toMap(UserInfo userInfo) {
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("user_name", userInfo.getUserName());
-    parameters.put("user_password", userInfo.getUserPassword());
-    return parameters;
-  }
-
-  class UserInfoRowMapper implements RowMapper<UserInfo> {
-
-    @Override
-    public UserInfo mapRow(ResultSet resultSet, int i) throws SQLException {
-      return new UserInfo(resultSet.getString("user_name"), resultSet.getString("user_password"));
-    }
-  }
+  void deleteAll();
 }

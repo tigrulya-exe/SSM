@@ -37,7 +37,7 @@ public class TestCompressionFileDao extends TestDaoUtil {
   @Before
   public void initCompressionFileDao() throws Exception {
     initDao();
-    compressionFileDao = new CompressionFileDao(druidPool.getDataSource());
+    compressionFileDao = daoProvider.compressionFileDao();
     originalPos.add(9000L);
     originalPos.add(8000L);
     compressedPos.add(3000L);
@@ -53,13 +53,13 @@ public class TestCompressionFileDao extends TestDaoUtil {
   @Test
   public void testInsertDeleteCompressionFiles() throws Exception {
     CompressionFileState compressionInfo = new CompressionFileState(
-      "/test", 131072, compressionImpl, originalPos.toArray(new Long[0]),
+        "/test", 131072, compressionImpl, originalPos.toArray(new Long[0]),
         compressedPos.toArray(new Long[0]));
 
     //insert test
     compressionFileDao.insert(compressionInfo);
     Assert.assertTrue(compressionFileDao.getInfoByPath("/test").
-      getOriginalPos()[0].equals(9000L));
+        getOriginalPos()[0].equals(9000L));
 
     //delete test
     compressionFileDao.deleteByPath("/test");
@@ -93,10 +93,10 @@ public class TestCompressionFileDao extends TestDaoUtil {
     long originalLen = 100;
     long compressedLen = 50;
     CompressionFileState compressionInfo = new CompressionFileState(
-      "/test1", 131072, compressionImpl, originalLen, compressedLen,
+        "/test1", 131072, compressionImpl, originalLen, compressedLen,
         originalPos.toArray(new Long[0]), compressedPos.toArray(new Long[0]));
     CompressionFileState compressionInfo2 = new CompressionFileState(
-      "/test2", 131072, compressionImpl, originalPos.toArray(new Long[0]),
+        "/test2", 131072, compressionImpl, originalPos.toArray(new Long[0]),
         compressedPos.toArray(new Long[0]));
 
     compressionFileDao.insert(compressionInfo);

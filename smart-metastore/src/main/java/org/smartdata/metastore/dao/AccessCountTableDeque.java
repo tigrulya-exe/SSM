@@ -25,8 +25,8 @@ import java.util.List;
  * Use deque to accelerate remove operation.
  */
 public class AccessCountTableDeque extends ArrayDeque<AccessCountTable> {
-  private TableAddOpListener listener;
-  private TableEvictor tableEvictor;
+  private final TableAddOpListener listener;
+  private final TableEvictor tableEvictor;
 
   public AccessCountTableDeque(TableEvictor tableEvictor) {
     this(tableEvictor, null);

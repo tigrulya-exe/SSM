@@ -35,8 +35,8 @@ public class AccessCountTableAggregator {
   }
 
   public void aggregate(AccessCountTable destinationTable,
-      List<AccessCountTable> tablesToAggregate) throws MetaStoreException {
-    if (tablesToAggregate.size() > 0) {
+                        List<AccessCountTable> tablesToAggregate) throws MetaStoreException {
+    if (!tablesToAggregate.isEmpty()) {
       ReentrantLock accessCountLock = metaStore.getAccessCountLock();
       if (accessCountLock != null) {
         accessCountLock.lock();

@@ -80,12 +80,12 @@ public abstract class TestInotifyFetcher extends TestDaoUtil {
     try {
       cluster.waitActive();
       DFSClient client = new DFSClient(cluster.getNameNode(0)
-        .getNameNodeAddress(), conf);
+          .getNameNodeAddress(), conf);
 
       MetaStore metaStore = createMetastore();
       EventApplierForTest applierForTest = new EventApplierForTest(metaStore, client);
       final InotifyEventFetcher fetcher = new InotifyEventFetcher(client, metaStore,
-        Executors.newScheduledThreadPool(2), applierForTest, new Callable() {
+          Executors.newScheduledThreadPool(2), applierForTest, new Callable() {
         @Override
         public Object call() throws Exception {
           return null; // Do nothing
@@ -99,7 +99,7 @@ public abstract class TestInotifyFetcher extends TestDaoUtil {
       DFSTestUtil.createFile(fs, new Path("/file3"), BLOCK_SIZE, (short) 1, 0L);
       DFSTestUtil.createFile(fs, new Path("/file5"), BLOCK_SIZE, (short) 1, 0L);
       DFSTestUtil.createFile(fs, new Path("/truncate_file"),
-        BLOCK_SIZE * 2, (short) 1, 0L);
+          BLOCK_SIZE * 2, (short) 1, 0L);
       fs.mkdirs(new Path("/tmp"), new FsPermission("777"));
 
       Thread thread = new Thread() {
@@ -145,12 +145,12 @@ public abstract class TestInotifyFetcher extends TestDaoUtil {
       client.setOwner("/dir", "username", "groupname");
       client.createSymlink("/dir", "/dir2", false); // SymlinkOp -> CreateEvent
       client.setXAttr("/file5", "user.field", "value".getBytes(), EnumSet.of(
-        XAttrSetFlag.CREATE)); // SetXAttrOp -> MetadataUpdateEvent
+          XAttrSetFlag.CREATE)); // SetXAttrOp -> MetadataUpdateEvent
       // RemoveXAttrOp -> MetadataUpdateEvent
       client.removeXAttr("/file5", "user.field");
       // SetAclOp -> MetadataUpdateEvent
       client.setAcl("/file5", AclEntry.parseAclSpec(
-        "user::rwx,user:foo:rw-,group::r--,other::---", true));
+          "user::rwx,user:foo:rw-,group::r--,other::---", true));
       client.removeAcl("/file5"); // SetAclOp -> MetadataUpdateEvent
       client.rename("/file5", "/dir"); // RenameOldOp -> RenameEvent
       //TruncateOp -> TruncateEvent
@@ -194,7 +194,8 @@ public abstract class TestInotifyFetcher extends TestDaoUtil {
               client,
               Long.parseLong(
                   metaStore
-                      .getSystemInfoByProperty(SmartConstants.SMART_HDFS_LAST_INOTIFY_TXID)
+                      .getSystemInfoByProperty(
+                          SmartConstants.SMART_HDFS_LAST_INOTIFY_TXID)
                       .getValue())));
     } finally {
       cluster.shutdown();
@@ -202,7 +203,9 @@ public abstract class TestInotifyFetcher extends TestDaoUtil {
     }
   }
 
-  public HdfsDataOutputStream append(DFSClient client, String src, int bufferSize) throws IOException {
-    return (HdfsDataOutputStream)CompatibilityHelperLoader.getHelper().getDFSClientAppend(client, src, bufferSize);
+  public HdfsDataOutputStream append(DFSClient client, String src, int bufferSize)
+      throws IOException {
+    return (HdfsDataOutputStream) CompatibilityHelperLoader.getHelper()
+        .getDFSClientAppend(client, src, bufferSize);
   }
 }

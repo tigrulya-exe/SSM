@@ -89,7 +89,7 @@ public class TestDBUtil {
       throws MetaStoreException {
     try (TestSQLiteDBPool dbPool = new TestSQLiteDBPool()) {
       DBManager dbManager = new DBManagerFactory()
-              .createDbManager(dbPool, new Configuration());
+          .createDbManager(dbPool, new Configuration());
       dbManager.initializeDatabase();
       return dbPool.dbFilePath;
     } catch (Exception e) {
@@ -186,7 +186,7 @@ public class TestDBUtil {
         closeConnection(connection);
         new File(dbFilePath).deleteOnExit();
       } catch (SQLException e) {
-          throw new RuntimeException(e);
+        throw new RuntimeException(e);
       }
     }
   }

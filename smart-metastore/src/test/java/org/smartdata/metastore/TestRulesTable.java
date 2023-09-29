@@ -54,7 +54,7 @@ public class TestRulesTable extends TestDaoUtil {
     Assert.assertFalse(info11.equals(info21));
 
     List<RuleInfo> infos = adapter.getRuleInfo();
-    assert(infos.size() == 2);
+    assert (infos.size() == 2);
     closeDao();
   }
 }

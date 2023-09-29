@@ -66,14 +66,14 @@ public class SmartConfKeys {
   public static final String SMART_SECURITY_ENABLE = "smart.security.enable";
   public static final String SMART_SERVER_KEYTAB_FILE_KEY = "smart.server.keytab.file";
   public static final String SMART_SERVER_KERBEROS_PRINCIPAL_KEY =
-    "smart.server.kerberos.principal";
+      "smart.server.kerberos.principal";
   public static final String SMART_AGENT_KEYTAB_FILE_KEY = "smart.agent.keytab.file";
   public static final String SMART_AGENT_KERBEROS_PRINCIPAL_KEY =
-    "smart.agent.kerberos.principal";
+      "smart.agent.kerberos.principal";
   public static final String SMART_SECURITY_CLIENT_PROTOCOL_ACL =
-    "smart.security.client.protocol.acl";
+      "smart.security.client.protocol.acl";
   public static final String SMART_SECURITY_ADMIN_PROTOCOL_ACL =
-    "smart.security.admin.protocol.acl";
+      "smart.security.admin.protocol.acl";
   public static final String SMART_METASTORE_DB_URL_KEY = "smart.metastore.db.url";
   // Password which get from hadoop credentialProvider used for metastore connect
   public static final String SMART_METASTORE_PASSWORD = "smart.metastore.password";
@@ -83,11 +83,11 @@ public class SmartConfKeys {
   public static final int SMART_METASTORE_CHARACTER_TAKEUP_BYTES_DEFAULT = 1;
 
   public static final String SMART_METASTORE_MIGRATION_CHANGELOG_PATH_KEY =
-          "smart.metastore.migration.liquibase.changelog.path";
+      "smart.metastore.migration.liquibase.changelog.path";
   public static final String SMART_METASTORE_MIGRATION_CHANGELOG_PATH_DEFAULT =
-          "db/changelog/changelog-root.xml";
+      "db/changelog/changelog-root.xml";
   public static final String SMART_METASTORE_MIGRATION_LABELS_KEY =
-          "smart.metastore.migration.liquibase.labels";
+      "smart.metastore.migration.liquibase.labels";
   public static final String SMART_METASTORE_MIGRATION_LABELS_DEFAULT = "";
 
   // StatesManager
@@ -158,7 +158,7 @@ public class SmartConfKeys {
   public static final String SMART_ACTION_EC_THROTTLE_MB_KEY = "smart.action.ec.throttle.mb";
   public static final long SMART_ACTION_EC_THROTTLE_MB_DEFAULT = 0L;
   public static final String SMART_ACTION_LOCAL_EXECUTION_DISABLED_KEY =
-    "smart.action.local.execution.disabled";
+      "smart.action.local.execution.disabled";
   public static final boolean SMART_ACTION_LOCAL_EXECUTION_DISABLED_DEFAULT = false;
 
   // SmartAgent

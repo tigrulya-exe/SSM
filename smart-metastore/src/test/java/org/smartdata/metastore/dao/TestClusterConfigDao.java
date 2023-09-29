@@ -30,7 +30,7 @@ public class TestClusterConfigDao extends TestDaoUtil {
   @Before
   public void initClusterConfigDao() throws Exception {
     initDao();
-    clusterConfigDao = new ClusterConfigDao(druidPool.getDataSource());
+    clusterConfigDao = daoProvider.clusterConfigDao();
   }
 
   @After

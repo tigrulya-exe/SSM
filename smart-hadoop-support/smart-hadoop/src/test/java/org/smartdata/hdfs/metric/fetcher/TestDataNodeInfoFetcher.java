@@ -76,6 +76,6 @@ public abstract class TestDataNodeInfoFetcher extends TestDaoUtil {
     while (!fetcher.isFetchFinished()) {
       Thread.sleep(1000);
     }
-    Assert.assertEquals(2,metaStore.getAllDataNodeInfo().size());
+    Assert.assertEquals(2, metaStore.getAllDataNodeInfo().size());
   }
 }

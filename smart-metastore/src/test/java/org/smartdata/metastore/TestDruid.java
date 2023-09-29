@@ -20,6 +20,8 @@ package org.smartdata.metastore;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.Assert;
 import org.junit.Test;
+import org.smartdata.metastore.dao.DaoProvider;
+import org.smartdata.metastore.dao.impl.DefaultDaoProvider;
 import org.smartdata.metastore.db.DBManager;
 import org.smartdata.metastore.db.DBManagerFactory;
 import org.smartdata.metastore.utils.MetaStoreUtils;
@@ -44,8 +46,9 @@ public class TestDruid {
 
     DruidPool druidPool = new DruidPool(p);
     DBManager dbManager = new DBManagerFactory()
-            .createDbManager(druidPool, new Configuration());
-    MetaStore adapter = new MetaStore(druidPool, dbManager);
+        .createDbManager(druidPool, new Configuration());
+    DaoProvider daoProvider = new DefaultDaoProvider(druidPool);
+    MetaStore adapter = new MetaStore(druidPool, dbManager, daoProvider);
 
     String rule = "file : accessCount(10m) > 20 \n\n"
         + "and length() > 3 | cache";

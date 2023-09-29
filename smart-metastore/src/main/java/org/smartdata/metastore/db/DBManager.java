@@ -1,4 +1,3 @@
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,7 +19,7 @@ package org.smartdata.metastore.db;
 
 public interface DBManager {
 
-    void initializeDatabase() throws Exception;
+  void initializeDatabase() throws Exception;
 
-    void clearDatabase() throws Exception;
+  void clearDatabase() throws Exception;
 }

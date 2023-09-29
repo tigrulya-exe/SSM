@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,19 +17,6 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-
-import javax.sql.DataSource;
-
-public class GeneralDao {
-  private DataSource dataSource;
-
-  public GeneralDao(DataSource dataSource) {
-    this.dataSource = dataSource;
-  }
-
-  public Long queryForLong(String sql) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    return jdbcTemplate.queryForObject(sql, Long.class);
-  }
+public interface GeneralDao {
+  Long queryForLong(String sql);
 }

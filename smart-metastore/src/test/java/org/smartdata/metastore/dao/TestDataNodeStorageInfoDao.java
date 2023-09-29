@@ -33,7 +33,7 @@ public class TestDataNodeStorageInfoDao extends TestDaoUtil {
   @Before
   public void initDataNodeInfoDao() throws Exception {
     initDao();
-    dataNodeStorageInfoDao = new DataNodeStorageInfoDao(druidPool.getDataSource());
+    dataNodeStorageInfoDao = daoProvider.dataNodeStorageInfoDao();
   }
 
   @After

@@ -126,7 +126,8 @@ public class TestMetaStore extends TestDaoUtil {
     public void run() {
       Map<String, String> args = new HashMap();
       ActionInfo actionInfo =
-          new ActionInfo(1, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L, 100);
+          new ActionInfo(1, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L,
+              100);
       for (int i = 0; i < 100; i++) {
         actionInfo.setActionId(i);
         try {
@@ -332,11 +333,13 @@ public class TestMetaStore extends TestDaoUtil {
     Assert.assertTrue(metaStore.listMoveRules().size() == 3);
     Assert.assertTrue(metaStore.listSyncRules().size() == 1);
     CmdletInfo cmdletInfo =
-        new CmdletInfo(1, ruleInfo.getId(), CmdletState.EXECUTING, "test", 123123333L, 232444444L);
+        new CmdletInfo(1, ruleInfo.getId(), CmdletState.EXECUTING, "test", 123123333L,
+            232444444L);
     cmdletInfo.setAids(Collections.singletonList(1L));
     metaStore.insertCmdlet(cmdletInfo);
     metaStore.insertAction(
-        new ActionInfo(1, 1, "allssd", args, "Test", "Test", true, 123213213L, true, 123123L, 100));
+        new ActionInfo(1, 1, "allssd", args, "Test", "Test", true, 123213213L, true, 123123L,
+            100));
     Assert.assertTrue(metaStore.listFileActions(ruleInfo.getId(), 0).size() >= 0);
   }
 
@@ -426,20 +429,20 @@ public class TestMetaStore extends TestDaoUtil {
     byte storagePolicy = 0;
     byte erasureCodingPolicy = 0;
     FileInfo[] files = {
-      new FileInfo(
-          pathString,
-          fileId,
-          length,
-          isDir,
-          (short) blockReplication,
-          blockSize,
-          modTime,
-          accessTime,
-          (short) 1,
-          owner,
-          group,
-          storagePolicy,
-          erasureCodingPolicy)
+        new FileInfo(
+            pathString,
+            fileId,
+            length,
+            isDir,
+            (short) blockReplication,
+            blockSize,
+            modTime,
+            accessTime,
+            (short) 1,
+            owner,
+            group,
+            storagePolicy,
+            erasureCodingPolicy)
     };
     metaStore.insertFiles(files);
     FileInfo dbFileInfo = metaStore.getFile("/tmp/testFile");
@@ -471,13 +474,16 @@ public class TestMetaStore extends TestDaoUtil {
     CmdletInfo command2 = new CmdletInfo(1, 78, CmdletState.DONE, "tt", 128L, 232444994L);
     metaStore.insertCmdlet(command2);
     ActionInfo actionInfo =
-        new ActionInfo(1, 0, "cache", args, "Test", "Test", true, 123213213L, true, 123123L, 100);
+        new ActionInfo(1, 0, "cache", args, "Test", "Test", true, 123213213L, true, 123123L,
+            100);
     metaStore.insertAction(actionInfo);
     ActionInfo actionInfo2 =
-        new ActionInfo(2, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L, 100);
+        new ActionInfo(2, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L,
+            100);
     metaStore.insertAction(actionInfo2);
     ActionInfo actionInfo3 =
-        new ActionInfo(3, 0, "cache", args, "Test", "Test", true, 123213213L, true, 123123L, 100);
+        new ActionInfo(3, 0, "cache", args, "Test", "Test", true, 123213213L, true, 123123L,
+            100);
     metaStore.insertAction(actionInfo3);
     metaStore.deleteFinishedCmdletsWithGenTimeBefore(125);
     Assert.assertTrue(metaStore.getCmdletById(0) == null);
@@ -494,13 +500,16 @@ public class TestMetaStore extends TestDaoUtil {
     CmdletInfo command2 = new CmdletInfo(1, 78, CmdletState.DONE, "tt", 128L, 232444994L);
     metaStore.insertCmdlet(command2);
     ActionInfo actionInfo =
-        new ActionInfo(1, 0, "cache", args, "Test", "Test", true, 123213213L, true, 123123L, 100);
+        new ActionInfo(1, 0, "cache", args, "Test", "Test", true, 123213213L, true, 123123L,
+            100);
     metaStore.insertAction(actionInfo);
     ActionInfo actionInfo2 =
-        new ActionInfo(2, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L, 100);
+        new ActionInfo(2, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L,
+            100);
     metaStore.insertAction(actionInfo2);
     ActionInfo actionInfo3 =
-        new ActionInfo(3, 0, "cache", args, "Test", "Test", true, 123213213L, true, 123123L, 100);
+        new ActionInfo(3, 0, "cache", args, "Test", "Test", true, 123213213L, true, 123123L,
+            100);
     metaStore.insertAction(actionInfo3);
     metaStore.deleteKeepNewCmdlets(1);
     Assert.assertTrue(metaStore.getCmdletById(0) == null);
@@ -539,12 +548,13 @@ public class TestMetaStore extends TestDaoUtil {
   public void testInsertListActions() throws Exception {
     Map<String, String> args = new HashMap();
     ActionInfo actionInfo =
-        new ActionInfo(1, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L, 100);
-    metaStore.insertActions(new ActionInfo[] {actionInfo});
+        new ActionInfo(1, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L,
+            100);
+    metaStore.insertActions(new ActionInfo[]{actionInfo});
     List<ActionInfo> actionInfos = metaStore.getActions(null, null);
     Assert.assertTrue(actionInfos.size() == 1);
     actionInfo.setResult("Finished");
-    metaStore.updateActions(new ActionInfo[] {actionInfo});
+    metaStore.updateActions(new ActionInfo[]{actionInfo});
     actionInfos = metaStore.getActions(null, null);
     Assert.assertTrue(actionInfos.get(0).equals(actionInfo));
   }
@@ -554,7 +564,8 @@ public class TestMetaStore extends TestDaoUtil {
     Map<String, String> args = new HashMap();
     List<ActionInfo> actionInfos;
     ActionInfo actionInfo =
-        new ActionInfo(1, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L, 100);
+        new ActionInfo(1, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L,
+            100);
     metaStore.insertAction(actionInfo);
     actionInfo.setActionId(2);
     metaStore.insertAction(actionInfo);
@@ -573,14 +584,16 @@ public class TestMetaStore extends TestDaoUtil {
     Assert.assertTrue(currentId == 0);
     ActionInfo actionInfo =
         new ActionInfo(
-            currentId, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L, 100);
-    metaStore.insertActions(new ActionInfo[] {actionInfo});
+            currentId, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L,
+            100);
+    metaStore.insertActions(new ActionInfo[]{actionInfo});
     currentId = metaStore.getMaxActionId();
     Assert.assertTrue(currentId == 1);
     actionInfo =
         new ActionInfo(
-            currentId, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L, 100);
-    metaStore.insertActions(new ActionInfo[] {actionInfo});
+            currentId, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L,
+            100);
+    metaStore.insertActions(new ActionInfo[]{actionInfo});
     currentId = metaStore.getMaxActionId();
     Assert.assertTrue(currentId == 2);
   }
@@ -654,7 +667,7 @@ public class TestMetaStore extends TestDaoUtil {
 
     DataNodeInfo insertInfo2 = new DataNodeInfo("UUID2", "HOSTNAME", "www.ssm.com", 0, 0, null);
     DataNodeInfo insertInfo3 = new DataNodeInfo("UUID3", "HOSTNAME", "www.ssm.com", 0, 0, null);
-    metaStore.insertDataNodeInfos(new DataNodeInfo[] {insertInfo2, insertInfo3});
+    metaStore.insertDataNodeInfos(new DataNodeInfo[]{insertInfo2, insertInfo3});
     List<DataNodeInfo> getInfo2 = metaStore.getDataNodeInfoByUuid("UUID2");
     Assert.assertTrue(insertInfo2.equals(getInfo2.get(0)));
     List<DataNodeInfo> getInfo3 = metaStore.getDataNodeInfoByUuid("UUID3");
@@ -666,7 +679,7 @@ public class TestMetaStore extends TestDaoUtil {
     DataNodeInfo insertInfo1 = new DataNodeInfo("UUID1", "hostname", "www.ssm.com", 100, 50, "lab");
     DataNodeInfo insertInfo2 = new DataNodeInfo("UUID2", "HOSTNAME", "www.ssm.com", 0, 0, null);
     DataNodeInfo insertInfo3 = new DataNodeInfo("UUID3", "HOSTNAME", "www.ssm.com", 0, 0, null);
-    metaStore.insertDataNodeInfos(new DataNodeInfo[] {insertInfo1, insertInfo2, insertInfo3});
+    metaStore.insertDataNodeInfos(new DataNodeInfo[]{insertInfo1, insertInfo2, insertInfo3});
 
     List<DataNodeInfo> infos = metaStore.getAllDataNodeInfo();
     Assert.assertTrue(infos.size() == 3);
@@ -692,7 +705,7 @@ public class TestMetaStore extends TestDaoUtil {
         new DataNodeStorageInfo("UUID2", 10, 10, "storageid2", 0, 0, 0, 0, 0);
     DataNodeStorageInfo insertInfo3 =
         new DataNodeStorageInfo("UUID3", 10, 10, "storageid2", 0, 0, 0, 0, 0);
-    metaStore.insertDataNodeStorageInfos(new DataNodeStorageInfo[] {insertInfo2, insertInfo3});
+    metaStore.insertDataNodeStorageInfos(new DataNodeStorageInfo[]{insertInfo2, insertInfo3});
     List<DataNodeStorageInfo> getInfo2 = metaStore.getDataNodeStorageInfoByUuid("UUID2");
     Assert.assertTrue(insertInfo2.equals(getInfo2.get(0)));
     List<DataNodeStorageInfo> getInfo3 = metaStore.getDataNodeStorageInfoByUuid("UUID3");
@@ -708,7 +721,7 @@ public class TestMetaStore extends TestDaoUtil {
     DataNodeStorageInfo insertInfo3 =
         new DataNodeStorageInfo("UUID3", 10, 10, "storageid3", 0, 0, 0, 0, 0);
     metaStore.insertDataNodeStorageInfos(
-        new DataNodeStorageInfo[] {insertInfo1, insertInfo2, insertInfo3});
+        new DataNodeStorageInfo[]{insertInfo1, insertInfo2, insertInfo3});
 
     List<DataNodeStorageInfo> infos = metaStore.getAllDataNodeStorageInfo();
     Assert.assertTrue(infos.size() == 3);

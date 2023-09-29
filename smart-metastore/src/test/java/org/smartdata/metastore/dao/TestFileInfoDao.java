@@ -34,7 +34,7 @@ public class TestFileInfoDao extends TestDaoUtil {
   @Before
   public void initFileDao() throws Exception {
     initDao();
-    fileInfoDao = new FileInfoDao(druidPool.getDataSource());
+    fileInfoDao = daoProvider.fileInfoDao();
   }
 
   @After

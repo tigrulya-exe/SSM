@@ -16,7 +16,8 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -102,59 +103,59 @@
         </configuration>
       </plugin>
 
-            <plugin>
-              <groupId>com.github.eirslett</groupId>
-              <artifactId>frontend-maven-plugin</artifactId>
-              <version>${plugin.frontned.version}</version>
-              <executions>
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>${plugin.frontned.version}</version>
+        <executions>
 
-                <execution>
-                  <id>install node and yarn</id>
-                  <goals>
-                    <goal>install-node-and-yarn</goal>
-                    <goal>install-node-and-npm</goal>
-                  </goals>
-                  <configuration>
-                    <nodeVersion>${node.version}</nodeVersion>
-                    <yarnVersion>${yarn.version}</yarnVersion>
-                    <npmVersion>${npm.version}</npmVersion>
-                  </configuration>
-                </execution>
+          <execution>
+            <id>install node and yarn</id>
+            <goals>
+              <goal>install-node-and-yarn</goal>
+              <goal>install-node-and-npm</goal>
+            </goals>
+            <configuration>
+              <nodeVersion>${node.version}</nodeVersion>
+              <yarnVersion>${yarn.version}</yarnVersion>
+              <npmVersion>${npm.version}</npmVersion>
+            </configuration>
+          </execution>
 
 
-                <execution>
-                  <id>yarn install</id>
-                  <goals>
-                    <goal>yarn</goal>
-                  </goals>
-                  <configuration>
-                    <arguments>install --no-lockfile</arguments>
-                  </configuration>
-                </execution>
+          <execution>
+            <id>yarn install</id>
+            <goals>
+              <goal>yarn</goal>
+            </goals>
+            <configuration>
+              <arguments>install --no-lockfile</arguments>
+            </configuration>
+          </execution>
 
-                <execution>
-                  <id>yarn build</id>
-                  <goals>
-                    <goal>yarn</goal>
-                  </goals>
-                  <configuration>
-                    <arguments>run build --force</arguments>
-                  </configuration>
-                </execution>
+          <execution>
+            <id>yarn build</id>
+            <goals>
+              <goal>yarn</goal>
+            </goals>
+            <configuration>
+              <arguments>run build --force</arguments>
+            </configuration>
+          </execution>
 
-                <execution>
-                  <id>yarn test</id>
-                  <goals>
-                    <goal>yarn</goal>
-                  </goals>
-                  <phase>test</phase>
-                  <configuration>
-                    <arguments>run test</arguments>
-                  </configuration>
-                </execution>
+          <execution>
+            <id>yarn test</id>
+            <goals>
+              <goal>yarn</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <arguments>run test</arguments>
+            </configuration>
+          </execution>
 
-              </executions>
-            </plugin>
+        </executions>
+      </plugin>
 
       <!--
           Disabling test report generation as it forks the lifecycle

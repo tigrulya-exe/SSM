@@ -32,7 +32,7 @@ public class TestFileStateDao extends TestDaoUtil {
   @Before
   public void initFileDao() throws Exception {
     initDao();
-    fileStateDao = new FileStateDao(druidPool.getDataSource());
+    fileStateDao = daoProvider.fileStateDao();
   }
 
   @Test

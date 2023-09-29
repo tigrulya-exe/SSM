@@ -1,42 +1,40 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.smartdata.metastore.db;
 
 import org.apache.hadoop.conf.Configuration;
 import org.smartdata.metastore.DBPool;
-import org.smartdata.metastore.MetaStoreException;
 
-import static org.smartdata.conf.SmartConfKeys.SMART_METASTORE_DB_URL_KEY;
 import static org.smartdata.conf.SmartConfKeys.SMART_METASTORE_MIGRATION_CHANGELOG_PATH_DEFAULT;
 import static org.smartdata.conf.SmartConfKeys.SMART_METASTORE_MIGRATION_CHANGELOG_PATH_KEY;
 import static org.smartdata.conf.SmartConfKeys.SMART_METASTORE_MIGRATION_LABELS_DEFAULT;
 import static org.smartdata.conf.SmartConfKeys.SMART_METASTORE_MIGRATION_LABELS_KEY;
-import static org.smartdata.metastore.utils.MetaStoreUtils.isOldMySql;
 
 public class DBManagerFactory {
-    public static final String OLD_MYSQL_LABEL = "old_mysql";
+  public DBManager createDbManager(DBPool dbPool, Configuration conf) {
+    String changelogPath = conf.get(
+        SMART_METASTORE_MIGRATION_CHANGELOG_PATH_KEY,
+        SMART_METASTORE_MIGRATION_CHANGELOG_PATH_DEFAULT);
 
-    public DBManager createDbManager(DBPool dbPool, Configuration conf) throws MetaStoreException {
-        String changelogPath = conf.get(
-                SMART_METASTORE_MIGRATION_CHANGELOG_PATH_KEY,
-                SMART_METASTORE_MIGRATION_CHANGELOG_PATH_DEFAULT);
+    String labels = conf.get(
+        SMART_METASTORE_MIGRATION_LABELS_KEY,
+        SMART_METASTORE_MIGRATION_LABELS_DEFAULT);
 
-        String labels = conf.get(
-                SMART_METASTORE_MIGRATION_LABELS_KEY,
-                SMART_METASTORE_MIGRATION_LABELS_DEFAULT);
-
-        String dbUrl = conf.get(SMART_METASTORE_DB_URL_KEY);
-        if (isOldMySql(dbPool, dbUrl)) {
-            labels = appendToLabels(labels, OLD_MYSQL_LABEL);
-        }
-
-        return new LiquibaseDBManager(dbPool, changelogPath, labels);
-    }
-
-    private String appendToLabels(String currentLabels, String label) {
-        if (currentLabels.isEmpty()) {
-            return label;
-        }
-
-        return String.format("(%s) OR %s", currentLabels, label);
-    }
-
+    return new LiquibaseDBManager(dbPool, changelogPath, labels);
+  }
 }

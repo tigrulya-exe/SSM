@@ -18,147 +18,29 @@
 package org.smartdata.metastore.dao;
 
 import org.smartdata.model.RuleInfo;
-import org.smartdata.model.RuleState;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
-import javax.sql.DataSource;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class RuleDao {
+public interface RuleDao {
 
-  private DataSource dataSource;
+  List<RuleInfo> getAll();
 
-  public void setDataSource(DataSource dataSource) {
-    this.dataSource = dataSource;
-  }
+  RuleInfo getById(long id);
 
-  public RuleDao(DataSource dataSource) {
-    this.dataSource = dataSource;
-  }
+  List<RuleInfo> getAPageOfRule(long start, long offset, List<String> orderBy,
+                                List<Boolean> isDesc);
 
-  public List<RuleInfo> getAll() {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    return jdbcTemplate.query("SELECT * FROM rule",
-        new RuleRowMapper());
-  }
+  List<RuleInfo> getAPageOfRule(long start, long offset);
 
-  public RuleInfo getById(long id) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    return jdbcTemplate.queryForObject("SELECT * FROM rule WHERE id = ?",
-        new Object[]{id}, new RuleRowMapper());
-  }
+  long insert(RuleInfo ruleInfo);
 
-  public List<RuleInfo> getAPageOfRule(long start, long offset, List<String> orderBy,
-      List<Boolean> isDesc) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    boolean ifHasAid = false;
-    String sql = "SELECT * FROM rule ORDER BY ";
+  int update(long ruleId, long lastCheckTime, long checkedCount, int cmdletsGen);
 
-    for (int i = 0; i < orderBy.size(); i++) {
-      if (orderBy.get(i).equals("rid")) {
-        ifHasAid = true;
-      }
-      sql = sql + orderBy.get(i);
-      if (isDesc.size() > i) {
-        if (isDesc.get(i)) {
-          sql = sql + " desc ";
-        }
-        sql = sql + ",";
-      }
-    }
+  int update(long ruleId, int rs, long lastCheckTime, long checkedCount, int cmdletsGen);
 
-    if (!ifHasAid) {
-      sql = sql + "rid,";
-    }
+  int update(long ruleId, int rs);
 
-    sql = sql.substring(0, sql.length() - 1);
-    sql = sql + " LIMIT " + start + "," + offset + ";";
-    return jdbcTemplate.query(sql, new RuleRowMapper());
-  }
+  void delete(long id);
 
-  public List<RuleInfo> getAPageOfRule(long start, long offset) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "SELECT * FROM rule LIMIT " + start + "," + offset + ";";
-    return jdbcTemplate.query(sql, new RuleRowMapper());
-  }
-
-  public long insert(RuleInfo ruleInfo) {
-    SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(dataSource);
-    simpleJdbcInsert.setTableName("rule");
-    simpleJdbcInsert.usingGeneratedKeyColumns("id");
-    long id = simpleJdbcInsert.executeAndReturnKey(toMap(ruleInfo)).longValue();
-    ruleInfo.setId(id);
-    return id;
-  }
-
-  public int update(long ruleId, long lastCheckTime, long checkedCount, int cmdletsGen) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql =
-        "UPDATE rule SET last_check_time = ?, checked_count = ?, "
-            + "generated_cmdlets = ? WHERE id = ?";
-    return jdbcTemplate.update(sql, lastCheckTime, checkedCount, cmdletsGen, ruleId);
-  }
-
-  public int update(long ruleId, int rs, long lastCheckTime, long checkedCount, int cmdletsGen) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql =
-        "UPDATE rule SET state = ?, last_check_time = ?, checked_count = ?, "
-            + "generated_cmdlets = ? WHERE id = ?";
-    return jdbcTemplate.update(sql, rs, lastCheckTime, checkedCount, cmdletsGen, ruleId);
-  }
-
-  public int update(long ruleId, int rs) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "UPDATE rule SET state = ? WHERE id = ?";
-    return jdbcTemplate.update(sql, rs, ruleId);
-  }
-
-  public void delete(long id) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    final String sql = "DELETE FROM rule WHERE id = ?";
-    jdbcTemplate.update(sql, id);
-  }
-
-  public void deleteAll() {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    final String sql = "DELETE FROM rule";
-    jdbcTemplate.update(sql);
-  }
-
-  private Map<String, Object> toMap(RuleInfo ruleInfo) {
-    Map<String, Object> parameters = new HashMap<>();
-    if (ruleInfo.getSubmitTime() == 0) {
-      ruleInfo.setSubmitTime(System.currentTimeMillis());
-    }
-    parameters.put("submit_time", ruleInfo.getSubmitTime());
-    parameters.put("rule_text", ruleInfo.getRuleText());
-    parameters.put("state", ruleInfo.getState().getValue());
-    parameters.put("checked_count", ruleInfo.getNumChecked());
-    parameters.put("generated_cmdlets", ruleInfo.getNumCmdsGen());
-    parameters.put("last_check_time", ruleInfo.getLastCheckTime());
-    return parameters;
-  }
-
-  class RuleRowMapper implements RowMapper<RuleInfo> {
-
-    @Override
-    public RuleInfo mapRow(ResultSet resultSet, int i) throws SQLException {
-      RuleInfo ruleInfo = new RuleInfo();
-      ruleInfo.setId(resultSet.getLong("id"));
-      ruleInfo.setSubmitTime(resultSet.getLong("submit_time"));
-      ruleInfo.setRuleText(resultSet.getString("rule_text"));
-      ruleInfo.setState(RuleState.fromValue((int) resultSet.getByte("state")));
-      ruleInfo.setNumChecked(resultSet.getLong("checked_count"));
-      ruleInfo.setNumCmdsGen(resultSet.getLong("generated_cmdlets"));
-      ruleInfo.setLastCheckTime(resultSet.getLong("last_check_time"));
-      return ruleInfo;
-    }
-  }
+  void deleteAll();
 }

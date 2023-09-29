@@ -8,7 +8,15 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
         http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
-    <changeSet id="2023.09.28_1" author="tmanasyan">
+    <changeSet id="2023.09.28_000" author="tmanasyan" labels="old_mysql" failOnError="false">
+        <sql dbms="mysql, mariadb">
+            SET GLOBAL innodb_file_format=barracuda;
+            SET GLOBAL innodb_file_per_table=true;
+            SET GLOBAL innodb_large_prefix = ON;
+        </sql>
+    </changeSet>
+
+    <changeSet id="2023.09.28_001" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="access_count_table"/>
@@ -27,7 +35,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_2" author="tmanasyan">
+    <changeSet id="2023.09.28_002" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="blank_access_count_info"/>
@@ -43,7 +51,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_3" author="tmanasyan">
+    <changeSet id="2023.09.28_003" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="cached_file"/>
@@ -68,7 +76,16 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_4" author="tmanasyan">
+    <changeSet id="2023.09.28_0031" author="tmanasyan" labels="old_mysql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="cached_file"/>
+        </preConditions>
+        <sql dbms="mysql, mariadb">
+            ALTER TABLE cached_file ROW_FORMAT= DYNAMIC ENGINE=INNODB;
+        </sql>
+    </changeSet>
+
+    <changeSet id="2023.09.28_004" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="cached_file_fid_idx"/>
@@ -79,7 +96,7 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="2023.09.28_5" author="tmanasyan">
+    <changeSet id="2023.09.28_005" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="cached_file_path_idx"/>
@@ -90,14 +107,14 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="2023.09.28_6" author="tmanasyan">
+    <changeSet id="2023.09.28_006" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="ec_policy"/>
             </not>
         </preConditions>
         <createTable tableName="ec_policy">
-            <column name="id" type="BIT">
+            <column name="id" type="TINYINT">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="policy_name" type="VARCHAR(255)">
@@ -106,7 +123,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_7" author="tmanasyan">
+    <changeSet id="2023.09.28_007" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="file"/>
@@ -133,7 +150,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_8" author="tmanasyan">
+    <changeSet id="2023.09.28_008" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="file_fid_idx"/>
@@ -144,7 +161,7 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="2023.09.28_9" author="tmanasyan">
+    <changeSet id="2023.09.28_009" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="file_path_idx"/>
@@ -153,9 +170,12 @@
         <createIndex indexName="file_path_idx" tableName="file">
             <column name="path"/>
         </createIndex>
+        <modifySql dbms="mysql, mariadb" labels="old_mysql">
+            <replace replace="`path`" with="`path`(767)"/>
+        </modifySql>
     </changeSet>
 
-    <changeSet id="2023.09.28_10" author="tmanasyan">
+    <changeSet id="2023.09.28_010" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="storage"/>
@@ -175,7 +195,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_11" author="tmanasyan">
+    <changeSet id="2023.09.28_011" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="storage_hist"/>
@@ -193,7 +213,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_12" author="tmanasyan">
+    <changeSet id="2023.09.28_012" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="type_idx"/>
@@ -204,7 +224,7 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="2023.09.28_13" author="tmanasyan">
+    <changeSet id="2023.09.28_013" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="time_stamp_idx"/>
@@ -215,7 +235,7 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="2023.09.28_14" author="tmanasyan">
+    <changeSet id="2023.09.28_014" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="storage_policy"/>
@@ -229,7 +249,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_15" author="tmanasyan">
+    <changeSet id="2023.09.28_015" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <tableIsEmpty tableName="storage_policy"/>
         </preConditions>
@@ -263,7 +283,7 @@
         </insert>
     </changeSet>
 
-    <changeSet id="2023.09.28_16" author="tmanasyan">
+    <changeSet id="2023.09.28_016" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="xattr"/>
@@ -285,7 +305,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_17" author="tmanasyan">
+    <changeSet id="2023.09.28_017" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="xattr_fid_idx"/>
@@ -296,7 +316,7 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="2023.09.28_18" author="tmanasyan">
+    <changeSet id="2023.09.28_018" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="datanode_info"/>
@@ -316,7 +336,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_19" author="tmanasyan">
+    <changeSet id="2023.09.28_019" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="datanode_storage_info"/>
@@ -343,7 +363,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_20" author="tmanasyan">
+    <changeSet id="2023.09.28_020" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="rule"/>
@@ -373,7 +393,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_21" author="tmanasyan">
+    <changeSet id="2023.09.28_021" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="cmdlet"/>
@@ -404,7 +424,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_22" author="tmanasyan">
+    <changeSet id="2023.09.28_022" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="action"/>
@@ -448,7 +468,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_23" author="tmanasyan">
+    <changeSet id="2023.09.28_023" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="file_diff"/>
@@ -479,7 +499,16 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_24" author="tmanasyan">
+    <changeSet id="2023.09.28_0231" author="tmanasyan" labels="old_mysql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="file_diff"/>
+        </preConditions>
+        <sql dbms="mysql, mariadb">
+            ALTER TABLE file_diff ROW_FORMAT= DYNAMIC ENGINE=INNODB;
+        </sql>
+    </changeSet>
+
+    <changeSet id="2023.09.28_024" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="file_diff_idx"/>
@@ -488,9 +517,12 @@
         <createIndex indexName="file_diff_idx" tableName="file_diff">
             <column name="src"/>
         </createIndex>
+        <modifySql dbms="mysql, mariadb" labels="old_mysql">
+            <replace replace="`src`" with="`src`(767)"/>
+        </modifySql>
     </changeSet>
 
-    <changeSet id="2023.09.28_25" author="tmanasyan">
+    <changeSet id="2023.09.28_025" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="global_config"/>
@@ -509,7 +541,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_26" author="tmanasyan">
+    <changeSet id="2023.09.28_026" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="cluster_config"/>
@@ -528,7 +560,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_27" author="tmanasyan">
+    <changeSet id="2023.09.28_027" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="sys_info"/>
@@ -544,7 +576,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_28" author="tmanasyan">
+    <changeSet id="2023.09.28_028" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="user_info"/>
@@ -560,17 +592,18 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_29" author="tmanasyan">
+    <changeSet id="2023.09.28_029" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <tableIsEmpty tableName="user_info"/>
         </preConditions>
         <insert tableName="user_info">
             <column name="user_name" value="admin"/>
-            <column name="user_password" value="f2400ad74fe868714eee7e6f4f5b1bb98b140dc43cd8cb44970345c93d87fb80e7419f2a17cc6a1571776da21d321befb266b552ee09923ea2d4e82f32ad65fa"/>
+            <column name="user_password"
+                    value="f2400ad74fe868714eee7e6f4f5b1bb98b140dc43cd8cb44970345c93d87fb80e7419f2a17cc6a1571776da21d321befb266b552ee09923ea2d4e82f32ad65fa"/>
         </insert>
     </changeSet>
 
-    <changeSet id="2023.09.28_30" author="tmanasyan">
+    <changeSet id="2023.09.28_030" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="cluster_info"/>
@@ -598,7 +631,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_31" author="tmanasyan">
+    <changeSet id="2023.09.28_031" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="backup_file"/>
@@ -620,7 +653,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_32" author="tmanasyan">
+    <changeSet id="2023.09.28_032" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="backup_file_rid_idx"/>
@@ -631,7 +664,7 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="2023.09.28_33" author="tmanasyan">
+    <changeSet id="2023.09.28_033" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="file_state"/>
@@ -650,7 +683,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_34" author="tmanasyan">
+    <changeSet id="2023.09.28_034" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="compression_file"/>
@@ -681,7 +714,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_35" author="tmanasyan">
+    <changeSet id="2023.09.28_035" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="small_file"/>
@@ -701,9 +734,12 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <modifySql dbms="mysql, mariadb" labels="old_mysql">
+            <replace replace="(`path`))" with="(`path`)) ROW_FORMAT=DYNAMIC ENGINE=INNODB;"/>
+        </modifySql>
     </changeSet>
 
-    <changeSet id="2023.09.28_36" author="tmanasyan">
+    <changeSet id="2023.09.28_036" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="whitelist"/>
@@ -716,20 +752,12 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2023.09.28_37" author="tmanasyan">
+    <changeSet id="2023.09.28_037" author="tmanasyan">
         <preConditions onFail="MARK_RAN">
             <tableIsEmpty tableName="whitelist"/>
         </preConditions>
         <insert tableName="whitelist">
             <column name="last_fetched_dirs" value=""/>
         </insert>
-    </changeSet>
-
-    <changeSet id="2023.09.28_38" author="tmanasyan" labels="old_mysql">
-        <sql dbms="mysql, mariadb">
-            SET GLOBAL innodb_file_format=barracuda;
-            SET GLOBAL innodb_file_per_table=true;
-            SET GLOBAL innodb_large_prefix = ON;
-        </sql>
     </changeSet>
 </databaseChangeLog>

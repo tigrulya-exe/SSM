@@ -18,88 +18,19 @@
 package org.smartdata.metastore.dao;
 
 import org.smartdata.model.StorageCapacity;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 
-import javax.sql.DataSource;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class StorageHistoryDao {
-  private DataSource dataSource;
+public interface StorageHistoryDao {
 
-  public StorageHistoryDao(DataSource dataSource) {
-    this.dataSource = dataSource;
-  }
+  void insertStorageHistTable(StorageCapacity[] storages, long interval)
+      throws SQLException;
 
-  public void setDataSource(DataSource dataSource) {
-    this.dataSource = dataSource;
-  }
+  List<StorageCapacity> getStorageHistoryData(String type, long interval,
+                                              long startTime, long endTime);
 
-  public void insertStorageHistTable(final StorageCapacity[] storages, final long interval)
-      throws SQLException {
-    if (storages.length == 0) {
-      return;
-    }
-    final Long curr = System.currentTimeMillis();
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "INSERT INTO storage_hist (type, time_stamp, capacity, free) VALUES (?,?,?,?);";
-    jdbcTemplate.batchUpdate(sql,
-        new BatchPreparedStatementSetter() {
-          public void setValues(PreparedStatement ps,
-              int i) throws SQLException {
-            ps.setString(1, storages[i].getType() + "-" + interval);
-            if (storages[i].getTimeStamp() == null) {
-              ps.setLong(2, curr);
-            } else {
-              ps.setLong(2, storages[i].getTimeStamp());
-            }
-            ps.setLong(3, storages[i].getCapacity());
-            ps.setLong(4, storages[i].getFree());
-          }
+  int getNumberOfStorageHistoryData(String type, long interval);
 
-          public int getBatchSize() {
-            return storages.length;
-          }
-        });
-  }
-
-  public List<StorageCapacity> getStorageHistoryData(String type, long interval,
-      long startTime, long endTime) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "SELECT * FROM storage_hist WHERE type = ? AND "
-        + "time_stamp BETWEEN ? AND ?";
-    List<StorageCapacity> data = jdbcTemplate.query(sql,
-        new Object[]{type + "-" + interval, startTime, endTime},
-        new StorageHistoryRowMapper());
-    for (StorageCapacity sc : data) {
-      sc.setType(type);
-    }
-    return data;
-  }
-
-  public int getNumberOfStorageHistoryData(String type, long interval) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "SELECT COUNT(*) FROM storage_hist WHERE type = ?";
-    return jdbcTemplate.queryForObject(sql, new Object[]{type + "-" + interval}, Integer.class);
-  }
-
-  public void deleteOldRecords(String type, long interval, long beforTimeStamp) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "DELETE FROM storage_hist WHERE type = ? AND time_stamp <= ?";
-    jdbcTemplate.update(sql, type  + "-" + interval, beforTimeStamp);
-  }
-
-  class StorageHistoryRowMapper implements RowMapper<StorageCapacity> {
-    @Override
-    public StorageCapacity mapRow(ResultSet resultSet, int i) throws SQLException {
-      return new StorageCapacity(resultSet.getString("type"),
-          resultSet.getLong("time_stamp"),
-          resultSet.getLong("capacity"), resultSet.getLong("free"));
-    }
-  }
+  void deleteOldRecords(String type, long interval, long beforTimeStamp);
 }

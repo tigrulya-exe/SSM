@@ -53,7 +53,7 @@ public class TestErasureCodingPolicyDao extends TestDaoUtil {
   @Before
   public void initErasureCodingPolicyDao() throws Exception {
     initDao();
-    ecPolicyDao = new ErasureCodingPolicyDao(druidPool.getDataSource());
+    ecPolicyDao = daoProvider.ecDao();
   }
 
   @Test
