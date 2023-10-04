@@ -17,17 +17,16 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.CompressionFileState;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestCompressionFileDao extends TestDaoUtil {
+public class TestCompressionFileDao extends TestDaoBase {
 
   private CompressionFileDao compressionFileDao;
   private String compressionImpl = "Zlib";
@@ -35,19 +34,12 @@ public class TestCompressionFileDao extends TestDaoUtil {
   private List<Long> compressedPos = new ArrayList<>();
 
   @Before
-  public void initCompressionFileDao() throws Exception {
-    initDao();
+  public void initCompressionFileDao() {
     compressionFileDao = daoProvider.compressionFileDao();
     originalPos.add(9000L);
     originalPos.add(8000L);
     compressedPos.add(3000L);
     compressedPos.add(2000L);
-  }
-
-  @After
-  public void closeCompressionFileDao() throws Exception {
-    closeDao();
-    compressionFileDao = null;
   }
 
   @Test

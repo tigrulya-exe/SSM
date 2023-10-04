@@ -36,7 +36,7 @@ import org.smartdata.SmartConstants;
 import org.smartdata.hdfs.CompatibilityHelperLoader;
 import org.smartdata.hdfs.MiniClusterFactory;
 import org.smartdata.metastore.MetaStore;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.SqliteTestDaoBase;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
-public abstract class TestInotifyFetcher extends TestDaoUtil {
+public abstract class TestInotifyFetcher extends SqliteTestDaoBase {
   private static final int BLOCK_SIZE = 1024;
 
   private static class EventApplierForTest extends InotifyEventApplier {
@@ -69,7 +69,6 @@ public abstract class TestInotifyFetcher extends TestDaoUtil {
 
   @Test(timeout = 60000)
   public void testFetcher() throws Exception {
-    initDao();
     Configuration conf = new HdfsConfiguration();
     conf.setLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, BLOCK_SIZE);
     conf.setBoolean(DFSConfigKeys.DFS_NAMENODE_ACLS_ENABLED_KEY, true);
@@ -82,7 +81,6 @@ public abstract class TestInotifyFetcher extends TestDaoUtil {
       DFSClient client = new DFSClient(cluster.getNameNode(0)
           .getNameNodeAddress(), conf);
 
-      MetaStore metaStore = createMetastore();
       EventApplierForTest applierForTest = new EventApplierForTest(metaStore, client);
       final InotifyEventFetcher fetcher = new InotifyEventFetcher(client, metaStore,
           Executors.newScheduledThreadPool(2), applierForTest, new Callable() {
@@ -199,7 +197,6 @@ public abstract class TestInotifyFetcher extends TestDaoUtil {
                       .getValue())));
     } finally {
       cluster.shutdown();
-      closeDao();
     }
   }
 

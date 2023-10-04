@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Tests for table 'rules'.
  */
-public class TestRulesTable extends TestDaoUtil {
+public class TestRulesTable extends SqliteTestDaoBase {
 
   /**
    * Insert rules into table and retrieve them back.
@@ -35,8 +35,7 @@ public class TestRulesTable extends TestDaoUtil {
    */
   @Test
   public void testRuleInsert() throws Exception {
-    initDao();
-    MetaStore adapter = createMetastore();
+    MetaStore adapter = metaStore;
     String rule = "file : accessCount(10m) > 20 \n\n"
         + "and length() > 3 | cache";
     long submitTime = System.currentTimeMillis();
@@ -55,6 +54,5 @@ public class TestRulesTable extends TestDaoUtil {
 
     List<RuleInfo> infos = adapter.getRuleInfo();
     assert (infos.size() == 2);
-    closeDao();
   }
 }

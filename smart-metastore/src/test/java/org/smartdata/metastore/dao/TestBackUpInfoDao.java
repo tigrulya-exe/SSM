@@ -18,29 +18,21 @@
 
 package org.smartdata.metastore.dao;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.BackUpInfo;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
 
-public class TestBackUpInfoDao extends TestDaoUtil {
+public class TestBackUpInfoDao extends TestDaoBase {
   private BackUpInfoDao backUpInfoDao;
 
   @Before
-  public void initBackUpInfoDao() throws Exception {
-    initDao();
+  public void initBackUpInfoDao() {
     backUpInfoDao = daoProvider.backUpInfoDao();
-  }
-
-  @After
-  public void closeBackUpInfoDao() throws Exception {
-    closeDao();
-    backUpInfoDao = null;
   }
 
   @Test

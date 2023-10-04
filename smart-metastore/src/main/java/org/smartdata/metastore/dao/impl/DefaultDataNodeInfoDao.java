@@ -81,7 +81,7 @@ public class DefaultDataNodeInfoDao extends AbstractDao implements DataNodeInfoD
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("uuid", dataNodeInfo.getUuid());
     parameters.put("hostname", dataNodeInfo.getHostname());
-    parameters.put("rpcAddress", dataNodeInfo.getRpcAddress());
+    parameters.put("rpc_address", dataNodeInfo.getRpcAddress());
     parameters.put("cache_capacity", dataNodeInfo.getCacheCapacity());
     parameters.put("cache_used", dataNodeInfo.getCacheUsed());
     parameters.put("location", dataNodeInfo.getLocation());
@@ -95,7 +95,7 @@ public class DefaultDataNodeInfoDao extends AbstractDao implements DataNodeInfoD
       return DataNodeInfo.newBuilder()
           .setUuid(resultSet.getString("uuid"))
           .setHostName(resultSet.getString("hostname"))
-          .setRpcAddress(resultSet.getString("rpcAddress"))
+          .setRpcAddress(resultSet.getString("rpc_address"))
           .setCacheCapacity(resultSet.getLong("cache_capacity"))
           .setCacheUsed(resultSet.getLong("cache_used"))
           .setLocation(resultSet.getString("location"))

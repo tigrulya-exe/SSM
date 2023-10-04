@@ -17,11 +17,10 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.FileDiff;
 import org.smartdata.model.FileDiffState;
 import org.smartdata.model.FileDiffType;
@@ -31,19 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class TestFileDiffDao extends TestDaoUtil {
+public class TestFileDiffDao extends TestDaoBase {
   private FileDiffDao fileDiffDao;
 
   @Before
-  public void initFileDiffDAO() throws Exception {
-    initDao();
+  public void initFileDiffDAO() {
     fileDiffDao = daoProvider.fileDiffDao();
-  }
-
-  @After
-  public void closeFileDiffDAO() throws Exception {
-    closeDao();
-    fileDiffDao = null;
   }
 
   @Test

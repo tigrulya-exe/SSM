@@ -41,7 +41,7 @@ public class DefaultSmallFileDao extends AbstractDao implements SmallFileDao {
 
   @Override
   public void insertUpdate(CompactFileState compactFileState) {
-    String sql = "REPLACE INTO small_file (path, container_file_path, offset, length)"
+    String sql = "REPLACE INTO small_file (path, container_file_path, file_offset, length)"
         + " VALUES (?,?,?,?)";
     jdbcTemplate.update(sql, compactFileState.getPath(),
         compactFileState.getFileContainerInfo().getContainerFilePath(),
@@ -51,7 +51,7 @@ public class DefaultSmallFileDao extends AbstractDao implements SmallFileDao {
 
   @Override
   public int[] batchInsertUpdate(final CompactFileState[] fileStates) {
-    String sql = "REPLACE INTO small_file (path, container_file_path, offset, length)"
+    String sql = "REPLACE INTO small_file (path, container_file_path, file_offset, length)"
         + " VALUES (?,?,?,?)";
     return jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
       @Override
@@ -97,6 +97,13 @@ public class DefaultSmallFileDao extends AbstractDao implements SmallFileDao {
   }
 
   @Override
+  public void deleteAll() {
+    final String sql = "DELETE FROM " + TABLE_NAME;
+    jdbcTemplate.execute(sql);
+  }
+
+
+  @Override
   public FileState getFileStateByPath(String path) {
     return jdbcTemplate.queryForObject("SELECT * FROM small_file WHERE path = ?",
         new Object[]{path}, new FileStateRowMapper());
@@ -114,6 +121,20 @@ public class DefaultSmallFileDao extends AbstractDao implements SmallFileDao {
     return jdbcTemplate.queryForList(sql, String.class);
   }
 
+  @Override
+  public void renameFile(String oldPath, String newPath, boolean recursive) {
+    String sql = "UPDATE small_file SET path = ? WHERE path = ?";
+    jdbcTemplate.update(sql, newPath, oldPath);
+    if (recursive) {
+      renameDirectoryFiles(oldPath, newPath);
+    }
+  }
+
+  protected void renameDirectoryFiles(String oldPath, String newPath) {
+    String sql = "UPDATE small_file SET path = CONCAT(?, SUBSTR(path, ?)) WHERE path LIKE ?";
+    jdbcTemplate.update(sql, newPath, oldPath.length() + 1, oldPath + "/%");
+  }
+
   private static class FileStateRowMapper implements RowMapper<FileState> {
     @Override
     public FileState mapRow(ResultSet resultSet, int i)
@@ -121,7 +142,7 @@ public class DefaultSmallFileDao extends AbstractDao implements SmallFileDao {
       return new CompactFileState(resultSet.getString("path"),
           new FileContainerInfo(
               resultSet.getString("container_file_path"),
-              resultSet.getLong("offset"),
+              resultSet.getLong("file_offset"),
               resultSet.getLong("length"))
       );
     }

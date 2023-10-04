@@ -17,11 +17,10 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.CmdletState;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -29,20 +28,13 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestCmdletDao extends TestDaoUtil {
+public class TestCmdletDao extends TestDaoBase {
 
   private CmdletDao cmdletDao;
 
   @Before
-  public void initCmdletDao() throws Exception {
-    initDao();
+  public void initCmdletDao() {
     cmdletDao = daoProvider.cmdletDao();
-  }
-
-  @After
-  public void closeCmdletDao() throws Exception {
-    closeDao();
-    cmdletDao = null;
   }
 
   @Test

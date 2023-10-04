@@ -49,7 +49,7 @@ public class DefaultStorageHistoryDao extends AbstractDao implements StorageHist
         new BatchPreparedStatementSetter() {
           public void setValues(PreparedStatement ps,
                                 int i) throws SQLException {
-            ps.setString(1, storages[i].getType() + "-" + interval);
+            ps.setString(1, createFullTypeValue(storages[i].getType(), interval));
             if (storages[i].getTimeStamp() == null) {
               ps.setLong(2, curr);
             } else {
@@ -71,7 +71,7 @@ public class DefaultStorageHistoryDao extends AbstractDao implements StorageHist
     String sql = "SELECT * FROM storage_hist WHERE type = ? AND "
         + "time_stamp BETWEEN ? AND ?";
     List<StorageCapacity> data = jdbcTemplate.query(sql,
-        new Object[]{type + "-" + interval, startTime, endTime},
+        new Object[]{createFullTypeValue(type, interval), startTime, endTime},
         new StorageHistoryRowMapper());
     for (StorageCapacity sc : data) {
       sc.setType(type);
@@ -82,13 +82,14 @@ public class DefaultStorageHistoryDao extends AbstractDao implements StorageHist
   @Override
   public int getNumberOfStorageHistoryData(String type, long interval) {
     String sql = "SELECT COUNT(*) FROM storage_hist WHERE type = ?";
-    return jdbcTemplate.queryForObject(sql, new Object[]{type + "-" + interval}, Integer.class);
+    return jdbcTemplate.queryForObject(sql, new Object[]{createFullTypeValue(type, interval)},
+        Integer.class);
   }
 
   @Override
   public void deleteOldRecords(String type, long interval, long beforTimeStamp) {
     String sql = "DELETE FROM storage_hist WHERE type = ? AND time_stamp <= ?";
-    jdbcTemplate.update(sql, type + "-" + interval, beforTimeStamp);
+    jdbcTemplate.update(sql, createFullTypeValue(type, interval), beforTimeStamp);
   }
 
   private static class StorageHistoryRowMapper implements RowMapper<StorageCapacity> {
@@ -98,5 +99,9 @@ public class DefaultStorageHistoryDao extends AbstractDao implements StorageHist
           resultSet.getLong("time_stamp"),
           resultSet.getLong("capacity"), resultSet.getLong("free"));
     }
+  }
+
+  private String createFullTypeValue(String type, long interval) {
+    return type.toUpperCase() + "-" + interval;
   }
 }

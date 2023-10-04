@@ -17,55 +17,42 @@
  */
 package org.smartdata.metastore.utils;
 
-import com.mysql.jdbc.NonRegisteringDriver;
-import org.apache.commons.lang.StringUtils;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
+import org.smartdata.metastore.DBPool;
+import org.smartdata.metastore.DBType;
 import org.smartdata.metastore.DruidPool;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
 import org.smartdata.metastore.dao.DaoProvider;
-import org.smartdata.metastore.dao.impl.DefaultDaoProvider;
-import org.smartdata.metastore.db.DBManager;
-import org.smartdata.metastore.db.DBManagerFactory;
+import org.smartdata.metastore.dao.DaoProviderFactory;
+import org.smartdata.metastore.db.DBHandlersFactory;
+import org.smartdata.metastore.db.DbSchemaManager;
+import org.smartdata.metastore.db.metadata.DbMetadataProvider;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-
-import static org.springframework.jdbc.support.JdbcUtils.closeConnection;
 
 /**
  * Utilities for table operations.
  */
 public class MetaStoreUtils {
   public static final String SQLITE_URL_PREFIX = "jdbc:sqlite:";
-  public static final String MYSQL_URL_PREFIX = "jdbc:mysql:";
-  public static final String[] DB_NAME_NOT_ALLOWED =
-      new String[]{
-          "mysql",
-          "sys",
-          "information_schema",
-          "INFORMATION_SCHEMA",
-          "performance_schema",
-          "PERFORMANCE_SCHEMA"
-      };
   static final Logger LOG = LoggerFactory.getLogger(MetaStoreUtils.class);
 
-  public static final String[] TABLESET = new String[]{
+  public static final List<String> SSM_TABLES = Lists.newArrayList(
       "access_count_table",
       "blank_access_count_info",
       "cached_file",
@@ -91,55 +78,7 @@ public class MetaStoreUtils {
       "small_file",
       "user_info",
       "whitelist"
-  };
-
-  public static Connection createConnection(String driver, String url,
-                                            String userName,
-                                            String password)
-      throws ClassNotFoundException, SQLException {
-    Class.forName(driver);
-    return DriverManager.getConnection(url, userName, password);
-  }
-
-  public static Connection createSqliteConnection(String dbFilePath)
-      throws MetaStoreException {
-    try {
-      return createConnection("org.sqlite.JDBC", SQLITE_URL_PREFIX + dbFilePath,
-          null, null);
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
-  public static int getTableSetNum(Connection conn, String[] tableSet) throws MetaStoreException {
-    String tables = "('" + StringUtils.join(tableSet, "','") + "')";
-    try {
-      String url = conn.getMetaData().getURL();
-      String query;
-      if (url.startsWith(MetaStoreUtils.MYSQL_URL_PREFIX)) {
-        String dbName = getMysqlDBName(url);
-        query = String.format("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
-            + "WHERE TABLE_SCHEMA='%s' AND TABLE_NAME IN %s", dbName, tables);
-      } else if (url.startsWith(MetaStoreUtils.SQLITE_URL_PREFIX)) {
-        query = String.format("SELECT COUNT(*) FROM sqlite_master "
-            + "WHERE TYPE='table' AND NAME IN %s", tables);
-      } else {
-        throw new MetaStoreException("The jdbc url is not valid for SSM use.");
-      }
-
-      int num = 0;
-      Statement s = conn.createStatement();
-      ResultSet rs = s.executeQuery(query);
-      if (rs.next()) {
-        num = rs.getInt(1);
-      }
-      return num;
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    } finally {
-      closeConnection(conn);
-    }
-  }
+  );
 
   public static void formatDatabase(SmartConf conf) throws MetaStoreException {
     getDBAdapter(conf).formatDataBase();
@@ -149,120 +88,41 @@ public class MetaStoreUtils {
     getDBAdapter(conf).checkTables();
   }
 
-  public static String getMysqlDBName(String url) throws SQLException {
-    NonRegisteringDriver nonRegisteringDriver = new NonRegisteringDriver();
-    Properties properties = nonRegisteringDriver.parseURL(url, null);
-    return properties.getProperty(NonRegisteringDriver.DBNAME_PROPERTY_KEY);
-  }
-
   public static MetaStore getDBAdapter(
       SmartConf conf) throws MetaStoreException {
+    DaoProviderFactory daoProviderFactory = new DaoProviderFactory();
+    DBHandlersFactory dbHandlersFactory = new DBHandlersFactory();
+    Properties properties;
+
     URL pathUrl = ClassLoader.getSystemResource("");
     String path = pathUrl.getPath();
-
     String fileName = "druid.xml";
     String expectedCpPath = path + fileName;
-    LOG.info("Expected DB connection pool configuration path = "
-        + expectedCpPath);
+
+    LOG.info("Expected DB connection pool configuration path = {}", expectedCpPath);
     File cpConfigFile = new File(expectedCpPath);
     if (cpConfigFile.exists()) {
-      LOG.info("Using pool configure file: " + expectedCpPath);
-      Properties p = new Properties();
-      try {
-        p.loadFromXML(new FileInputStream(cpConfigFile));
-
-        String url = conf.get(SmartConfKeys.SMART_METASTORE_DB_URL_KEY);
-        if (url != null) {
-          p.setProperty("url", url);
-        }
-
-        String purl = p.getProperty("url");
-        if (purl == null || purl.isEmpty()) {
-          purl = getDefaultSqliteDB(); // For testing
-          p.setProperty("url", purl);
-          LOG.warn("Database URL not specified, using " + purl);
-        }
-
-        if (purl.startsWith(MetaStoreUtils.MYSQL_URL_PREFIX)) {
-          String dbName = getMysqlDBName(purl);
-          for (String name : DB_NAME_NOT_ALLOWED) {
-            if (dbName.equals(name)) {
-              throw new MetaStoreException(
-                  String.format(
-                      "The database %s in mysql is for DB system use, "
-                          + "please appoint other database in druid.xml.",
-                      name));
-            }
-          }
-        }
-
-        try {
-          String pw = conf
-              .getPasswordFromHadoop(SmartConfKeys.SMART_METASTORE_PASSWORD);
-          if (pw != null && pw != "") {
-            p.setProperty("password", pw);
-          }
-        } catch (IOException e) {
-          LOG.info("Can not get metastore password from hadoop provision credentials,"
-              + " use the one configured in druid.xml .");
-        }
-
-        for (String key : p.stringPropertyNames()) {
-          if (key.equals("password")) {
-            LOG.info("\t" + key + " = **********");
-          } else {
-            LOG.info("\t" + key + " = " + p.getProperty(key));
-          }
-        }
-        DruidPool druidPool = new DruidPool(p);
-        DBManager dbManager = new DBManagerFactory().createDbManager(druidPool, conf);
-        DaoProvider daoProvider = new DefaultDaoProvider(druidPool);
-        return new MetaStore(druidPool, dbManager, daoProvider);
-      } catch (Exception e) {
-        if (e instanceof InvalidPropertiesFormatException) {
-          throw new MetaStoreException(
-              "Malformat druid.xml, please check the file.", e);
-        } else {
-          throw new MetaStoreException(e);
-        }
-      }
+      LOG.info("Using pool configure file: {}", expectedCpPath);
+      properties = loadDruidConfig(conf, cpConfigFile);
     } else {
-      LOG.info("DB connection pool config file " + expectedCpPath
-          + " NOT found.");
-    }
-    // Get Default configure from druid-template.xml
-    fileName = "druid-template.xml";
-    expectedCpPath = path + fileName;
-    LOG.info("Expected DB connection pool configuration path = "
-        + expectedCpPath);
-    cpConfigFile = new File(expectedCpPath);
-    LOG.info("Using pool configure file: " + expectedCpPath);
-    Properties p = new Properties();
-    try {
-      p.loadFromXML(new FileInputStream(cpConfigFile));
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-    String url = conf.get(SmartConfKeys.SMART_METASTORE_DB_URL_KEY);
-    if (url != null) {
-      p.setProperty("url", url);
-    }
-    for (String key : p.stringPropertyNames()) {
-      LOG.info("\t" + key + " = " + p.getProperty(key));
-    }
-    DruidPool druidPool = new DruidPool(p);
-    DBManager dbManager = new DBManagerFactory().createDbManager(druidPool, conf);
-    DaoProvider daoProvider = new DefaultDaoProvider(druidPool);
-    return new MetaStore(druidPool, dbManager, daoProvider);
-  }
+      LOG.info("DB connection pool config file {} NOT found.", expectedCpPath);
+      fileName = "druid-template.xml";
+      expectedCpPath = path + fileName;
+      cpConfigFile = new File(expectedCpPath);
 
-  public static Integer getKey(Map<Integer, String> map, String value) {
-    for (Integer key : map.keySet()) {
-      if (map.get(key).equals(value)) {
-        return key;
-      }
+      LOG.info("Using pool configure file: {}", expectedCpPath);
+      properties = loadDefaultDruidConfig(conf, cpConfigFile);
     }
-    return null;
+
+    DruidPool druidPool = new DruidPool(properties);
+    DBType dbType = getDbType(druidPool);
+
+    DaoProvider daoProvider = daoProviderFactory.createDaoProvider(druidPool, dbType);
+    DbSchemaManager dbSchemaManager = dbHandlersFactory.createDbManager(druidPool, conf);
+    DbMetadataProvider dbMetadataProvider = dbHandlersFactory
+        .createDbMetadataProvider(druidPool, dbType);
+
+    return new MetaStore(druidPool, dbSchemaManager, daoProvider, dbMetadataProvider);
   }
 
   /**
@@ -287,6 +147,70 @@ public class MetaStoreUtils {
     }
   }
 
+  private static Properties loadDruidConfig(SmartConf conf, File cpConfigFile)
+      throws MetaStoreException {
+    Properties p = new Properties();
+    try {
+      p.loadFromXML(Files.newInputStream(cpConfigFile.toPath()));
+
+      String url = conf.get(SmartConfKeys.SMART_METASTORE_DB_URL_KEY);
+      if (url != null) {
+        p.setProperty("url", url);
+      }
+
+      String purl = p.getProperty("url");
+      if (purl == null || purl.isEmpty()) {
+        purl = getDefaultSqliteDB(); // For testing
+        p.setProperty("url", purl);
+        LOG.warn("Database URL not specified, using " + purl);
+      }
+
+      try {
+        String pw = conf
+            .getPasswordFromHadoop(SmartConfKeys.SMART_METASTORE_PASSWORD);
+        if (pw != null && !pw.isEmpty()) {
+          p.setProperty("password", pw);
+        }
+      } catch (IOException e) {
+        LOG.info("Can not get metastore password from hadoop provision credentials,"
+            + " use the one configured in druid.xml .");
+      }
+
+      for (String key : p.stringPropertyNames()) {
+        if (key.equals("password")) {
+          LOG.info("\t" + key + " = **********");
+        } else {
+          LOG.info("\t" + key + " = " + p.getProperty(key));
+        }
+      }
+      return p;
+    } catch (InvalidPropertiesFormatException e) {
+      throw new MetaStoreException(
+          "Malformed druid.xml, please check the file.", e);
+    } catch (Exception e) {
+      throw new MetaStoreException(e);
+    }
+  }
+
+  private static Properties loadDefaultDruidConfig(SmartConf conf, File cpConfigFile)
+      throws MetaStoreException {
+    Properties properties = new Properties();
+    try {
+      properties.loadFromXML(Files.newInputStream(cpConfigFile.toPath()));
+    } catch (Exception e) {
+      throw new MetaStoreException(e);
+    }
+    String url = conf.get(SmartConfKeys.SMART_METASTORE_DB_URL_KEY);
+    if (url != null) {
+      properties.setProperty("url", url);
+    }
+    for (String key : properties.stringPropertyNames()) {
+      LOG.info("\t" + key + " = " + properties.getProperty(key));
+    }
+
+    return properties;
+  }
+
   /**
    * This default behavior provided here is mainly for convenience.
    */
@@ -294,6 +218,24 @@ public class MetaStoreUtils {
     String absFilePath = System.getProperty("user.home")
         + "/smart-test-default.db";
     return MetaStoreUtils.SQLITE_URL_PREFIX + absFilePath;
+  }
+
+  private static DBType getDbType(DBPool dbPool) throws MetaStoreException {
+    try (Connection connection = dbPool.getConnection()) {
+      String driver = connection.getMetaData().getDriverName();
+      driver = driver.toLowerCase();
+      if (driver.contains("sqlite")) {
+        return DBType.SQLITE;
+      } else if (driver.contains("mysql")) {
+        return DBType.MYSQL;
+      } else if (driver.contains("postgres")) {
+        return DBType.POSTGRES;
+      } else {
+        throw new MetaStoreException("Unknown database: " + driver);
+      }
+    } catch (SQLException e) {
+      throw new MetaStoreException("Error during db type determination", e);
+    }
   }
 }
 

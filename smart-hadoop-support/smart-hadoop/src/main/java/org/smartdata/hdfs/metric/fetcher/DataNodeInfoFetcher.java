@@ -128,10 +128,7 @@ public class DataNodeInfoFetcher {
             String uuid = r.getDatanodeInfo().getDatanodeUuid();
             long state = storageReport.getStorage().getState().ordinal();
             String storageId = storageReport.getStorage().getStorageID();
-            long fail = 1;
-            if (!storageReport.isFailed()) {
-              fail = 0;
-            }
+            boolean fail = storageReport.isFailed();
             long capacity = storageReport.getCapacity();
             long dfsUsed = storageReport.getDfsUsed();
             long remaining = storageReport.getRemaining();

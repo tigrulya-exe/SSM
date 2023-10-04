@@ -38,14 +38,13 @@ public class DefaultXattrDao extends AbstractDao implements XattrDao {
   }
 
   @Override
-  public List<XAttribute> getXattrList(Long fid) throws SQLException {
+  public List<XAttribute> getXattrList(Long fid) {
     String sql =
         String.format("SELECT * FROM xattr WHERE fid = %s;", fid);
     return getXattrList(sql);
   }
 
-  @Override
-  public List<XAttribute> getXattrList(String sql) throws SQLException {
+  private List<XAttribute> getXattrList(String sql) {
     List<XAttribute> list = new LinkedList<>();
     List<Map<String, Object>> maplist = jdbcTemplate.queryForList(sql);
     for (Map<String, Object> map : maplist) {

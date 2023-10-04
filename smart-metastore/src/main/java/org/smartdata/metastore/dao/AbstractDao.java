@@ -17,13 +17,16 @@
  */
 package org.smartdata.metastore.dao;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
 import javax.sql.DataSource;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 /** Contains common methods for DAOs. */
 public class AbstractDao {
@@ -61,6 +64,36 @@ public class AbstractDao {
       maps[i] = converter.toMap(entities[i]);
     }
     simpleJdbcInsert.executeBatch(maps);
+  }
+
+  protected int update(Map<String, Object> entityProperties,
+                       String filter, Object... filterArguments) {
+    return updateInternal(entityProperties, " WHERE " + filter, filterArguments);
+  }
+
+  protected int update(Map<String, Object> entityProperties) {
+    return updateInternal(entityProperties, " ");
+  }
+
+  protected int updateInternal(Map<String, Object> entityProperties,
+                               String filter, Object... filterArguments) {
+    StringJoiner updateSql = new StringJoiner(", ", "UPDATE " + tableName + " SET ", filter);
+    List<Object> setArguments = new ArrayList<>();
+
+    for (Map.Entry<String, Object> property: entityProperties.entrySet()) {
+      if (property.getValue() == null) {
+        continue;
+      }
+      setArguments.add(property.getValue());
+      updateSql.add(property.getKey() + " = ?");
+    }
+
+    if (setArguments.isEmpty()) {
+      return 0;
+    }
+
+    Object[] argumentsArray = ArrayUtils.addAll(setArguments.toArray(), filterArguments);
+    return jdbcTemplate.update(updateSql.toString(), argumentsArray);
   }
 
   protected interface EntityToMapConverter<T> {

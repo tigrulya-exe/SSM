@@ -32,9 +32,13 @@ public interface SmallFileDao {
 
   int[] batchDelete(List<String> paths);
 
+  void deleteAll();
+
   FileState getFileStateByPath(String path);
 
   List<String> getSmallFilesByContainerFile(String containerFilePath);
 
   List<String> getAllContainerFiles();
+
+  void renameFile(String oldPath, String newPath, boolean recursive);
 }

@@ -17,29 +17,38 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.junit.After;
+import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
+import org.smartdata.model.XAttribute;
 
-public class TestXattrDao extends TestDaoUtil {
+import java.sql.SQLException;
+import java.util.List;
+
+import static org.junit.Assert.assertTrue;
+
+public class TestXattrDao extends TestDaoBase {
   private XattrDao xattrDao;
 
   @Before
-  public void initOtherDao() throws Exception {
-    initDao();
+  public void initOtherDao() {
     xattrDao = daoProvider.xattrDao();
   }
 
-  @After
-  public void closeOtherDao() throws Exception {
-    closeDao();
-    xattrDao = null;
-  }
-
   @Test
-  public void testgetXattrList() {
+  public void testInsertGetXattrList() throws SQLException {
+    List<XAttribute> attributes = Lists.newArrayList(
+        new XAttribute("namespace1", "name1", new byte[]{1, 2, 3}),
+        new XAttribute("namespace2", "name2", new byte[]{4, 5, 6})
+    );
 
+    boolean inserted = xattrDao.insertXattrList(777L, attributes);
+    assertTrue(inserted);
+
+    List<XAttribute> xattrList = xattrDao.getXattrList(777L);
+    assertTrue(CollectionUtils.isEqualCollection(attributes, xattrList));
   }
 
 }

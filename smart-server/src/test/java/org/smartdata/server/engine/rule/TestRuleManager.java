@@ -22,8 +22,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartdata.conf.SmartConf;
-import org.smartdata.metastore.MetaStore;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.FileInfo;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
@@ -38,16 +37,13 @@ import java.util.Random;
 /**
  * Testing RuleManager service.
  */
-public class TestRuleManager extends TestDaoUtil {
+public class TestRuleManager extends TestDaoBase {
   private RuleManager ruleManager;
-  private MetaStore metaStore;
   private SmartConf smartConf;
 
   @Before
   public void init() throws Exception {
-    initDao();
     smartConf = new SmartConf();
-    metaStore = createMetastore();
     ServerContext serverContext = new ServerContext(smartConf, metaStore);
     serverContext.setServiceMode(ServiceMode.HDFS);
     ruleManager = new RuleManager(serverContext, null, null);
@@ -59,8 +55,6 @@ public class TestRuleManager extends TestDaoUtil {
   public void close() throws Exception {
     ruleManager.stop();
     ruleManager = null;
-    metaStore = null;
-    closeDao();
   }
 
   @Test

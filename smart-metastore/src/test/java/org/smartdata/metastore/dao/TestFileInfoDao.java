@@ -17,30 +17,22 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.FileInfo;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TestFileInfoDao extends TestDaoUtil {
+public class TestFileInfoDao extends TestDaoBase {
   private FileInfoDao fileInfoDao;
 
   @Before
-  public void initFileDao() throws Exception {
-    initDao();
+  public void initFileDao() {
     fileInfoDao = daoProvider.fileInfoDao();
-  }
-
-  @After
-  public void closeFileDao() throws Exception {
-    closeDao();
-    fileInfoDao = null;
   }
 
   @Test

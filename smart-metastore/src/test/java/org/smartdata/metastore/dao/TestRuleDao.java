@@ -17,30 +17,22 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
 
 import java.util.List;
 
-public class TestRuleDao extends TestDaoUtil {
+public class TestRuleDao extends TestDaoBase {
 
   private RuleDao ruleDao;
 
   @Before
-  public void initRuleDao() throws Exception {
-    initDao();
+  public void initRuleDao() {
     ruleDao = daoProvider.ruleDao();
-  }
-
-  @After
-  public void closeRuleDao() throws Exception {
-    closeDao();
-    ruleDao = null;
   }
 
   @Test
