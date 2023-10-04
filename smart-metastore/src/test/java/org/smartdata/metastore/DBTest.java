@@ -19,23 +19,21 @@ package org.smartdata.metastore;
 
 import org.dbunit.IDatabaseTester;
 import org.dbunit.JdbcDatabaseTester;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.runners.Parameterized.AfterParam;
+import org.junit.runners.Parameterized.BeforeParam;
 
-public abstract class DBTest extends TestDaoUtil {
-  protected IDatabaseTester databaseTester;
+public abstract class DBTest extends TestDaoBase {
+  protected static IDatabaseTester databaseTester;
 
-  @Before
-  public void setUp() throws Exception {
-    initDao();
-    databaseTester = new JdbcDatabaseTester("org.sqlite.JDBC", url);
+  @BeforeParam
+  public static void setUp(DBType dbType, String driverClassName, String dbUrl) throws Exception {
+    databaseTester = new JdbcDatabaseTester(driverClassName, dbUrl);
     databaseTester.getConnection().getConfig().setProperty(
-      "http://www.dbunit.org/properties/tableType", new String[]{"TABLE", "VIEW"});
+        "http://www.dbunit.org/properties/tableType", new String[]{"TABLE", "VIEW"});
   }
 
-  @After
-  public void close() throws Exception {
+  @AfterParam
+  public static void close() throws Exception {
     databaseTester.onTearDown();
-    closeDao();
   }
 }

@@ -106,7 +106,7 @@ public class DefaultDataNodeStorageInfoDao extends AbstractDao implements DataNo
           .setSid(resultSet.getLong("sid"))
           .setState(resultSet.getLong("state"))
           .setStorageId(resultSet.getString("storage_id"))
-          .setFailed(resultSet.getLong("failed"))
+          .setFailed(resultSet.getBoolean("failed"))
           .setCapacity(resultSet.getLong("capacity"))
           .setDfsUsed(resultSet.getLong("dfs_used"))
           .setRemaining(resultSet.getLong("remaining"))

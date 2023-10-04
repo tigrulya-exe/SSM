@@ -77,7 +77,7 @@ public class AccessEventAggregator {
     AccessCountTable table = new AccessCountTable(currentWindow.start, currentWindow.end);
     String createTable = AccessCountDao.createAccessCountTableSQL(table.getTableName());
     try {
-      if (adapter.getTablesNum(new String[]{table.getTableName()}) != 0) {
+      if (adapter.tableExists(table.getTableName())) {
         adapter.dropTable(table.getTableName());
       }
       adapter.execute(createTable);

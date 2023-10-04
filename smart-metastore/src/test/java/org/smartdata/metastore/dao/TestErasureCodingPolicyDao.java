@@ -36,23 +36,21 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.ErasureCodingPolicyInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestErasureCodingPolicyDao extends TestDaoUtil {
+public class TestErasureCodingPolicyDao extends TestDaoBase {
 
   private ErasureCodingPolicyDao ecPolicyDao;
 
   @Before
-  public void initErasureCodingPolicyDao() throws Exception {
-    initDao();
+  public void initErasureCodingPolicyDao() {
     ecPolicyDao = daoProvider.ecDao();
   }
 
@@ -73,11 +71,5 @@ public class TestErasureCodingPolicyDao extends TestDaoUtil {
     ecPolicyDao.insert(list);
     List<ErasureCodingPolicyInfo> getList = ecPolicyDao.getAllEcPolicies();
     Assert.assertTrue(getList.get(0).equals(list.get(0)) && getList.get(1).equals(list.get(1)));
-  }
-
-  @After
-  public void closeErasureCodingPolicyDao() throws Exception {
-    closeDao();
-    ecPolicyDao = null;
   }
 }

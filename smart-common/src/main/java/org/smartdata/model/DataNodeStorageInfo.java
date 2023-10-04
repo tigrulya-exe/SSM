@@ -26,14 +26,14 @@ public class DataNodeStorageInfo {
   private long sid;
   private long state;
   private String storageId;
-  private long failed;
+  private boolean failed;
   private long capacity;
   private long dfsUsed;
   private long remaining;
   private long blockPoolUsed;
 
   public DataNodeStorageInfo(String uuid, long sid, long state,
-      String storageId, long failed, long capacity,
+      String storageId, boolean failed, long capacity,
       long dfsUsed, long remaining, long blockPoolUsed) {
     this.uuid = uuid;
     this.sid = sid;
@@ -47,7 +47,7 @@ public class DataNodeStorageInfo {
   }
 
   public DataNodeStorageInfo(String uuid, String storageType, long state,
-      String storageId, long failed, long capacity,
+      String storageId, boolean failed, long capacity,
       long dfsUsed, long remaining, long blockPoolUsed) {
     this.uuid = uuid;
 
@@ -152,11 +152,11 @@ public class DataNodeStorageInfo {
     this.storageId = storageId;
   }
 
-  public long getFailed() {
+  public boolean getFailed() {
     return failed;
   }
 
-  public void setFailed(long failed) {
+  public void setFailed(boolean failed) {
     this.failed = failed;
   }
 
@@ -210,7 +210,7 @@ public class DataNodeStorageInfo {
     private long sid;
     private long state;
     private String storageId;
-    private long failed;
+    private boolean failed;
     private long capacity;
     private long dfsUsed;
     private long remaining;
@@ -232,7 +232,7 @@ public class DataNodeStorageInfo {
       this.storageId = storageId;
       return this;
     }
-    public Builder setFailed(long failed) {
+    public Builder setFailed(boolean failed) {
       this.failed = failed;
       return this;
     }

@@ -111,7 +111,7 @@ public class DataNodeInfo {
   public String toString() {
     return String.format(
         "DataNodeInfo{uuid=\'%s\', hostname=\'%s\', "
-            + "rpcAddress=\'%s\', cache_capacity=%d, cache_used=%d, location=\'%s\'}",
+            + "rpc_address=\'%s\', cache_capacity=%d, cache_used=%d, location=\'%s\'}",
         uuid, hostname, rpcAddress, cacheCapacity, cacheUsed, location);
   }
 

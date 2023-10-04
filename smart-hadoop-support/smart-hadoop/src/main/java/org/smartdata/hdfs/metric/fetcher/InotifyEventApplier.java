@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.hdfs.CompatibilityHelperLoader;
 import org.smartdata.hdfs.HadoopUtil;
-import org.smartdata.metastore.DBType;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
 import org.smartdata.model.BackUpInfo;
@@ -43,12 +42,15 @@ import java.util.List;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.stream.Collectors;
 
 /**
  * This is a very preliminary and buggy applier, can further enhance by referring to
  * {@link org.apache.hadoop.hdfs.server.namenode.FSEditLogLoader}
  */
 public class InotifyEventApplier {
+  private static final String ROOT_DIRECTORY = "/";
+
   private final MetaStore metaStore;
   private DFSClient client;
   private static final Logger LOG =
@@ -76,18 +78,9 @@ public class InotifyEventApplier {
 
 
   public void apply(List<Event> events) throws IOException, MetaStoreException, InterruptedException {
-    List<String> statements = new ArrayList<>();
     for (Event event : events) {
-      List<String> gen = getSqlStatement(event);
-      if (gen != null && !gen.isEmpty()) {
-        for (String s : gen) {
-          if (s != null && s.length() > 0) {
-            statements.add(s);
-          }
-        }
-      }
+      apply(event);
     }
-    this.metaStore.execute(statements);
   }
 
   //check if the dir is in ignoreList
@@ -114,74 +107,73 @@ public class InotifyEventApplier {
     return true;
   }
 
-  private List<String> getSqlStatement(Event event) throws IOException, MetaStoreException, InterruptedException {
+  private void apply(Event event) throws IOException, MetaStoreException, InterruptedException {
     String path;
     String srcPath, dstPath;
-    LOG.debug("Even Type = {}", event.getEventType().toString());
+    LOG.debug("Even Type = {}", event.getEventType());
+
     switch (event.getEventType()) {
       case CREATE:
         path = ((Event.CreateEvent) event).getPath();
         if (shouldIgnore(path)) {
-          return Arrays.asList();
+          return;
         }
-        LOG.trace("event type:" + event.getEventType().name() +
-            ", path:" + ((Event.CreateEvent) event).getPath());
-        return Arrays.asList(this.getCreateSql((Event.CreateEvent) event));
+        LOG.trace("event type: {}, path: {}", event.getEventType().name(), path);
+        applyCreate((Event.CreateEvent) event);
+        break;
       case CLOSE:
         path = ((Event.CloseEvent) event).getPath();
         if (shouldIgnore(path)) {
-          return Arrays.asList();
+          return;
         }
-        LOG.trace("event type:" + event.getEventType().name() +
-            ", path:" + ((Event.CloseEvent) event).getPath());
-        return Arrays.asList(this.getCloseSql((Event.CloseEvent) event));
+        LOG.trace("event type: {}, path: {}", event.getEventType().name(), path);
+        applyClose((Event.CloseEvent) event);
+        break;
       case RENAME:
         srcPath = ((Event.RenameEvent) event).getSrcPath();
         dstPath = ((Event.RenameEvent) event).getDstPath();
         if (shouldIgnore(srcPath) && shouldIgnore(dstPath)) {
-          return Arrays.asList();
+          return;
         }
-        LOG.trace("event type:" + event.getEventType().name() +
-            ", src path:" + ((Event.RenameEvent) event).getSrcPath() +
-            ", dest path:" + ((Event.RenameEvent) event).getDstPath());
-        return this.getRenameSql((Event.RenameEvent)event);
+        LOG.trace("event type: {}, src path: {}, dest path: {}",
+            event.getEventType().name(), srcPath, dstPath);
+        applyRename((Event.RenameEvent)event);
+        break;
       case METADATA:
         // The property dfs.namenode.accesstime.precision in HDFS's configuration controls
         // the precision of access time. Its default value is 1h. To avoid missing a
         // MetadataUpdateEvent for updating access time, a smaller value should be set.
         path = ((Event.MetadataUpdateEvent)event).getPath();
         if (shouldIgnore(path)) {
-          return Arrays.asList();
+          return;
         }
-        LOG.trace("event type:" + event.getEventType().name() +
-            ", path:" + ((Event.MetadataUpdateEvent)event).getPath());
-        return Arrays.asList(this.getMetaDataUpdateSql((Event.MetadataUpdateEvent)event));
+        LOG.trace("event type: {}, path: {}", event.getEventType().name(), path);
+        applyMetadataUpdate((Event.MetadataUpdateEvent)event);
+        break;
       case APPEND:
         path = ((Event.AppendEvent)event).getPath();
         if (shouldIgnore(path)) {
-          return Arrays.asList();
+          return;
         }
-        LOG.trace("event type:" + event.getEventType().name() +
-            ", path:" + ((Event.AppendEvent)event).getPath());
-        return this.getAppendSql((Event.AppendEvent)event);
+        LOG.trace("event type: {}, path: {}", event.getEventType().name(), path);
+        // do nothing
+        break;
       case UNLINK:
         path = ((Event.UnlinkEvent)event).getPath();
         if (shouldIgnore(path)) {
-          return Arrays.asList();
+          return;
         }
-        LOG.trace("event type:" + event.getEventType().name() +
-            ", path:" + ((Event.UnlinkEvent)event).getPath());
-        return this.getUnlinkSql((Event.UnlinkEvent)event);
+        LOG.trace("event type: {}, path: {}", event.getEventType().name(), path);
+        applyUnlink((Event.UnlinkEvent)event);
     }
-    return Arrays.asList();
   }
 
   //Todo: times and ec policy id, etc.
-  private String getCreateSql(Event.CreateEvent createEvent) throws IOException, MetaStoreException {
+  private void applyCreate(Event.CreateEvent createEvent) throws IOException, MetaStoreException {
     HdfsFileStatus fileStatus = client.getFileInfo(createEvent.getPath());
     if (fileStatus == null) {
       LOG.debug("Can not get HdfsFileStatus for file " + createEvent.getPath());
-      return "";
+      return;
     }
     FileInfo fileInfo = HadoopUtil.convertFileStatus(fileStatus, createEvent.getPath());
 
@@ -209,25 +201,21 @@ public class InotifyEventApplier {
         metaStore.insertFileDiff(fileDiff);
       }
     }
-    metaStore.deleteFileByPath(fileInfo.getPath());
+    metaStore.deleteFileByPath(fileInfo.getPath(), false);
     metaStore.deleteFileState(fileInfo.getPath());
     metaStore.insertFile(fileInfo);
-    return "";
   }
 
   private boolean inBackup(String src) throws MetaStoreException {
-    if (metaStore.srcInbackup(src)) {
-      return true;
-    }
-    return false;
+    return metaStore.srcInbackup(src);
   }
 
   //Todo: should update mtime? atime?
-  private String getCloseSql(Event.CloseEvent closeEvent) throws IOException, MetaStoreException {
+  private void applyClose(Event.CloseEvent closeEvent) throws MetaStoreException {
     FileDiff fileDiff = new FileDiff(FileDiffType.APPEND);
     fileDiff.setSrc(closeEvent.getPath());
     long newLen = closeEvent.getFileSize();
-    long currLen = 0l;
+    long currLen;
     // TODO make sure offset is correct
     if (inBackup(closeEvent.getPath())) {
       FileInfo fileInfo = metaStore.getFile(closeEvent.getPath());
@@ -244,9 +232,11 @@ public class InotifyEventApplier {
         metaStore.insertFileDiff(fileDiff);
       }
     }
-    return String.format(
-        "UPDATE file SET length = %s, modification_time = %s WHERE path = '%s';",
-        closeEvent.getFileSize(), closeEvent.getTimestamp(), closeEvent.getPath());
+    FileInfo fileInfo = FileInfo.newBuilder()
+        .setLength(closeEvent.getFileSize())
+        .setModificationTime(closeEvent.getTimestamp())
+        .build();
+    metaStore.updateFileByPath(closeEvent.getPath(), fileInfo);
   }
 
   //Todo: should update mtime? atime?
@@ -256,11 +246,10 @@ public class InotifyEventApplier {
 //        truncateEvent.getFileSize(), truncateEvent.getTimestamp(), truncateEvent.getPath());
 //  }
 
-  private List<String> getRenameSql(Event.RenameEvent renameEvent)
+  private void applyRename(Event.RenameEvent renameEvent)
       throws IOException, MetaStoreException, InterruptedException {
     String src = renameEvent.getSrcPath();
     String dest = renameEvent.getDstPath();
-    List<String> ret = new ArrayList<>();
     HdfsFileStatus status = client.getFileInfo(dest);
     FileInfo info = metaStore.getFile(src);
 
@@ -274,7 +263,7 @@ public class InotifyEventApplier {
     // to avoid duplicated record for one same path.
     FileInfo destInfo = metaStore.getFile(dest);
     if (destInfo != null) {
-      metaStore.deleteFileByPath(dest);
+      metaStore.deleteFileByPath(dest, false);
     }
     // src is not in file table because it is not fetched or other reason
     if (info == null) {
@@ -288,43 +277,18 @@ public class InotifyEventApplier {
         }
         namespaceFetcher.stop();
       }
-    } else {
-      // if the dest is ignored, delete src info from file table
-      // TODO: tackle with file_state and small_state
-      if (shouldIgnore(dest)) {
-        // fuzzy matching is used to delete content under the dir
-        if (info.isdir()) {
-          ret.add(String.format("DELETE FROM file WHERE path LIKE '%s/%%';", src));
-        }
-        ret.add(String.format("DELETE FROM file WHERE path = '%s';", src));
-        return ret;
-      } else {
-        ret.add(String.format("UPDATE file SET path = replace(path, '%s', '%s') "
-            + "WHERE path = '%s';", src, dest, src));
-        ret.add(String.format("UPDATE file_state SET path = replace(path, '%s', '%s') "
-            + "WHERE path = '%s';", src, dest, src));
-        ret.add(String.format("UPDATE small_file SET path = replace(path, '%s', '%s') "
-            + "WHERE path = '%s';", src, dest, src));
-        if (info.isdir()) {
-          if (metaStore.getDbType() == DBType.MYSQL) {
-            ret.add(String.format("UPDATE file SET path = CONCAT('%s', SUBSTR(path, %d)) "
-                + "WHERE path LIKE '%s/%%';", dest, src.length() + 1, src));
-            ret.add(String.format("UPDATE file_state SET path = CONCAT('%s', SUBSTR(path, %d)) "
-                + "WHERE path LIKE '%s/%%';", dest, src.length() + 1, src));
-            ret.add(String.format("UPDATE small_file SET path = CONCAT('%s', SUBSTR(path, %d)) "
-                + "WHERE path LIKE '%s/%%';", dest, src.length() + 1, src));
-          } else if (metaStore.getDbType() == DBType.SQLITE) {
-            ret.add(String.format("UPDATE file SET path = '%s' || SUBSTR(path, %d) "
-                + "WHERE path LIKE '%s/%%';", dest, src.length() + 1, src));
-            ret.add(String.format("UPDATE file_state SET path = '%s' || SUBSTR(path, %d) "
-                + "WHERE path LIKE '%s/%%';", dest, src.length() + 1, src));
-            ret.add(String.format("UPDATE small_file SET path = '%s' || SUBSTR(path, %d) "
-                + "WHERE path LIKE '%s/%%';", dest, src.length() + 1, src));
-          }
-        }
-      }
+      return;
     }
-    return ret;
+
+    // if the dest is ignored, delete src info from file table
+    // TODO: tackle with file_state and small_state
+    if (shouldIgnore(dest)) {
+      // fuzzy matching is used to delete content under the dir
+      metaStore.deleteFileByPath(src, true);
+      return;
+    }
+
+    metaStore.renameFile(src, dest, info.isdir());
   }
 
   private void generateFileDiff(Event.RenameEvent renameEvent)
@@ -371,13 +335,14 @@ public class InotifyEventApplier {
     }
   }
 
-  private String getMetaDataUpdateSql(Event.MetadataUpdateEvent metadataUpdateEvent) throws MetaStoreException {
+  private void applyMetadataUpdate(Event.MetadataUpdateEvent metadataUpdateEvent) throws MetaStoreException {
 
     FileDiff fileDiff = null;
     if (inBackup(metadataUpdateEvent.getPath())) {
       fileDiff = new FileDiff(FileDiffType.METADATA);
       fileDiff.setSrc(metadataUpdateEvent.getPath());
     }
+    FileInfo.Builder fileInfoBuilder = FileInfo.newBuilder();
     switch (metadataUpdateEvent.getMetadataType()) {
       case TIMES:
         if (metadataUpdateEvent.getMtime() > 0 && metadataUpdateEvent.getAtime() > 0) {
@@ -386,66 +351,52 @@ public class InotifyEventApplier {
             // fileDiff.getParameters().put("-access_time", "" + metadataUpdateEvent.getAtime());
             metaStore.insertFileDiff(fileDiff);
           }
-          return String.format(
-            "UPDATE file SET modification_time = %s, access_time = %s WHERE path = '%s';",
-            metadataUpdateEvent.getMtime(),
-            metadataUpdateEvent.getAtime(),
-            metadataUpdateEvent.getPath());
+          fileInfoBuilder.setModificationTime(metadataUpdateEvent.getMtime())
+              .setAccessTime(metadataUpdateEvent.getAtime());
         } else if (metadataUpdateEvent.getMtime() > 0) {
           if (fileDiff != null) {
             fileDiff.getParameters().put("-mtime", "" + metadataUpdateEvent.getMtime());
             metaStore.insertFileDiff(fileDiff);
           }
-          return String.format(
-            "UPDATE file SET modification_time = %s WHERE path = '%s';",
-            metadataUpdateEvent.getMtime(),
-            metadataUpdateEvent.getPath());
+          fileInfoBuilder.setModificationTime(metadataUpdateEvent.getMtime());
         } else if (metadataUpdateEvent.getAtime() > 0) {
           // if (fileDiff != null) {
           //   fileDiff.getParameters().put("-access_time", "" + metadataUpdateEvent.getAtime());
           //   metaStore.insertFileDiff(fileDiff);
           // }
-          return String.format(
-            "UPDATE file SET access_time = %s WHERE path = '%s';",
-            metadataUpdateEvent.getAtime(),
-            metadataUpdateEvent.getPath());
-        } else {
-          return "";
+          fileInfoBuilder.setAccessTime(metadataUpdateEvent.getMtime());
         }
+        break;
       case OWNER:
         if (fileDiff != null) {
-          fileDiff.getParameters().put("-owner", "" + metadataUpdateEvent.getOwnerName());
+          fileDiff.getParameters().put("-owner", metadataUpdateEvent.getOwnerName());
           metaStore.insertFileDiff(fileDiff);
         }
-        return String.format(
-            "UPDATE file SET owner = '%s', owner_group = '%s' WHERE path = '%s';",
-            metadataUpdateEvent.getOwnerName(),
-            metadataUpdateEvent.getGroupName(),
-            metadataUpdateEvent.getPath());
+        fileInfoBuilder.setOwner(metadataUpdateEvent.getOwnerName())
+            .setGroup(metadataUpdateEvent.getGroupName());
+        break;
       case PERMS:
         if (fileDiff != null) {
           fileDiff.getParameters().put("-permission", "" + metadataUpdateEvent.getPerms().toShort());
           metaStore.insertFileDiff(fileDiff);
         }
-        return String.format(
-            "UPDATE file SET permission = %s WHERE path = '%s';",
-            metadataUpdateEvent.getPerms().toShort(), metadataUpdateEvent.getPath());
+        fileInfoBuilder.setPermission(metadataUpdateEvent.getPerms().toShort());
+        break;
       case REPLICATION:
         if (fileDiff != null) {
           fileDiff.getParameters().put("-replication", "" + metadataUpdateEvent.getReplication());
           metaStore.insertFileDiff(fileDiff);
         }
-        return String.format(
-            "UPDATE file SET block_replication = %s WHERE path = '%s';",
-            metadataUpdateEvent.getReplication(), metadataUpdateEvent.getPath());
+        fileInfoBuilder.setBlockReplication((short) metadataUpdateEvent.getReplication());
+        break;
       case XATTRS:
         final String EC_POLICY = "hdfs.erasurecoding.policy";
         //Todo
         if (LOG.isDebugEnabled()) {
-          String message = "\n";
-          for (XAttr xAttr : metadataUpdateEvent.getxAttrs()) {
-            message += xAttr.toString() + "\n";
-          }
+          String message = metadataUpdateEvent.getxAttrs()
+              .stream()
+              .map(XAttr::toString)
+              .collect(Collectors.joining("\n"));
           LOG.debug(message);
         }
         // The following code should be executed merely on HDFS3.x.
@@ -459,8 +410,8 @@ public class InotifyEventApplier {
               if (ecPolicyId == (byte) -1) {
                 LOG.error("Unrecognized EC policy for updating!");
               }
-              return String.format("UPDATE file SET ec_policy_id = %s WHERE path = '%s'",
-                  ecPolicyId, metadataUpdateEvent.getPath());
+              fileInfoBuilder.setErasureCodingPolicy(ecPolicyId);
+              break;
             } catch (IOException ex) {
               LOG.error("Error occurred for updating ecPolicy!", ex);
             }
@@ -468,49 +419,28 @@ public class InotifyEventApplier {
         }
         break;
       case ACLS:
-        return "";
+        return;
     }
-    return "";
+    metaStore.updateFileByPath(metadataUpdateEvent.getPath(), fileInfoBuilder.build());
   }
 
-  private List<String> getAppendSql(Event.AppendEvent appendEvent) {
-    //Do nothing;
-    return Arrays.asList();
-  }
-
-  private List<String> getUnlinkSql(Event.UnlinkEvent unlinkEvent) throws MetaStoreException {
+  private void applyUnlink(Event.UnlinkEvent unlinkEvent) throws MetaStoreException {
     // delete root, i.e., /
-    String root = "/";
-    if (root.equals(unlinkEvent.getPath())) {
+    if (ROOT_DIRECTORY.equals(unlinkEvent.getPath())) {
       LOG.warn("Deleting root directory!!!");
-      insertDeleteDiff(root, true);
-      return Arrays.asList(
-          String.format("DELETE FROM file WHERE path like '%s%%'", root),
-          String.format("DELETE FROM file_state WHERE path like '%s%%'", root),
-          String.format("DELETE FROM small_file WHERE path like '%s%%'", root));
+      insertDeleteDiff(ROOT_DIRECTORY, true);
+      metaStore.unlinkRootDirectory();
+      return;
     }
+
     String path = unlinkEvent.getPath();
     // file has no "/" appended in the metaStore
     FileInfo fileInfo = metaStore.getFile(path.endsWith("/") ?
         path.substring(0, path.length() - 1) : path);
-    if (fileInfo == null) return Arrays.asList();
-    if (fileInfo.isdir()) {
-      insertDeleteDiff(unlinkEvent.getPath(), true);
-      // delete all files in this dir from file table
-      return Arrays.asList(
-          String.format("DELETE FROM file WHERE path LIKE '%s/%%';", unlinkEvent.getPath()),
-          String.format("DELETE FROM file WHERE path = '%s';", unlinkEvent.getPath()),
-          String.format("DELETE FROM file_state WHERE path LIKE '%s/%%';", unlinkEvent.getPath()),
-          String.format("DELETE FROM file_state WHERE path = '%s';", unlinkEvent.getPath()),
-          String.format("DELETE FROM small_file WHERE path LIKE '%s/%%';", unlinkEvent.getPath()),
-          String.format("DELETE FROM small_file WHERE path = '%s';", unlinkEvent.getPath()));
-    } else {
-      insertDeleteDiff(unlinkEvent.getPath(), false);
-      // delete file in file table
-      return Arrays.asList(
-          String.format("DELETE FROM file WHERE path = '%s';", unlinkEvent.getPath()),
-          String.format("DELETE FROM file_state WHERE path = '%s';", unlinkEvent.getPath()),
-          String.format("DELETE FROM small_file WHERE path = '%s';", unlinkEvent.getPath()));
+
+    if (fileInfo != null) {
+      insertDeleteDiff(unlinkEvent.getPath(), fileInfo.isdir());
+      metaStore.unlinkFile(unlinkEvent.getPath(), fileInfo.isdir());
     }
   }
 

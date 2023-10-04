@@ -39,4 +39,6 @@ public interface FileStateDao {
   int[] batchDelete(List<String> paths);
 
   void deleteAll();
+
+  void renameFile(String oldPath, String newPath, boolean recursive);
 }

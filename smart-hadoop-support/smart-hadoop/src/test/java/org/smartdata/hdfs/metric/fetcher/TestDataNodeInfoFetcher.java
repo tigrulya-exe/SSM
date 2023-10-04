@@ -27,17 +27,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartdata.conf.SmartConf;
-import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.SqliteTestDaoBase;
 
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-public abstract class TestDataNodeInfoFetcher extends TestDaoUtil {
+public abstract class TestDataNodeInfoFetcher extends SqliteTestDaoBase {
 
-  private MetaStore metaStore;
   protected MiniDFSCluster cluster;
   protected DistributedFileSystem dfs;
   protected DFSClient dfsClient;
@@ -47,14 +45,12 @@ public abstract class TestDataNodeInfoFetcher extends TestDaoUtil {
 
   @Before
   public void init() throws Exception {
-    initDao();
     conf = new SmartConf();
     cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
     cluster.waitActive();
     dfs = cluster.getFileSystem();
     dfsClient = dfs.getClient();
     scheduledExecutorService = Executors.newScheduledThreadPool(2);
-    metaStore = createMetastore();
     fetcher = new DataNodeInfoFetcher(dfsClient, metaStore,
         scheduledExecutorService, conf);
   }
@@ -63,7 +59,6 @@ public abstract class TestDataNodeInfoFetcher extends TestDaoUtil {
   public void shutdown() throws Exception {
     fetcher.stop();
     fetcher = null;
-    closeDao();
     if (cluster != null) {
       cluster.shutdown();
     }

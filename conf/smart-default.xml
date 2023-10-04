@@ -368,12 +368,11 @@
   </property>
 
   <property>
-    <name>smart.metastore.migration.liquibase.labels</name>
-    <value></value>
+    <name>smart.metastore.mysql.legacy.enabled</name>
+    <value>false</value>
     <description>
-      Comma-separated liquibase changeSet labels to run migration with.
-      E.g. 'old_mysql' to enable support of db object names longer than 797 bytes in
-      versions of MySQL lesser than 5.7.
+      Whether to enable support for versions of MySQL lesser than 5.7.
+      Warning: it requires admin privileges for ssm user to be able to configure the db.
     </description>
   </property>
 </configuration>

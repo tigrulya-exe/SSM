@@ -26,24 +26,20 @@ import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.ui.LoggerUIService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.smartdata.metastore.DBPool;
 
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LiquibaseDBManager implements DBManager {
-  static final Logger LOG = LoggerFactory.getLogger(LiquibaseDBManager.class);
-
+public class LiquibaseDbSchemaManager implements DbSchemaManager {
   private final DBPool pool;
   private final String changelogPath;
   private final String labelFilterExpr;
 
   private final Map<String, Object> scopeConfig;
 
-  public LiquibaseDBManager(DBPool pool, String changelogPath, String labelFilterExpr) {
+  public LiquibaseDbSchemaManager(DBPool pool, String changelogPath, String labelFilterExpr) {
     this.pool = pool;
     this.changelogPath = changelogPath;
     this.labelFilterExpr = labelFilterExpr;

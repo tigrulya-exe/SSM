@@ -59,6 +59,6 @@ public class XAttribute {
 
   @Override
   public int hashCode() {
-    return Objects.hash(nameSpace, name, value);
+    return Objects.hash(nameSpace, name, Arrays.hashCode(value));
   }
 }

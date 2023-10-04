@@ -52,7 +52,7 @@ public class DefaultCompressionFileDao extends AbstractDao implements Compressio
     Gson gson = new Gson();
     String sql = "REPLACE INTO " + TABLE_NAME
         + "(path, buffer_size, compression_impl, "
-        + "original_length, compressed_length, originalPos, compressedPos)"
+        + "original_length, compressed_length, original_pos, compressed_pos)"
         + " VALUES(?,?,?,?,?,?,?);";
     jdbcTemplate.update(sql, compressionInfo.getPath(),
         compressionInfo.getBufferSize(),
@@ -87,7 +87,7 @@ public class DefaultCompressionFileDao extends AbstractDao implements Compressio
         new Object[]{filePath}, new CompressFileRowMapper());
   }
 
-  private Map<String, Object> toMap(CompressionFileState compressionInfo) {
+  protected Map<String, Object> toMap(CompressionFileState compressionInfo) {
     Gson gson = new Gson();
     Map<String, Object> parameters = new HashMap<>();
     Long[] originalPos = compressionInfo.getOriginalPos();
@@ -99,8 +99,8 @@ public class DefaultCompressionFileDao extends AbstractDao implements Compressio
     parameters.put("compression_impl", compressionInfo.getCompressionImpl());
     parameters.put("original_length", compressionInfo.getOriginalLength());
     parameters.put("compressed_length", compressionInfo.getCompressedLength());
-    parameters.put("originalPos", originalPosGson);
-    parameters.put("compressedPos", compressedPosGson);
+    parameters.put("original_pos", originalPosGson);
+    parameters.put("compressed_pos", compressedPosGson);
     return parameters;
   }
 
@@ -108,8 +108,8 @@ public class DefaultCompressionFileDao extends AbstractDao implements Compressio
     @Override
     public CompressionFileState mapRow(ResultSet resultSet, int i) throws SQLException {
       Gson gson = new Gson();
-      String originalPosGson = resultSet.getString("originalPos");
-      String compressedPosGson = resultSet.getString("compressedPos");
+      String originalPosGson = resultSet.getString("original_pos");
+      String compressedPosGson = resultSet.getString("compressed_pos");
       Long[] originalPos = gson.fromJson(originalPosGson, new TypeToken<Long[]>() {
       }.getType());
       Long[] compressedPos = gson.fromJson(compressedPosGson, new TypeToken<Long[]>() {

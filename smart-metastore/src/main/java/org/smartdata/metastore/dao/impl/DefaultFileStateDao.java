@@ -128,6 +128,20 @@ public class DefaultFileStateDao extends AbstractDao implements FileStateDao {
     jdbcTemplate.execute(sql);
   }
 
+  @Override
+  public void renameFile(String oldPath, String newPath, boolean recursive) {
+    String sql = "UPDATE " + TABLE_NAME + " SET path = ? WHERE path = ?";
+    jdbcTemplate.update(sql, newPath, oldPath);
+    if (recursive) {
+      renameDirectoryFiles(oldPath, newPath);
+    }
+  }
+
+  protected void renameDirectoryFiles(String oldPath, String newPath) {
+    String sql = "UPDATE small_file SET path = CONCAT(?, SUBSTR(path, ?)) WHERE path LIKE ?";
+    jdbcTemplate.update(sql, newPath, oldPath.length() + 1, oldPath + "/%");
+  }
+
   private static class FileStateRowMapper implements RowMapper<FileState> {
     @Override
     public FileState mapRow(ResultSet resultSet, int i)

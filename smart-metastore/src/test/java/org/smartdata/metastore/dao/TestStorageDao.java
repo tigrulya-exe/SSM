@@ -20,31 +20,23 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.StorageCapacity;
 import org.smartdata.model.StoragePolicy;
 
 import java.util.Map;
 
 
-public class TestStorageDao extends TestDaoUtil {
+public class TestStorageDao extends TestDaoBase {
 
   private StorageDao storageDao;
 
   @Before
-  public void initStorageDao() throws Exception {
-    initDao();
+  public void initStorageDao() {
     storageDao = daoProvider.storageDao();
-  }
-
-  @After
-  public void closeStorageDao() throws Exception {
-    closeDao();
-    storageDao = null;
   }
 
   @Test

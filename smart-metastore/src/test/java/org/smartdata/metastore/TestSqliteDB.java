@@ -17,9 +17,7 @@
  */
 package org.smartdata.metastore;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.smartdata.metastore.utils.MetaStoreUtils;
 
@@ -30,30 +28,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Test operations with sqlite database. */
-public class TestSqliteDB extends TestDaoUtil {
-
-  private MetaStore metaStore;
-
-  @Before
-  public void initDB() throws Exception {
-    initDao();
-    metaStore = createMetastore();
-  }
-
-  @After
-  public void closeDB() throws Exception {
-    metaStore = null;
-    closeDao();
-  }
-
-  @Test
-  public void testInitDB() throws Exception {
-    dbManager.clearDatabase();
-  }
-
+public class TestSqliteDB extends SqliteTestDaoBase {
   @Test
   public void testDropTables() throws Exception {
-    Connection conn = metaStore.getConnection();
+    Connection conn = druidPool.getConnection();
     Statement s = conn.createStatement();
     metaStore.dropAllTables();
     for (int i = 0; i < 10; i++) {

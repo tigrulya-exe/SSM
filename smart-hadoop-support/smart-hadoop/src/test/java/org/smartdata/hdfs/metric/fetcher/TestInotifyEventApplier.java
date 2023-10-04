@@ -22,17 +22,14 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.hdfs.inotify.Event;
 import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.hdfs.CompatibilityHelperLoader;
 import org.smartdata.hdfs.HadoopUtil;
-import org.smartdata.metastore.MetaStore;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.BackUpInfo;
 import org.smartdata.model.FileDiff;
 import org.smartdata.model.FileDiffType;
@@ -43,15 +40,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class TestInotifyEventApplier extends TestDaoUtil {
-  private MetaStore metaStore = null;
-
-  @Before
-  public void init() throws Exception {
-    initDao();
-    metaStore = createMetastore();
-  }
-
+public class TestInotifyEventApplier extends TestDaoBase {
   @Test
   public void testApplier() throws Exception {
     DFSClient client = Mockito.mock(DFSClient.class);
@@ -335,10 +324,5 @@ public class TestInotifyEventApplier extends TestDaoUtil {
         0,
         null,
         (byte) 0);
-  }
-
-  @After
-  public void cleanUp() throws Exception {
-    closeDao();
   }
 }

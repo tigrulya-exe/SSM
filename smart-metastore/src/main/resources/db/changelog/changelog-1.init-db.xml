@@ -141,12 +141,12 @@
             <column name="block_size" type="BIGINT"/>
             <column name="modification_time" type="BIGINT"/>
             <column name="access_time" type="BIGINT"/>
-            <column name="is_dir" type="BIT"/>
+            <column name="is_dir" type="BOOLEAN"/>
             <column name="sid" type="TINYINT"/>
             <column name="owner" type="VARCHAR(255)"/>
             <column name="owner_group" type="VARCHAR(255)"/>
             <column name="permission" type="SMALLINT"/>
-            <column name="ec_policy_id" type="BIT"/>
+            <column name="ec_policy_id" type="TINYINT"/>
         </createTable>
     </changeSet>
 
@@ -299,7 +299,7 @@
             <column name="name" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="value" type="BLOB">
+            <column name="value" type="MEDIUMBLOB">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -329,7 +329,7 @@
             <column name="hostname" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="rpcAddress" type="VARCHAR(21)"/>
+            <column name="rpc_address" type="VARCHAR(21)"/>
             <column name="cache_capacity" type="BIGINT"/>
             <column name="cache_used" type="BIGINT"/>
             <column name="location" type="VARCHAR(255)"/>
@@ -355,7 +355,7 @@
             <column name="storage_id" type="VARCHAR(64)">
                 <constraints nullable="false"/>
             </column>
-            <column name="failed" type="BIT"/>
+            <column name="failed" type="BOOLEAN"/>
             <column name="capacity" type="BIGINT"/>
             <column name="dfs_used" type="BIGINT"/>
             <column name="remaining" type="BIGINT"/>
@@ -449,13 +449,13 @@
             <column name="log" type="LONGTEXT">
                 <constraints nullable="false"/>
             </column>
-            <column name="successful" type="TINYINT">
+            <column name="successful" type="BOOLEAN">
                 <constraints nullable="false"/>
             </column>
             <column name="create_time" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="finished" type="TINYINT">
+            <column name="finished" type="BOOLEAN">
                 <constraints nullable="false"/>
             </column>
             <column name="finish_time" type="BIGINT">
@@ -481,7 +481,7 @@
             <column name="rid" type="INT">
                 <constraints nullable="false"/>
             </column>
-            <column name="diff_type" type="VARCHAR(4096)">
+            <column name="diff_type" type="INT">
                 <constraints nullable="false"/>
             </column>
             <column name="src" type="VARCHAR(1000)">
@@ -705,10 +705,10 @@
             <column name="compressed_length" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="originalPos" type="TEXT">
+            <column name="original_pos" type="TEXT">
                 <constraints nullable="false"/>
             </column>
-            <column name="compressedPos" type="TEXT">
+            <column name="compressed_pos" type="TEXT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -727,7 +727,7 @@
             <column name="container_file_path" type="VARCHAR(4096)">
                 <constraints nullable="false"/>
             </column>
-            <column name="offset" type="BIGINT">
+            <column name="file_offset" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="length" type="BIGINT">

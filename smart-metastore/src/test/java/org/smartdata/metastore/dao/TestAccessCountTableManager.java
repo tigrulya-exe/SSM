@@ -133,7 +133,7 @@ public class TestAccessCountTableManager extends DBTest {
     assertTableEquals(new AccessCountTable(10000L, 15000L).getTableName(), "expect2");
     assertTableEquals(new AccessCountTable(15000L, 20000L).getTableName(), "expect2");
 
-    insertNewFile(createMetastore(), "file4", 4L);
+    insertNewFile(metaStore, "file4", 4L);
     accessEvents.clear();
     accessEvents.add(new FileAccessEvent("file4", 25000));
     manager.onAccessEventsArrived(accessEvents);
@@ -141,7 +141,6 @@ public class TestAccessCountTableManager extends DBTest {
   }
 
   private AccessCountTableManager initTestEnvironment() throws Exception {
-    MetaStore metaStore = createMetastore();
     createTables(databaseTester.getConnection().getConnection());
     IDataSet dataSet = new XmlDataSet(getClass().getClassLoader().getResourceAsStream("files.xml"));
     databaseTester.setDataSet(dataSet);

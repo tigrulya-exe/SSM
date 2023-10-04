@@ -48,7 +48,7 @@ import org.smartdata.metastore.dao.XattrDao;
 import javax.sql.DataSource;
 
 public class DefaultDaoProvider implements DaoProvider {
-  private final DataSource dataSource;
+  protected final DataSource dataSource;
 
   public DefaultDaoProvider(DBPool dbPool) {
     this.dataSource = dbPool.getDataSource();

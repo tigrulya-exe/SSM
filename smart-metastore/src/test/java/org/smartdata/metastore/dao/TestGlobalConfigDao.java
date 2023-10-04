@@ -18,26 +18,18 @@
 
 package org.smartdata.metastore.dao;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.GlobalConfig;
 
-public class TestGlobalConfigDao extends TestDaoUtil {
+public class TestGlobalConfigDao extends TestDaoBase {
   private GlobalConfigDao globalConfigDao;
 
   @Before
-  public void initGlobalConfigDao() throws Exception {
-    initDao();
+  public void initGlobalConfigDao() {
     globalConfigDao = daoProvider.globalConfigDao();
-  }
-
-  @After
-  public void closeGlobalConfigDao() throws Exception {
-    closeDao();
-    globalConfigDao = null;
   }
 
   @Test

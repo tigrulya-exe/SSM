@@ -50,9 +50,13 @@ public interface FileInfoDao {
 
   int update(String path, int storagePolicy);
 
+  int updateByPath(String path, FileInfo fileInfo);
+
   void deleteById(long fid);
 
-  void deleteByPath(String path);
+  void deleteByPath(String path, boolean recursive);
 
   void deleteAll();
+
+  void renameFile(String oldPath, String newPath, boolean recursive);
 }

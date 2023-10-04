@@ -17,11 +17,10 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.model.CachedFileStatus;
 
@@ -30,20 +29,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TestCacheFileDao extends TestDaoUtil {
+public class TestCacheFileDao extends TestDaoBase {
 
   private CacheFileDao cacheFileDao;
 
   @Before
-  public void initCacheFileDao() throws Exception {
-    initDao();
+  public void initCacheFileDao() {
     cacheFileDao = daoProvider.cacheFileDao();
-  }
-
-  @After
-  public void closeCacheFileDao() throws Exception {
-    closeDao();
-    cacheFileDao = null;
   }
 
   @Test
