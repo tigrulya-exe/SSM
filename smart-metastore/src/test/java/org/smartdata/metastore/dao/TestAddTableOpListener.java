@@ -21,7 +21,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.smartdata.metastore.MetaStore;
 
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -39,7 +38,8 @@ public class TestAddTableOpListener {
     TableEvictor tableEvictor = new CountEvictor(adapter, 10);
     AccessCountTableDeque minuteTableDeque = new AccessCountTableDeque(tableEvictor);
     TableAddOpListener minuteTableListener =
-        new TableAddOpListener.MinuteTableListener(minuteTableDeque, aggregator, executorService);
+        new TableAddOpListener.MinuteTableListener(minuteTableDeque, aggregator,
+            executorService);
     AccessCountTableDeque secondTableDeque =
         new AccessCountTableDeque(tableEvictor, minuteTableListener);
 

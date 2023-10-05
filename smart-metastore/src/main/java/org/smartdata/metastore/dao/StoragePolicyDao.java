@@ -18,110 +18,24 @@
 package org.smartdata.metastore.dao;
 
 import org.smartdata.model.StoragePolicy;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 
-import javax.sql.DataSource;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class StoragePolicyDao {
-  private DataSource dataSource;
+public interface StoragePolicyDao {
 
-  private static final String TABLE_NAME = "storage_policy";
+  Map<Integer, String> getStoragePolicyIdNameMap();
 
-  private Map<Integer, String> data = null;
+  String getStoragePolicyName(int sid);
 
-  public void setDataSource(DataSource dataSource) {
-    this.dataSource = dataSource;
-    this.data = getStoragePolicyFromDB();
-  }
+  Integer getStorageSid(String policyName);
 
-  public StoragePolicyDao(DataSource dataSource) {
-    this.dataSource = dataSource;
-    this.data = getStoragePolicyFromDB();
-  }
+  void insertStoragePolicyTable(StoragePolicy s);
 
-  private Map<Integer, String> getStoragePolicyFromDB() {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "SELECT * FROM " + TABLE_NAME;
-    List<StoragePolicy> list = jdbcTemplate.query(sql,
-      new RowMapper<StoragePolicy>() {
-        public StoragePolicy mapRow(ResultSet rs, int rowNum) throws SQLException {
-          return new StoragePolicy(rs.getByte("sid"),
-            rs.getString("policy_name"));
-        }
-      });
-    Map<Integer, String> map = new HashMap<>();
-    for (StoragePolicy s : list) {
-      map.put((int) (s.getSid()), s.getPolicyName());
-    }
-    return map;
-  }
+  void deleteStoragePolicy(int sid);
 
-  public Map<Integer, String> getStoragePolicyIdNameMap() {
-    return this.data;
-  }
+  void deleteStoragePolicy(String policyName);
 
-  public String getStoragePolicyName(int sid) {
-    return this.data.get(sid);
-  }
+  boolean isExist(int sid);
 
-  public Integer getStorageSid(String policyName) {
-    for (Map.Entry<Integer, String> entry : this.data.entrySet()) {
-      if (entry.getValue().equals(policyName)) {
-        return entry.getKey();
-      }
-    }
-    return -1;
-  }
-
-  public synchronized void insertStoragePolicyTable(StoragePolicy s) {
-    if (!isExist(s.getPolicyName())) {
-      JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-      String sql = "INSERT INTO storage_policy (sid, policy_name) VALUES('"
-        + s.getSid() + "','" + s.getPolicyName() + "');";
-      jdbcTemplate.execute(sql);
-      this.data.put((int) (s.getSid()), s.getPolicyName());
-    }
-  }
-
-  public synchronized void deleteStoragePolicy(int sid) {
-    if (isExist(sid)) {
-      JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-      final String sql = "DELETE FROM " + TABLE_NAME + " WHERE sid = ?";
-      jdbcTemplate.update(sql, sid);
-      this.data.remove(sid);
-    }
-  }
-
-  public synchronized void deleteStoragePolicy(String policyName) {
-    Integer sid = getStorageSid(policyName);
-    deleteStoragePolicy(sid);
-  }
-
-  public boolean isExist(int sid) {
-    if (getStoragePolicyName(sid) != null) {
-      return  true;
-    }
-    return false;
-  }
-
-  public boolean isExist(String policyName) {
-    if (getStorageSid(policyName) != -1) {
-      return  true;
-    }
-    return false;
-  }
-
-  class StoragePolicyRowMapper implements RowMapper<StoragePolicy> {
-    @Override
-    public StoragePolicy mapRow(ResultSet resultSet, int i) throws SQLException {
-      return new StoragePolicy(resultSet.getByte("sid"), resultSet.getString("policy_name"));
-    }
-  }
+  boolean isExist(String policyName);
 }

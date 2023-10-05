@@ -30,7 +30,7 @@ public class TestStoragePolicyDao extends TestDaoUtil {
   @Before
   public void initStoragePolicyDao() throws Exception {
     initDao();
-    storagePolicyDao = new StoragePolicyDao(druidPool.getDataSource());
+    storagePolicyDao = daoProvider.storagePolicyDao();
   }
 
   @After

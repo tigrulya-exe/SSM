@@ -34,7 +34,7 @@ public class TestRuleDao extends TestDaoUtil {
   @Before
   public void initRuleDao() throws Exception {
     initDao();
-    ruleDao = new RuleDao(druidPool.getDataSource());
+    ruleDao = daoProvider.ruleDao();
   }
 
   @After

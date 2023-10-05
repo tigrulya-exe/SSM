@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
+import org.smartdata.metastore.dao.impl.DefaultAccessCountDao;
 import org.smartdata.metrics.FileAccessEvent;
 
 import java.util.ArrayList;
@@ -36,18 +37,18 @@ public class AccessEventAggregator {
   private final MetaStore adapter;
   private final long aggregationGranularity;
   private final AccessCountTableManager accessCountTableManager;
+  private final List<FileAccessEvent> eventBuffer;
   private Window currentWindow;
-  private List<FileAccessEvent> eventBuffer;
   private Map<String, Integer> lastAccessCount = new HashMap<>();
   public static final Logger LOG =
       LoggerFactory.getLogger(AccessEventAggregator.class);
 
   public AccessEventAggregator(MetaStore adapter, AccessCountTableManager manager) {
-    this(adapter, manager,  5 * 1000L);
+    this(adapter, manager, 5 * 1000L);
   }
 
   public AccessEventAggregator(MetaStore adapter,
-      AccessCountTableManager manager, long aggregationGranularity) {
+                               AccessCountTableManager manager, long aggregationGranularity) {
     this.adapter = adapter;
     this.accessCountTableManager = manager;
     this.aggregationGranularity = aggregationGranularity;
@@ -85,10 +86,9 @@ public class AccessEventAggregator {
       LOG.error("Create table error: " + table, e);
       return;
     }
-    if (this.eventBuffer.size() > 0 || lastAccessCount.size() > 0) {
+    if (!eventBuffer.isEmpty() || !lastAccessCount.isEmpty()) {
       Map<String, Integer> accessCount = this.getAccessCountMap(eventBuffer);
-      Set<String> now = new HashSet<>();
-      now.addAll(accessCount.keySet());
+      Set<String> now = new HashSet<>(accessCount.keySet());
       accessCount = mergeMap(accessCount, lastAccessCount);
 
       final Map<String, Long> pathToIDs;
@@ -113,26 +113,26 @@ public class AccessEventAggregator {
       }
 
       if (LOG.isDebugEnabled()) {
-        if (lastAccessCount.size() != 0) {
+        if (!lastAccessCount.isEmpty()) {
           Set<String> non = lastAccessCount.keySet();
           non.removeAll(pathToIDs.keySet());
-          if (non.size() != 0) {
-            String result = "Access events ignored for file:\n";
+          if (!non.isEmpty()) {
+            StringBuilder result = new StringBuilder("Access events ignored for file:\n");
             for (String p : non) {
-              result += p + " --> " + lastAccessCount.get(p) + "\n";
+              result.append(p).append(" --> ").append(lastAccessCount.get(p)).append("\n");
             }
-            LOG.debug(result);
+            LOG.debug(result.toString());
           }
         }
       }
       lastAccessCount = tmpLast;
 
-      if (values.size() != 0) {
+      if (!values.isEmpty()) {
         String insertValue = String.format(
             "INSERT INTO %s (%s, %s) VALUES %s",
             table.getTableName(),
-            AccessCountDao.FILE_FIELD,
-            AccessCountDao.ACCESSCOUNT_FIELD,
+            DefaultAccessCountDao.FILE_FIELD,
+            DefaultAccessCountDao.ACCESSCOUNT_FIELD,
             StringUtils.join(values, ", "));
         try {
           this.adapter.execute(insertValue);
@@ -178,9 +178,9 @@ public class AccessEventAggregator {
     return new Window(start, start + aggregationGranularity);
   }
 
-  private class Window {
-    private long start;
-    private long end;
+  private static class Window {
+    private final long start;
+    private final long end;
 
     public Window(long start, long end) {
       this.start = start;

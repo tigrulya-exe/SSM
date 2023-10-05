@@ -32,7 +32,6 @@ import org.smartdata.conf.SmartConf;
 import org.smartdata.hdfs.CompatibilityHelperLoader;
 import org.smartdata.hdfs.HadoopUtil;
 import org.smartdata.metastore.MetaStore;
-
 import org.smartdata.metastore.TestDaoUtil;
 import org.smartdata.model.BackUpInfo;
 import org.smartdata.model.FileDiff;
@@ -46,10 +45,11 @@ import java.util.List;
 
 public class TestInotifyEventApplier extends TestDaoUtil {
   private MetaStore metaStore = null;
+
   @Before
   public void init() throws Exception {
     initDao();
-    metaStore = new MetaStore(druidPool);
+    metaStore = createMetastore();
   }
 
   @Test
@@ -92,8 +92,9 @@ public class TestInotifyEventApplier extends TestDaoUtil {
             null,
             (byte) 0);
     Mockito.when(client.getFileInfo(Matchers.startsWith("/file"))).thenReturn(status1);
-    Mockito.when(client.getFileInfo(Matchers.startsWith("/dir"))).thenReturn(getDummyDirStatus("", 1010));
-    applier.apply(new Event[] {createEvent});
+    Mockito.when(client.getFileInfo(Matchers.startsWith("/dir")))
+        .thenReturn(getDummyDirStatus("", 1010));
+    applier.apply(new Event[]{createEvent});
 
     FileInfo result1 = metaStore.getFile().get(1);
     Assert.assertEquals(result1.getPath(), "/file");
@@ -101,7 +102,7 @@ public class TestInotifyEventApplier extends TestDaoUtil {
     Assert.assertEquals(result1.getPermission(), 511);
 
     Event close = new Event.CloseEvent("/file", 1024, 0);
-    applier.apply(new Event[] {close});
+    applier.apply(new Event[]{close});
     FileInfo result2 = metaStore.getFile().get(1);
     Assert.assertEquals(result2.getLength(), 1024);
     Assert.assertEquals(result2.getModificationTime(), 0L);
@@ -122,7 +123,7 @@ public class TestInotifyEventApplier extends TestDaoUtil {
             .ownerName("user2")
             .groupName("cg2")
             .build();
-    applier.apply(new Event[] {meta});
+    applier.apply(new Event[]{meta});
     FileInfo result4 = metaStore.getFile().get(1);
     Assert.assertEquals(result4.getAccessTime(), 3);
     Assert.assertEquals(result4.getModificationTime(), 2);
@@ -134,7 +135,7 @@ public class TestInotifyEventApplier extends TestDaoUtil {
             .ownerName("user1")
             .groupName("cg1")
             .build();
-    applier.apply(new Event[] {meta1});
+    applier.apply(new Event[]{meta1});
     result4 = metaStore.getFile().get(1);
     Assert.assertEquals(result4.getOwner(), "user1");
     Assert.assertEquals(result4.getGroup(), "cg1");
@@ -162,9 +163,9 @@ public class TestInotifyEventApplier extends TestDaoUtil {
             .replication(3)
             .build();
     Event rename =
-      new Event.RenameEvent.Builder().dstPath("/dir2").srcPath("/dir").timestamp(5).build();
+        new Event.RenameEvent.Builder().dstPath("/dir2").srcPath("/dir").timestamp(5).build();
 
-    applier.apply(new Event[] {createEvent2, createEvent3, rename});
+    applier.apply(new Event[]{createEvent2, createEvent3, rename});
     List<FileInfo> result5 = metaStore.getFile();
     List<String> expectedPaths = Arrays.asList("/dir2", "/dir2/file", "/file");
     List<String> actualPaths = new ArrayList<>();
@@ -212,8 +213,10 @@ public class TestInotifyEventApplier extends TestDaoUtil {
     Mockito.when(client.getFileInfo("/file1")).thenReturn(status1);
 
     List<Event> events = new ArrayList<>();
-    Event.CreateEvent createEvent = new Event.CreateEvent.Builder().path("/file1").defaultBlockSize(123).ownerName("test")
-        .replication(2).perms(new FsPermission(FsAction.NONE, FsAction.NONE, FsAction.NONE)).build();
+    Event.CreateEvent createEvent =
+        new Event.CreateEvent.Builder().path("/file1").defaultBlockSize(123).ownerName("test")
+            .replication(2)
+            .perms(new FsPermission(FsAction.NONE, FsAction.NONE, FsAction.NONE)).build();
     events.add(createEvent);
     Mockito.when(client.getFileInfo("/file1")).thenReturn(status1);
     applier.apply(events);
@@ -256,7 +259,7 @@ public class TestInotifyEventApplier extends TestDaoUtil {
         .srcPath("/dir")
         .dstPath("/dir1")
         .build();
-    applier.apply(new Event[] {dirRenameEvent});
+    applier.apply(new Event[]{dirRenameEvent});
     Assert.assertTrue(metaStore.getFile("/dir") == null);
     Assert.assertTrue(metaStore.getFile("/dir/file1") == null);
     Assert.assertTrue(metaStore.getFile("/dirfile") != null);

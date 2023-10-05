@@ -47,7 +47,7 @@ public class TestRuleManager extends TestDaoUtil {
   public void init() throws Exception {
     initDao();
     smartConf = new SmartConf();
-    metaStore = new MetaStore(druidPool);
+    metaStore = createMetastore();
     ServerContext serverContext = new ServerContext(smartConf, metaStore);
     serverContext.setServiceMode(ServiceMode.HDFS);
     ruleManager = new RuleManager(serverContext, null, null);
@@ -197,7 +197,7 @@ public class TestRuleManager extends TestDaoUtil {
     String rule = "file: every 1s \n | length > 300 | cache";
 
     // id increasing
-    int nRules =  3;
+    int nRules = 3;
     long[] ids = new long[nRules];
     for (int i = 0; i < nRules; i++) {
       ids[i] = ruleManager.submitRule(rule, RuleState.DISABLED);
@@ -243,7 +243,7 @@ public class TestRuleManager extends TestDaoUtil {
 
     long start = System.currentTimeMillis();
 
-    Thread[] threads = new Thread[] {
+    Thread[] threads = new Thread[]{
         new Thread(new RuleInfoUpdater(rid, 3)),
 //        new Thread(new RuleInfoUpdater(rid, 7)),
 //        new Thread(new RuleInfoUpdater(rid, 11)),
@@ -304,8 +304,8 @@ public class TestRuleManager extends TestDaoUtil {
 
     long length = 100;
     long fid = 10000;
-    FileInfo[] files = { new FileInfo("/tmp/testfile", fid,  length, false, (short) 3,
-        1024, now, now, (short) 1, null, null, (byte) 3, (byte) 0) };
+    FileInfo[] files = {new FileInfo("/tmp/testfile", fid, length, false, (short) 3,
+        1024, now, now, (short) 1, null, null, (byte) 3, (byte) 0)};
 
     metaStore.insertFiles(files);
     long rid = ruleManager.submitRule(rule, RuleState.ACTIVE);

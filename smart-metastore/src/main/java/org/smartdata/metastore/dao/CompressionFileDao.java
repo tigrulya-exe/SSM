@@ -17,119 +17,20 @@
  */
 package org.smartdata.metastore.dao;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.smartdata.model.CompressionFileState;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
-import javax.sql.DataSource;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-/**
- * CompressionFileDao.
- */
-public class CompressionFileDao {
-  private static final String TABLE_NAME = "compression_file";
+public interface CompressionFileDao {
+  void insert(CompressionFileState compressionInfo);
 
-  private DataSource dataSource;
+  void insertUpdate(CompressionFileState compressionInfo);
 
-  public void setDataSource(DataSource dataSource) {
-    this.dataSource = dataSource;
-  }
+  void deleteByPath(String filePath);
 
-  public CompressionFileDao(DataSource dataSource) {
-    this.dataSource = dataSource;
-  }
+  void deleteAll();
 
-  public void insert(CompressionFileState compressionInfo) {
-    SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(dataSource);
-    simpleJdbcInsert.setTableName(TABLE_NAME);
-    simpleJdbcInsert.execute(toMap(compressionInfo));
-  }
+  List<CompressionFileState> getAll();
 
-  public void insertUpdate(CompressionFileState compressionInfo) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    Gson gson = new Gson();
-    String sql = "REPLACE INTO " + TABLE_NAME
-        + "(path, buffer_size, compression_impl, "
-        + "original_length, compressed_length, originalPos, compressedPos)"
-        + " VALUES(?,?,?,?,?,?,?);";
-    jdbcTemplate.update(sql, compressionInfo.getPath(),
-        compressionInfo.getBufferSize(),
-        compressionInfo.getCompressionImpl(),
-        compressionInfo.getOriginalLength(),
-        compressionInfo.getCompressedLength(),
-        gson.toJson(compressionInfo.getOriginalPos()),
-        gson.toJson(compressionInfo.getCompressedPos()));
-  }
-
-  public void deleteByPath(String filePath) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    final String sql = "DELETE FROM " + TABLE_NAME + " WHERE path = ?";
-    jdbcTemplate.update(sql, filePath);
-  }
-
-  public void deleteAll() {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    final String sql = "DELETE FROM " + TABLE_NAME;
-    jdbcTemplate.execute(sql);
-  }
-
-  public List<CompressionFileState> getAll() {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    return jdbcTemplate.query("SELECT * FROM " + TABLE_NAME,
-        new CompressFileRowMapper());
-  }
-
-  public CompressionFileState getInfoByPath(String filePath) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    return jdbcTemplate.queryForObject("SELECT * FROM " + TABLE_NAME + " WHERE path = ?",
-        new Object[]{filePath}, new CompressFileRowMapper());
-  }
-
-  private Map<String, Object> toMap(CompressionFileState compressionInfo) {
-    Gson gson = new Gson();
-    Map<String, Object> parameters = new HashMap<>();
-    Long[] originalPos = compressionInfo.getOriginalPos();
-    Long[] compressedPos = compressionInfo.getCompressedPos();
-    String originalPosGson = gson.toJson(originalPos);
-    String compressedPosGson = gson.toJson(compressedPos);
-    parameters.put("path", compressionInfo.getPath());
-    parameters.put("buffer_size", compressionInfo.getBufferSize());
-    parameters.put("compression_impl", compressionInfo.getCompressionImpl());
-    parameters.put("original_length", compressionInfo.getOriginalLength());
-    parameters.put("compressed_length", compressionInfo.getCompressedLength());
-    parameters.put("originalPos", originalPosGson);
-    parameters.put("compressedPos", compressedPosGson);
-    return parameters;
-  }
-
-  class CompressFileRowMapper implements RowMapper<CompressionFileState> {
-    @Override
-    public CompressionFileState mapRow(ResultSet resultSet, int i) throws SQLException {
-      Gson gson = new Gson();
-      String originalPosGson = resultSet.getString("originalPos");
-      String compressedPosGson = resultSet.getString("compressedPos");
-      Long[] originalPos = gson.fromJson(originalPosGson, new TypeToken<Long[]>(){}.getType());
-      Long[] compressedPos = gson.fromJson(compressedPosGson, new TypeToken<Long[]>(){}.getType());
-      CompressionFileState compressionInfo =
-          CompressionFileState.newBuilder()
-          .setFileName(resultSet.getString("path"))
-          .setBufferSize(resultSet.getInt("buffer_size"))
-          .setCompressImpl(resultSet.getString("compression_impl"))
-          .setOriginalLength(resultSet.getLong("original_length"))
-          .setCompressedLength(resultSet.getLong("compressed_length"))
-          .setOriginalPos(originalPos)
-          .setCompressedPos(compressedPos)
-          .build();
-      return compressionInfo;
-    }
-  }
+  CompressionFileState getInfoByPath(String filePath);
 }

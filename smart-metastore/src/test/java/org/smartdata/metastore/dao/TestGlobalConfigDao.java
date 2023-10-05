@@ -25,13 +25,13 @@ import org.junit.Test;
 import org.smartdata.metastore.TestDaoUtil;
 import org.smartdata.model.GlobalConfig;
 
-public class TestGlobalConfigDao extends TestDaoUtil{
+public class TestGlobalConfigDao extends TestDaoUtil {
   private GlobalConfigDao globalConfigDao;
 
   @Before
   public void initGlobalConfigDao() throws Exception {
     initDao();
-    globalConfigDao = new GlobalConfigDao(druidPool.getDataSource());
+    globalConfigDao = daoProvider.globalConfigDao();
   }
 
   @After
@@ -41,7 +41,7 @@ public class TestGlobalConfigDao extends TestDaoUtil{
   }
 
   @Test
-  public void testInsertAndGetSingleRecord(){
+  public void testInsertAndGetSingleRecord() {
     GlobalConfig globalConfig = new GlobalConfig();
     globalConfig.setCid(1);
     globalConfig.setPropertyName("test");

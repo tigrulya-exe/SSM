@@ -37,7 +37,7 @@ public class TestCacheFileDao extends TestDaoUtil {
   @Before
   public void initCacheFileDao() throws Exception {
     initDao();
-    cacheFileDao = new CacheFileDao(druidPool.getDataSource());
+    cacheFileDao = daoProvider.cacheFileDao();
   }
 
   @After
@@ -91,19 +91,19 @@ public class TestCacheFileDao extends TestDaoUtil {
         .insert(80L,
             "testPath", 123456L, 234567L, 456);
     Assert.assertTrue(cacheFileDao.getById(
-      80L).getFromTime() == 123456L);
+        80L).getFromTime() == 123456L);
     // Update record with 80l id
     cacheFileDao.update(80L,
-      123455L, 460);
+        123455L, 460);
     Assert.assertTrue(cacheFileDao
-                          .getAll().get(0)
-                          .getLastAccessTime() == 123455L);
-    CachedFileStatus[] cachedFileStatuses = new CachedFileStatus[] {
+        .getAll().get(0)
+        .getLastAccessTime() == 123455L);
+    CachedFileStatus[] cachedFileStatuses = new CachedFileStatus[]{
         new CachedFileStatus(321L, "testPath",
-          113334L, 222222L, 222)};
+            113334L, 222222L, 222)};
     cacheFileDao.insert(cachedFileStatuses);
     Assert.assertTrue(cacheFileDao.getById(321L)
-                          .equals(cachedFileStatuses[0]));
+        .equals(cachedFileStatuses[0]));
     Assert.assertTrue(cacheFileDao.getAll().size() == 2);
     // Delete one record
     cacheFileDao.deleteById(321L);
@@ -116,13 +116,13 @@ public class TestCacheFileDao extends TestDaoUtil {
   @Test
   public void testGetCachedFileStatus() throws Exception {
     cacheFileDao.insert(6L, "testPath", 1490918400000L,
-      234567L, 456);
+        234567L, 456);
     CachedFileStatus cachedFileStatus = new CachedFileStatus(6L, "testPath", 1490918400000L,
-      234567L, 456);
+        234567L, 456);
     cacheFileDao.insert(19L, "testPath", 1490918400000L,
-      234567L, 456);
+        234567L, 456);
     cacheFileDao.insert(23L, "testPath", 1490918400000L,
-      234567L, 456);
+        234567L, 456);
     CachedFileStatus dbcachedFileStatus = cacheFileDao.getById(6);
     Assert.assertTrue(dbcachedFileStatus.equals(cachedFileStatus));
     List<CachedFileStatus> cachedFileList = cacheFileDao.getAll();

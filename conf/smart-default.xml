@@ -360,11 +360,20 @@
   </property>
 
   <property>
-    <name>smart.metastore.character.takeup.bytes</name>
-    <value>1</value>
+    <name>smart.metastore.migration.liquibase.changelog.path</name>
+    <value>db/changelog/changelog-root.xml</value>
     <description>
-      How many bytes that one character takes up, default value is 1.
-      This property is used to make mysql5.6 compatible with SSM.
+      Path to liquibase changelog root file.
+    </description>
+  </property>
+
+  <property>
+    <name>smart.metastore.migration.liquibase.labels</name>
+    <value></value>
+    <description>
+      Comma-separated liquibase changeSet labels to run migration with.
+      E.g. 'old_mysql' to enable support of db object names longer than 797 bytes in
+      versions of MySQL lesser than 5.7.
     </description>
   </property>
 </configuration>

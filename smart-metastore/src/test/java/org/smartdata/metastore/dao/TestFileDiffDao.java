@@ -37,7 +37,7 @@ public class TestFileDiffDao extends TestDaoUtil {
   @Before
   public void initFileDiffDAO() throws Exception {
     initDao();
-    fileDiffDao = new FileDiffDao(druidPool.getDataSource());
+    fileDiffDao = daoProvider.fileDiffDao();
   }
 
   @After

@@ -19,161 +19,35 @@ package org.smartdata.metastore.dao;
 
 import org.smartdata.model.StorageCapacity;
 import org.smartdata.model.StoragePolicy;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 
-import javax.sql.DataSource;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class StorageDao {
-  private DataSource dataSource;
+public interface StorageDao {
 
-  public void setDataSource(DataSource dataSource) {
-    this.dataSource = dataSource;
-  }
+  Map<String, StorageCapacity> getStorageTablesItem();
 
+  Map<Integer, String> getStoragePolicyIdNameMap() throws SQLException;
 
-  public StorageDao(DataSource dataSource) {
-    this.dataSource = dataSource;
-  }
+  StorageCapacity getStorageCapacity(String type);
 
-  public Map<String, StorageCapacity> getStorageTablesItem() {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "SELECT * FROM storage";
-    List<StorageCapacity> list = jdbcTemplate.query(sql,
-        new RowMapper<StorageCapacity>() {
-          public StorageCapacity mapRow(ResultSet rs,
-              int rowNum) throws SQLException {
-            return new StorageCapacity(rs.getString("type"), rs.getLong("time_stamp"),
-                rs.getLong("capacity"), rs.getLong("free"));
-          }
-        });
-    Map<String, StorageCapacity> map = new HashMap<>();
-    for (StorageCapacity s : list) {
-      map.put(s.getType(), s);
-    }
-    return map;
-  }
+  String getStoragePolicyName(int sid);
 
-  public Map<Integer, String> getStoragePolicyIdNameMap() throws SQLException {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "SELECT * FROM storage_policy";
-    List<StoragePolicy> list = jdbcTemplate.query(sql,
-        new RowMapper<StoragePolicy>() {
-          public StoragePolicy mapRow(ResultSet rs,
-              int rowNum) throws SQLException {
-            return new StoragePolicy(rs.getByte("sid"),
-                rs.getString("policy_name"));
-          }
-        });
-    Map<Integer, String> map = new HashMap<>();
-    for (StoragePolicy s : list) {
-      map.put((int) (s.getSid()), s.getPolicyName());
-    }
-    return map;
-  }
+  void insertStoragePolicyTable(StoragePolicy s);
 
-  public StorageCapacity getStorageCapacity(String type) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "SELECT * FROM storage WHERE type = ?";
-    return jdbcTemplate.queryForObject(sql, new Object[]{type},
-        new RowMapper<StorageCapacity>() {
-          public StorageCapacity mapRow(ResultSet rs,
-              int rowNum) throws SQLException {
-            return new StorageCapacity(rs.getString("type"), rs.getLong("time_stamp"),
-                rs.getLong("capacity"), rs.getLong("free"));
-          }
-        });
-  }
+  int updateFileStoragePolicy(String path,
+                              Integer policyId) throws SQLException;
 
-  public String getStoragePolicyName(int sid) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "SELECT policy_name FROM storage_policy WHERE sid = ?";
-    return jdbcTemplate.queryForObject(sql, new Object[]{sid}, String.class);
-  }
+  void insertUpdateStoragesTable(StorageCapacity[] storages)
+      throws SQLException;
 
-  public synchronized void insertStoragePolicyTable(StoragePolicy s) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "INSERT INTO storage_policy (sid, policy_name) VALUES('"
-        + s.getSid() + "','" + s.getPolicyName() + "');";
-    jdbcTemplate.execute(sql);
-  }
+  int getCountOfStorageType(String type);
 
-  public int updateFileStoragePolicy(String path,
-      Integer policyId) throws SQLException {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = String.format(
-        "UPDATE file SET sid = %d WHERE path = '%s';",
-        policyId, path);
-    return jdbcTemplate.update(sql);
-  }
+  void deleteStorage(String storageType);
 
-  public void insertUpdateStoragesTable(final StorageCapacity[] storages)
-      throws SQLException {
-    if (storages.length == 0) {
-      return;
-    }
-    final Long curr = System.currentTimeMillis();
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "REPLACE INTO storage (type, time_stamp, capacity, free) VALUES (?,?,?,?);";
-    jdbcTemplate.batchUpdate(sql,
-        new BatchPreparedStatementSetter() {
-          public void setValues(PreparedStatement ps,
-              int i) throws SQLException {
-            ps.setString(1, storages[i].getType());
-            if (storages[i].getTimeStamp() == null) {
-              ps.setLong(2, curr);
-            } else {
-              ps.setLong(2, storages[i].getTimeStamp());
-            }
-            ps.setLong(3, storages[i].getCapacity());
-            ps.setLong(4, storages[i].getFree());
-          }
+  boolean updateStoragesTable(String type, Long timeStamp,
+                              Long capacity, Long free) throws SQLException;
 
-          public int getBatchSize() {
-            return storages.length;
-          }
-        });
-  }
-
-  public int getCountOfStorageType(String type) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "SELECT COUNT(*) FROM storage WHERE type = ?";
-    return jdbcTemplate.queryForObject(sql, Integer.class, type);
-  }
-
-  public void deleteStorage(String storageType) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    final String sql = "DELETE FROM storage WHERE type = ?";
-    jdbcTemplate.update(sql, storageType);
-  }
-
-  public synchronized boolean updateStoragesTable(String type, Long timeStamp,
-      Long capacity, Long free) throws SQLException {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = null;
-    String sqlPrefix = "UPDATE storage SET";
-    String sqlCapacity = (capacity != null) ? ", capacity = '"
-        + capacity + "' " : null;
-    String sqlFree = (free != null) ? ", free = '" + free + "' " : null;
-    String sqlTimeStamp = (timeStamp != null) ? ", time_stamp = " + timeStamp + " " : null;
-    String sqlSuffix = "WHERE type = '" + type + "';";
-    if (capacity != null || free != null) {
-      sql = sqlPrefix + sqlCapacity + sqlFree + sqlTimeStamp + sqlSuffix;
-      sql = sql.replaceFirst(",", "");
-    }
-    return jdbcTemplate.update(sql) == 1;
-  }
-
-  public synchronized boolean updateStoragesTable(String type,
-      Long capacity, Long free) throws SQLException {
-    return updateStoragesTable(type, System.currentTimeMillis(), capacity, free);
-  }
+  boolean updateStoragesTable(String type,
+                              Long capacity, Long free) throws SQLException;
 }

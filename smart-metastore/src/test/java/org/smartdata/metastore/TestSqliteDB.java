@@ -37,7 +37,7 @@ public class TestSqliteDB extends TestDaoUtil {
   @Before
   public void initDB() throws Exception {
     initDao();
-    metaStore = new MetaStore(druidPool);
+    metaStore = createMetastore();
   }
 
   @After
@@ -48,7 +48,7 @@ public class TestSqliteDB extends TestDaoUtil {
 
   @Test
   public void testInitDB() throws Exception {
-    MetaStoreUtils.initializeDataBase(metaStore.getConnection());
+    dbManager.clearDatabase();
   }
 
   @Test
@@ -110,11 +110,11 @@ public class TestSqliteDB extends TestDaoUtil {
   @Test
   public void testDBBlankStatements() throws Exception {
     String[] presqls =
-        new String[] {
-          "INSERT INTO rule (state, rule_text, submit_time, checked_count, "
-              + "generated_cmdlets) VALUES (0, 'file: every 1s \n"
-              + " | "
-              + "accessCount(5s) > 3 | cache', 1494903787619, 0, 0);"
+        new String[]{
+            "INSERT INTO rule (state, rule_text, submit_time, checked_count, "
+                + "generated_cmdlets) VALUES (0, 'file: every 1s \n"
+                + " | "
+                + "accessCount(5s) > 3 | cache', 1494903787619, 0, 0);"
         };
 
     for (int i = 0; i < presqls.length; i++) {
@@ -123,13 +123,13 @@ public class TestSqliteDB extends TestDaoUtil {
     }
 
     String[] sqls =
-        new String[] {
-          "DROP TABLE IF EXISTS VIR_ACC_CNT_TAB_1_accessCount_5000;",
-          "CREATE TABLE VIR_ACC_CNT_TAB_1_accessCount_5000 "
-              + "AS SELECT * FROM blank_access_count_info;",
-          "SELECT fid from VIR_ACC_CNT_TAB_1_accessCount_5000;",
-          "SELECT path FROM file WHERE (fid IN (SELECT fid FROM "
-              + "VIR_ACC_CNT_TAB_1_accessCount_5000 WHERE ((count > 3))));"
+        new String[]{
+            "DROP TABLE IF EXISTS VIR_ACC_CNT_TAB_1_accessCount_5000;",
+            "CREATE TABLE VIR_ACC_CNT_TAB_1_accessCount_5000 "
+                + "AS SELECT * FROM blank_access_count_info;",
+            "SELECT fid from VIR_ACC_CNT_TAB_1_accessCount_5000;",
+            "SELECT path FROM file WHERE (fid IN (SELECT fid FROM "
+                + "VIR_ACC_CNT_TAB_1_accessCount_5000 WHERE ((count > 3))));"
         };
 
     for (int i = 0; i < sqls.length * 3; i++) {

@@ -37,7 +37,7 @@ public class TestStorageHistoryDao extends TestDaoUtil {
   @Before
   public void initStorageDao() throws Exception {
     initDao();
-    storageHistDao = new StorageHistoryDao(druidPool.getDataSource());
+    storageHistDao = daoProvider.storageHistoryDao();
   }
 
   @After

@@ -36,7 +36,7 @@ public class TestRulesTable extends TestDaoUtil {
   @Test
   public void testRuleInsert() throws Exception {
     initDao();
-    MetaStore adapter = new MetaStore(druidPool);
+    MetaStore adapter = createMetastore();
     String rule = "file : accessCount(10m) > 20 \n\n"
         + "and length() > 3 | cache";
     long submitTime = System.currentTimeMillis();
@@ -54,7 +54,7 @@ public class TestRulesTable extends TestDaoUtil {
     Assert.assertFalse(info11.equals(info21));
 
     List<RuleInfo> infos = adapter.getRuleInfo();
-    assert(infos.size() == 2);
+    assert (infos.size() == 2);
     closeDao();
   }
 }

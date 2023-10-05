@@ -17,6 +17,11 @@
  */
 package org.smartdata.metastore;
 
+import org.apache.hadoop.conf.Configuration;
+import org.smartdata.metastore.dao.DaoProvider;
+import org.smartdata.metastore.dao.impl.DefaultDaoProvider;
+import org.smartdata.metastore.db.DBManager;
+import org.smartdata.metastore.db.DBManagerFactory;
 import org.smartdata.metastore.utils.MetaStoreUtils;
 
 import java.io.File;
@@ -26,6 +31,8 @@ import java.util.Properties;
 
 public class TestDaoUtil {
   protected DruidPool druidPool;
+  protected DBManager dbManager;
+  protected DaoProvider daoProvider;
   protected String dbFile;
   protected String url;
 
@@ -40,6 +47,9 @@ public class TestDaoUtil {
     p.setProperty("url", url);
 
     druidPool = new DruidPool(p);
+    dbManager = new DBManagerFactory()
+        .createDbManager(druidPool, new Configuration());
+    daoProvider = new DefaultDaoProvider(druidPool);
   }
 
   public void closeDao() throws Exception {
@@ -50,5 +60,9 @@ public class TestDaoUtil {
     if (druidPool != null) {
       druidPool.close();
     }
+  }
+
+  protected MetaStore createMetastore() throws MetaStoreException {
+    return new MetaStore(druidPool, dbManager, new DefaultDaoProvider(druidPool));
   }
 }

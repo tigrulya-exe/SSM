@@ -1,0 +1,763 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+    <changeSet id="2023.09.28_000" author="tmanasyan" labels="old_mysql" failOnError="false">
+        <sql dbms="mysql, mariadb">
+            SET GLOBAL innodb_file_format=barracuda;
+            SET GLOBAL innodb_file_per_table=true;
+            SET GLOBAL innodb_large_prefix = ON;
+        </sql>
+    </changeSet>
+
+    <changeSet id="2023.09.28_001" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="access_count_table"/>
+            </not>
+        </preConditions>
+        <createTable tableName="access_count_table">
+            <column name="table_name" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="start_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_002" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="blank_access_count_info"/>
+            </not>
+        </preConditions>
+        <createTable tableName="blank_access_count_info">
+            <column name="fid" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="count" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_003" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="cached_file"/>
+            </not>
+        </preConditions>
+        <createTable tableName="cached_file">
+            <column name="fid" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="path" type="VARCHAR(1000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="from_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_access_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="accessed_num" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_0031" author="tmanasyan" labels="old_mysql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="cached_file"/>
+        </preConditions>
+        <sql dbms="mysql, mariadb">
+            ALTER TABLE cached_file ROW_FORMAT= DYNAMIC ENGINE=INNODB;
+        </sql>
+    </changeSet>
+
+    <changeSet id="2023.09.28_004" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="cached_file_fid_idx"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="cached_file_fid_idx" tableName="cached_file">
+            <column name="fid"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2023.09.28_005" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="cached_file_path_idx"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="cached_file_path_idx" tableName="cached_file">
+            <column name="path"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2023.09.28_006" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="ec_policy"/>
+            </not>
+        </preConditions>
+        <createTable tableName="ec_policy">
+            <column name="id" type="TINYINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="policy_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_007" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="file"/>
+            </not>
+        </preConditions>
+        <createTable tableName="file">
+            <column name="path" type="VARCHAR(1000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fid" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="length" type="BIGINT"/>
+            <column name="block_replication" type="SMALLINT"/>
+            <column name="block_size" type="BIGINT"/>
+            <column name="modification_time" type="BIGINT"/>
+            <column name="access_time" type="BIGINT"/>
+            <column name="is_dir" type="BIT"/>
+            <column name="sid" type="TINYINT"/>
+            <column name="owner" type="VARCHAR(255)"/>
+            <column name="owner_group" type="VARCHAR(255)"/>
+            <column name="permission" type="SMALLINT"/>
+            <column name="ec_policy_id" type="BIT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_008" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="file_fid_idx"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="file_fid_idx" tableName="file">
+            <column name="fid"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2023.09.28_009" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="file_path_idx"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="file_path_idx" tableName="file">
+            <column name="path"/>
+        </createIndex>
+        <modifySql dbms="mysql, mariadb" labels="old_mysql">
+            <replace replace="`path`" with="`path`(767)"/>
+        </modifySql>
+    </changeSet>
+
+    <changeSet id="2023.09.28_010" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="storage"/>
+            </not>
+        </preConditions>
+        <createTable tableName="storage">
+            <column name="type" type="VARCHAR(32)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="time_stamp" type="BIGINT"/>
+            <column name="capacity" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="free" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_011" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="storage_hist"/>
+            </not>
+        </preConditions>
+        <createTable tableName="storage_hist">
+            <column name="type" type="VARCHAR(64)"/>
+            <column name="time_stamp" type="BIGINT"/>
+            <column name="capacity" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="free" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_012" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="type_idx"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="type_idx" tableName="storage_hist">
+            <column name="type"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2023.09.28_013" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="time_stamp_idx"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="time_stamp_idx" tableName="storage_hist">
+            <column name="time_stamp"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2023.09.28_014" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="storage_policy"/>
+            </not>
+        </preConditions>
+        <createTable tableName="storage_policy">
+            <column name="sid" type="TINYINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="policy_name" type="VARCHAR(64)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_015" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <tableIsEmpty tableName="storage_policy"/>
+        </preConditions>
+        <insert tableName="storage_policy">
+            <column name="sid" value="0"/>
+            <column name="policy_name" value="UNDEF"/>
+        </insert>
+        <insert tableName="storage_policy">
+            <column name="sid" value="2"/>
+            <column name="policy_name" value="COLD"/>
+        </insert>
+        <insert tableName="storage_policy">
+            <column name="sid" value="5"/>
+            <column name="policy_name" value="WARM"/>
+        </insert>
+        <insert tableName="storage_policy">
+            <column name="sid" value="7"/>
+            <column name="policy_name" value="HOT"/>
+        </insert>
+        <insert tableName="storage_policy">
+            <column name="sid" value="10"/>
+            <column name="policy_name" value="ONE_SSD"/>
+        </insert>
+        <insert tableName="storage_policy">
+            <column name="sid" value="12"/>
+            <column name="policy_name" value="ALL_SSD"/>
+        </insert>
+        <insert tableName="storage_policy">
+            <column name="sid" value="15"/>
+            <column name="policy_name" value="LAZY_PERSIST"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2023.09.28_016" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="xattr"/>
+            </not>
+        </preConditions>
+        <createTable tableName="xattr">
+            <column name="fid" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="namespace" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="BLOB">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_017" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="xattr_fid_idx"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="xattr_fid_idx" tableName="xattr">
+            <column name="fid"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2023.09.28_018" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="datanode_info"/>
+            </not>
+        </preConditions>
+        <createTable tableName="datanode_info">
+            <column name="uuid" type="VARCHAR(64)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="hostname" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rpcAddress" type="VARCHAR(21)"/>
+            <column name="cache_capacity" type="BIGINT"/>
+            <column name="cache_used" type="BIGINT"/>
+            <column name="location" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_019" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="datanode_storage_info"/>
+            </not>
+        </preConditions>
+        <createTable tableName="datanode_storage_info">
+            <column name="uuid" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sid" type="TINYINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="TINYINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="storage_id" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="failed" type="BIT"/>
+            <column name="capacity" type="BIGINT"/>
+            <column name="dfs_used" type="BIGINT"/>
+            <column name="remaining" type="BIGINT"/>
+            <column name="block_pool_used" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_020" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="rule"/>
+            </not>
+        </preConditions>
+        <createTable tableName="rule">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="state" type="TINYINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rule_text" type="VARCHAR(4096)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="submit_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_check_time" type="BIGINT"/>
+            <column name="checked_count" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="generated_cmdlets" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_021" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="cmdlet"/>
+            </not>
+        </preConditions>
+        <createTable tableName="cmdlet">
+            <column name="cid" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="rid" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aids" type="VARCHAR(4096)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="TINYINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parameters" type="VARCHAR(4096)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="generate_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state_changed_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_022" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="action"/>
+            </not>
+        </preConditions>
+        <createTable tableName="action">
+            <column name="aid" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="cid" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action_name" type="VARCHAR(4096)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="args" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="result" type="MEDIUMTEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="log" type="LONGTEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="successful" type="TINYINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="finished" type="TINYINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="finish_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="exec_host" type="VARCHAR(255)"/>
+            <column name="progress" type="FLOAT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_023" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="file_diff"/>
+            </not>
+        </preConditions>
+        <createTable tableName="file_diff">
+            <column autoIncrement="true" name="did" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="rid" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="diff_type" type="VARCHAR(4096)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="src" type="VARCHAR(1000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parameters" type="VARCHAR(4096)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="TINYINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_0231" author="tmanasyan" labels="old_mysql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="file_diff"/>
+        </preConditions>
+        <sql dbms="mysql, mariadb">
+            ALTER TABLE file_diff ROW_FORMAT= DYNAMIC ENGINE=INNODB;
+        </sql>
+    </changeSet>
+
+    <changeSet id="2023.09.28_024" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="file_diff_idx"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="file_diff_idx" tableName="file_diff">
+            <column name="src"/>
+        </createIndex>
+        <modifySql dbms="mysql, mariadb" labels="old_mysql">
+            <replace replace="`src`" with="`src`(767)"/>
+        </modifySql>
+    </changeSet>
+
+    <changeSet id="2023.09.28_025" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="global_config"/>
+            </not>
+        </preConditions>
+        <createTable tableName="global_config">
+            <column autoIncrement="true" name="cid" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="property_name" type="VARCHAR(512)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="property_value" type="VARCHAR(3072)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_026" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="cluster_config"/>
+            </not>
+        </preConditions>
+        <createTable tableName="cluster_config">
+            <column autoIncrement="true" name="cid" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="node_name" type="VARCHAR(512)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="config_path" type="VARCHAR(3072)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_027" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="sys_info"/>
+            </not>
+        </preConditions>
+        <createTable tableName="sys_info">
+            <column name="property" type="VARCHAR(512)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="value" type="VARCHAR(4096)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_028" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="user_info"/>
+            </not>
+        </preConditions>
+        <createTable tableName="user_info">
+            <column name="user_name" type="VARCHAR(20)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="user_password" type="VARCHAR(256)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_029" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <tableIsEmpty tableName="user_info"/>
+        </preConditions>
+        <insert tableName="user_info">
+            <column name="user_name" value="admin"/>
+            <column name="user_password"
+                    value="f2400ad74fe868714eee7e6f4f5b1bb98b140dc43cd8cb44970345c93d87fb80e7419f2a17cc6a1571776da21d321befb266b552ee09923ea2d4e82f32ad65fa"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2023.09.28_030" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="cluster_info"/>
+            </not>
+        </preConditions>
+        <createTable tableName="cluster_info">
+            <column autoIncrement="true" name="cid" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(512)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="url" type="VARCHAR(4096)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="conf_path" type="VARCHAR(4096)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_031" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="backup_file"/>
+            </not>
+        </preConditions>
+        <createTable tableName="backup_file">
+            <column name="rid" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="src" type="VARCHAR(4096)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dest" type="VARCHAR(4096)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="period" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_032" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="backup_file_rid_idx"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="backup_file_rid_idx" tableName="backup_file">
+            <column name="rid"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2023.09.28_033" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="file_state"/>
+            </not>
+        </preConditions>
+        <createTable tableName="file_state">
+            <column name="path" type="VARCHAR(512)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="type" type="TINYINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="stage" type="TINYINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_034" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="compression_file"/>
+            </not>
+        </preConditions>
+        <createTable tableName="compression_file">
+            <column name="path" type="VARCHAR(512)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="buffer_size" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="compression_impl" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="original_length" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="compressed_length" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="originalPos" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="compressedPos" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_035" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="small_file"/>
+            </not>
+        </preConditions>
+        <createTable tableName="small_file">
+            <column name="path" type="VARCHAR(1000)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="container_file_path" type="VARCHAR(4096)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="offset" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="length" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <modifySql dbms="mysql, mariadb" labels="old_mysql">
+            <replace replace="(`path`))" with="(`path`)) ROW_FORMAT=DYNAMIC ENGINE=INNODB;"/>
+        </modifySql>
+    </changeSet>
+
+    <changeSet id="2023.09.28_036" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="whitelist"/>
+            </not>
+        </preConditions>
+        <createTable tableName="whitelist">
+            <column name="last_fetched_dirs" type="VARCHAR(4096)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2023.09.28_037" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <tableIsEmpty tableName="whitelist"/>
+        </preConditions>
+        <insert tableName="whitelist">
+            <column name="last_fetched_dirs" value=""/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

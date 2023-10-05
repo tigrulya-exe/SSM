@@ -17,7 +17,12 @@
  */
 package org.smartdata.metastore;
 
+import org.apache.hadoop.conf.Configuration;
+import org.smartdata.metastore.db.DBManager;
+import org.smartdata.metastore.db.DBManagerFactory;
 import org.smartdata.metastore.utils.MetaStoreUtils;
+
+import javax.sql.DataSource;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -27,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.UUID;
 
 /**
@@ -81,25 +87,13 @@ public class TestDBUtil {
    */
   public static String getUniqueEmptySqliteDBFile()
       throws MetaStoreException {
-    String dbFile = getUniqueDBFilePath();
-    Connection conn = null;
-    try {
-      conn = MetaStoreUtils.createSqliteConnection(dbFile);
-      MetaStoreUtils.initializeDataBase(conn);
-      conn.close();
-      return dbFile;
+    try (TestSQLiteDBPool dbPool = new TestSQLiteDBPool()) {
+      DBManager dbManager = new DBManagerFactory()
+          .createDbManager(dbPool, new Configuration());
+      dbManager.initializeDatabase();
+      return dbPool.dbFilePath;
     } catch (Exception e) {
       throw new MetaStoreException(e);
-    } finally {
-      if (conn != null) {
-        try {
-          conn.close();
-        } catch (Exception e) {
-          throw new MetaStoreException(e);
-        }
-      }
-      File file = new File(dbFile);
-      file.deleteOnExit();
     }
   }
 
@@ -150,6 +144,49 @@ public class TestDBUtil {
         }
       } catch (IOException e) {
         e.printStackTrace();
+      }
+    }
+  }
+
+  private static class TestSQLiteDBPool implements DBPool, AutoCloseable {
+
+    private final String dbFilePath;
+    private Connection connection;
+
+    public TestSQLiteDBPool() {
+      this.dbFilePath = getUniqueDBFilePath();
+    }
+
+    @Override
+    public Connection getConnection() {
+      if (connection == null) {
+        try {
+          connection = MetaStoreUtils.createSqliteConnection(dbFilePath);
+        } catch (MetaStoreException exception) {
+          throw new RuntimeException(exception);
+        }
+      }
+
+      return connection;
+    }
+
+    @Override
+    public DataSource getDataSource() {
+      return null;
+    }
+
+    @Override
+    public void closeConnection(Connection conn) throws SQLException {
+      conn.close();
+    }
+
+    @Override
+    public void close() {
+      try {
+        closeConnection(connection);
+        new File(dbFilePath).deleteOnExit();
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
       }
     }
   }

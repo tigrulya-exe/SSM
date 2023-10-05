@@ -41,7 +41,7 @@ public class TestActionDao extends TestDaoUtil {
   @Before
   public void initActionDao() throws Exception {
     initDao();
-    actionDao = new ActionDao(druidPool.getDataSource());
+    actionDao = daoProvider.actionDao();
   }
 
   @After

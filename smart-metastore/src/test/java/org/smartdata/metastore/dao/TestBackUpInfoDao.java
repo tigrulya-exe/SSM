@@ -34,7 +34,7 @@ public class TestBackUpInfoDao extends TestDaoUtil {
   @Before
   public void initBackUpInfoDao() throws Exception {
     initDao();
-    backUpInfoDao = new BackUpInfoDao(druidPool.getDataSource());
+    backUpInfoDao = daoProvider.backUpInfoDao();
   }
 
   @After

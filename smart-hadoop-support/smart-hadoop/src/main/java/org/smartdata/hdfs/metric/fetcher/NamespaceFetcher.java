@@ -25,14 +25,13 @@ import org.slf4j.LoggerFactory;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.hdfs.CompatibilityHelperLoader;
+import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
+import org.smartdata.metastore.ingestion.FileStatusIngester;
+import org.smartdata.metastore.ingestion.IngestionTask;
 import org.smartdata.model.ErasureCodingPolicyInfo;
 import org.smartdata.model.FileInfo;
-import org.smartdata.metastore.MetaStore;
-import org.smartdata.metastore.ingestion.IngestionTask;
 import org.smartdata.model.FileInfoBatch;
-import org.smartdata.metastore.ingestion.FileStatusIngester;
-
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,7 +64,8 @@ public class NamespaceFetcher {
     this(client, metaStore, DEFAULT_INTERVAL, service, new SmartConf());
   }
 
-  public NamespaceFetcher(DFSClient client, MetaStore metaStore, ScheduledExecutorService service, SmartConf conf) {
+  public NamespaceFetcher(DFSClient client, MetaStore metaStore, ScheduledExecutorService service,
+                          SmartConf conf) {
     this(client, metaStore, DEFAULT_INTERVAL, service, conf);
   }
 
@@ -73,12 +73,13 @@ public class NamespaceFetcher {
     this(client, metaStore, fetchInterval, null, new SmartConf());
   }
 
-  public NamespaceFetcher(DFSClient client, MetaStore metaStore, long fetchInterval, SmartConf conf) {
+  public NamespaceFetcher(DFSClient client, MetaStore metaStore, long fetchInterval,
+                          SmartConf conf) {
     this(client, metaStore, fetchInterval, null, conf);
   }
 
   public NamespaceFetcher(DFSClient client, MetaStore metaStore, long fetchInterval,
-      ScheduledExecutorService service, SmartConf conf) {
+                          ScheduledExecutorService service, SmartConf conf) {
     int numProducers = conf.getInt(SmartConfKeys.SMART_NAMESPACE_FETCHER_PRODUCERS_NUM_KEY,
         SmartConfKeys.SMART_NAMESPACE_FETCHER_PRODUCERS_NUM_DEFAULT);
     numProducers = numProducers <= 0 ? 1 : numProducers;
@@ -125,7 +126,7 @@ public class NamespaceFetcher {
         LOG.info("Finished fetching all EC policies!");
       }
     } catch (MetaStoreException e) {
-      throw new IOException("Failed to clean and fetch EC policies!");
+      throw new IOException("Failed to clean and fetch EC policies!", e);
     }
 
     try {
@@ -178,7 +179,7 @@ public class NamespaceFetcher {
 
   public void stop() {
     if (fetchTaskFutures != null) {
-      for (ScheduledFuture f: fetchTaskFutures) {
+      for (ScheduledFuture f : fetchTaskFutures) {
         if (f != null) {
           f.cancel(false);
         }
@@ -224,8 +225,8 @@ public class NamespaceFetcher {
 
     // BFS finished
     public boolean isDequeEmpty() {
-      for (IngestionTask ingestionTask: ingestionTasks) {
-        if (((HdfsFetchTask)ingestionTask).parent != null) {
+      for (IngestionTask ingestionTask : ingestionTasks) {
+        if (((HdfsFetchTask) ingestionTask).parent != null) {
           return false;
         }
       }
@@ -272,7 +273,7 @@ public class NamespaceFetcher {
             long curr = System.currentTimeMillis();
             LOG.info(String.format(
                 "Finished fetch Namespace! %ds, %dms used, numDirs = %d, numFiles = %d",
-                (curr - startTime) / 1000, (curr -  startTime) % 1000,
+                (curr - startTime) / 1000, (curr - startTime) % 1000,
                 numDirectoriesFetched.get(), numFilesFetched.get()));
           }
         }
@@ -295,7 +296,7 @@ public class NamespaceFetcher {
           throw new IOException();
         }
 
-        if(!status.isDir()) {
+        if (!status.isDir()) {
           this.addFileStatus(convertToFileInfo(status, parent));
           numFilesFetched.incrementAndGet();
         }
@@ -341,7 +342,7 @@ public class NamespaceFetcher {
      */
     private HdfsFileStatus[] listStatus(String src) throws IOException {
       DirectoryListing thisListing = client.listPaths(
-        src, startAfter == null ? empty : startAfter);
+          src, startAfter == null ? empty : startAfter);
       if (thisListing == null) {
         // the directory does not exist
         startAfter = null;

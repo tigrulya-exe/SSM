@@ -28,7 +28,7 @@ public class TestXattrDao extends TestDaoUtil {
   @Before
   public void initOtherDao() throws Exception {
     initDao();
-    xattrDao = new XattrDao(druidPool.getDataSource());
+    xattrDao = daoProvider.xattrDao();
   }
 
   @After

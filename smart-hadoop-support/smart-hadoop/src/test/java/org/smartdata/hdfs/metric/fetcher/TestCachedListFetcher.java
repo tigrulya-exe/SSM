@@ -30,15 +30,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartdata.SmartContext;
+import org.smartdata.conf.SmartConf;
 import org.smartdata.hdfs.MiniClusterFactory;
 import org.smartdata.hdfs.action.CacheFileAction;
 import org.smartdata.hdfs.action.UncacheFileAction;
 import org.smartdata.hdfs.scheduler.CacheScheduler;
-import org.smartdata.model.CachedFileStatus;
-import org.smartdata.model.FileInfo;
-import org.smartdata.conf.SmartConf;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.model.CachedFileStatus;
+import org.smartdata.model.FileInfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,7 +74,7 @@ public class TestCachedListFetcher extends TestDaoUtil {
     dfs = cluster.getFileSystem();
     dfsClient = dfs.getClient();
     smartContext = new SmartContext(conf);
-    metaStore = new MetaStore(druidPool);
+    metaStore = createMetastore();
     cachedListFetcher = new CachedListFetcher(600l, dfsClient, metaStore);
   }
 
@@ -109,7 +109,7 @@ public class TestCachedListFetcher extends TestDaoUtil {
     byte erasureCodingPolicy = 0;
     fid++;
     return new FileInfo(pathString, fileId, length,
-        isDir, (short)blockReplication, blockSize, modTime, accessTime,
+        isDir, (short) blockReplication, blockSize, modTime, accessTime,
         (short) 1, owner, group, storagePolicy, erasureCodingPolicy);
   }
 

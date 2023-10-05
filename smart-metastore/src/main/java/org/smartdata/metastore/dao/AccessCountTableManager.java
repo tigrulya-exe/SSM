@@ -28,7 +28,6 @@ import org.smartdata.metrics.FileAccessEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -40,11 +39,12 @@ public class AccessCountTableManager {
   private static final int NUM_MINUTE_TABLES_TO_KEEP = 120;
   private static final int NUM_SECOND_TABLES_TO_KEEP = 30;
 
-  private MetaStore metaStore;
-  private Map<TimeGranularity, AccessCountTableDeque> tableDeques;
+  private final MetaStore metaStore;
+  private final Map<TimeGranularity, AccessCountTableDeque> tableDeques;
+  private final AccessEventAggregator accessEventAggregator;
+  private final ExecutorService executorService;
   private AccessCountTableDeque secondTableDeque;
-  private AccessEventAggregator accessEventAggregator;
-  private ExecutorService executorService;
+
   public static final Logger LOG =
       LoggerFactory.getLogger(AccessCountTableManager.class);
 
@@ -77,7 +77,8 @@ public class AccessCountTableManager {
         new AccessCountTableDeque(
             new CountEvictor(metaStore, NUM_MINUTE_TABLES_TO_KEEP), hourTableListener);
     TableAddOpListener minuteTableListener =
-        new TableAddOpListener.MinuteTableListener(minuteTableDeque, aggregator, executorService);
+        new TableAddOpListener.MinuteTableListener(minuteTableDeque, aggregator,
+            executorService);
 
     this.secondTableDeque =
         new AccessCountTableDeque(
@@ -147,9 +148,8 @@ public class AccessCountTableManager {
     long startTime = endTime - length;
     AccessCountTableDeque tables = tableDeques.get(timeGranularity);
     List<AccessCountTable> results = new ArrayList<>();
-    for (Iterator<AccessCountTable> iterator = tables.iterator(); iterator.hasNext(); ) {
+    for (AccessCountTable table : tables) {
       // Here we assume that the tables are all sorted by time.
-      AccessCountTable table = iterator.next();
       if (table.getEndTime() > startTime) {
         if (table.getStartTime() >= startTime) {
           results.add(table);

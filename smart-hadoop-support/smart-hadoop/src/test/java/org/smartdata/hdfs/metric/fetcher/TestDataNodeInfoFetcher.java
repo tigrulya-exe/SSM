@@ -54,7 +54,7 @@ public abstract class TestDataNodeInfoFetcher extends TestDaoUtil {
     dfs = cluster.getFileSystem();
     dfsClient = dfs.getClient();
     scheduledExecutorService = Executors.newScheduledThreadPool(2);
-    metaStore = new MetaStore(druidPool);
+    metaStore = createMetastore();
     fetcher = new DataNodeInfoFetcher(dfsClient, metaStore,
         scheduledExecutorService, conf);
   }
@@ -76,6 +76,6 @@ public abstract class TestDataNodeInfoFetcher extends TestDaoUtil {
     while (!fetcher.isFetchFinished()) {
       Thread.sleep(1000);
     }
-    Assert.assertEquals(2,metaStore.getAllDataNodeInfo().size());
+    Assert.assertEquals(2, metaStore.getAllDataNodeInfo().size());
   }
 }

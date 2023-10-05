@@ -17,491 +17,62 @@
  */
 package org.smartdata.metastore.dao;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.smartdata.metastore.MetaStoreException;
-import org.smartdata.metastore.utils.MetaStoreUtils;
 import org.smartdata.model.ActionInfo;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
-import javax.sql.DataSource;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class ActionDao {
+public interface ActionDao {
+  List<ActionInfo> getAll();
 
-  private static final String TABLE_NAME = "action";
-  private static final String RUNNING_TIME = "running_time";
-  private DataSource dataSource;
-  private final List<String> tableColumns;
+  Long getCountOfAction();
 
-  public ActionDao(DataSource dataSource) throws MetaStoreException {
-    this.dataSource = dataSource;
-    Connection conn = null;
-    try {
-      conn = dataSource.getConnection();
-      tableColumns = MetaStoreUtils.getTableColumns(conn, "action");
-    } catch (SQLException e) {
-      throw new MetaStoreException(e);
-    } finally {
-      if (conn != null) {
-        try {
-          conn.close();
-        } catch (Exception e) {
-          // ignore
-        }
-      }
-    }
-    tableColumns.add(RUNNING_TIME);
-  }
+  ActionInfo getById(long aid);
 
-  public List<ActionInfo> getAll() {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    return jdbcTemplate.query("SELECT * FROM " + TABLE_NAME,
-      new ActionRowMapper());
-  }
+  List<ActionInfo> getByIds(List<Long> aids);
 
-  public Long getCountOfAction() {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "SELECT COUNT(*) FROM " + TABLE_NAME;
-    return jdbcTemplate.queryForObject(sql, Long.class);
-  }
+  List<ActionInfo> getByCid(long cid);
 
-  public ActionInfo getById(long aid) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    return jdbcTemplate.queryForObject(
-      "SELECT * FROM " + TABLE_NAME + " WHERE aid = ?",
-      new Object[] {aid},
-      new ActionRowMapper());
-  }
+  List<ActionInfo> getByCondition(String aidCondition,
+                                  String cidCondition);
 
-  public List<ActionInfo> getByIds(List<Long> aids) {
-    NamedParameterJdbcTemplate namedParameterJdbcTemplate =
-      new NamedParameterJdbcTemplate(dataSource);
-    MapSqlParameterSource parameterSource = new MapSqlParameterSource();
-    parameterSource.addValue("aids", aids);
-    return namedParameterJdbcTemplate.query(
-      "SELECT * FROM " + TABLE_NAME + " WHERE aid IN (:aids)",
-      parameterSource,
-      new ActionRowMapper());
-  }
+  List<ActionInfo> getLatestActions(int size);
 
-  public List<ActionInfo> getByCid(long cid) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    return jdbcTemplate.query(
-      "SELECT * FROM " + TABLE_NAME + " WHERE cid = ?",
-      new Object[] {cid},
-      new ActionRowMapper());
-  }
+  List<ActionInfo> getLatestActions(String actionName, int size);
 
-  public List<ActionInfo> getByCondition(String aidCondition,
-      String cidCondition) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sqlPrefix = "SELECT * FROM " + TABLE_NAME + " WHERE ";
-    String sqlAid = (aidCondition == null) ? "" : "AND aid " + aidCondition;
-    String sqlCid = (cidCondition == null) ? "" : "AND cid " + cidCondition;
-    String sqlFinal = "";
-    if (aidCondition != null || cidCondition != null) {
-      sqlFinal = sqlPrefix + sqlAid + sqlCid;
-      sqlFinal = sqlFinal.replaceFirst("AND ", "");
-    } else {
-      sqlFinal = sqlPrefix.replaceFirst("WHERE ", "");
-    }
-    return jdbcTemplate.query(sqlFinal, new ActionRowMapper());
-  }
+  List<ActionInfo> getLatestActions(String actionName, int size,
+                                    boolean successful, boolean finished);
 
-  public List<ActionInfo> getLatestActions(int size) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    if (size != 0) {
-      jdbcTemplate.setMaxRows(size);
-    }
-    String sql = "SELECT * FROM " + TABLE_NAME + " ORDER BY aid DESC";
-    return jdbcTemplate.query(sql, new ActionRowMapper());
-  }
+  List<ActionInfo> getLatestActions(String actionName, boolean successful,
+                                    int size);
 
-  public List<ActionInfo> getLatestActions(String actionName, int size) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    if (size != 0) {
-      jdbcTemplate.setMaxRows(size);
-    }
-    String sql = "SELECT * FROM " + TABLE_NAME + " WHERE action_name = ? ORDER BY aid DESC";
-    return jdbcTemplate.query(sql, new ActionRowMapper(), actionName);
-  }
+  List<ActionInfo> getAPageOfAction(long start, long offset, List<String> orderBy,
+                                    List<Boolean> isDesc);
 
-  public List<ActionInfo> getLatestActions(String actionName, int size,
-      boolean successful, boolean finished) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    if (size != 0) {
-      jdbcTemplate.setMaxRows(size);
-    }
-    String sql =
-      "SELECT * FROM "
-        + TABLE_NAME
-        + " WHERE action_name = ? AND successful = ? AND finished = ? ORDER BY aid DESC";
-    return jdbcTemplate.query(sql, new ActionRowMapper(), actionName, successful, finished);
-  }
+  List<ActionInfo> getAPageOfAction(long start, long offset);
 
-  public List<ActionInfo> getLatestActions(String actionName, boolean successful,
-      int size) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    if (size != 0) {
-      jdbcTemplate.setMaxRows(size);
-    }
-    String sql =
-      "SELECT * FROM "
-        + TABLE_NAME
-        + " WHERE action_name = ? AND successful = ? ORDER BY aid DESC";
-    return jdbcTemplate.query(sql, new ActionRowMapper(), actionName, successful);
-  }
+  List<ActionInfo> searchAction(String path, long start, long offset, List<String> orderBy,
+                                List<Boolean> isDesc, long[] retTotalNumActions);
 
-  public List<ActionInfo> getAPageOfAction(long start, long offset, List<String> orderBy,
-      List<Boolean> isDesc) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    boolean ifHasAid = false;
-    String sql = "SELECT * FROM " + TABLE_NAME + " ORDER BY ";
+  List<ActionInfo> getLatestActions(String actionType, int size,
+                                    boolean finished);
 
-    for (int i = 0; i < orderBy.size(); i++) {
-      String ob = orderBy.get(i);
-      if (!tableColumns.contains(ob)) {
-        continue;
-      }
+  void delete(long aid);
 
-      if (ob.equals("aid")) {
-        ifHasAid = true;
-      }
+  void deleteCmdletActions(long cid);
 
-      if (ob.equals(RUNNING_TIME)) {
-        sql = sql + "(finish_time - create_time)";
-      } else {
-        sql = sql + ob;
-      }
-      if (isDesc.size() > i) {
-        if (isDesc.get(i)) {
-          sql = sql + " desc ";
-        }
-        sql = sql + ",";
-      }
-    }
+  int[] batchDeleteCmdletActions(List<Long> cids);
 
-    if (!ifHasAid) {
-      sql = sql + "aid,";
-    }
+  void deleteAll();
 
-    //delete the last char
-    sql = sql.substring(0, sql.length() - 1);
-    //add limit
-    sql = sql + " LIMIT " + start + "," + offset + ";";
-    return jdbcTemplate.query(sql, new ActionRowPartMapper());
-  }
+  void insert(ActionInfo actionInfo);
 
-  public List<ActionInfo> getAPageOfAction(long start, long offset) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql = "SELECT * FROM " + TABLE_NAME + " LIMIT " + start + "," + offset + ";";
-    return jdbcTemplate.query(sql, new ActionRowPartMapper());
-  }
+  void insert(ActionInfo[] actionInfos);
 
-  public List<ActionInfo> searchAction(String path, long start, long offset, List<String> orderBy,
-      List<Boolean> isDesc, long[] retTotalNumActions) {
-    List<ActionInfo> ret;
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    boolean ifHasAid = false;
-    String sqlFilter = TABLE_NAME + " WHERE ("
-        + "aid LIKE '%" + path + "%' ESCAPE '/' "
-        + "OR cid LIKE '%" + path + "%' ESCAPE '/' "
-        + "OR args LIKE '%" + path + "%' ESCAPE '/' "
-        + "OR result LIKE '%" + path + "%' ESCAPE '/' "
-        + "OR exec_host LIKE '%" + path + "%' ESCAPE '/' "
-        + "OR progress LIKE '%" + path + "%' ESCAPE '/' "
-        + "OR log LIKE '%" + path + "%' ESCAPE '/' "
-        + "OR action_name LIKE '%" + path + "%' ESCAPE '/')";
-    String sql = "SELECT * FROM " + sqlFilter;
-    String sqlCount = "SELECT count(*) FROM " + sqlFilter + ";";
-    if (orderBy.size() == 0) {
-      sql += " LIMIT " + start + "," + offset + ";";
-      ret = jdbcTemplate.query(sql, new ActionRowMapper());
-    } else {
-      sql += " ORDER BY ";
+  int[] replace(ActionInfo[] actionInfos);
 
-      for (int i = 0; i < orderBy.size(); i++) {
-        String ob = orderBy.get(i);
-        if (!tableColumns.contains(ob)) {
-          continue;
-        }
+  int update(ActionInfo actionInfo);
 
-        if (ob.equals("aid")) {
-          ifHasAid = true;
-        }
+  int[] update(ActionInfo[] actionInfos);
 
-        if (ob.equals(RUNNING_TIME)) {
-          sql = sql + "(finish_time - create_time)";
-        } else {
-          sql = sql + ob;
-        }
-
-        if (isDesc.size() > i) {
-          if (isDesc.get(i)) {
-            sql = sql + " desc ";
-          }
-          sql = sql + ",";
-        }
-      }
-
-      if (!ifHasAid) {
-        sql = sql + "aid,";
-      }
-
-      //delete the last char
-      sql = sql.substring(0, sql.length() - 1);
-      //add limit
-      sql = sql + " LIMIT " + start + "," + offset + ";";
-      ret = jdbcTemplate.query(sql, new ActionRowMapper());
-    }
-    if (retTotalNumActions != null) {
-      retTotalNumActions[0] = jdbcTemplate.queryForObject(sqlCount, Long.class);
-    }
-    return ret;
-  }
-
-  public List<ActionInfo> getLatestActions(String actionType, int size,
-      boolean finished) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    if (size != 0) {
-      jdbcTemplate.setMaxRows(size);
-    }
-    String sql =
-      "SELECT * FROM " + TABLE_NAME + " WHERE action_name = ? AND finished = ? ORDER BY aid DESC";
-    return jdbcTemplate.query(sql, new ActionRowMapper(), actionType, finished);
-  }
-
-  public void delete(long aid) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    final String sql = "DELETE FROM " + TABLE_NAME + " WHERE aid = ?";
-    jdbcTemplate.update(sql, aid);
-  }
-
-  public void deleteCmdletActions(long cid) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    final String sql = "DELETE FROM " + TABLE_NAME + " WHERE cid = ?";
-    jdbcTemplate.update(sql, cid);
-  }
-
-  public int[] batchDeleteCmdletActions(final List<Long> cids) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    final String sql = "DELETE FROM " + TABLE_NAME + " WHERE cid = ?";
-    return jdbcTemplate.batchUpdate(
-      sql,
-      new BatchPreparedStatementSetter() {
-        public void setValues(PreparedStatement ps, int i) throws SQLException {
-          ps.setLong(1, cids.get(i));
-        }
-
-        public int getBatchSize() {
-          return cids.size();
-        }
-      });
-  }
-
-  public void deleteAll() {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    final String sql = "DELETE FROM " + TABLE_NAME;
-    jdbcTemplate.execute(sql);
-  }
-
-  public void insert(ActionInfo actionInfo) {
-    SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(dataSource);
-    simpleJdbcInsert.setTableName(TABLE_NAME);
-    simpleJdbcInsert.execute(toMap(actionInfo));
-  }
-
-  public void insert(ActionInfo[] actionInfos) {
-    SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(dataSource);
-    simpleJdbcInsert.setTableName(TABLE_NAME);
-    Map<String, Object>[] maps = new Map[actionInfos.length];
-    for (int i = 0; i < actionInfos.length; i++) {
-      maps[i] = toMap(actionInfos[i]);
-    }
-    simpleJdbcInsert.executeBatch(maps);
-  }
-
-  public int[] replace(final ActionInfo[] actionInfos) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql =
-      "REPLACE INTO "
-        + TABLE_NAME
-        + "(aid, "
-        + "cid, "
-        + "action_name, "
-        + "args, "
-        + "result, "
-        + "log, "
-        + "successful, "
-        + "create_time, "
-        + "finished, "
-        + "finish_time, "
-        + "exec_host, "
-        + "progress)"
-        + " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    return jdbcTemplate.batchUpdate(sql,
-      new BatchPreparedStatementSetter() {
-        public void setValues(PreparedStatement ps,
-                              int i) throws SQLException {
-          ps.setLong(1, actionInfos[i].getActionId());
-          ps.setLong(2, actionInfos[i].getCmdletId());
-          ps.setString(3, actionInfos[i].getActionName());
-          ps.setString(4, actionInfos[i].getArgsJsonString());
-          ps.setString(5, actionInfos[i].getResult());
-          ps.setString(6, actionInfos[i].getLog());
-          ps.setBoolean(7, actionInfos[i].isSuccessful());
-          ps.setLong(8, actionInfos[i].getCreateTime());
-          ps.setBoolean(9, actionInfos[i].isFinished());
-          ps.setLong(10, actionInfos[i].getFinishTime());
-          ps.setString(11, actionInfos[i].getExecHost());
-          ps.setFloat(12, actionInfos[i].getProgress());
-        }
-        public int getBatchSize() {
-          return actionInfos.length;
-        }
-      });
-  }
-
-  public int update(final ActionInfo actionInfo) {
-    return update(new ActionInfo[]{actionInfo})[0];
-  }
-
-  public int[] update(final ActionInfo[] actionInfos) {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    String sql =
-      "UPDATE "
-        + TABLE_NAME
-        + " SET "
-        + "result = ?, "
-        + "log = ?, "
-        + "successful = ?, "
-        + "create_time = ?, "
-        + "finished = ?, "
-        + "finish_time = ?, "
-        + "exec_host = ?, "
-        + "progress = ? "
-        + "WHERE aid = ?";
-    return jdbcTemplate.batchUpdate(sql,
-      new BatchPreparedStatementSetter() {
-        public void setValues(PreparedStatement ps,
-                              int i) throws SQLException {
-          ps.setString(1, actionInfos[i].getResult());
-          ps.setString(2, actionInfos[i].getLog());
-          ps.setBoolean(3, actionInfos[i].isSuccessful());
-          ps.setLong(4, actionInfos[i].getCreateTime());
-          ps.setBoolean(5, actionInfos[i].isFinished());
-          ps.setLong(6, actionInfos[i].getFinishTime());
-          ps.setString(7, actionInfos[i].getExecHost());
-          ps.setFloat(8, actionInfos[i].getProgress());
-          ps.setLong(9, actionInfos[i].getActionId());
-        }
-
-        public int getBatchSize() {
-          return actionInfos.length;
-        }
-      });
-  }
-
-  public long getMaxId() {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    Long ret = jdbcTemplate
-      .queryForObject("SELECT MAX(aid) FROM " + TABLE_NAME, Long.class);
-    if (ret == null) {
-      return 0;
-    } else {
-      return ret + 1;
-    }
-  }
-
-  private Map<String, Object> toMap(ActionInfo actionInfo) {
-    Map<String, Object> parameters = new HashMap<>();
-    parameters.put("aid", actionInfo.getActionId());
-    parameters.put("cid", actionInfo.getCmdletId());
-    parameters.put("action_name", actionInfo.getActionName());
-    parameters.put("args", actionInfo.getArgsJsonString());
-    parameters
-      .put("result", StringEscapeUtils.escapeJava(actionInfo.getResult()));
-    parameters.put("log", StringEscapeUtils.escapeJava(actionInfo.getLog()));
-    parameters.put("successful", actionInfo.isSuccessful());
-    parameters.put("create_time", actionInfo.getCreateTime());
-    parameters.put("finished", actionInfo.isFinished());
-    parameters.put("finish_time", actionInfo.getFinishTime());
-    parameters.put("exec_host", actionInfo.getExecHost());
-    parameters.put("progress", actionInfo.getProgress());
-    return parameters;
-  }
-
-  class ActionRowMapper implements RowMapper<ActionInfo> {
-
-    @Override
-    public ActionInfo mapRow(ResultSet resultSet, int i) throws SQLException {
-      ActionInfo actionInfo = new ActionInfo();
-      actionInfo.setActionId(resultSet.getLong("aid"));
-      actionInfo.setCmdletId(resultSet.getLong("cid"));
-      actionInfo.setActionName(resultSet.getString("action_name"));
-      actionInfo.setArgsFromJsonString(resultSet.getString("args"));
-      actionInfo.setResult(
-        StringEscapeUtils.unescapeJava(resultSet.getString("result")));
-      actionInfo
-        .setLog(StringEscapeUtils.unescapeJava(resultSet.getString("log")));
-      actionInfo.setSuccessful(resultSet.getBoolean("successful"));
-      actionInfo.setCreateTime(resultSet.getLong("create_time"));
-      actionInfo.setFinished(resultSet.getBoolean("finished"));
-      actionInfo.setFinishTime(resultSet.getLong("finish_time"));
-      actionInfo.setExecHost(resultSet.getString("exec_host"));
-      actionInfo.setProgress(resultSet.getFloat("progress"));
-      return actionInfo;
-    }
-  }
-
-  /**
-   * No need to set result & log. If arg value is too long, it will be
-   * truncated.
-   */
-  class ActionRowPartMapper implements RowMapper<ActionInfo> {
-    @Override
-    public ActionInfo mapRow(ResultSet resultSet, int i) throws SQLException {
-      ActionInfo actionInfo = new ActionInfo();
-      actionInfo.setActionId(resultSet.getLong("aid"));
-      actionInfo.setCmdletId(resultSet.getLong("cid"));
-      actionInfo.setActionName(resultSet.getString("action_name"));
-      actionInfo.setArgsFromJsonString(resultSet.getString("args"));
-      actionInfo.setArgs(
-          getTruncatedArgs(resultSet.getString("args")));
-      actionInfo.setSuccessful(resultSet.getBoolean("successful"));
-      actionInfo.setCreateTime(resultSet.getLong("create_time"));
-      actionInfo.setFinished(resultSet.getBoolean("finished"));
-      actionInfo.setFinishTime(resultSet.getLong("finish_time"));
-      actionInfo.setExecHost(resultSet.getString("exec_host"));
-      actionInfo.setProgress(resultSet.getFloat("progress"));
-      return actionInfo;
-    }
-
-    public Map<String, String> getTruncatedArgs(String jsonArgs) {
-      Gson gson = new Gson();
-      Map<String, String> args = gson.fromJson(jsonArgs,
-          new TypeToken<Map<String, String>>() {
-          }.getType());
-      for (Map.Entry<String, String> entry : args.entrySet()) {
-        if (entry.getValue().length() > 50) {
-          entry.setValue(entry.getValue().substring(0, 50) + "...");
-        }
-      }
-      return args;
-    }
-  }
+  long getMaxId();
 }

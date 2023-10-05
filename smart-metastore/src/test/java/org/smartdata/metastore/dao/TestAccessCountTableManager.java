@@ -133,7 +133,7 @@ public class TestAccessCountTableManager extends DBTest {
     assertTableEquals(new AccessCountTable(10000L, 15000L).getTableName(), "expect2");
     assertTableEquals(new AccessCountTable(15000L, 20000L).getTableName(), "expect2");
 
-    insertNewFile(new MetaStore(druidPool), "file4", 4L);
+    insertNewFile(createMetastore(), "file4", 4L);
     accessEvents.clear();
     accessEvents.add(new FileAccessEvent("file4", 25000));
     manager.onAccessEventsArrived(accessEvents);
@@ -141,7 +141,7 @@ public class TestAccessCountTableManager extends DBTest {
   }
 
   private AccessCountTableManager initTestEnvironment() throws Exception {
-    MetaStore metaStore = new MetaStore(druidPool);
+    MetaStore metaStore = createMetastore();
     createTables(databaseTester.getConnection().getConnection());
     IDataSet dataSet = new XmlDataSet(getClass().getClassLoader().getResourceAsStream("files.xml"));
     databaseTester.setDataSet(dataSet);
@@ -153,7 +153,7 @@ public class TestAccessCountTableManager extends DBTest {
   private void assertTableEquals(String actualTableName, String expectedDataSet) throws Exception {
     ITable actual = databaseTester.getConnection().createTable(actualTableName);
     ITable expect = databaseTester.getDataSet().getTable(expectedDataSet);
-    SortedTable sortedActual = new SortedTable(actual, new String[] {"fid"});
+    SortedTable sortedActual = new SortedTable(actual, new String[]{"fid"});
     sortedActual.setUseComparable(true);
     Assertion.assertEquals(expect, sortedActual);
   }
@@ -209,9 +209,11 @@ public class TestAccessCountTableManager extends DBTest {
 
     AccessCountTableDeque hourDeque = new AccessCountTableDeque(tableEvictor);
     AccessCountTable firstHour =
-        new AccessCountTable(23 * Constants.ONE_HOUR_IN_MILLIS, 24 * Constants.ONE_HOUR_IN_MILLIS);
+        new AccessCountTable(23 * Constants.ONE_HOUR_IN_MILLIS,
+            24 * Constants.ONE_HOUR_IN_MILLIS);
     AccessCountTable secondHour =
-        new AccessCountTable(24 * Constants.ONE_HOUR_IN_MILLIS, 25 * Constants.ONE_HOUR_IN_MILLIS);
+        new AccessCountTable(24 * Constants.ONE_HOUR_IN_MILLIS,
+            25 * Constants.ONE_HOUR_IN_MILLIS);
     hourDeque.addAndNotifyListener(firstHour);
     hourDeque.addAndNotifyListener(secondHour);
     map.put(TimeGranularity.HOUR, hourDeque);
@@ -264,13 +266,15 @@ public class TestAccessCountTableManager extends DBTest {
 
     List<AccessCountTable> thirdResult =
         AccessCountTableManager.getTables(
-            map, adapter, secondFiveSeconds.getEndTime() - 23 * Constants.ONE_HOUR_IN_MILLIS);
+            map, adapter,
+            secondFiveSeconds.getEndTime() - 23 * Constants.ONE_HOUR_IN_MILLIS);
     Assert.assertTrue(thirdResult.size() == 4);
     Assert.assertEquals(thirdResult.get(0), firstHour);
 
     List<AccessCountTable> fourthResult =
         AccessCountTableManager.getTables(
-            map, adapter, secondFiveSeconds.getEndTime() - 24 * Constants.ONE_HOUR_IN_MILLIS);
+            map, adapter,
+            secondFiveSeconds.getEndTime() - 24 * Constants.ONE_HOUR_IN_MILLIS);
     Assert.assertTrue(fourthResult.size() == 3);
     Assert.assertEquals(fourthResult.get(0), secondHour);
   }
@@ -285,16 +289,16 @@ public class TestAccessCountTableManager extends DBTest {
 
     AccessCountTableDeque secondDeque = new AccessCountTableDeque(tableEvictor);
     AccessCountTable firstFiveSeconds =
-      new AccessCountTable(0L, 5 * Constants.ONE_SECOND_IN_MILLIS);
+        new AccessCountTable(0L, 5 * Constants.ONE_SECOND_IN_MILLIS);
     AccessCountTable secondFiveSeconds =
-      new AccessCountTable(5 * Constants.ONE_SECOND_IN_MILLIS,
-        10 * Constants.ONE_SECOND_IN_MILLIS);
+        new AccessCountTable(5 * Constants.ONE_SECOND_IN_MILLIS,
+            10 * Constants.ONE_SECOND_IN_MILLIS);
     secondDeque.addAndNotifyListener(firstFiveSeconds);
     secondDeque.addAndNotifyListener(secondFiveSeconds);
     map.put(TimeGranularity.SECOND, secondDeque);
 
     List<AccessCountTable> result = AccessCountTableManager.getTables(map, adapter,
-    2 * Constants.ONE_MINUTE_IN_MILLIS);
+        2 * Constants.ONE_MINUTE_IN_MILLIS);
     Assert.assertTrue(result.size() == 2);
     Assert.assertTrue(result.get(0).equals(firstFiveSeconds));
     Assert.assertTrue(result.get(1).equals(secondFiveSeconds));
@@ -307,7 +311,7 @@ public class TestAccessCountTableManager extends DBTest {
     Map<TimeGranularity, AccessCountTableDeque> map = new HashMap<>();
     AccessCountTableDeque minute = new AccessCountTableDeque(tableEvictor);
     AccessCountTable firstMinute =
-      new AccessCountTable(0L, Constants.ONE_MINUTE_IN_MILLIS);
+        new AccessCountTable(0L, Constants.ONE_MINUTE_IN_MILLIS);
     minute.addAndNotifyListener(firstMinute);
     map.put(TimeGranularity.MINUTE, minute);
 
@@ -316,18 +320,18 @@ public class TestAccessCountTableManager extends DBTest {
         new AccessCountTable(
             55 * Constants.ONE_SECOND_IN_MILLIS, 60 * Constants.ONE_SECOND_IN_MILLIS);
     AccessCountTable secondFiveSeconds =
-      new AccessCountTable(60 * Constants.ONE_SECOND_IN_MILLIS,
-        65 * Constants.ONE_SECOND_IN_MILLIS);
+        new AccessCountTable(60 * Constants.ONE_SECOND_IN_MILLIS,
+            65 * Constants.ONE_SECOND_IN_MILLIS);
     AccessCountTable thirdFiveSeconds =
-      new AccessCountTable(110 * Constants.ONE_SECOND_IN_MILLIS,
-        115 * Constants.ONE_SECOND_IN_MILLIS);
+        new AccessCountTable(110 * Constants.ONE_SECOND_IN_MILLIS,
+            115 * Constants.ONE_SECOND_IN_MILLIS);
     secondDeque.addAndNotifyListener(firstFiveSeconds);
     secondDeque.addAndNotifyListener(secondFiveSeconds);
     secondDeque.addAndNotifyListener(thirdFiveSeconds);
     map.put(TimeGranularity.SECOND, secondDeque);
 
     List<AccessCountTable> result = AccessCountTableManager.getTables(map, adapter,
-      Constants.ONE_MINUTE_IN_MILLIS);
+        Constants.ONE_MINUTE_IN_MILLIS);
     Assert.assertTrue(result.size() == 3);
     Assert.assertTrue(result.get(0).equals(firstFiveSeconds));
     Assert.assertFalse(result.get(0).isEphemeral());

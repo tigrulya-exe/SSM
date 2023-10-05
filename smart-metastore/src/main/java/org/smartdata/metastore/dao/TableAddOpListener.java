@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutorService;
 
 public abstract class TableAddOpListener {
   static final Logger LOG = LoggerFactory.getLogger(TableAddOpListener.class);
-  private Set<AccessCountTable> tablesUnderAggregating;
+  private final Set<AccessCountTable> tablesUnderAggregating;
 
   AccessCountTableDeque coarseGrainedTableDeque;
   AccessCountTableAggregator tableAggregator;
@@ -52,7 +52,7 @@ public abstract class TableAddOpListener {
       final List<AccessCountTable> tablesToAggregate =
           fineGrainedTableDeque.getTables(
               lastCoarseGrainedTable.getStartTime(), lastCoarseGrainedTable.getEndTime());
-      if (tablesToAggregate.size() > 0
+      if (!tablesToAggregate.isEmpty()
           && !tablesUnderAggregating.contains(lastCoarseGrainedTable)) {
         tablesUnderAggregating.add(lastCoarseGrainedTable);
         executorService.submit(
@@ -65,7 +65,8 @@ public abstract class TableAddOpListener {
                   tablesUnderAggregating.remove(lastCoarseGrainedTable);
                 } catch (MetaStoreException e) {
                   LOG.error(
-                      "Add AccessCount Table {} error", lastCoarseGrainedTable.getTableName(), e);
+                      "Add AccessCount Table {} error",
+                      lastCoarseGrainedTable.getTableName(), e);
                 }
               }
             });
@@ -85,8 +86,8 @@ public abstract class TableAddOpListener {
 
     @Override
     public AccessCountTable lastCoarseGrainedTableFor(Long endTime) {
-      Long lastEnd = endTime - (endTime % Constants.ONE_MINUTE_IN_MILLIS);
-      Long lastStart = lastEnd - Constants.ONE_MINUTE_IN_MILLIS;
+      long lastEnd = endTime - (endTime % Constants.ONE_MINUTE_IN_MILLIS);
+      long lastStart = lastEnd - Constants.ONE_MINUTE_IN_MILLIS;
       return new AccessCountTable(lastStart, lastEnd);
     }
   }
@@ -101,8 +102,8 @@ public abstract class TableAddOpListener {
 
     @Override
     public AccessCountTable lastCoarseGrainedTableFor(Long endTime) {
-      Long lastEnd = endTime - (endTime % Constants.ONE_HOUR_IN_MILLIS);
-      Long lastStart = lastEnd - Constants.ONE_HOUR_IN_MILLIS;
+      long lastEnd = endTime - (endTime % Constants.ONE_HOUR_IN_MILLIS);
+      long lastStart = lastEnd - Constants.ONE_HOUR_IN_MILLIS;
       return new AccessCountTable(lastStart, lastEnd);
     }
   }
@@ -117,8 +118,8 @@ public abstract class TableAddOpListener {
 
     @Override
     public AccessCountTable lastCoarseGrainedTableFor(Long endTime) {
-      Long lastEnd = endTime - (endTime % Constants.ONE_DAY_IN_MILLIS);
-      Long lastStart = lastEnd - Constants.ONE_DAY_IN_MILLIS;
+      long lastEnd = endTime - (endTime % Constants.ONE_DAY_IN_MILLIS);
+      long lastStart = lastEnd - Constants.ONE_DAY_IN_MILLIS;
       return new AccessCountTable(lastStart, lastEnd);
     }
   }

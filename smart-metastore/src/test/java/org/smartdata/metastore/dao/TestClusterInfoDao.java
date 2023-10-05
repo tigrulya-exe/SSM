@@ -32,7 +32,7 @@ public class TestClusterInfoDao extends TestDaoUtil {
   @Before
   public void initClusterDao() throws Exception {
     initDao();
-    clusterInfoDao = new ClusterInfoDao(druidPool.getDataSource());
+    clusterInfoDao = daoProvider.clusterInfoDao();
   }
 
   @After
@@ -56,7 +56,7 @@ public class TestClusterInfoDao extends TestDaoUtil {
   }
 
   @Test
-  public void testBatchInssertAndQuery(){
+  public void testBatchInssertAndQuery() {
     ClusterInfo[] clusterInfos = new ClusterInfo[2];
     clusterInfos[0] = new ClusterInfo();
     clusterInfos[0].setCid(1);
@@ -77,7 +77,7 @@ public class TestClusterInfoDao extends TestDaoUtil {
     clusterInfoDao.insert(clusterInfos);
     clusterInfos[1].setCid(2);
     List<ClusterInfo> clusterInfoList = clusterInfoDao.getAll();
-    for (int i = 0; i < 2; i++){
+    for (int i = 0; i < 2; i++) {
       Assert.assertTrue(clusterInfoList.get(i).equals(clusterInfos[i]));
     }
   }

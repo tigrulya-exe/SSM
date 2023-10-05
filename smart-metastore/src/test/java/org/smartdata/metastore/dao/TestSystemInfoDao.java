@@ -32,7 +32,7 @@ public class TestSystemInfoDao extends TestDaoUtil {
   @Before
   public void initSystemInfoDao() throws Exception {
     initDao();
-    systemInfoDao = new SystemInfoDao(druidPool.getDataSource());
+    systemInfoDao = daoProvider.systemInfoDao();
   }
 
   @After
