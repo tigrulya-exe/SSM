@@ -23,7 +23,7 @@ import org.apache.hadoop.hdfs.StorageType;
 
 import java.io.IOException;
 
-public class MiniClusterFactory26 extends MiniClusterFactory {
+public class MiniClusterFactory26 implements MiniClusterFactory {
 
   @Override
   public MiniDFSCluster create(int dataNodes, Configuration conf) throws IOException {
