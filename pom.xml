@@ -116,6 +116,27 @@
       </activation>
     </profile>
     <profile>
+      <id>hadoop-3.2</id>
+      <modules>
+        <module>smart-hadoop-support</module>
+      </modules>
+      <properties>
+        <hadoop.version>3.2.4</hadoop.version>
+        <guava.version>27.0-jre</guava.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-hdfs-client</artifactId>
+          <version>${hadoop.version}</version>
+        </dependency>
+      </dependencies>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+    </profile>
+
+    <profile>
       <id>alluxio</id>
       <modules>
         <module>smart-alluxio-support</module>

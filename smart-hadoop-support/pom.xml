@@ -64,5 +64,12 @@
                 <module>smart-hadoop-client-3.1</module>
             </modules>
         </profile>
+        <profile>
+            <id>hadoop-3.2</id>
+            <modules>
+                <module>smart-hadoop-3.2</module>
+                <module>smart-hadoop-client-3.2</module>
+            </modules>
+        </profile>
     </profiles>
 </project>
