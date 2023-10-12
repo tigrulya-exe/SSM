@@ -26,13 +26,9 @@
         <relativePath>..</relativePath>
     </parent>
 
-    <artifactId>smart-hadoop-3.1</artifactId>
+    <artifactId>smart-hadoop-3</artifactId>
     <version>1.6.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-
-    <properties>
-        <hadoop.version>3.1.2</hadoop.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -71,21 +67,9 @@
             <version>1.6.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>org.smartdata</groupId>
-            <artifactId>smart-hadoop-3</artifactId>
-            <version>1.6.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-aws</artifactId>
             <version>${hadoop.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-hdfs</artifactId>
-            <version>${hadoop.version}</version>
-            <scope>test</scope>
-            <type>test-jar</type>
         </dependency>
 
         <dependency>
@@ -112,13 +96,6 @@
         <dependency>
             <groupId>org.smartdata</groupId>
             <artifactId>smart-hadoop-common</artifactId>
-            <version>1.6.0-SNAPSHOT</version>
-            <scope>test</scope>
-            <type>test-jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.smartdata</groupId>
-            <artifactId>smart-hadoop-3</artifactId>
             <version>1.6.0-SNAPSHOT</version>
             <scope>test</scope>
             <type>test-jar</type>

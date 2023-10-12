@@ -21,54 +21,33 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 
 import java.io.IOException;
+import java.util.ServiceLoader;
 
-public abstract class MiniClusterFactory {
+public interface MiniClusterFactory {
 
-  static class DefaultMiniClusterFactory extends MiniClusterFactory {
+  class DefaultMiniClusterFactory implements MiniClusterFactory {
     @Override
     public MiniDFSCluster create(int dataNodes, Configuration conf) throws IOException {
       return new MiniDFSCluster.Builder(conf).numDataNodes(dataNodes).build();
     }
 
     @Override
-    public MiniDFSCluster createWithStorages(int dataNodes, Configuration conf) throws IOException {
+    public MiniDFSCluster createWithStorages(int dataNodes, Configuration conf) {
       throw new UnsupportedOperationException(
           "DefaultMiniClusterFactory does not support creating cluster with storage types");
     }
   }
 
-  //Todo: Use better init implementation
-  public static MiniClusterFactory get()
-      throws IllegalAccessException, InstantiationException, ClassNotFoundException {
-    Class clazz = null;
-    try {
-      clazz =
-          Thread.currentThread()
-              .getContextClassLoader()
-              .loadClass("org.smartdata.hdfs.MiniClusterFactory31");
-    } catch (ClassNotFoundException e1) {
-      try {
-        clazz =
-            Thread.currentThread()
-                .getContextClassLoader()
-                .loadClass("org.smartdata.hdfs.MiniClusterFactory27");
-      } catch (ClassNotFoundException e2) {
-        try {
-          clazz =
-              Thread.currentThread()
-                  .getContextClassLoader()
-                  .loadClass("org.smartdata.hdfs.MiniClusterFactory26");
-        } catch (ClassNotFoundException e3) {
-        }
-      }
+  static MiniClusterFactory get() {
+    ServiceLoader<MiniClusterFactory> loader = ServiceLoader.load(MiniClusterFactory.class);
+    for (MiniClusterFactory factory : loader) {
+      return factory;
     }
-    return clazz == null
-        ? new DefaultMiniClusterFactory()
-        : (MiniClusterFactory) clazz.newInstance();
+
+    return new MiniClusterFactory.DefaultMiniClusterFactory();
   }
 
-  public abstract MiniDFSCluster create(int dataNodes, Configuration conf) throws IOException;
+  MiniDFSCluster create(int dataNodes, Configuration conf) throws IOException;
 
-  public abstract MiniDFSCluster createWithStorages(int dataNodes, Configuration conf)
-      throws IOException;
+  MiniDFSCluster createWithStorages(int dataNodes, Configuration conf) throws IOException;
 }
