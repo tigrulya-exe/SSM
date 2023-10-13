@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -37,7 +37,10 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.bridge.LogEventAdapter;
 import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.spi.ThrowableInformation;
+import org.apache.logging.log4j.core.LogEvent;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -163,7 +166,7 @@ public class AppendOutputRunnerTest {
 
     String loggerString = "Processing size for buffered append-output is high: " +
         (data.length() * numEvents) + " characters.";
-    assertTrue(loggerString.equals(sizeWarnLogEntry.getMessage()));
+    assertEquals(loggerString, sizeWarnLogEntry.getRenderedMessage());
   }
 
   private class BombardEvents implements Runnable {
@@ -194,7 +197,7 @@ public class AppendOutputRunnerTest {
 
     @Override
     protected void append(final LoggingEvent loggingEvent) {
-        log.add(loggingEvent);
+      log.add(toImmutable(loggingEvent));
     }
 
     @Override
@@ -203,6 +206,15 @@ public class AppendOutputRunnerTest {
 
     public List<LoggingEvent> getLog() {
         return new ArrayList<>(log);
+    }
+
+    private LoggingEvent toImmutable(LoggingEvent loggingEvent) {
+      if (!(loggingEvent instanceof LogEventAdapter)) {
+        return loggingEvent;
+      }
+
+      LogEvent logEvent = ((LogEventAdapter) loggingEvent).getEvent();
+      return new LogEventAdapter(logEvent.toImmutable());
     }
   }
 
