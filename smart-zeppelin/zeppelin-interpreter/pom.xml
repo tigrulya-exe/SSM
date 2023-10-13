@@ -42,7 +42,7 @@
     <maven.plugin.api.version>3.0</maven.plugin.api.version>
     <aether.version>1.12</aether.version>
     <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
-    <wagon.version>1.0</wagon.version>
+    <wagon.version>2.0</wagon.version>
 
     <!--plugin versions-->
     <plugin.shade.version>2.3</plugin.shade.version>
