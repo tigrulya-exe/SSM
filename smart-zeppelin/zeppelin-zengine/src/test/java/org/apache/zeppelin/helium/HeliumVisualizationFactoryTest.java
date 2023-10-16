@@ -93,9 +93,9 @@ public class HeliumVisualizationFactoryTest {
   public void bundlePackage() throws IOException, TaskRunnerException {
     HeliumPackage pkg = new HeliumPackage(
         HeliumPackage.Type.VISUALIZATION,
-        "zeppelin-sigma-spell",
-        "zeppelin-sigma-spell",
-        "zeppelin-sigma-spell@0.0.2",
+        "zeppelin-flowchart-spell",
+        "zeppelin-flowchart-spell",
+        "zeppelin-flowchart-spell@0.0.2",
         "",
         null,
         "license",
@@ -171,9 +171,9 @@ public class HeliumVisualizationFactoryTest {
 
     HeliumPackage pkgV1 = new HeliumPackage(
         HeliumPackage.Type.VISUALIZATION,
-        "zeppelin-sigma-spell",
-        "zeppelin-sigma-spell",
-        "zeppelin-sigma-spell@0.0.2",
+        "zeppelin-flowchart-spell",
+        "zeppelin-flowchart-spell",
+        "zeppelin-flowchart-spell@0.0.2",
         "",
         null,
         "license",
