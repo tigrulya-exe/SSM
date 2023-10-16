@@ -93,9 +93,9 @@ public class HeliumVisualizationFactoryTest {
   public void bundlePackage() throws IOException, TaskRunnerException {
     HeliumPackage pkg = new HeliumPackage(
         HeliumPackage.Type.VISUALIZATION,
-        "zeppelin-bubblechart",
-        "zeppelin-bubblechart",
-        "zeppelin-bubblechart@0.0.3",
+        "zeppelin-sigma-spell",
+        "zeppelin-sigma-spell",
+        "zeppelin-sigma-spell@0.0.2",
         "",
         null,
         "license",
@@ -117,7 +117,7 @@ public class HeliumVisualizationFactoryTest {
   public void bundleLocalPackage() throws IOException, TaskRunnerException {
     URL res = Resources.getResource("helium/webpack.config.js");
     String resDir = new File(res.getFile()).getParent();
-    String localPkg = resDir + "/../../../src/test/resources/helium/vis1";
+    String localPkg = resDir + "vis1";
 
     HeliumPackage pkg = new HeliumPackage(
         HeliumPackage.Type.VISUALIZATION,
@@ -139,7 +139,7 @@ public class HeliumVisualizationFactoryTest {
   public void bundleErrorPropagation() throws IOException, TaskRunnerException {
     URL res = Resources.getResource("helium/webpack.config.js");
     String resDir = new File(res.getFile()).getParent();
-    String localPkg = resDir + "/../../../src/test/resources/helium/vis2";
+    String localPkg = resDir + "vis2";
 
     HeliumPackage pkg = new HeliumPackage(
         HeliumPackage.Type.VISUALIZATION,
@@ -171,9 +171,9 @@ public class HeliumVisualizationFactoryTest {
 
     HeliumPackage pkgV1 = new HeliumPackage(
         HeliumPackage.Type.VISUALIZATION,
-        "zeppelin-bubblechart",
-        "zeppelin-bubblechart",
-        "zeppelin-bubblechart@0.0.3",
+        "zeppelin-sigma-spell",
+        "zeppelin-sigma-spell",
+        "zeppelin-sigma-spell@0.0.2",
         "",
         null,
         "license",
@@ -182,9 +182,9 @@ public class HeliumVisualizationFactoryTest {
 
     HeliumPackage pkgV2 = new HeliumPackage(
         HeliumPackage.Type.VISUALIZATION,
-        "zeppelin-bubblechart",
-        "zeppelin-bubblechart",
-        "zeppelin-bubblechart@0.0.1",
+        "zeppelin-sigma-spell",
+        "zeppelin-sigma-spell",
+        "zeppelin-sigma-spell@0.0.1",
         "",
         null,
         "license",

@@ -42,8 +42,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
  */
 public class HeliumVisualizationFactory {
   Logger logger = LoggerFactory.getLogger(HeliumVisualizationFactory.class);
-  private static final String NODE_VERSION = "v16.0.0";
-  private static final String NPM_VERSION = "6.14.18";
+  private static final String NODE_VERSION = "v6.9.1";
+  private static final String NPM_VERSION = "3.10.8";
   private final int FETCH_RETRY_COUNT = 2;
   private final int FETCH_RETRY_FACTOR_COUNT = 1;
   // Milliseconds
