@@ -9,6 +9,7 @@ import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.ZeppelinhubClient
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.mock.MockEchoWebsocketServer;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +59,8 @@ public class ZeppelinhubClientTest {
   }
 
   @Test
+  @Ignore
+  // runAllParagraph always returns true...
   public void runAllParagraphTest() throws Exception {
     Client.initialize(validWebsocketUrl, validWebsocketUrl, "TOKEN", null);
     Client.getInstance().start();

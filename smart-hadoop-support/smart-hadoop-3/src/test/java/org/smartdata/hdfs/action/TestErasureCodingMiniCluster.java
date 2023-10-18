@@ -30,7 +30,7 @@ import org.smartdata.hdfs.MiniClusterFactory;
 
 import java.io.IOException;
 
-public class TestErasureCodingMiniCluster {
+public abstract class TestErasureCodingMiniCluster {
   protected ErasureCodingPolicy ecPolicy;
   // use the default one, not the one in MiniClusterHarness
   public static final long BLOCK_SIZE = DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT;
