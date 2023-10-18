@@ -195,13 +195,13 @@ public class DefaultActionDao extends AbstractDao implements ActionDao {
     //delete the last char
     sql = sql.substring(0, sql.length() - 1);
     //add limit
-    sql = sql + " LIMIT " + start + "," + offset + ";";
+    sql = sql + " LIMIT " + offset + " OFFSET " + start + ";";
     return jdbcTemplate.query(sql, new ActionRowPartMapper());
   }
 
   @Override
   public List<ActionInfo> getAPageOfAction(long start, long offset) {
-    String sql = "SELECT * FROM " + TABLE_NAME + " LIMIT " + start + "," + offset + ";";
+    String sql = "SELECT * FROM " + TABLE_NAME + " LIMIT " + offset + " OFFSET " + start + ";";
     return jdbcTemplate.query(sql, new ActionRowPartMapper());
   }
 
@@ -222,7 +222,7 @@ public class DefaultActionDao extends AbstractDao implements ActionDao {
     String sql = "SELECT * FROM " + sqlFilter;
     String sqlCount = "SELECT count(*) FROM " + sqlFilter + ";";
     if (orderBy.size() == 0) {
-      sql += " LIMIT " + start + "," + offset + ";";
+      sql += " LIMIT " + offset + " OFFSET " + start + ";";
       ret = jdbcTemplate.query(sql, new ActionRowMapper());
     } else {
       sql += " ORDER BY ";
@@ -258,7 +258,7 @@ public class DefaultActionDao extends AbstractDao implements ActionDao {
       //delete the last char
       sql = sql.substring(0, sql.length() - 1);
       //add limit
-      sql = sql + " LIMIT " + start + "," + offset + ";";
+      sql = sql + " LIMIT " + offset + " OFFSET " + start + ";";
       ret = jdbcTemplate.query(sql, new ActionRowMapper());
     }
     if (retTotalNumActions != null) {
@@ -417,7 +417,7 @@ public class DefaultActionDao extends AbstractDao implements ActionDao {
     }
   }
 
-  private Map<String, Object> toMap(ActionInfo actionInfo) {
+  protected Map<String, Object> toMap(ActionInfo actionInfo) {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("aid", actionInfo.getActionId());
     parameters.put("cid", actionInfo.getCmdletId());

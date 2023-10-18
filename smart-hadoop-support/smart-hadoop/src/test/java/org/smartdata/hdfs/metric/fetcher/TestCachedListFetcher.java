@@ -35,8 +35,7 @@ import org.smartdata.hdfs.MiniClusterFactory;
 import org.smartdata.hdfs.action.CacheFileAction;
 import org.smartdata.hdfs.action.UncacheFileAction;
 import org.smartdata.hdfs.scheduler.CacheScheduler;
-import org.smartdata.metastore.MetaStore;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.SqliteTestDaoBase;
 import org.smartdata.model.CachedFileStatus;
 import org.smartdata.model.FileInfo;
 
@@ -46,9 +45,8 @@ import java.util.List;
 import java.util.Map;
 
 
-public class TestCachedListFetcher extends TestDaoUtil {
+public class TestCachedListFetcher extends SqliteTestDaoBase {
 
-  private MetaStore metaStore;
   private long fid;
 
   private CachedListFetcher cachedListFetcher;
@@ -65,7 +63,6 @@ public class TestCachedListFetcher extends TestDaoUtil {
 
   @Before
   public void init() throws Exception {
-    initDao();
     SmartConf conf = new SmartConf();
     initConf(conf);
     fid = 0l;
@@ -74,7 +71,6 @@ public class TestCachedListFetcher extends TestDaoUtil {
     dfs = cluster.getFileSystem();
     dfsClient = dfs.getClient();
     smartContext = new SmartContext(conf);
-    metaStore = createMetastore();
     cachedListFetcher = new CachedListFetcher(600l, dfsClient, metaStore);
   }
 
@@ -89,7 +85,6 @@ public class TestCachedListFetcher extends TestDaoUtil {
   public void shutdown() throws Exception {
     cachedListFetcher.stop();
     cachedListFetcher = null;
-    closeDao();
     if (cluster != null) {
       cluster.shutdown();
     }

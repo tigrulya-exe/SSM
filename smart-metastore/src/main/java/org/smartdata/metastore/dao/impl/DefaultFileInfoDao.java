@@ -133,21 +133,45 @@ public class DefaultFileInfoDao extends AbstractDao implements FileInfoDao {
   }
 
   @Override
+  public int updateByPath(String path, FileInfo fileInfo) {
+    return update(toMap(fileInfo), "path = ?", path);
+  }
+
+  @Override
   public void deleteById(long fid) {
     final String sql = "DELETE FROM file WHERE fid = ?";
     jdbcTemplate.update(sql, fid);
   }
 
   @Override
-  public void deleteByPath(String path) {
-    final String sql = "DELETE FROM file WHERE path = ?";
+  public void deleteByPath(String path,  boolean recursive) {
+    String sql = "DELETE FROM file WHERE path = ?";
     jdbcTemplate.update(sql, path);
+    if (recursive) {
+      sql = "DELETE FROM " + TABLE_NAME + " WHERE path LIKE ?";
+      jdbcTemplate.update(sql, path + "/%");
+    }
   }
 
   @Override
   public void deleteAll() {
     final String sql = "DELETE FROM file";
     jdbcTemplate.execute(sql);
+  }
+
+  @Override
+  public void renameFile(String oldPath, String newPath, boolean recursive) {
+    String sql = "UPDATE " + TABLE_NAME + " SET path = ? WHERE path = ?";
+    jdbcTemplate.update(sql, newPath, oldPath);
+    if (recursive) {
+      renameDirectoryFiles(oldPath, newPath);
+    }
+  }
+
+  protected void renameDirectoryFiles(String oldPath, String newPath) {
+    String sql = "UPDATE " + TABLE_NAME
+        + " SET path = CONCAT(?, SUBSTR(path, ?)) WHERE path LIKE ?";
+    jdbcTemplate.update(sql, newPath, oldPath.length() + 1, oldPath + "/%");
   }
 
   private Map<String, Object> toMap(FileInfo fileInfo) {

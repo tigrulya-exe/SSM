@@ -17,13 +17,12 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.ActionInfo;
 import org.springframework.dao.EmptyResultDataAccessException;
 
@@ -33,21 +32,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TestActionDao extends TestDaoUtil {
+public class TestActionDao extends TestDaoBase {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
   private ActionDao actionDao;
 
   @Before
-  public void initActionDao() throws Exception {
-    initDao();
+  public void initActionDao() {
     actionDao = daoProvider.actionDao();
-  }
-
-  @After
-  public void closeActionDao() throws Exception {
-    actionDao = null;
-    closeDao();
   }
 
   @Test

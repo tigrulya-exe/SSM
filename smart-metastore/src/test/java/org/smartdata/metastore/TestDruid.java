@@ -21,9 +21,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.junit.Assert;
 import org.junit.Test;
 import org.smartdata.metastore.dao.DaoProvider;
-import org.smartdata.metastore.dao.impl.DefaultDaoProvider;
-import org.smartdata.metastore.db.DBManager;
-import org.smartdata.metastore.db.DBManagerFactory;
+import org.smartdata.metastore.dao.sqlite.SqliteDaoProvider;
+import org.smartdata.metastore.db.DBHandlersFactory;
+import org.smartdata.metastore.db.DbSchemaManager;
+import org.smartdata.metastore.db.metadata.DbMetadataProvider;
+import org.smartdata.metastore.db.metadata.SqliteDbMetadataProvider;
 import org.smartdata.metastore.utils.MetaStoreUtils;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
@@ -45,10 +47,12 @@ public class TestDruid {
     p.setProperty("url", url);
 
     DruidPool druidPool = new DruidPool(p);
-    DBManager dbManager = new DBManagerFactory()
+    DbSchemaManager dbSchemaManager = new DBHandlersFactory()
         .createDbManager(druidPool, new Configuration());
-    DaoProvider daoProvider = new DefaultDaoProvider(druidPool);
-    MetaStore adapter = new MetaStore(druidPool, dbManager, daoProvider);
+    DaoProvider daoProvider = new SqliteDaoProvider(druidPool);
+    DbMetadataProvider dbMetadataProvider = new SqliteDbMetadataProvider(
+        druidPool.getDataSource());
+    MetaStore adapter = new MetaStore(druidPool, dbSchemaManager, daoProvider, dbMetadataProvider);
 
     String rule = "file : accessCount(10m) > 20 \n\n"
         + "and length() > 3 | cache";

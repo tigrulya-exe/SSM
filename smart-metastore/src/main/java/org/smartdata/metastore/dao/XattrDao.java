@@ -24,9 +24,7 @@ import java.util.List;
 
 public interface XattrDao {
 
-  List<XAttribute> getXattrList(Long fid) throws SQLException;
-
-  List<XAttribute> getXattrList(String sql) throws SQLException;
+  List<XAttribute> getXattrList(Long fid);
 
   boolean insertXattrList(Long fid, List<XAttribute> attributes)
       throws SQLException;

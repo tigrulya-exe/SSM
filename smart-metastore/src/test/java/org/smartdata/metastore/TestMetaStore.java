@@ -17,9 +17,7 @@
  */
 package org.smartdata.metastore;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.model.ActionInfo;
@@ -52,23 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class TestMetaStore extends TestDaoUtil {
-  private MetaStore metaStore;
-
-  @Before
-  public void metaInit() throws Exception {
-    initDao();
-    metaStore = createMetastore();
-  }
-
-  @After
-  public void metaClose() throws Exception {
-    closeDao();
-    if (metaStore != null) {
-      metaStore = null;
-    }
-  }
-
+public class TestMetaStore extends TestDaoBase {
   @Test
   public void testHighConcurrency() throws Exception {
     // Multiple threads
@@ -222,8 +204,8 @@ public class TestMetaStore extends TestDaoUtil {
 
   @Test
   public void testGetStoreCapacityOfDifferentStorageType() throws Exception {
-    DataNodeStorageInfo info1 = new DataNodeStorageInfo("1", "ssd", 1, "1", 1, 1, 1, 1, 1);
-    DataNodeStorageInfo info2 = new DataNodeStorageInfo("2", "ssd", 2, "2", 2, 2, 2, 2, 2);
+    DataNodeStorageInfo info1 = new DataNodeStorageInfo("1", "ssd", 1, "1", true, 1, 1, 1, 1);
+    DataNodeStorageInfo info2 = new DataNodeStorageInfo("2", "ssd", 2, "2", true, 2, 2, 2, 2);
 
     metaStore.insertDataNodeStorageInfo(info1);
     metaStore.insertDataNodeStorageInfo(info2);
@@ -234,8 +216,8 @@ public class TestMetaStore extends TestDaoUtil {
 
   @Test
   public void testGetStoreFreeOfDifferentStorageType() throws Exception {
-    DataNodeStorageInfo info1 = new DataNodeStorageInfo("1", "ssd", 1, "1", 1, 1, 1, 1, 1);
-    DataNodeStorageInfo info2 = new DataNodeStorageInfo("2", "ssd", 2, "2", 2, 2, 2, 2, 2);
+    DataNodeStorageInfo info1 = new DataNodeStorageInfo("1", "ssd", 1, "1", false, 1, 1, 1, 1);
+    DataNodeStorageInfo info2 = new DataNodeStorageInfo("2", "ssd", 2, "2", true, 2, 2, 2, 2);
 
     metaStore.insertDataNodeStorageInfo(info1);
     metaStore.insertDataNodeStorageInfo(info2);
@@ -696,15 +678,15 @@ public class TestMetaStore extends TestDaoUtil {
   @Test
   public void testInsertDataNodeStorageInfo() throws Exception {
     DataNodeStorageInfo insertInfo1 =
-        new DataNodeStorageInfo("UUID1", 10, 10, "storageid1", 0, 0, 0, 0, 0);
+        new DataNodeStorageInfo("UUID1", 10, 10, "storageid1", false, 0, 0, 0, 0);
     metaStore.insertDataNodeStorageInfo(insertInfo1);
     List<DataNodeStorageInfo> getInfo1 = metaStore.getDataNodeStorageInfoByUuid("UUID1");
     Assert.assertTrue(insertInfo1.equals(getInfo1.get(0)));
 
     DataNodeStorageInfo insertInfo2 =
-        new DataNodeStorageInfo("UUID2", 10, 10, "storageid2", 0, 0, 0, 0, 0);
+        new DataNodeStorageInfo("UUID2", 10, 10, "storageid2", false, 0, 0, 0, 0);
     DataNodeStorageInfo insertInfo3 =
-        new DataNodeStorageInfo("UUID3", 10, 10, "storageid2", 0, 0, 0, 0, 0);
+        new DataNodeStorageInfo("UUID3", 10, 10, "storageid2", false, 0, 0, 0, 0);
     metaStore.insertDataNodeStorageInfos(new DataNodeStorageInfo[]{insertInfo2, insertInfo3});
     List<DataNodeStorageInfo> getInfo2 = metaStore.getDataNodeStorageInfoByUuid("UUID2");
     Assert.assertTrue(insertInfo2.equals(getInfo2.get(0)));
@@ -715,11 +697,11 @@ public class TestMetaStore extends TestDaoUtil {
   @Test
   public void testDeleteDataNodeStorageInfo() throws Exception {
     DataNodeStorageInfo insertInfo1 =
-        new DataNodeStorageInfo("UUID1", 10, 10, "storageid1", 0, 0, 0, 0, 0);
+        new DataNodeStorageInfo("UUID1", 10, 10, "storageid1", false, 0, 0, 0, 0);
     DataNodeStorageInfo insertInfo2 =
-        new DataNodeStorageInfo("UUID2", 10, 10, "storageid2", 0, 0, 0, 0, 0);
+        new DataNodeStorageInfo("UUID2", 10, 10, "storageid2", false, 0, 0, 0, 0);
     DataNodeStorageInfo insertInfo3 =
-        new DataNodeStorageInfo("UUID3", 10, 10, "storageid3", 0, 0, 0, 0, 0);
+        new DataNodeStorageInfo("UUID3", 10, 10, "storageid3", false, 0, 0, 0, 0);
     metaStore.insertDataNodeStorageInfos(
         new DataNodeStorageInfo[]{insertInfo1, insertInfo2, insertInfo3});
 

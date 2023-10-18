@@ -17,26 +17,18 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.ClusterConfig;
 
-public class TestClusterConfigDao extends TestDaoUtil {
+public class TestClusterConfigDao extends TestDaoBase {
   private ClusterConfigDao clusterConfigDao;
 
   @Before
-  public void initClusterConfigDao() throws Exception {
-    initDao();
+  public void initClusterConfigDao() {
     clusterConfigDao = daoProvider.clusterConfigDao();
-  }
-
-  @After
-  public void closeClusterConfigDAO() throws Exception {
-    closeDao();
-    clusterConfigDao = null;
   }
 
   @Test

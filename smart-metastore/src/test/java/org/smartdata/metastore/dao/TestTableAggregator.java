@@ -19,6 +19,7 @@ import org.dbunit.Assertion;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ITable;
+import org.dbunit.dataset.SortedTable;
 import org.dbunit.dataset.xml.XmlDataSet;
 import org.junit.Assert;
 import org.junit.Test;
@@ -51,7 +52,6 @@ public class TestTableAggregator extends DBTest {
         new XmlDataSet(getClass().getClassLoader().getResourceAsStream("accessCountTable.xml"));
     databaseTester.setDataSet(dataSet);
     databaseTester.onSetup();
-    MetaStore metaStore = createMetastore();
     prepareFiles(metaStore);
 
     AccessCountTable result = new AccessCountTable("actual", 0L, 0L, false);
@@ -61,6 +61,7 @@ public class TestTableAggregator extends DBTest {
     metaStore.aggregateTables(result, Lists.newArrayList(table1, table2, table3));
 
     ITable actual = databaseTester.getConnection().createTable(result.getTableName());
+    actual = new SortedTable(actual, new String[]{"fid"});
     ITable expect = databaseTester.getDataSet().getTable("expect");
     Assertion.assertEquals(expect, actual);
   }
@@ -72,7 +73,6 @@ public class TestTableAggregator extends DBTest {
         new XmlDataSet(getClass().getClassLoader().getResourceAsStream("accessCountTable.xml"));
     databaseTester.setDataSet(dataSet);
     databaseTester.onSetup();
-    MetaStore metaStore = createMetastore();
     prepareFiles(metaStore);
 
     AccessCountTable table1 = new AccessCountTable("table1", 0L, 0L, false);

@@ -73,13 +73,13 @@ public class DefaultCmdletDao extends AbstractDao implements CmdletDao {
     //delete the last char
     sql = new StringBuilder(sql.substring(0, sql.length() - 1));
     //add limit
-    sql.append(" LIMIT ").append(start).append(",").append(offset).append(";");
+    sql.append(" LIMIT ").append(offset).append(" OFFSET ").append(start).append(";");
     return jdbcTemplate.query(sql.toString(), new CmdletRowMapper());
   }
 
   @Override
   public List<CmdletInfo> getAPageOfCmdlet(long start, long offset) {
-    String sql = "SELECT * FROM " + TABLE_NAME + " LIMIT " + start + "," + offset + ";";
+    String sql = "SELECT * FROM " + TABLE_NAME + " LIMIT " + start + " OFFSET " + offset + ";";
     return jdbcTemplate.query(sql, new CmdletRowMapper());
   }
 
@@ -118,7 +118,7 @@ public class DefaultCmdletDao extends AbstractDao implements CmdletDao {
   @Override
   public List<CmdletInfo> getByRid(long rid, long start, long offset) {
     String sql = "SELECT * FROM " + TABLE_NAME + " WHERE rid = " + rid
-        + " LIMIT " + start + "," + offset + ";";
+        + " LIMIT " + offset + " OFFSET " + start + ";";
     return jdbcTemplate.query(sql, new CmdletRowMapper());
   }
 
@@ -148,7 +148,7 @@ public class DefaultCmdletDao extends AbstractDao implements CmdletDao {
     //delete the last char
     sql = new StringBuilder(sql.substring(0, sql.length() - 1));
     //add limit
-    sql.append(" LIMIT ").append(start).append(",").append(offset).append(";");
+    sql.append(" LIMIT ").append(offset).append(" OFFSET ").append(start).append(";");
     return jdbcTemplate.query(sql.toString(), new CmdletRowMapper());
   }
 
@@ -339,7 +339,7 @@ public class DefaultCmdletDao extends AbstractDao implements CmdletDao {
     }
   }
 
-  private Map<String, Object> toMap(CmdletInfo cmdletInfo) {
+  protected Map<String, Object> toMap(CmdletInfo cmdletInfo) {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("cid", cmdletInfo.getCid());
     parameters.put("rid", cmdletInfo.getRid());

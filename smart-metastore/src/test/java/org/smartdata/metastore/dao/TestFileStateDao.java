@@ -20,18 +20,17 @@ package org.smartdata.metastore.dao;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.FileState;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
 
-public class TestFileStateDao extends TestDaoUtil {
+public class TestFileStateDao extends TestDaoBase {
   private FileStateDao fileStateDao;
 
   @Before
-  public void initFileDao() throws Exception {
-    initDao();
+  public void initFileDao() {
     fileStateDao = daoProvider.fileStateDao();
   }
 

@@ -86,9 +86,9 @@ public class SmartConfKeys {
       "smart.metastore.migration.liquibase.changelog.path";
   public static final String SMART_METASTORE_MIGRATION_CHANGELOG_PATH_DEFAULT =
       "db/changelog/changelog-root.xml";
-  public static final String SMART_METASTORE_MIGRATION_LABELS_KEY =
-      "smart.metastore.migration.liquibase.labels";
-  public static final String SMART_METASTORE_MIGRATION_LABELS_DEFAULT = "";
+  public static final String SMART_METASTORE_LEGACY_MYSQL_SUPPORT_KEY =
+      "smart.metastore.mysql.legacy.enabled";
+  public static final boolean SMART_METASTORE_LEGACY_MYSQL_SUPPORT_DEFAULT = false;
 
   // StatesManager
 

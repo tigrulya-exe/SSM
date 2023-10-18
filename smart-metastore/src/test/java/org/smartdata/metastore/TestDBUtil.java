@@ -18,9 +18,8 @@
 package org.smartdata.metastore;
 
 import org.apache.hadoop.conf.Configuration;
-import org.smartdata.metastore.db.DBManager;
-import org.smartdata.metastore.db.DBManagerFactory;
-import org.smartdata.metastore.utils.MetaStoreUtils;
+import org.smartdata.metastore.db.DBHandlersFactory;
+import org.smartdata.metastore.db.DbSchemaManager;
 
 import javax.sql.DataSource;
 
@@ -32,32 +31,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.UUID;
+
+import static org.smartdata.metastore.utils.MetaStoreUtils.SQLITE_URL_PREFIX;
 
 /**
  * Utilities for accessing the testing database.
  */
 public class TestDBUtil {
-
-  /**
-   * Get a connect to the testing database. A new physical database
-   * file for each call.
-   *
-   * @return
-   */
-  public static Connection getTestDBInstance()
-      throws MetaStoreException {
-    // TODO remove today
-    String srcdir = System.getProperty("srcdir",
-        System.getProperty("user.dir") + "/src/main/resources");
-    String srcPath = srcdir + "/data-schema.db";
-    String destPath = getUniqueDBFilePath();
-    copyFile(srcPath, destPath);
-    Connection conn = MetaStoreUtils.createSqliteConnection(destPath);
-    return conn;
-  }
-
   public static String getTestDir() {
     String testdir = System.getProperty("testdir",
         System.getProperty("user.dir") + "/target/test-dir");
@@ -65,16 +48,17 @@ public class TestDBUtil {
   }
 
   public static String getUniqueFilePath() {
-    return getTestDir() + "/" + UUID.randomUUID().toString() + System.currentTimeMillis();
+    return getTestDir() + "/" + UUID.randomUUID() + System.currentTimeMillis();
   }
 
   public static String getUniqueDBFilePath() {
     return getUniqueFilePath() + ".db";
   }
 
-  public static Connection getUniqueEmptySqliteDBInstance()
-      throws MetaStoreException {
-    return MetaStoreUtils.createSqliteConnection(getUniqueEmptySqliteDBFile());
+  public static String getUniqueSqliteUrl() {
+    String dbFile = getUniqueDBFilePath();
+    new File(dbFile).deleteOnExit();
+    return SQLITE_URL_PREFIX + getUniqueDBFilePath();
   }
 
   /**
@@ -88,9 +72,9 @@ public class TestDBUtil {
   public static String getUniqueEmptySqliteDBFile()
       throws MetaStoreException {
     try (TestSQLiteDBPool dbPool = new TestSQLiteDBPool()) {
-      DBManager dbManager = new DBManagerFactory()
+      DbSchemaManager dbSchemaManager = new DBHandlersFactory()
           .createDbManager(dbPool, new Configuration());
-      dbManager.initializeDatabase();
+      dbSchemaManager.initializeDatabase();
       return dbPool.dbFilePath;
     } catch (Exception e) {
       throw new MetaStoreException(e);
@@ -161,7 +145,7 @@ public class TestDBUtil {
     public Connection getConnection() {
       if (connection == null) {
         try {
-          connection = MetaStoreUtils.createSqliteConnection(dbFilePath);
+          connection = createSqliteConnection(dbFilePath);
         } catch (MetaStoreException exception) {
           throw new RuntimeException(exception);
         }
@@ -187,6 +171,15 @@ public class TestDBUtil {
         new File(dbFilePath).deleteOnExit();
       } catch (SQLException e) {
         throw new RuntimeException(e);
+      }
+    }
+
+    private Connection createSqliteConnection(String dbFilePath)
+        throws MetaStoreException {
+      try {
+        return DriverManager.getConnection(SQLITE_URL_PREFIX + dbFilePath, null, null);
+      } catch (Exception e) {
+        throw new MetaStoreException(e);
       }
     }
   }

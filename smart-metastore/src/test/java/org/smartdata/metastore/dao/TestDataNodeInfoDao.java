@@ -17,29 +17,21 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.DataNodeInfo;
 
 import java.util.List;
 
-public class TestDataNodeInfoDao extends TestDaoUtil {
+public class TestDataNodeInfoDao extends TestDaoBase {
 
   private DataNodeInfoDao dataNodeInfoDao;
 
   @Before
-  public void initDataNodeInfoDao() throws Exception {
-    initDao();
+  public void initDataNodeInfoDao() {
     dataNodeInfoDao = daoProvider.dataNodeInfoDao();
-  }
-
-  @After
-  public void closeDataNodeInfoDao() throws Exception {
-    closeDao();
-    dataNodeInfoDao = null;
   }
 
   @Test

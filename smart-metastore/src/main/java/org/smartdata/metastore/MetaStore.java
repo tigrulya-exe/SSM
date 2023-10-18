@@ -49,7 +49,8 @@ import org.smartdata.metastore.dao.SystemInfoDao;
 import org.smartdata.metastore.dao.UserInfoDao;
 import org.smartdata.metastore.dao.WhitelistDao;
 import org.smartdata.metastore.dao.XattrDao;
-import org.smartdata.metastore.db.DBManager;
+import org.smartdata.metastore.db.DbSchemaManager;
+import org.smartdata.metastore.db.metadata.DbMetadataProvider;
 import org.smartdata.metastore.utils.MetaStoreUtils;
 import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.model.ActionInfo;
@@ -83,8 +84,6 @@ import org.smartdata.model.UserInfo;
 import org.smartdata.model.XAttribute;
 import org.springframework.dao.EmptyResultDataAccessException;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -102,11 +101,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class MetaStore implements CopyMetaService, CmdletMetaService, BackupMetaService {
   static final Logger LOG = LoggerFactory.getLogger(MetaStore.class);
 
-  private final DBPool pool;
+  private final DbSchemaManager dbSchemaManager;
 
-  private final DBManager dbManager;
-
-  private DBType dbType;
+  private final DbMetadataProvider dbMetadataProvider;
 
   private Map<Integer, String> mapStoragePolicyIdName = null;
   private Map<String, Integer> mapStoragePolicyNameId = null;
@@ -140,11 +137,11 @@ public class MetaStore implements CopyMetaService, CmdletMetaService, BackupMeta
   private final ReentrantLock accessCountLock;
 
   public MetaStore(DBPool pool,
-                   DBManager dbManager,
-                   DaoProvider daoProvider) throws MetaStoreException {
-    this.pool = pool;
-    this.dbManager = dbManager;
-    initDbInfo();
+                   DbSchemaManager dbSchemaManager,
+                   DaoProvider daoProvider,
+                   DbMetadataProvider dbMetadataProvider) throws MetaStoreException {
+    this.dbSchemaManager = dbSchemaManager;
+    this.dbMetadataProvider = dbMetadataProvider;
     ruleDao = daoProvider.ruleDao();
     cmdletDao = daoProvider.cmdletDao();
     actionDao = daoProvider.actionDao();
@@ -171,55 +168,6 @@ public class MetaStore implements CopyMetaService, CmdletMetaService, BackupMeta
     ecDao = daoProvider.ecDao();
     whitelistDao = daoProvider.whitelistDao();
     accessCountLock = new ReentrantLock();
-  }
-
-  private void initDbInfo() throws MetaStoreException {
-    Connection conn = null;
-    try {
-      try {
-        conn = getConnection();
-        String driver = conn.getMetaData().getDriverName();
-        driver = driver.toLowerCase();
-        if (driver.contains("sqlite")) {
-          dbType = DBType.SQLITE;
-        } else if (driver.contains("mysql")) {
-          dbType = DBType.MYSQL;
-        } else {
-          throw new MetaStoreException("Unknown database: " + driver);
-        }
-      } finally {
-        if (conn != null) {
-          closeConnection(conn);
-        }
-      }
-    } catch (SQLException e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
-  public Connection getConnection() throws MetaStoreException {
-    if (pool != null) {
-      try {
-        return pool.getConnection();
-      } catch (SQLException e) {
-        throw new MetaStoreException(e);
-      }
-    }
-    return null;
-  }
-
-  private void closeConnection(Connection conn) throws MetaStoreException {
-    if (pool != null) {
-      try {
-        pool.closeConnection(conn);
-      } catch (SQLException e) {
-        throw new MetaStoreException(e);
-      }
-    }
-  }
-
-  public DBType getDbType() {
-    return dbType;
   }
 
   public Long queryForLong(String sql) throws MetaStoreException {
@@ -252,6 +200,28 @@ public class MetaStore implements CopyMetaService, CmdletMetaService, BackupMeta
       throws MetaStoreException {
     updateCache();
     fileInfoDao.insert(files);
+  }
+
+  public void updateFileByPath(String path, FileInfo file) {
+    fileInfoDao.updateByPath(path, file);
+  }
+
+  public void unlinkRootDirectory() {
+    fileInfoDao.deleteAll();
+    fileStateDao.deleteAll();
+    smallFileDao.deleteAll();
+  }
+
+  public void unlinkFile(String path, boolean isDirectory) {
+    fileInfoDao.deleteByPath(path, isDirectory);
+    fileStateDao.deleteByPath(path, isDirectory);
+    smallFileDao.deleteByPath(path, isDirectory);
+  }
+
+  public void renameFile(String oldPath, String newPath, boolean isDirectory) {
+    fileInfoDao.renameFile(oldPath, newPath, isDirectory);
+    fileStateDao.renameFile(oldPath, newPath, isDirectory);
+    smallFileDao.renameFile(oldPath, newPath, isDirectory);
   }
 
   public int updateFileStoragePolicy(String path, String policyName)
@@ -454,9 +424,9 @@ public class MetaStore implements CopyMetaService, CmdletMetaService, BackupMeta
     }
   }
 
-  public void deleteFileByPath(String path) throws MetaStoreException {
+  public void deleteFileByPath(String path, boolean recursive) throws MetaStoreException {
     try {
-      fileInfoDao.deleteByPath(path);
+      fileInfoDao.deleteByPath(path, recursive);
     } catch (Exception e) {
       throw new MetaStoreException(e);
     }
@@ -1702,7 +1672,7 @@ public class MetaStore implements CopyMetaService, CmdletMetaService, BackupMeta
 
   public void dropAllTables() throws MetaStoreException {
     try {
-      dbManager.clearDatabase();
+      dbSchemaManager.clearDatabase();
     } catch (Exception e) {
       throw new MetaStoreException(e);
     }
@@ -1710,7 +1680,7 @@ public class MetaStore implements CopyMetaService, CmdletMetaService, BackupMeta
 
   public void initializeDataBase() throws MetaStoreException {
     try {
-      dbManager.initializeDatabase();
+      dbSchemaManager.initializeDatabase();
     } catch (Exception e) {
       throw new MetaStoreException(e);
     }
@@ -1718,12 +1688,12 @@ public class MetaStore implements CopyMetaService, CmdletMetaService, BackupMeta
 
   public void checkTables() throws MetaStoreException {
     try {
-      int num = getTablesNum(MetaStoreUtils.TABLESET);
+      int num = getTablesNum(MetaStoreUtils.SSM_TABLES);
       if (num == 0) {
         LOG.info("The table set required by SSM does not exist. "
             + "The configured database will be formatted.");
         formatDataBase();
-      } else if (num < MetaStoreUtils.TABLESET.length) {
+      } else if (num < MetaStoreUtils.SSM_TABLES.size()) {
         LOG.error("One or more tables required by SSM are missing! "
             + "You can restart SSM with -format option or configure another database.");
         System.exit(1);
@@ -1733,9 +1703,12 @@ public class MetaStore implements CopyMetaService, CmdletMetaService, BackupMeta
     }
   }
 
-  public int getTablesNum(String tableSet[]) throws MetaStoreException {
-    Connection conn = getConnection();
-    return MetaStoreUtils.getTableSetNum(conn, tableSet);
+  public int getTablesNum(List<String> tableSet) throws MetaStoreException {
+    return dbMetadataProvider.tablesCount(tableSet);
+  }
+
+  public boolean tableExists(String tableName) throws MetaStoreException {
+    return dbMetadataProvider.tableExists(tableName);
   }
 
   public void formatDataBase() throws MetaStoreException {

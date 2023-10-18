@@ -17,36 +17,25 @@
  */
 package org.smartdata.server.engine.rule;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.MetaStore;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.SqliteTestDaoBase;
 import org.smartdata.metastore.dao.MetaStoreHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestRuleExecutor extends TestDaoUtil {
+public class TestRuleExecutor extends SqliteTestDaoBase {
   private MetaStoreHelper metaStoreHelper;
-  private MetaStore adapter;
 
   @Before
-  public void initActionDao() throws Exception {
-    initDao();
+  public void initActionDao() {
     metaStoreHelper = new MetaStoreHelper(druidPool.getDataSource());
-    adapter = createMetastore();
-  }
-
-  @After
-  public void closeActionDao() throws Exception {
-    closeDao();
-    metaStoreHelper = null;
   }
 
   @Test
-  public void generateSQL() throws Exception {
+  public void generateSQL() {
     String countFilter = "";
     String newTable = "test";
     List<String> tableNames = new ArrayList<>();
@@ -59,7 +48,7 @@ public class TestRuleExecutor extends TestDaoUtil {
     metaStoreHelper.execute(sql);
     metaStoreHelper.dropTable("actual");*/
     // Test single element
-    sql = RuleExecutor.generateSQL(tableNames, newTable, countFilter, adapter);
+    sql = RuleExecutor.generateSQL(tableNames, newTable, countFilter, metaStore);
     try {
       metaStoreHelper.execute(sql);
       metaStoreHelper.dropTable(newTable);
@@ -68,7 +57,7 @@ public class TestRuleExecutor extends TestDaoUtil {
     }
     // Test multiple elements
     tableNames.add("blank_access_count_info");
-    sql = RuleExecutor.generateSQL(tableNames, newTable, countFilter, adapter);
+    sql = RuleExecutor.generateSQL(tableNames, newTable, countFilter, metaStore);
     try {
       metaStoreHelper.execute(sql);
       metaStoreHelper.dropTable(newTable);

@@ -17,43 +17,35 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoUtil;
+import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.DataNodeStorageInfo;
 
 import java.util.List;
 
-public class TestDataNodeStorageInfoDao extends TestDaoUtil {
+public class TestDataNodeStorageInfoDao extends TestDaoBase {
 
   private DataNodeStorageInfoDao dataNodeStorageInfoDao;
 
   @Before
-  public void initDataNodeInfoDao() throws Exception {
-    initDao();
+  public void initDataNodeInfoDao() {
     dataNodeStorageInfoDao = daoProvider.dataNodeStorageInfoDao();
-  }
-
-  @After
-  public void closeDataNodeInfoDao() throws Exception {
-    closeDao();
-    dataNodeStorageInfoDao = null;
   }
 
   @Test
   public void testInsertGetDataInfo() throws Exception {
-    DataNodeStorageInfo insertInfo1 = new DataNodeStorageInfo("uuid", 10, 10,
-        "storage_id", 0, 0, 0, 0, 0);
+    DataNodeStorageInfo insertInfo1 = new DataNodeStorageInfo("uuid1", 10, 10,
+        "storage_id", false, 0, 0, 0, 0);
     dataNodeStorageInfoDao.insert(insertInfo1);
-    List<DataNodeStorageInfo> getInfo1 = dataNodeStorageInfoDao.getByUuid("uuid");
+    List<DataNodeStorageInfo> getInfo1 = dataNodeStorageInfoDao.getByUuid("uuid1");
     Assert.assertTrue(insertInfo1.equals(getInfo1.get(0)));
 
-    DataNodeStorageInfo insertInfo2 = new DataNodeStorageInfo("UUID", 10, 10,
-        "STORAGE_ID", 1, 1, 1, 1, 1);
+    DataNodeStorageInfo insertInfo2 = new DataNodeStorageInfo("UUID2", 10, 10,
+        "STORAGE_ID", true, 1, 1, 1, 1);
     dataNodeStorageInfoDao.insert(insertInfo2);
-    List<DataNodeStorageInfo> getInfo2 = dataNodeStorageInfoDao.getByUuid("UUID");
+    List<DataNodeStorageInfo> getInfo2 = dataNodeStorageInfoDao.getByUuid("UUID2");
     Assert.assertTrue(insertInfo2.equals(getInfo2.get(0)));
 
     List<DataNodeStorageInfo> infos = dataNodeStorageInfoDao.getAll();
