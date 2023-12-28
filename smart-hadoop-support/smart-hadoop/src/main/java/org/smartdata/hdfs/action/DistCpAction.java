@@ -1,11 +1,12 @@
 package org.smartdata.hdfs.action;
 
 import com.google.common.collect.Sets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.tools.DistCp;
 import org.apache.hadoop.tools.DistCpOptions;
@@ -36,18 +37,16 @@ public class DistCpAction extends HdfsAction {
         super.init(args);
         validateRequiredOptions(args);
 
-        List<String> rawArgs = new ArrayList<>();
+        List<String> rawArgs = args.entrySet()
+            .stream()
+            .filter(entry -> !NON_DISTCP_OPTIONS.contains(entry.getKey()))
+            .flatMap(entry -> mapOptionToStr(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toList());
 
         if (!args.containsKey(SOURCE_PATH_LIST_FILE)) {
             rawArgs.addAll(parseSourcePaths(args.get(FILE_PATH)));
         }
         rawArgs.add(args.get(TARGET_ARG));
-
-        args.entrySet()
-            .stream()
-            .filter(entry -> !NON_DISTCP_OPTIONS.contains(entry.getKey()))
-            .map(entry -> mapOptionToStr(entry.getKey(), entry.getValue()))
-            .forEach(rawArgs::add);
 
         options = OptionsParser.parse(rawArgs.toArray(new String[0]));
     }
@@ -79,10 +78,10 @@ public class DistCpAction extends HdfsAction {
         }
     }
 
-    private String mapOptionToStr(String key, String value) {
+    private Stream<String> mapOptionToStr(String key, String value) {
         if (value.isEmpty()) {
-            return key;
+            return Stream.of(key);
         }
-        return key + " " + value;
+        return Stream.of(key, value);
     }
 }
