@@ -95,7 +95,7 @@ public class TestDistCpAction extends MiniClusterHarness {
         Map<String, String> args = new HashMap<>();
         args.put(DistCpAction.FILE_PATH, "/test/source/dir1");
         args.put(DistCpAction.TARGET_ARG, "hdfs://nn2/test/target/dir1");
-        args.put("-p", "cat");
+        args.put("-pcat", "");
         args.put("-m", "16");
         args.put("-strategy", "dynamic");
         args.put("-update", "");
