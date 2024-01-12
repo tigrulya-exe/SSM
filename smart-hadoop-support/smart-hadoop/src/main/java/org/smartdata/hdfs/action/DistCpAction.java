@@ -34,7 +34,7 @@ import org.smartdata.action.Utils;
 import org.smartdata.action.annotation.ActionSignature;
 
 @ActionSignature(
-    actionId = "distCp",
+    actionId = "distcp",
     displayName = "DistCp",
     usage = DistCpAction.FILE_PATH + " $path "
         + DistCpAction.TARGET_ARG + " $target "

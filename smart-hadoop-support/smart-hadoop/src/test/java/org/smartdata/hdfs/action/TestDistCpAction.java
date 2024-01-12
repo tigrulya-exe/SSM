@@ -40,7 +40,6 @@ import org.smartdata.hdfs.MiniClusterHarness;
 
 /**
  * Test for DistCpAction.
- * TODO: idents 2 spaces
  */
 public class TestDistCpAction extends MiniClusterHarness {
 
