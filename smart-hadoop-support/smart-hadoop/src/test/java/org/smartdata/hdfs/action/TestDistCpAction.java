@@ -60,7 +60,7 @@ public class TestDistCpAction extends MiniClusterHarness {
     args.put(DistCpAction.FILE_PATH, "/test/source/dir1");
     args.put(DistCpAction.TARGET_ARG, "hdfs://nn2/test/target/dir1");
     DistCpAction action = createAction(args);
-    DistCpOptions distCpOptions = action.getOptions();
+    DistCpOptions distCpOptions = action.buildDistCpOptions();
 
     Path expectedSource = new Path("/test/source/dir1");
     Assert.assertEquals(Collections.singletonList(expectedSource),
@@ -75,7 +75,7 @@ public class TestDistCpAction extends MiniClusterHarness {
     args.put(DistCpAction.FILE_PATH, "/test/source/dir1,/test/source/dir2,/test/source/dir3");
     args.put(DistCpAction.TARGET_ARG, "hdfs://nn2/test/target/dir1");
     DistCpAction action = createAction(args);
-    DistCpOptions distCpOptions = action.getOptions();
+    DistCpOptions distCpOptions = action.buildDistCpOptions();
 
     List<Path> expectedSources = Stream.of(
             "/test/source/dir1", "/test/source/dir2", "/test/source/dir3")
@@ -95,7 +95,7 @@ public class TestDistCpAction extends MiniClusterHarness {
     args.put(DistCpAction.SOURCE_PATH_LIST_FILE, sourcesPath);
     args.put(DistCpAction.TARGET_ARG, "hdfs://nn2/test/target/dir1");
     DistCpAction action = createAction(args);
-    DistCpOptions distCpOptions = action.getOptions();
+    DistCpOptions distCpOptions = action.buildDistCpOptions();
 
     Assert.assertEquals(new Path(sourcesPath),
         distCpOptions.getSourceFileListing());
@@ -109,7 +109,7 @@ public class TestDistCpAction extends MiniClusterHarness {
     args.put(DistCpAction.TARGET_ARG, "hdfs://nn2/test/target/dir1");
 
     IllegalArgumentException exception = Assert.assertThrows(
-        IllegalArgumentException.class, () -> createAction(args));
+        IllegalArgumentException.class, () -> createAction(args).buildDistCpOptions());
     Assert.assertEquals(exception.getMessage(),
         "Source paths not provided, please provide either -file either -f argument");
   }
@@ -122,7 +122,7 @@ public class TestDistCpAction extends MiniClusterHarness {
     args.put(DistCpAction.TARGET_ARG, "hdfs://nn2/test/target/dir1");
 
     IllegalArgumentException exception = Assert.assertThrows(
-        IllegalArgumentException.class, () -> createAction(args));
+        IllegalArgumentException.class, () -> createAction(args).buildDistCpOptions());
     Assert.assertEquals(exception.getMessage(),
         "-file and -f can't be used at the same time. Use only one of the options for specifying source paths.");
   }
@@ -133,7 +133,7 @@ public class TestDistCpAction extends MiniClusterHarness {
     args.put(DistCpAction.SOURCE_PATH_LIST_FILE, "test_path_listing");
 
     IllegalArgumentException exception = Assert.assertThrows(
-        IllegalArgumentException.class, () -> createAction(args));
+        IllegalArgumentException.class, () -> createAction(args).buildDistCpOptions());
     Assert.assertEquals(exception.getMessage(), "Required argument not present: -target");
   }
 
@@ -147,7 +147,7 @@ public class TestDistCpAction extends MiniClusterHarness {
     args.put("-strategy", "dynamic");
     args.put("-update", "");
     DistCpAction action = createAction(args);
-    DistCpOptions distCpOptions = action.getOptions();
+    DistCpOptions distCpOptions = action.buildDistCpOptions();
 
     Path expectedSource = new Path("/test/source/dir1");
 

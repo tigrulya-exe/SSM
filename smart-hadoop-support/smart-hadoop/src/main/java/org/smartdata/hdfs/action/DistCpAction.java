@@ -18,11 +18,10 @@
 
 package org.smartdata.hdfs.action;
 
-import com.google.common.collect.Sets;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.hadoop.mapreduce.Cluster;
@@ -47,61 +46,74 @@ public class DistCpAction extends HdfsAction {
   public static final String SOURCE_PATH_LIST_FILE = "-f";
 
   private static final String SOURCE_PATHS_DELIMITER = ",";
-  private static final Set<String> NON_DISTCP_OPTIONS = Sets.newHashSet(FILE_PATH, TARGET_ARG);
 
-  private DistCpOptions options;
+  private String sourcePaths;
+
+  private String targetPath;
+
+  private Map<String, String> distCpArgs;
 
   @Override
   public void init(Map<String, String> args) {
     super.init(args);
-    validateRequiredOptions(args);
 
-    List<String> rawArgs = args.entrySet()
-        .stream()
-        .filter(entry -> !NON_DISTCP_OPTIONS.contains(entry.getKey()))
-        .flatMap(entry -> mapOptionToStr(entry.getKey(), entry.getValue()))
-        .collect(Collectors.toList());
+    sourcePaths = args.get(FILE_PATH);
+    targetPath = args.get(TARGET_ARG);
 
-    if (!args.containsKey(SOURCE_PATH_LIST_FILE)) {
-      rawArgs.addAll(parseSourcePaths(args.get(FILE_PATH)));
-    }
-    rawArgs.add(args.get(TARGET_ARG));
-
-    options = OptionsParser.parse(rawArgs.toArray(new String[0]));
+    distCpArgs = new HashMap<>(args);
+    distCpArgs.remove(FILE_PATH);
+    distCpArgs.remove(TARGET_ARG);
   }
 
   @Override
   protected void execute() throws Exception {
-    DistCp distCp = new DistCp(getContext().getConf(), options);
+    // we need to perform validation and option parsing here
+    // because SSM doesn't correctly handle exceptions thrown in the init method
+    DistCpOptions distCpOptions = buildDistCpOptions();
+
+    DistCp distCp = new DistCp(getContext().getConf(), distCpOptions);
     appendLog(
         String.format("DistCp Action started at %s for options %s",
-            Utils.getFormatedCurrentTime(), options));
+            Utils.getFormatedCurrentTime(), distCpOptions));
 
     try (JobCloseableWrapper jobWrapper = new JobCloseableWrapper(distCp.execute())) {
       distCp.waitForJobCompletion(jobWrapper.job);
+      appendLog(jobWrapper.job.getCounters().toString());
     }
   }
 
-  DistCpOptions getOptions() {
-    return options;
+  DistCpOptions buildDistCpOptions() {
+    validateActionArguments();
+
+    List<String> rawArgs = distCpArgs.entrySet()
+        .stream()
+        .flatMap(entry -> mapOptionToStr(entry.getKey(), entry.getValue()))
+        .collect(Collectors.toList());
+
+    if (!distCpArgs.containsKey(SOURCE_PATH_LIST_FILE)) {
+      rawArgs.addAll(parseSourcePaths(sourcePaths));
+    }
+    rawArgs.add(targetPath);
+
+    return OptionsParser.parse(rawArgs.toArray(new String[0]));
   }
 
   private List<String> parseSourcePaths(String sourcePaths) {
     return Arrays.asList(sourcePaths.split(SOURCE_PATHS_DELIMITER));
   }
 
-  private void validateRequiredOptions(Map<String, String> args) {
-    if (!args.containsKey(FILE_PATH) && !args.containsKey(SOURCE_PATH_LIST_FILE)) {
+  private void validateActionArguments() {
+    if (sourcePaths == null && !distCpArgs.containsKey(SOURCE_PATH_LIST_FILE)) {
       throw new IllegalArgumentException("Source paths not provided, please provide either "
           + FILE_PATH + " either " + SOURCE_PATH_LIST_FILE + " argument");
     }
 
-    if (args.containsKey(FILE_PATH) && args.containsKey(SOURCE_PATH_LIST_FILE)) {
+    if (sourcePaths != null && distCpArgs.containsKey(SOURCE_PATH_LIST_FILE)) {
       throw new IllegalArgumentException(FILE_PATH + " and " + SOURCE_PATH_LIST_FILE
           + " can't be used at the same time. Use only one of the options for specifying source paths.");
     }
 
-    if (!args.containsKey(TARGET_ARG)) {
+    if (targetPath == null) {
       throw new IllegalArgumentException("Required argument not present: " + TARGET_ARG);
     }
   }
