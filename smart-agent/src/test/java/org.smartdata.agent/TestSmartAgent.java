@@ -22,7 +22,6 @@ import akka.actor.ActorSystem;
 import akka.testkit.JavaTestKit;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import java.security.Permission;
 import org.junit.Test;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
@@ -31,6 +30,8 @@ import org.smartdata.server.engine.cmdlet.agent.AgentConstants;
 import org.smartdata.server.engine.cmdlet.agent.AgentUtils;
 import org.smartdata.server.engine.cmdlet.agent.messages.AgentToMaster.RegisterNewAgent;
 import org.smartdata.server.engine.cmdlet.agent.messages.MasterToAgent;
+
+import java.security.Permission;
 
 public class TestSmartAgent extends ActorSystemHarness {
 
@@ -84,11 +85,12 @@ public class TestSmartAgent extends ActorSystemHarness {
   /**
    * Used to prevent deadlock caused by Unit main thread holding java.lang.Shutdown class lock,
    * SmartAgent.Shutdown#run() calling System.exit() and Smart agent shutdown hook
-   * waiting for actor system to shut down
+   * waiting for actor system to shut down.
    */
   static class NoExitSecurityManager extends SecurityManager {
     @Override
-    public void checkPermission(Permission perm) {}
+    public void checkPermission(Permission perm) {
+    }
 
     @Override
     public void checkExit(int status) {
