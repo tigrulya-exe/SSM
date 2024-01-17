@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.mapreduce.Cluster;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.tools.DistCp;
@@ -87,7 +88,7 @@ public class DistCpAction extends HdfsAction {
 
     List<String> rawArgs = distCpArgs.entrySet()
         .stream()
-        .flatMap(entry -> mapOptionToStr(entry.getKey(), entry.getValue()))
+        .flatMap(entry -> mapOptionToString(entry.getKey(), entry.getValue()))
         .collect(Collectors.toList());
 
     if (!distCpArgs.containsKey(SOURCE_PATH_LIST_FILE)) {
@@ -103,22 +104,22 @@ public class DistCpAction extends HdfsAction {
   }
 
   private void validateActionArguments() {
-    if (sourcePaths == null && !distCpArgs.containsKey(SOURCE_PATH_LIST_FILE)) {
+    if (StringUtils.isBlank(sourcePaths) && !distCpArgs.containsKey(SOURCE_PATH_LIST_FILE)) {
       throw new IllegalArgumentException("Source paths not provided, please provide either "
           + FILE_PATH + " either " + SOURCE_PATH_LIST_FILE + " argument");
     }
 
-    if (sourcePaths != null && distCpArgs.containsKey(SOURCE_PATH_LIST_FILE)) {
+    if (StringUtils.isNotBlank(sourcePaths) && distCpArgs.containsKey(SOURCE_PATH_LIST_FILE)) {
       throw new IllegalArgumentException(FILE_PATH + " and " + SOURCE_PATH_LIST_FILE
           + " can't be used at the same time. Use only one of the options for specifying source paths.");
     }
 
-    if (targetPath == null) {
+    if (StringUtils.isBlank(targetPath)) {
       throw new IllegalArgumentException("Required argument not present: " + TARGET_ARG);
     }
   }
 
-  private Stream<String> mapOptionToStr(String key, String value) {
+  private Stream<String> mapOptionToString(String key, String value) {
     if (value.isEmpty()) {
       return Stream.of(key);
     }

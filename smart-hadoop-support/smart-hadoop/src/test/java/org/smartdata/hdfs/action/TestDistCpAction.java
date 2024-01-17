@@ -115,6 +115,18 @@ public class TestDistCpAction extends MiniClusterHarness {
   }
 
   @Test
+  public void testThrowIfEmptySourceOptionProvided() {
+    Map<String, String> args = new HashMap<>();
+    args.put(DistCpAction.FILE_PATH, "");
+    args.put(DistCpAction.TARGET_ARG, "hdfs://nn2/test/target/dir1");
+
+    IllegalArgumentException exception = Assert.assertThrows(
+        IllegalArgumentException.class, () -> createAction(args).buildDistCpOptions());
+    Assert.assertEquals(exception.getMessage(),
+        "Source paths not provided, please provide either -file either -f argument");
+  }
+
+  @Test
   public void testThrowIfBothSourceOptionsProvided() {
     Map<String, String> args = new HashMap<>();
     args.put(DistCpAction.FILE_PATH, "test_path");
@@ -131,6 +143,17 @@ public class TestDistCpAction extends MiniClusterHarness {
   public void testThrowIfTargetOptionNotProvided() {
     Map<String, String> args = new HashMap<>();
     args.put(DistCpAction.SOURCE_PATH_LIST_FILE, "test_path_listing");
+
+    IllegalArgumentException exception = Assert.assertThrows(
+        IllegalArgumentException.class, () -> createAction(args).buildDistCpOptions());
+    Assert.assertEquals(exception.getMessage(), "Required argument not present: -target");
+  }
+
+  @Test
+  public void testThrowIfEmptyTargetOptionProvided() {
+    Map<String, String> args = new HashMap<>();
+    args.put(DistCpAction.SOURCE_PATH_LIST_FILE, "test_path_listing");
+    args.put(DistCpAction.TARGET_ARG, "");
 
     IllegalArgumentException exception = Assert.assertThrows(
         IllegalArgumentException.class, () -> createAction(args).buildDistCpOptions());
