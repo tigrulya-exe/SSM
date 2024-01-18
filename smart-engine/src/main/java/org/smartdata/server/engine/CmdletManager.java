@@ -21,6 +21,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
+import java.util.Objects;
+import java.util.stream.IntStream;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +42,7 @@ import org.smartdata.model.CmdletDescriptor;
 import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.CmdletState;
 import org.smartdata.model.DetailedFileAction;
+import org.smartdata.model.IgnoredPathsManager;
 import org.smartdata.model.LaunchAction;
 import org.smartdata.model.UserInfo;
 import org.smartdata.model.WhitelistHelper;
@@ -124,6 +127,8 @@ public class CmdletManager extends AbstractService {
 
   private ActionGroup cache;
 
+  private final IgnoredPathsManager ignoredPathsManager;
+
   public CmdletManager(ServerContext context) throws IOException {
     super(context);
 
@@ -139,6 +144,7 @@ public class CmdletManager extends AbstractService {
     this.idToActions = new ConcurrentHashMap<>();
     this.cacheCmd = new ConcurrentHashMap<>();
     this.tobeDeletedCmd = new LinkedList<>();
+    this.ignoredPathsManager = new IgnoredPathsManager(context.getConf());
     this.dispatcher = new CmdletDispatcher(context, this, scheduledCmdlet,
       idToLaunchCmdlet, runningCmdlets, schedulers);
     maxNumPendingCmdlets = context.getConf()
@@ -435,6 +441,13 @@ public class CmdletManager extends AbstractService {
         throw new IOException("This path is not in the whitelist.");
       }
     }
+    // TODO: mb somehow merge whitelist and ignore list
+    // Check if action path is not in the ignore list
+    if (shouldIgnore(cmdletDescriptor)) {
+      // TODO: throw exception or return -1?
+      throw new IllegalArgumentException(
+          "Action is ignored because it's path is in the ignore list: " + cmdletDescriptor);
+    }
     // Let Scheduler check actioninfo onsubmit and add them to cmdletinfo
     checkActionsOnSubmit(cmdletInfo, actionInfos);
     // Insert cmdletinfo and actionInfos to metastore and cache.
@@ -443,6 +456,14 @@ public class CmdletManager extends AbstractService {
     // (see #recover), they will be not be tracked.
     tracker.track(cmdletInfo.getCid(), cmdletDescriptor);
     return cmdletInfo.getCid();
+  }
+
+  private boolean shouldIgnore(CmdletDescriptor cmdletDescriptor) {
+    return IntStream.range(0, cmdletDescriptor.getActionSize())
+        .mapToObj(cmdletDescriptor::getActionArgs)
+        .map(args -> args.get(CmdletDescriptor.HDFS_FILE_PATH))
+        .filter(Objects::nonNull)
+        .anyMatch(ignoredPathsManager::shouldIgnore);
   }
 
   /**

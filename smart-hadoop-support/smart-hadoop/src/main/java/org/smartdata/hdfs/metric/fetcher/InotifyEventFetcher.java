@@ -37,6 +37,7 @@ import org.smartdata.conf.SmartConfKeys;
 
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
+import org.smartdata.model.IgnoredPathsManager;
 import org.smartdata.model.SystemInfo;
 import org.smartdata.utils.StringUtil;
 
@@ -282,6 +283,8 @@ public class InotifyEventFetcher {
     private List<String> ignoreList;
     private List<String> fetchList;
 
+    private final IgnoredPathsManager ignoredPathsManager;
+
     public EventApplyTask(NamespaceFetcher namespaceFetcher, InotifyEventApplier applier,
         QueueFile queueFile, long lastId) {
       this.namespaceFetcher = namespaceFetcher;
@@ -290,6 +293,7 @@ public class InotifyEventFetcher {
       this.lastId = lastId;
       this.conf = new SmartConf();
       this.ignoreList = getIgnoreDirFromConfig();
+      this.ignoredPathsManager = new IgnoredPathsManager(conf);
     }
 
     public EventApplyTask(NamespaceFetcher namespaceFetcher, InotifyEventApplier applier,
@@ -301,6 +305,7 @@ public class InotifyEventFetcher {
       this.conf = conf;
       this.ignoreList = getIgnoreDirFromConfig();
       this.fetchList = getFetchDirFromConfig();
+      this.ignoredPathsManager = new IgnoredPathsManager(conf);
     }
 
     public List<String> getIgnoreDirFromConfig() {
@@ -314,6 +319,10 @@ public class InotifyEventFetcher {
     public boolean shouldIgnore(String path) {
       if (!path.endsWith("/")) {
         path = path.concat("/");
+      }
+      // TODO: somehow merge ignoredPathsManager and ignoreList
+      if (ignoredPathsManager.shouldIgnore(path)) {
+        return true;
       }
       for (String dir : ignoreList) {
         if (path.startsWith(dir)) {

@@ -41,6 +41,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import org.smartdata.model.IgnoredPathsManager;
 
 import static org.smartdata.hdfs.CompatibilityHelperLoader.getHelper;
 
@@ -207,6 +208,8 @@ public class NamespaceFetcher {
     private static int idCounter = 0;
     private int id;
 
+    private final IgnoredPathsManager ignoredPathsManager;
+
     public HdfsFetchTask(IngestionTask[] ingestionTasks, DFSClient client, SmartConf conf) {
       super();
       id = idCounter++;
@@ -217,6 +220,7 @@ public class NamespaceFetcher {
               .SMART_NAMESPACE_FETCHER_BATCH_KEY,
           SmartConfKeys.SMART_NAMESPACE_FETCHER_BATCH_DEFAULT);
       ignoreList = this.conf.getIgnoreDir();
+      this.ignoredPathsManager = new IgnoredPathsManager(conf);
     }
 
     public static void init() {
@@ -282,6 +286,12 @@ public class NamespaceFetcher {
 
       if (startAfter == null) {
         String tmpParent = parent.endsWith("/") ? parent : parent + "/";
+
+        // TODO merge ignoredPathsManager and ignoreList
+        if (ignoredPathsManager.shouldIgnore(tmpParent)) {
+          return;
+        }
+
         for (String dir : ignoreList) {
           if (tmpParent.startsWith(dir)) {
             return;
