@@ -375,4 +375,20 @@
       Warning: it requires admin privileges for ssm user to be able to configure the db.
     </description>
   </property>
+
+  <property>
+    <name>smart.ignore.path.templates</name>
+    <value>false</value>
+    <description>
+      Comma-separated list of regex templates of HDFS paths to be completely ignored by SSM.
+    </description>
+  </property>
+
+  <property>
+    <name>smart.internal.path.templates</name>
+    <value>.*/\..*,.*/__.*,.*_COPYING_.*</value>
+    <description>
+      Comma-separated list of regex templates of internal files to be completely ignored by SSM.
+    </description>
+  </property>
 </configuration>

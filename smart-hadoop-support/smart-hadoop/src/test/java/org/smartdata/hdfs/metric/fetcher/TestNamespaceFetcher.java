@@ -35,6 +35,7 @@ import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
 
 import static org.mockito.Mockito.*;
+import static org.smartdata.conf.SmartConfKeys.SMART_IGNORE_DIRS_KEY;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -124,14 +125,12 @@ public class TestNamespaceFetcher {
   public void testIgnore() throws IOException, InterruptedException,
       MissingEventsException, MetaStoreException {
     pathesInDB.clear();
-    final Configuration conf = new SmartConf();
+    final SmartConf conf = new SmartConf();
     final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
         .numDataNodes(2).build();
-    ArrayList<String> ignoreList = new ArrayList<>();
-    ignoreList.add("/tmp");
-    ((SmartConf) conf).setIgnoreDir(ignoreList);
+    conf.set(SMART_IGNORE_DIRS_KEY, "/tmp");
     try {
-      NamespaceFetcher fetcher = init(cluster, (SmartConf) conf);
+      NamespaceFetcher fetcher = init(cluster, conf);
       fetcher.startFetch();
       List<String> expected = Arrays.asList("/", "/user", "/user/user1", "/user/user2");
       while (!fetcher.fetchFinished()) {

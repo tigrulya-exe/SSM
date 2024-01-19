@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.stream.Collectors;
+import org.smartdata.model.PathChecker;
 
 /**
  * This is a very preliminary and buggy applier, can further enhance by referring to
@@ -55,8 +56,7 @@ public class InotifyEventApplier {
   private DFSClient client;
   private static final Logger LOG =
       LoggerFactory.getLogger(InotifyEventFetcher.class);
-  private List<String> ignoreEventDirs;
-  private List<String> fetchEventDirs;
+  private PathChecker pathChecker;
   private NamespaceFetcher namespaceFetcher;
 
   public InotifyEventApplier(MetaStore metaStore, DFSClient client) {
@@ -72,10 +72,8 @@ public class InotifyEventApplier {
 
   private void initialize(){
     SmartConf conf = new SmartConf();
-    ignoreEventDirs = conf.getIgnoreDir();
-    fetchEventDirs = conf.getCoverDir();
+    pathChecker = new PathChecker(conf);
   }
-
 
   public void apply(List<Event> events) throws IOException, MetaStoreException, InterruptedException {
     for (Event event : events) {
@@ -91,20 +89,8 @@ public class InotifyEventApplier {
 
   private boolean shouldIgnore(String path) {
     String toCheck = path.endsWith("/") ? path : path + "/";
-    for (String s : ignoreEventDirs) {
-      if (toCheck.startsWith(s)) {
-        return true;
-      }
-    }
-    if (fetchEventDirs.isEmpty()) {
-      return false;
-    }
-    for (String s : fetchEventDirs) {
-      if (toCheck.startsWith(s)) {
-        return false;
-      }
-    }
-    return true;
+    return pathChecker.isIgnored(toCheck)
+        || !pathChecker.isCovered(toCheck);
   }
 
   private void apply(Event event) throws IOException, MetaStoreException, InterruptedException {

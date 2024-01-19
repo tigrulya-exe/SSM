@@ -37,7 +37,7 @@ import org.smartdata.conf.SmartConfKeys;
 
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
-import org.smartdata.model.IgnoredPathsManager;
+import org.smartdata.model.PathChecker;
 import org.smartdata.model.SystemInfo;
 import org.smartdata.utils.StringUtil;
 
@@ -279,22 +279,7 @@ public class InotifyEventFetcher {
     private final InotifyEventApplier applier;
     private final QueueFile queueFile;
     private long lastId;
-    private SmartConf conf;
-    private List<String> ignoreList;
-    private List<String> fetchList;
-
-    private final IgnoredPathsManager ignoredPathsManager;
-
-    public EventApplyTask(NamespaceFetcher namespaceFetcher, InotifyEventApplier applier,
-        QueueFile queueFile, long lastId) {
-      this.namespaceFetcher = namespaceFetcher;
-      this.queueFile = queueFile;
-      this.applier = applier;
-      this.lastId = lastId;
-      this.conf = new SmartConf();
-      this.ignoreList = getIgnoreDirFromConfig();
-      this.ignoredPathsManager = new IgnoredPathsManager(conf);
-    }
+    private final PathChecker pathChecker;
 
     public EventApplyTask(NamespaceFetcher namespaceFetcher, InotifyEventApplier applier,
         QueueFile queueFile, long lastId, SmartConf conf) {
@@ -302,42 +287,15 @@ public class InotifyEventFetcher {
       this.queueFile = queueFile;
       this.applier = applier;
       this.lastId = lastId;
-      this.conf = conf;
-      this.ignoreList = getIgnoreDirFromConfig();
-      this.fetchList = getFetchDirFromConfig();
-      this.ignoredPathsManager = new IgnoredPathsManager(conf);
-    }
-
-    public List<String> getIgnoreDirFromConfig() {
-      return conf.getIgnoreDir();
-    }
-
-    public List<String> getFetchDirFromConfig() {
-      return conf.getCoverDir();
+      this.pathChecker = new PathChecker(conf);
     }
 
     public boolean shouldIgnore(String path) {
       if (!path.endsWith("/")) {
         path = path.concat("/");
       }
-      // TODO: somehow merge ignoredPathsManager and ignoreList
-      if (ignoredPathsManager.shouldIgnore(path)) {
-        return true;
-      }
-      for (String dir : ignoreList) {
-        if (path.startsWith(dir)) {
-          return true;
-        }
-      }
-      if (fetchList.isEmpty()) {
-        return false;
-      }
-      for (String dir : fetchList) {
-        if (path.startsWith(dir)) {
-          return false;
-        }
-      }
-      return true;
+      return pathChecker.isIgnored(path)
+          || !pathChecker.isCovered(path);
     }
 
     public boolean ifEventIgnore(Event event) {
