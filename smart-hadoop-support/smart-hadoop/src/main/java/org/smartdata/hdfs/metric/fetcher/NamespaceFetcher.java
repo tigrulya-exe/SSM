@@ -314,8 +314,12 @@ public class NamespaceFetcher {
               break;
             }
             for (HdfsFileStatus child : children) {
+              String fullName = child.getFullName(parent);
+              if (pathChecker.isIgnored(fullName)) {
+                continue;
+              }
               if (child.isDir()) {
-                this.deque.add(child.getFullName(parent));
+                this.deque.add(fullName);
               } else {
                 this.addFileStatus(convertToFileInfo(child, parent));
                 numFilesFetched.incrementAndGet();

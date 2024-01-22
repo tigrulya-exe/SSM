@@ -53,26 +53,25 @@ public class InotifyEventApplier {
   private static final String ROOT_DIRECTORY = "/";
 
   private final MetaStore metaStore;
+  private final PathChecker pathChecker;
   private DFSClient client;
   private static final Logger LOG =
       LoggerFactory.getLogger(InotifyEventFetcher.class);
-  private PathChecker pathChecker;
   private NamespaceFetcher namespaceFetcher;
 
   public InotifyEventApplier(MetaStore metaStore, DFSClient client) {
-    this.metaStore = metaStore;
-    this.client = client;
-    initialize();
+    this(new SmartConf(), metaStore, client);
   }
 
-  public InotifyEventApplier(MetaStore metaStore, DFSClient client, NamespaceFetcher namespaceFetcher) {
-    this(metaStore, client);
+  public InotifyEventApplier(SmartConf conf, MetaStore metaStore, DFSClient client, NamespaceFetcher namespaceFetcher) {
+    this(conf, metaStore, client);
     this.namespaceFetcher = namespaceFetcher;
   }
 
-  private void initialize(){
-    SmartConf conf = new SmartConf();
-    pathChecker = new PathChecker(conf);
+  public InotifyEventApplier(SmartConf conf, MetaStore metaStore, DFSClient client) {
+    this.metaStore = metaStore;
+    this.client = client;
+    this.pathChecker = new PathChecker(conf);
   }
 
   public void apply(List<Event> events) throws IOException, MetaStoreException, InterruptedException {
@@ -81,16 +80,8 @@ public class InotifyEventApplier {
     }
   }
 
-  //check if the dir is in ignoreList
-
   public void apply(Event[] events) throws IOException, MetaStoreException, InterruptedException {
     this.apply(Arrays.asList(events));
-  }
-
-  private boolean shouldIgnore(String path) {
-    String toCheck = path.endsWith("/") ? path : path + "/";
-    return pathChecker.isIgnored(toCheck)
-        || !pathChecker.isCovered(toCheck);
   }
 
   private void apply(Event event) throws IOException, MetaStoreException, InterruptedException {
@@ -98,29 +89,22 @@ public class InotifyEventApplier {
     String srcPath, dstPath;
     LOG.debug("Even Type = {}", event.getEventType());
 
+    // we already filtered events in the fetch tasks, so we can skip
+    // event's path check here
     switch (event.getEventType()) {
       case CREATE:
         path = ((Event.CreateEvent) event).getPath();
-        if (shouldIgnore(path)) {
-          return;
-        }
         LOG.trace("event type: {}, path: {}", event.getEventType().name(), path);
         applyCreate((Event.CreateEvent) event);
         break;
       case CLOSE:
         path = ((Event.CloseEvent) event).getPath();
-        if (shouldIgnore(path)) {
-          return;
-        }
         LOG.trace("event type: {}, path: {}", event.getEventType().name(), path);
         applyClose((Event.CloseEvent) event);
         break;
       case RENAME:
         srcPath = ((Event.RenameEvent) event).getSrcPath();
         dstPath = ((Event.RenameEvent) event).getDstPath();
-        if (shouldIgnore(srcPath) && shouldIgnore(dstPath)) {
-          return;
-        }
         LOG.trace("event type: {}, src path: {}, dest path: {}",
             event.getEventType().name(), srcPath, dstPath);
         applyRename((Event.RenameEvent)event);
@@ -130,25 +114,16 @@ public class InotifyEventApplier {
         // the precision of access time. Its default value is 1h. To avoid missing a
         // MetadataUpdateEvent for updating access time, a smaller value should be set.
         path = ((Event.MetadataUpdateEvent)event).getPath();
-        if (shouldIgnore(path)) {
-          return;
-        }
         LOG.trace("event type: {}, path: {}", event.getEventType().name(), path);
         applyMetadataUpdate((Event.MetadataUpdateEvent)event);
         break;
       case APPEND:
         path = ((Event.AppendEvent)event).getPath();
-        if (shouldIgnore(path)) {
-          return;
-        }
         LOG.trace("event type: {}, path: {}", event.getEventType().name(), path);
         // do nothing
         break;
       case UNLINK:
         path = ((Event.UnlinkEvent)event).getPath();
-        if (shouldIgnore(path)) {
-          return;
-        }
         LOG.trace("event type: {}, path: {}", event.getEventType().name(), path);
         applyUnlink((Event.UnlinkEvent)event);
     }
@@ -268,7 +243,7 @@ public class InotifyEventApplier {
 
     // if the dest is ignored, delete src info from file table
     // TODO: tackle with file_state and small_state
-    if (shouldIgnore(dest)) {
+    if (pathChecker.isIgnored(dest)) {
       // fuzzy matching is used to delete content under the dir
       metaStore.deleteFileByPath(src, true);
       return;

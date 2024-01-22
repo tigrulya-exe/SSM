@@ -41,7 +41,6 @@ import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.CmdletState;
 import org.smartdata.model.DetailedFileAction;
 import org.smartdata.model.LaunchAction;
-import org.smartdata.model.PathChecker;
 import org.smartdata.model.UserInfo;
 import org.smartdata.model.WhitelistHelper;
 import org.smartdata.model.action.ActionScheduler;
@@ -125,8 +124,6 @@ public class CmdletManager extends AbstractService {
 
   private ActionGroup cache;
 
-  private final PathChecker pathChecker;
-
   public CmdletManager(ServerContext context) throws IOException {
     super(context);
 
@@ -142,7 +139,6 @@ public class CmdletManager extends AbstractService {
     this.idToActions = new ConcurrentHashMap<>();
     this.cacheCmd = new ConcurrentHashMap<>();
     this.tobeDeletedCmd = new LinkedList<>();
-    this.pathChecker = new PathChecker(context.getConf());
     this.dispatcher = new CmdletDispatcher(context, this, scheduledCmdlet,
       idToLaunchCmdlet, runningCmdlets, schedulers);
     maxNumPendingCmdlets = context.getConf()

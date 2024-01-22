@@ -71,26 +71,8 @@ public class InotifyEventFetcher {
   public static List<String> oldList = new ArrayList<>();
 
   public InotifyEventFetcher(DFSClient client, MetaStore metaStore,
-      ScheduledExecutorService service, Callable callBack) {
-    this(client, metaStore, service, new InotifyEventApplier(metaStore, client), callBack, new SmartConf());
-  }
-
-  public InotifyEventFetcher(DFSClient client, MetaStore metaStore,
       ScheduledExecutorService service, Callable callBack, SmartConf conf) {
     this(client, metaStore, service, null, callBack, conf);
-  }
-  
-
-  public InotifyEventFetcher(DFSClient client, MetaStore metaStore,
-      ScheduledExecutorService service, InotifyEventApplier applier, Callable callBack) {
-    this.client = client;
-    this.applier = applier;
-    this.metaStore = metaStore;
-    this.scheduledExecutorService = service;
-    this.finishedCallback = callBack;
-    // use independent thread pool
-    this.nameSpaceFetcher = new NamespaceFetcher(client, metaStore, null);
-    this.conf = new SmartConf();
   }
 
   public InotifyEventFetcher(DFSClient client, MetaStore metaStore,
@@ -102,7 +84,9 @@ public class InotifyEventFetcher {
     this.finishedCallback = callBack;
     this.conf = conf;
     this.nameSpaceFetcher = new NamespaceFetcher(client, metaStore, null, conf);
-    this.applier = new InotifyEventApplier(metaStore, client, nameSpaceFetcher);
+    this.applier = applier == null
+        ? new InotifyEventApplier(conf, metaStore, client, nameSpaceFetcher)
+        : applier;
   }
 
   public void start() throws IOException {
@@ -186,7 +170,7 @@ public class InotifyEventFetcher {
   private void submitFetchAndApplyTask(long lastId) throws IOException {
     fetchAndApplyFuture =
         scheduledExecutorService.scheduleAtFixedRate(
-            new InotifyFetchAndApplyTask(client, metaStore, applier, lastId),
+            new InotifyFetchAndApplyTask(client, metaStore, applier, lastId, conf),
             0,
             100,
             TimeUnit.MILLISECONDS);
@@ -279,7 +263,7 @@ public class InotifyEventFetcher {
     private final InotifyEventApplier applier;
     private final QueueFile queueFile;
     private long lastId;
-    private final PathChecker pathChecker;
+    private final INotifyEventFilter eventFilter;
 
     public EventApplyTask(NamespaceFetcher namespaceFetcher, InotifyEventApplier applier,
         QueueFile queueFile, long lastId, SmartConf conf) {
@@ -287,57 +271,7 @@ public class InotifyEventFetcher {
       this.queueFile = queueFile;
       this.applier = applier;
       this.lastId = lastId;
-      this.pathChecker = new PathChecker(conf);
-    }
-
-    public boolean shouldIgnore(String path) {
-      if (!path.endsWith("/")) {
-        path = path.concat("/");
-      }
-      return pathChecker.isIgnored(path)
-          || !pathChecker.isCovered(path);
-    }
-
-    public boolean ifEventIgnore(Event event) {
-      String path;
-      switch (event.getEventType()) {
-        case CREATE:
-          Event.CreateEvent createEvent = (Event.CreateEvent) event;
-          path = createEvent.getPath();
-          return shouldIgnore(path);
-        case CLOSE:
-          Event.CloseEvent closeEvent = (Event.CloseEvent) event;
-          path = closeEvent.getPath();
-          return shouldIgnore(path);
-        case RENAME:
-          Event.RenameEvent renameEvent = (Event.RenameEvent) event;
-          path = renameEvent.getSrcPath();
-          String dest = renameEvent.getDstPath();
-          return shouldIgnore(path) && shouldIgnore(dest);
-        case METADATA:
-          Event.MetadataUpdateEvent metadataUpdateEvent = (Event.MetadataUpdateEvent) event;
-          path = metadataUpdateEvent.getPath();
-          return shouldIgnore(path);
-        case APPEND:
-          Event.AppendEvent appendEvent = (Event.AppendEvent) event;
-          path = appendEvent.getPath();
-          return shouldIgnore(path);
-        case UNLINK:
-          Event.UnlinkEvent unlinkEvent = (Event.UnlinkEvent) event;
-          path = unlinkEvent.getPath();
-          return shouldIgnore(path);
-      }
-      return true;
-    }
-
-    public Event[] deleteIgnoreEvent(Event[] events) {
-      ArrayList<Event> eventArrayList = new ArrayList<>();
-      for (int i = 0; i < events.length; i++) {
-        if (!ifEventIgnore(events[i])) {
-          eventArrayList.add(events[i]);
-        }
-      }
-      return eventArrayList.toArray(new Event[eventArrayList.size()]);
+      this.eventFilter = new INotifyEventFilter(conf);
     }
 
     @Override
@@ -351,7 +285,7 @@ public class InotifyEventFetcher {
               EventBatch batch = EventBatchSerializer.deserialize(queueFile.peek());
               queueFile.remove();
               Event[] event = batch.getEvents();
-              event = deleteIgnoreEvent(event);
+              event = eventFilter.filterIgnored(event);
               if (event.length > 0) {
                 this.applier.apply(event);
                 this.lastId = batch.getTxid();
