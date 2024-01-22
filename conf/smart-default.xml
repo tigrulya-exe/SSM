@@ -378,7 +378,7 @@
 
   <property>
     <name>smart.ignore.path.templates</name>
-    <value>false</value>
+    <value></value>
     <description>
       Comma-separated list of regex templates of HDFS paths to be completely ignored by SSM.
     </description>

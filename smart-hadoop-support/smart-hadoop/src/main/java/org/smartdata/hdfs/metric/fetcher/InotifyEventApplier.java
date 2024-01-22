@@ -131,12 +131,16 @@ public class InotifyEventApplier {
 
   //Todo: times and ec policy id, etc.
   private void applyCreate(Event.CreateEvent createEvent) throws IOException, MetaStoreException {
-    HdfsFileStatus fileStatus = client.getFileInfo(createEvent.getPath());
+    applyCreate(createEvent.getPath());
+  }
+
+  private void applyCreate(String path) throws IOException, MetaStoreException {
+    HdfsFileStatus fileStatus = client.getFileInfo(path);
     if (fileStatus == null) {
-      LOG.debug("Can not get HdfsFileStatus for file " + createEvent.getPath());
+      LOG.debug("Can not get HdfsFileStatus for file " + path);
       return;
     }
-    FileInfo fileInfo = HadoopUtil.convertFileStatus(fileStatus, createEvent.getPath());
+    FileInfo fileInfo = HadoopUtil.convertFileStatus(fileStatus, path);
 
     if (inBackup(fileInfo.getPath())) {
       if (!fileInfo.isdir()) {
@@ -211,6 +215,12 @@ public class InotifyEventApplier {
       throws IOException, MetaStoreException, InterruptedException {
     String src = renameEvent.getSrcPath();
     String dest = renameEvent.getDstPath();
+
+    if (pathChecker.isIgnored(src)) {
+      applyCreate(renameEvent.getDstPath());
+      return;
+    }
+
     HdfsFileStatus status = client.getFileInfo(dest);
     FileInfo info = metaStore.getFile(src);
 
