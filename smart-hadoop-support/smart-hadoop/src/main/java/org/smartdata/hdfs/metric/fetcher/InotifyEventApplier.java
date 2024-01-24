@@ -131,17 +131,40 @@ public class InotifyEventApplier {
 
   //Todo: times and ec policy id, etc.
   private void applyCreate(Event.CreateEvent createEvent) throws IOException, MetaStoreException {
-    applyCreate(createEvent.getPath());
+    FileInfo fileInfo = getFileInfo(createEvent.getPath());
+    if (fileInfo == null) {
+      return;
+    }
+
+    applyCreateFileDiff(fileInfo);
+    metaStore.deleteFileByPath(fileInfo.getPath(), false);
+    metaStore.deleteFileState(fileInfo.getPath());
+    metaStore.insertFile(fileInfo);
   }
 
-  private void applyCreate(String path) throws IOException, MetaStoreException {
+  private void applyRenameIgnoredFile(Event.RenameEvent renameEvent) throws IOException, MetaStoreException {
+    FileInfo fileInfo = getFileInfo(renameEvent.getDstPath());
+    if (fileInfo == null) {
+      return;
+    }
+
+    applyCreateFileDiff(fileInfo);
+    metaStore.deleteFileByPath(fileInfo.getPath(), false);
+    metaStore.insertFile(fileInfo);
+    metaStore.renameFile(renameEvent.getSrcPath(), renameEvent.getDstPath(), fileInfo.isdir());
+  }
+
+  private FileInfo getFileInfo(String path) throws IOException {
     HdfsFileStatus fileStatus = client.getFileInfo(path);
     if (fileStatus == null) {
       LOG.debug("Can not get HdfsFileStatus for file " + path);
-      return;
+      return null;
     }
-    FileInfo fileInfo = HadoopUtil.convertFileStatus(fileStatus, path);
 
+    return HadoopUtil.convertFileStatus(fileStatus, path);
+  }
+
+  private void applyCreateFileDiff(FileInfo fileInfo) throws MetaStoreException {
     if (inBackup(fileInfo.getPath())) {
       if (!fileInfo.isdir()) {
 
@@ -166,9 +189,6 @@ public class InotifyEventApplier {
         metaStore.insertFileDiff(fileDiff);
       }
     }
-    metaStore.deleteFileByPath(fileInfo.getPath(), false);
-    metaStore.deleteFileState(fileInfo.getPath());
-    metaStore.insertFile(fileInfo);
   }
 
   private boolean inBackup(String src) throws MetaStoreException {
@@ -217,7 +237,7 @@ public class InotifyEventApplier {
     String dest = renameEvent.getDstPath();
 
     if (pathChecker.isIgnored(src)) {
-      applyCreate(renameEvent.getDstPath());
+      applyRenameIgnoredFile(renameEvent);
       return;
     }
 
