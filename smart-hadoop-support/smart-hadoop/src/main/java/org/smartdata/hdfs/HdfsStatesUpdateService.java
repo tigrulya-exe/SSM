@@ -166,6 +166,8 @@ public class HdfsStatesUpdateService extends StatesUpdateService {
     if (storageInfoSampler != null) {
       storageInfoSampler.stop();
     }
+
+    executorService.shutdown();
     LOG.info("Stopped.");
   }
 

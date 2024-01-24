@@ -181,14 +181,14 @@ public class NamespaceFetcher {
     if (fetchTaskFutures != null) {
       for (ScheduledFuture f : fetchTaskFutures) {
         if (f != null) {
-          f.cancel(false);
+          f.cancel(true);
         }
       }
     }
     if (consumerFutures != null) {
       for (ScheduledFuture f : consumerFutures) {
         if (f != null) {
-          f.cancel(false);
+          f.cancel(true);
         }
       }
     }

@@ -92,7 +92,7 @@ public class CachedListFetcher {
 
   public void stop() {
     if (scheduledFuture != null) {
-      this.scheduledFuture.cancel(false);
+      this.scheduledFuture.cancel(true);
     }
   }
 

@@ -203,11 +203,12 @@ public class InotifyEventFetcher {
       inotifyFile.delete();
     }
     if (inotifyFetchFuture != null) {
-      inotifyFetchFuture.cancel(false);
+      inotifyFetchFuture.cancel(true);
     }
     if (fetchAndApplyFuture != null){
-      fetchAndApplyFuture.cancel(false);
+      fetchAndApplyFuture.cancel(true);
     }
+    nameSpaceFetcher.stop();
   }
 
   /**
