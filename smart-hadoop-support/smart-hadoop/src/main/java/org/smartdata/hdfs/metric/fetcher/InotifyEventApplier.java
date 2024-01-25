@@ -33,6 +33,7 @@ import org.smartdata.model.BackUpInfo;
 import org.smartdata.model.FileDiff;
 import org.smartdata.model.FileDiffType;
 import org.smartdata.model.FileInfo;
+import org.smartdata.model.FileInfoUpdate;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -232,11 +233,10 @@ public class InotifyEventApplier {
         metaStore.insertFileDiff(fileDiff);
       }
     }
-    FileInfo fileInfo = FileInfo.newBuilder()
+    FileInfoUpdate fileInfoUpdate = new FileInfoUpdate()
         .setLength(closeEvent.getFileSize())
-        .setModificationTime(closeEvent.getTimestamp())
-        .build();
-    metaStore.updateFileByPath(closeEvent.getPath(), fileInfo);
+        .setModificationTime(closeEvent.getTimestamp());
+    metaStore.updateFileByPath(closeEvent.getPath(), fileInfoUpdate);
   }
 
   //Todo: should update mtime? atime?
@@ -342,29 +342,23 @@ public class InotifyEventApplier {
       fileDiff = new FileDiff(FileDiffType.METADATA);
       fileDiff.setSrc(metadataUpdateEvent.getPath());
     }
-    FileInfo.Builder fileInfoBuilder = FileInfo.newBuilder();
+    FileInfoUpdate fileInfoUpdate = new FileInfoUpdate();
     switch (metadataUpdateEvent.getMetadataType()) {
       case TIMES:
-        if (metadataUpdateEvent.getMtime() > 0 && metadataUpdateEvent.getAtime() > 0) {
+        if (metadataUpdateEvent.getMtime() > 0) {
           if (fileDiff != null) {
-            fileDiff.getParameters().put("-mtime", "" + metadataUpdateEvent.getMtime());
+            fileDiff.getParameters().put("-mtime", String.valueOf(metadataUpdateEvent.getMtime()));
             // fileDiff.getParameters().put("-access_time", "" + metadataUpdateEvent.getAtime());
             metaStore.insertFileDiff(fileDiff);
           }
-          fileInfoBuilder.setModificationTime(metadataUpdateEvent.getMtime())
-              .setAccessTime(metadataUpdateEvent.getAtime());
-        } else if (metadataUpdateEvent.getMtime() > 0) {
-          if (fileDiff != null) {
-            fileDiff.getParameters().put("-mtime", "" + metadataUpdateEvent.getMtime());
-            metaStore.insertFileDiff(fileDiff);
-          }
-          fileInfoBuilder.setModificationTime(metadataUpdateEvent.getMtime());
-        } else if (metadataUpdateEvent.getAtime() > 0) {
+          fileInfoUpdate.setModificationTime(metadataUpdateEvent.getMtime());
+        }
+        if (metadataUpdateEvent.getAtime() > 0) {
           // if (fileDiff != null) {
           //   fileDiff.getParameters().put("-access_time", "" + metadataUpdateEvent.getAtime());
           //   metaStore.insertFileDiff(fileDiff);
           // }
-          fileInfoBuilder.setAccessTime(metadataUpdateEvent.getMtime());
+          fileInfoUpdate.setAccessTime(metadataUpdateEvent.getAtime());
         }
         break;
       case OWNER:
@@ -372,7 +366,7 @@ public class InotifyEventApplier {
           fileDiff.getParameters().put("-owner", metadataUpdateEvent.getOwnerName());
           metaStore.insertFileDiff(fileDiff);
         }
-        fileInfoBuilder.setOwner(metadataUpdateEvent.getOwnerName())
+        fileInfoUpdate.setOwner(metadataUpdateEvent.getOwnerName())
             .setGroup(metadataUpdateEvent.getGroupName());
         break;
       case PERMS:
@@ -380,14 +374,14 @@ public class InotifyEventApplier {
           fileDiff.getParameters().put("-permission", "" + metadataUpdateEvent.getPerms().toShort());
           metaStore.insertFileDiff(fileDiff);
         }
-        fileInfoBuilder.setPermission(metadataUpdateEvent.getPerms().toShort());
+        fileInfoUpdate.setPermission(metadataUpdateEvent.getPerms().toShort());
         break;
       case REPLICATION:
         if (fileDiff != null) {
           fileDiff.getParameters().put("-replication", "" + metadataUpdateEvent.getReplication());
           metaStore.insertFileDiff(fileDiff);
         }
-        fileInfoBuilder.setBlockReplication((short) metadataUpdateEvent.getReplication());
+        fileInfoUpdate.setBlockReplication((short) metadataUpdateEvent.getReplication());
         break;
       case XATTRS:
         final String EC_POLICY = "hdfs.erasurecoding.policy";
@@ -410,7 +404,7 @@ public class InotifyEventApplier {
               if (ecPolicyId == (byte) -1) {
                 LOG.error("Unrecognized EC policy for updating!");
               }
-              fileInfoBuilder.setErasureCodingPolicy(ecPolicyId);
+              fileInfoUpdate.setErasureCodingPolicy(ecPolicyId);
               break;
             } catch (IOException ex) {
               LOG.error("Error occurred for updating ecPolicy!", ex);
@@ -421,7 +415,7 @@ public class InotifyEventApplier {
       case ACLS:
         return;
     }
-    metaStore.updateFileByPath(metadataUpdateEvent.getPath(), fileInfoBuilder.build());
+    metaStore.updateFileByPath(metadataUpdateEvent.getPath(), fileInfoUpdate);
   }
 
   private void applyUnlink(Event.UnlinkEvent unlinkEvent) throws MetaStoreException {

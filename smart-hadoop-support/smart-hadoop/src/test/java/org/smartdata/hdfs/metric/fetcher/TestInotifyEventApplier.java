@@ -128,6 +128,9 @@ public class TestInotifyEventApplier extends TestDaoBase {
     result4 = metaStore.getFile().get(1);
     Assert.assertEquals(result4.getOwner(), "user1");
     Assert.assertEquals(result4.getGroup(), "cg1");
+    // check metadata event didn't flush other FileInfo fields
+    Assert.assertEquals(result4.getFileId(), 1010L);
+    Assert.assertEquals(result4.getPermission(), new FsPermission("777").toShort());
 
     Event.CreateEvent createEvent2 =
         new Event.CreateEvent.Builder()
