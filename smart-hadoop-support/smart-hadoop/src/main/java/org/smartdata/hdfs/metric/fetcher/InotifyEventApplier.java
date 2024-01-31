@@ -193,7 +193,7 @@ public class InotifyEventApplier {
   }
 
   private boolean inBackup(String src) throws MetaStoreException {
-    return metaStore.srcInbackup(src);
+    return metaStore.srcInBackup(src);
   }
 
   //Todo: should update mtime? atime?

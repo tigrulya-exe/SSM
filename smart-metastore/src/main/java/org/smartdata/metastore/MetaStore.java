@@ -89,12 +89,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 
 /**
  * Operations supported for upper functions.
@@ -110,7 +109,7 @@ public class MetaStore implements CopyMetaService,
   private Map<Integer, String> mapStoragePolicyIdName = null;
   private Map<String, Integer> mapStoragePolicyNameId = null;
   private Map<String, StorageCapacity> mapStorageCapacity = null;
-  private Set<String> setBackSrc = null;
+  private Map<String, Pattern> backupSourcePatterns = null;
   private final RuleDao ruleDao;
   private final CmdletDao cmdletDao;
   private final ActionDao actionDao;
@@ -861,10 +860,11 @@ public class MetaStore implements CopyMetaService,
         BackUpInfo backUpInfo = getBackUpInfo(ruleInfo.getId());
         // Get total matched files
         if (backUpInfo != null) {
+          String src = backUpInfo.getSrc();
           detailedRuleInfo
-              .setBaseProgress(getFilesByPrefix(backUpInfo.getSrc()).size());
-          long count = fileDiffDao.getPendingDiff(backUpInfo.getSrc()).size();
-          count += fileDiffDao.getByState(backUpInfo.getSrc(), FileDiffState.RUNNING).size();
+              .setBaseProgress(getFilesByPrefix(src).size());
+          long count = fileDiffDao.getPendingDiff(src).size();
+          count += fileDiffDao.getByState(src, FileDiffState.RUNNING).size();
           if (count > detailedRuleInfo.baseProgress) {
             count = detailedRuleInfo.baseProgress;
           }
@@ -2014,17 +2014,15 @@ public class MetaStore implements CopyMetaService,
     }
   }
 
-  public boolean srcInbackup(String src) throws MetaStoreException {
-    if (setBackSrc == null) {
-      setBackSrc = new HashSet<>();
-      List<BackUpInfo> backUpInfos = listAllBackUpInfo();
-      for (BackUpInfo backUpInfo : backUpInfos) {
-        setBackSrc.add(backUpInfo.getSrc());
-      }
+  public boolean srcInBackup(String src) throws MetaStoreException {
+    if (backupSourcePatterns == null) {
+      listAllBackUpInfo().stream()
+          .map(BackUpInfo::getSrcPattern)
+          .forEach(this::addBackUpSourcePattern);
     }
     // LOG.info("Backup src = {}, setBackSrc {}", src, setBackSrc);
-    for (String srcDir : setBackSrc) {
-      if (src.startsWith(srcDir)) {
+    for (Pattern srcPattern : backupSourcePatterns.values()) {
+      if (srcPattern.matcher(src).matches()) {
         return true;
       }
     }
@@ -2061,7 +2059,7 @@ public class MetaStore implements CopyMetaService,
   public void deleteAllBackUpInfo() throws MetaStoreException {
     try {
       backUpInfoDao.deleteAll();
-      setBackSrc.clear();
+      backupSourcePatterns.clear();
     } catch (Exception e) {
       throw new MetaStoreException(e);
     }
@@ -2073,8 +2071,8 @@ public class MetaStore implements CopyMetaService,
       BackUpInfo backUpInfo = getBackUpInfo(rid);
       if (backUpInfo != null) {
         if (backUpInfoDao.getBySrc(backUpInfo.getSrc()).size() == 1) {
-          if (setBackSrc != null) {
-            setBackSrc.remove(backUpInfo.getSrc());
+          if (backupSourcePatterns != null) {
+            backupSourcePatterns.remove(backUpInfo.getSrcPattern());
           }
         }
         backUpInfoDao.delete(rid);
@@ -2089,10 +2087,7 @@ public class MetaStore implements CopyMetaService,
       BackUpInfo backUpInfo) throws MetaStoreException {
     try {
       backUpInfoDao.insert(backUpInfo);
-      if (setBackSrc == null) {
-        setBackSrc = new HashSet<>();
-      }
-      setBackSrc.add(backUpInfo.getSrc());
+      addBackUpSourcePattern(backUpInfo.getSrcPattern());
     } catch (Exception e) {
       throw new MetaStoreException(e);
     }
@@ -2486,5 +2481,12 @@ public class MetaStore implements CopyMetaService,
   @Override
   public void close() {
     dbPool.close();
+  }
+
+  private void addBackUpSourcePattern(String sourcePattern) {
+    if (backupSourcePatterns == null) {
+      backupSourcePatterns = new HashMap<>();
+    }
+    backupSourcePatterns.put(sourcePattern, Pattern.compile(sourcePattern));
   }
 }
