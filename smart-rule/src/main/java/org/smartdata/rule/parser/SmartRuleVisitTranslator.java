@@ -43,7 +43,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.smartdata.utils.StringUtil.globString2SqlLike;
+import static org.smartdata.utils.StringUtil.ssmPatternToSqlLike;
 
 /** Convert SSM parse tree into internal representation. */
 public class SmartRuleVisitTranslator extends SmartRuleBaseVisitor<TreeNode> {
@@ -803,7 +803,7 @@ public class SmartRuleVisitTranslator extends SmartRuleBaseVisitor<TreeNode> {
       if (op.length() > 0) {
         String ropStr = rop.getRet();
         if (optype == OperatorType.MATCHES) {
-          ropStr = globString2SqlLike(ropStr);
+          ropStr = ssmPatternToSqlLike(ropStr);
         }
 
         if (bEflag && !procAcc) {

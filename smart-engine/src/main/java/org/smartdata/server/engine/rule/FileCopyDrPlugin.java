@@ -129,7 +129,7 @@ public class FileCopyDrPlugin implements RuleExecutorPlugin {
 
     StringJoiner queryFilterBuilder = new StringJoiner(" OR ");
     globTemplates.stream()
-        .map(StringUtil::globString2SqlLike)
+        .map(StringUtil::ssmPatternToSqlLike)
         .forEach(template -> queryFilterBuilder.add("src LIKE '" + template + "'"));
 
     return String.format(temp, queryFilterBuilder);

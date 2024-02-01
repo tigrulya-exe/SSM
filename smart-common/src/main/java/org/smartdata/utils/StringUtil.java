@@ -83,7 +83,7 @@ public class StringUtil {
     return path.substring(0, last + 1);
   }
 
-  public static String globString2SqlLike(String str) {
+  public static String ssmPatternToSqlLike(String str) {
     return str.replace("*", "%")
         .replace("?", "_");
   }
@@ -273,7 +273,9 @@ public class StringUtil {
   }
 
   public static String ssmPatternToRegex(String ssmPattern) {
-    return ssmPattern.replace("*", ".*")
+    return ssmPattern
+        .replace(".", "\\.")
+        .replace("*", ".*")
         .replace("?", ".");
   }
 }

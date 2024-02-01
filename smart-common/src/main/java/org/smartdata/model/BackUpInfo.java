@@ -19,6 +19,8 @@ package org.smartdata.model;
 
 import java.util.Objects;
 
+import static org.smartdata.utils.StringUtil.ssmPatternToRegex;
+
 public class BackUpInfo {
   private long rid;
   private String src;
@@ -27,7 +29,7 @@ public class BackUpInfo {
   private String srcPattern;
 
   public BackUpInfo(long rid, String src, String dest, long period) {
-    this(rid, src, dest, period, src);
+    this(rid, src, dest, period, ssmPatternToRegex(src + "*"));
   }
 
   public BackUpInfo(long rid, String src, String dest, long period, String srcPattern) {

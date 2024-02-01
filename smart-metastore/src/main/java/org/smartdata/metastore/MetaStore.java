@@ -2016,6 +2016,7 @@ public class MetaStore implements CopyMetaService,
 
   public boolean srcInBackup(String src) throws MetaStoreException {
     if (backupSourcePatterns == null) {
+      backupSourcePatterns = new HashMap<>();
       listAllBackUpInfo().stream()
           .map(BackUpInfo::getSrcPattern)
           .forEach(this::addBackUpSourcePattern);
