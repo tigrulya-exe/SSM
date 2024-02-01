@@ -1696,12 +1696,14 @@ public class MetaStore implements CopyMetaService,
       if (num == 0) {
         LOG.info("The table set required by SSM does not exist. "
             + "The configured database will be formatted.");
-        formatDataBase();
+        dropAllTables();
       } else if (num < MetaStoreUtils.SSM_TABLES.size()) {
         LOG.error("One or more tables required by SSM are missing! "
             + "You can restart SSM with -format option or configure another database.");
         System.exit(1);
       }
+      // we should run migration tool on every launch to check if there are new changelogs
+      initializeDataBase();
     } catch (Exception e) {
       throw new MetaStoreException(e);
     }
