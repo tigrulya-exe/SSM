@@ -17,7 +17,13 @@
  */
 package org.smartdata.hdfs.action;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
@@ -34,6 +40,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.Map;
+import org.smartdata.model.FileInfoDiff;
 
 /**
  * An action to copy a single file from src to destination.
@@ -44,10 +51,12 @@ import java.util.Map;
 @ActionSignature(
     actionId = "copy",
     displayName = "copy",
-    usage = HdfsAction.FILE_PATH + " $src " + CopyFileAction.DEST_PATH +
-        " $dest " + CopyFileAction.OFFSET_INDEX + " $offset" +
-        CopyFileAction.LENGTH +
-        " $length" + CopyFileAction.BUF_SIZE + " $size"
+    usage = HdfsAction.FILE_PATH + " $src "
+        + CopyFileAction.DEST_PATH + " $dest "
+        + CopyFileAction.OFFSET_INDEX + " $offset "
+        + CopyFileAction.LENGTH + " $length "
+        + CopyFileAction.BUF_SIZE + " $size "
+        + CopyFileAction.PRESERVE + " $attributes"
 )
 public class CopyFileAction extends HdfsAction {
   private static final Logger LOG =
@@ -56,11 +65,14 @@ public class CopyFileAction extends HdfsAction {
   public static final String DEST_PATH = "-dest";
   public static final String OFFSET_INDEX = "-offset";
   public static final String LENGTH = "-length";
+  public static final String PRESERVE = "-preserve";
+
   private String srcPath;
   private String destPath;
   private long offset = 0;
   private long length = 0;
   private int bufferSize = 64 * 1024;
+  private List<String> rawPreserveAttributes = Collections.emptyList();
   private Configuration conf;
 
   @Override
@@ -80,13 +92,16 @@ public class CopyFileAction extends HdfsAction {
       this.destPath = args.get(DEST_PATH);
     }
     if (args.containsKey(BUF_SIZE)) {
-      bufferSize = Integer.valueOf(args.get(BUF_SIZE));
+      bufferSize = Integer.parseInt(args.get(BUF_SIZE));
     }
     if (args.containsKey(OFFSET_INDEX)) {
-      offset = Long.valueOf(args.get(OFFSET_INDEX));
+      offset = Long.parseLong(args.get(OFFSET_INDEX));
     }
     if (args.containsKey(LENGTH)) {
-      length = Long.valueOf(args.get(LENGTH));
+      length = Long.parseLong(args.get(LENGTH));
+    }
+    if (args.containsKey(PRESERVE)) {
+      rawPreserveAttributes = Arrays.asList(args.get(PRESERVE).split(","));
     }
   }
 
@@ -98,6 +113,7 @@ public class CopyFileAction extends HdfsAction {
     if (destPath == null) {
       throw new IllegalArgumentException("Dest File parameter is missing.");
     }
+    Set<PreserveAttribute> preserveAttributes = parsePreserveAttributes();
     appendLog(
         String.format("Action starts at %s : Read %s",
             Utils.getFormatedCurrentTime(), srcPath));
@@ -112,12 +128,15 @@ public class CopyFileAction extends HdfsAction {
     if (length != 0) {
       copyWithOffset(srcPath, destPath, bufferSize, offset, length);
     }
+    if (!preserveAttributes.isEmpty()) {
+      copyAttributes(preserveAttributes);
+    }
     appendLog("Copy Successfully!!");
   }
 
   private boolean copySingleFile(String src, String dest) throws IOException {
     //get The file size of source file
-    long fileSize = getFileSize(src);
+    long fileSize = getFileStatus(src).getLen();
     appendLog(
         String.format("Copy the whole file with length %s", fileSize));
     return copyWithOffset(src, dest, bufferSize, 0, fileSize);
@@ -160,13 +179,13 @@ public class CopyFileAction extends HdfsAction {
     }
   }
 
-  private long getFileSize(String fileName) throws IOException {
+  private FileStatus getFileStatus(String fileName) throws IOException {
+    FileSystem fs = FileSystem.get(URI.create(fileName), conf);
     if (fileName.startsWith("hdfs")) {
       // Get InputStream from URL
-      FileSystem fs = FileSystem.get(URI.create(fileName), conf);
-      return fs.getFileStatus(new Path(fileName)).getLen();
+      return fs.getFileStatus(new Path(fileName));
     } else {
-      return dfsClient.getFileInfo(fileName).getLen();
+      return (FileStatus) dfsClient.getFileInfo(fileName);
     }
   }
 
@@ -209,6 +228,57 @@ public class CopyFileAction extends HdfsAction {
     } else {
       return CompatibilityHelperLoader.getHelper()
           .getDFSClientAppend(dfsClient, dest, bufferSize, offset);
+    }
+  }
+
+  private Set<PreserveAttribute> parsePreserveAttributes() {
+    return rawPreserveAttributes
+        .stream()
+        .map(PreserveAttribute::fromOption)
+        .collect(Collectors.toSet());
+  }
+
+  private void copyAttributes(Set<PreserveAttribute> preserveAttributes) throws IOException {
+    FileStatus srcFileStatus = getFileStatus(srcPath);
+    FileInfoDiff fileInfoDiff = new FileInfoDiff();
+
+    if (preserveAttributes.contains(PreserveAttribute.PERMISSIONS)) {
+      fileInfoDiff.setPermission(srcFileStatus.getPermission().toShort());
+    }
+
+    if (preserveAttributes.contains(PreserveAttribute.OWNER)) {
+      fileInfoDiff.setOwner(srcFileStatus.getOwner());
+    }
+
+    if (preserveAttributes.contains(PreserveAttribute.GROUP)) {
+      fileInfoDiff.setGroup(srcFileStatus.getGroup());
+    }
+
+    MetaDataAction.changeFileMetadata(destPath, fileInfoDiff, dfsClient, conf);
+    appendLog("Successfully updated dest file attributes: " + preserveAttributes);
+  }
+
+  enum PreserveAttribute {
+    OWNER("owner"),
+    GROUP("group"),
+    PERMISSIONS("permissions");
+
+    private final String name;
+
+    PreserveAttribute(String name) {
+      this.name = name;
+    }
+
+    static PreserveAttribute fromOption(String option) {
+      return Arrays.stream(PreserveAttribute.values())
+          .filter(attr -> attr.name.equals(option))
+          .findFirst()
+          .orElseThrow(() -> new IllegalArgumentException("Wrong preserve attribute: " + option));
+    }
+
+    @Override
+    public String toString() {
+      return name;
     }
   }
 }

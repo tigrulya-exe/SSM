@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.smartdata.SmartContext;
 import org.smartdata.action.SyncAction;
 import org.smartdata.conf.SmartConfKeys;
+import org.smartdata.hdfs.action.CopyFileAction;
 import org.smartdata.hdfs.action.HdfsAction;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
@@ -149,6 +150,7 @@ public class CopyScheduler extends ActionSchedulerService {
     String srcDir = action.getArgs().get(SyncAction.SRC);
     String path = action.getArgs().get(HdfsAction.FILE_PATH);
     String destDir = action.getArgs().get(SyncAction.DEST);
+    String preserveAttributes = action.getArgs().get(SyncAction.PRESERVE);
     String destPath = path.replaceFirst(srcDir, destDir);
     // Check again to avoid corner cases
     long did = fileDiffChainMap.get(path).getHead();
@@ -192,6 +194,9 @@ public class CopyScheduler extends ActionSchedulerService {
       case APPEND:
         action.setActionType("copy");
         action.getArgs().put("-dest", destPath);
+        if (preserveAttributes != null) {
+          action.getArgs().put(CopyFileAction.PRESERVE, preserveAttributes);
+        }
         if (rateLimiter != null) {
           String strLen = fileDiff.getParameters().get("-length");
           if (strLen != null) {
