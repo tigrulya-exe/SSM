@@ -99,7 +99,8 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Operations supported for upper functions.
  */
-public class MetaStore implements CopyMetaService, CmdletMetaService, BackupMetaService {
+public class MetaStore implements CopyMetaService,
+    CmdletMetaService, BackupMetaService, AutoCloseable {
   static final Logger LOG = LoggerFactory.getLogger(MetaStore.class);
 
   private final DbSchemaManager dbSchemaManager;
@@ -136,11 +137,13 @@ public class MetaStore implements CopyMetaService, CmdletMetaService, BackupMeta
   private final ErasureCodingPolicyDao ecDao;
   private final WhitelistDao whitelistDao;
   private final ReentrantLock accessCountLock;
+  private final DBPool dbPool;
 
   public MetaStore(DBPool pool,
                    DbSchemaManager dbSchemaManager,
                    DaoProvider daoProvider,
                    DbMetadataProvider dbMetadataProvider) throws MetaStoreException {
+    this.dbPool = pool;
     this.dbSchemaManager = dbSchemaManager;
     this.dbMetadataProvider = dbMetadataProvider;
     ruleDao = daoProvider.ruleDao();
@@ -2478,5 +2481,10 @@ public class MetaStore implements CopyMetaService, CmdletMetaService, BackupMeta
     } catch (Exception e) {
       throw new MetaStoreException(e);
     }
+  }
+
+  @Override
+  public void close() {
+    dbPool.close();
   }
 }

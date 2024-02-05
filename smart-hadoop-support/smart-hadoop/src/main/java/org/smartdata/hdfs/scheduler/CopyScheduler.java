@@ -677,8 +677,9 @@ public class CopyScheduler extends ActionSchedulerService {
       batchDirectSync();
     } catch (MetaStoreException e) {
       throw new IOException(e);
+    } finally {
+      executorService.shutdown();
     }
-    executorService.shutdown();
   }
 
   private boolean fileExistOnStandby(String filePath) {

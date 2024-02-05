@@ -197,6 +197,10 @@ public class SmartConfKeys {
   public static final String SMART_COVER_DIRS_KEY = "smart.cover.dirs";
   public static final String SMART_WORK_DIR_KEY = "smart.work.dir";
   public static final String SMART_WORK_DIR_DEFAULT = "/system/ssm/";
+  public static final String SMART_IGNORED_PATH_TEMPLATES_KEY = "smart.ignore.path.templates";
+  public static final String SMART_INTERNAL_PATH_TEMPLATES_KEY = "smart.internal.path.templates";
+  public static final String SMART_INTERNAL_PATH_TEMPLATES_DEFAULT =
+      ".*/\\..*,.*/__.*,.*_COPYING_.*";
 
   // Target cluster
   public static final String SMART_STORAGE_INFO_UPDATE_INTERVAL_KEY =

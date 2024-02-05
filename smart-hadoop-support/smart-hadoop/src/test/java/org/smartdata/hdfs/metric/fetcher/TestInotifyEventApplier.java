@@ -231,7 +231,7 @@ public class TestInotifyEventApplier extends TestDaoBase {
     DFSClient client = Mockito.mock(DFSClient.class);
     SmartConf conf = new SmartConf();
     NamespaceFetcher namespaceFetcher = new NamespaceFetcher(client, metaStore, null, conf);
-    InotifyEventApplier applier = new InotifyEventApplier(metaStore, client, namespaceFetcher);
+    InotifyEventApplier applier = new InotifyEventApplier(conf, metaStore, client, namespaceFetcher);
 
     FileInfo[] fileInfos = new FileInfo[]{
         HadoopUtil.convertFileStatus(getDummyFileStatus("/dirfile", 7000), "/dirfile"),

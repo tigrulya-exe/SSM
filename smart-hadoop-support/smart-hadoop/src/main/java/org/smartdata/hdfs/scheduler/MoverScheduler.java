@@ -107,7 +107,7 @@ public class MoverScheduler extends ActionSchedulerService {
    */
   public void stop() throws IOException {
     if (updateServiceFuture != null) {
-      updateServiceFuture.cancel(false);
+      updateServiceFuture.cancel(true);
     }
   }
 
