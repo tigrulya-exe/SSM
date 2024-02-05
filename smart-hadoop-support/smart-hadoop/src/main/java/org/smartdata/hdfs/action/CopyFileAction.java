@@ -17,11 +17,13 @@
  */
 package org.smartdata.hdfs.action;
 
+import com.google.common.collect.Sets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -41,6 +43,12 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.Map;
 import org.smartdata.model.FileInfoDiff;
+
+import static org.smartdata.hdfs.action.CopyFileAction.PreserveAttribute.MODIFICATION_TIME;
+import static org.smartdata.hdfs.action.CopyFileAction.PreserveAttribute.GROUP;
+import static org.smartdata.hdfs.action.CopyFileAction.PreserveAttribute.OWNER;
+import static org.smartdata.hdfs.action.CopyFileAction.PreserveAttribute.PERMISSIONS;
+import static org.smartdata.hdfs.action.CopyFileAction.PreserveAttribute.REPLICATION_NUMBER;
 
 /**
  * An action to copy a single file from src to destination.
@@ -100,7 +108,7 @@ public class CopyFileAction extends HdfsAction {
     if (args.containsKey(LENGTH)) {
       length = Long.parseLong(args.get(LENGTH));
     }
-    if (args.containsKey(PRESERVE)) {
+    if (StringUtils.isNotBlank(args.get(PRESERVE))) {
       rawPreserveAttributes = Arrays.asList(args.get(PRESERVE).split(","));
     }
   }
@@ -128,9 +136,7 @@ public class CopyFileAction extends HdfsAction {
     if (length != 0) {
       copyWithOffset(srcPath, destPath, bufferSize, offset, length);
     }
-    if (!preserveAttributes.isEmpty()) {
-      copyAttributes(preserveAttributes);
-    }
+    copyAttributes(preserveAttributes);
     appendLog("Copy Successfully!!");
   }
 
@@ -232,36 +238,51 @@ public class CopyFileAction extends HdfsAction {
   }
 
   private Set<PreserveAttribute> parsePreserveAttributes() {
-    return rawPreserveAttributes
+    Set<PreserveAttribute> attributesFromOptions = rawPreserveAttributes
         .stream()
         .map(PreserveAttribute::fromOption)
         .collect(Collectors.toSet());
+
+    return attributesFromOptions.isEmpty()
+        // preserve file owner, group and permissions by default
+        ? Sets.newHashSet(OWNER, GROUP, PERMISSIONS)
+        : attributesFromOptions;
   }
 
   private void copyAttributes(Set<PreserveAttribute> preserveAttributes) throws IOException {
     FileStatus srcFileStatus = getFileStatus(srcPath);
     FileInfoDiff fileInfoDiff = new FileInfoDiff();
 
-    if (preserveAttributes.contains(PreserveAttribute.PERMISSIONS)) {
+    if (preserveAttributes.contains(PERMISSIONS)) {
       fileInfoDiff.setPermission(srcFileStatus.getPermission().toShort());
     }
 
-    if (preserveAttributes.contains(PreserveAttribute.OWNER)) {
+    if (preserveAttributes.contains(OWNER)) {
       fileInfoDiff.setOwner(srcFileStatus.getOwner());
     }
 
-    if (preserveAttributes.contains(PreserveAttribute.GROUP)) {
+    if (preserveAttributes.contains(GROUP)) {
       fileInfoDiff.setGroup(srcFileStatus.getGroup());
     }
 
+    if (preserveAttributes.contains(REPLICATION_NUMBER)) {
+      fileInfoDiff.setBlockReplication(srcFileStatus.getReplication());
+    }
+
+    if (preserveAttributes.contains(MODIFICATION_TIME)) {
+      fileInfoDiff.setModificationTime(srcFileStatus.getModificationTime());
+    }
+
     MetaDataAction.changeFileMetadata(destPath, fileInfoDiff, dfsClient, conf);
-    appendLog("Successfully updated dest file attributes: " + preserveAttributes);
+    appendLog("Successfully transferred file attributes: " + preserveAttributes);
   }
 
-  enum PreserveAttribute {
+  public enum PreserveAttribute {
     OWNER("owner"),
     GROUP("group"),
-    PERMISSIONS("permissions");
+    PERMISSIONS("permissions"),
+    REPLICATION_NUMBER("replication"),
+    MODIFICATION_TIME("modification-time");
 
     private final String name;
 
@@ -269,11 +290,12 @@ public class CopyFileAction extends HdfsAction {
       this.name = name;
     }
 
-    static PreserveAttribute fromOption(String option) {
+    public static PreserveAttribute fromOption(String option) {
       return Arrays.stream(PreserveAttribute.values())
           .filter(attr -> attr.name.equals(option))
           .findFirst()
-          .orElseThrow(() -> new IllegalArgumentException("Wrong preserve attribute: " + option));
+          .orElseThrow(() ->
+              new IllegalArgumentException("Wrong preserve attribute: " + option));
     }
 
     @Override

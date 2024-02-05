@@ -39,9 +39,9 @@ import org.smartdata.hdfs.MiniClusterHarness;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.smartdata.hdfs.action.CopyFileAction.PreserveAttribute.GROUP;
+import static org.smartdata.hdfs.action.CopyFileAction.PreserveAttribute.MODIFICATION_TIME;
 import static org.smartdata.hdfs.action.CopyFileAction.PreserveAttribute.OWNER;
-import static org.smartdata.hdfs.action.CopyFileAction.PreserveAttribute.PERMISSIONS;
+import static org.smartdata.hdfs.action.CopyFileAction.PreserveAttribute.REPLICATION_NUMBER;
 
 /**
  * Test for CopyFileAction.
@@ -56,14 +56,14 @@ public class TestCopyFileAction extends MiniClusterHarness {
 
   private String pathPrefix;
 
-  @Before
-  public void setUp() {
-    pathPrefix = isRemoteCopy ? dfs.getUri().toString() : "";
-  }
-
   @Parameterized.Parameters(name = "Remote copy - {0}")
   public static Object[] parameters() {
     return new Object[] {true, false};
+  }
+
+  @Before
+  public void setUp() {
+    pathPrefix = isRemoteCopy ? dfs.getUri().toString() : "";
   }
 
   private void copyFile(String src, String dest, long length,
@@ -167,12 +167,14 @@ public class TestCopyFileAction extends MiniClusterHarness {
     String destPath = pathPrefix + "/dest/fileToCopy";
 
     Path copiedFilePath = copyFileWithAttributes(srcFilePath, destPath,
-        Sets.newHashSet(OWNER, GROUP, PERMISSIONS));
+        Sets.newHashSet(CopyFileAction.PreserveAttribute.values()));
 
     FileStatus destFileStatus = dfs.getFileStatus(copiedFilePath);
     Assert.assertEquals(new FsPermission("777"), destFileStatus.getPermission());
     Assert.assertEquals("newUser", destFileStatus.getOwner());
     Assert.assertEquals("newGroup", destFileStatus.getGroup());
+    Assert.assertEquals(2, destFileStatus.getReplication());
+    Assert.assertEquals(0L, destFileStatus.getModificationTime());
   }
 
   @Test
@@ -180,10 +182,13 @@ public class TestCopyFileAction extends MiniClusterHarness {
     Path srcFilePath = createFileWithAttributes("/test/src/fileToCopy");
     String destPath = pathPrefix + "/dest/fileToCopy";
 
-    Path copiedFilePath = copyFileWithAttributes(srcFilePath, destPath, Sets.newHashSet(OWNER));
+    Path copiedFilePath = copyFileWithAttributes(srcFilePath, destPath,
+        Sets.newHashSet(OWNER, MODIFICATION_TIME, REPLICATION_NUMBER));
 
     FileStatus destFileStatus = dfs.getFileStatus(copiedFilePath);
     Assert.assertEquals("newUser", destFileStatus.getOwner());
+    Assert.assertEquals(0L, destFileStatus.getModificationTime());
+    Assert.assertEquals(2, destFileStatus.getReplication());
     Assert.assertNotEquals(new FsPermission("777"), destFileStatus.getPermission());
     Assert.assertNotEquals("newGroup", destFileStatus.getGroup());
   }
@@ -199,6 +204,8 @@ public class TestCopyFileAction extends MiniClusterHarness {
     FsPermission newPermission = new FsPermission("777");
     dfs.setOwner(srcFilePath, "newUser", "newGroup");
     dfs.setPermission(srcFilePath, newPermission);
+    dfs.setReplication(srcFilePath, (short) 2);
+    dfs.setTimes(srcFilePath, 0L, 1L);
 
     return srcFilePath;
   }
