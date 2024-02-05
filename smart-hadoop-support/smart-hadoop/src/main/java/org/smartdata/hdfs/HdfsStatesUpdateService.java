@@ -182,7 +182,9 @@ public class HdfsStatesUpdateService extends StatesUpdateService {
       throw e;
     } finally {
       try {
-        moverIdOutputStream.close();
+        if (moverIdOutputStream != null) {
+          moverIdOutputStream.close();
+        }
         moverIdOutputStream = null;
       } catch (IOException e) {
         // Ignore this exception
@@ -201,7 +203,9 @@ public class HdfsStatesUpdateService extends StatesUpdateService {
       throw e;
     } finally {
       try {
-        ssmIdOutputStream.close();
+        if (ssmIdOutputStream != null) {
+          ssmIdOutputStream.close();
+        }
         ssmIdOutputStream = null;
       } catch (IOException ie) {
         // Ignore this exception
