@@ -32,6 +32,7 @@ import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
+import org.apache.shiro.web.env.IniWebEnvironment;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.realm.LdapRealm;
@@ -51,8 +52,10 @@ public class SecurityUtils {
   private static final Logger LOG = LoggerFactory.getLogger(SecurityUtils.class);
   
   public static void initSecurityManager(String shiroPath) {
-    IniSecurityManagerFactory factory = new IniSecurityManagerFactory("file:" + shiroPath);
-    SecurityManager securityManager = factory.getInstance();
+    IniWebEnvironment environment = new IniWebEnvironment();
+    environment.setConfigLocations("file:" + shiroPath);
+    environment.init();
+    SecurityManager securityManager = environment.getSecurityManager();
     org.apache.shiro.SecurityUtils.setSecurityManager(securityManager);
     isEnabled = true;
   }
