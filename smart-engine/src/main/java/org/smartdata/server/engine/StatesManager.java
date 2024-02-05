@@ -75,7 +75,7 @@ public class StatesManager extends AbstractService implements Reconfigurable {
     LOG.info("Initializing ...");
     this.executorService = Executors.newScheduledThreadPool(4);
     this.accessCountTableManager = new AccessCountTableManager(
-        serverContext.getMetaStore(), executorService);
+        serverContext.getMetaStore(), executorService, serverContext.getConf());
     this.fileAccessEventSource = MetricsFactory.createAccessEventSource(serverContext.getConf());
     this.accessEventFetcher =
         new AccessEventFetcher(

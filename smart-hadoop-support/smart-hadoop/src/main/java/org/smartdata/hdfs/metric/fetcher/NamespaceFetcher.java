@@ -45,8 +45,6 @@ import org.smartdata.model.PathChecker;
 import static org.smartdata.hdfs.CompatibilityHelperLoader.getHelper;
 
 public class NamespaceFetcher {
-  private static final Long DEFAULT_INTERVAL = 1L;
-
   private final ScheduledExecutorService scheduledExecutorService;
   private final long fetchInterval;
   private ScheduledFuture[] fetchTaskFutures;
@@ -57,28 +55,13 @@ public class NamespaceFetcher {
   private MetaStore metaStore;
   private SmartConf conf;
 
-  public static final Logger LOG =
-      LoggerFactory.getLogger(NamespaceFetcher.class);
+  public static final Logger LOG = LoggerFactory.getLogger(NamespaceFetcher.class);
 
-  public NamespaceFetcher(DFSClient client, MetaStore metaStore, ScheduledExecutorService service) {
-    this(client, metaStore, DEFAULT_INTERVAL, service, new SmartConf());
+  public NamespaceFetcher(DFSClient client, MetaStore metaStore, SmartConf conf) {
+    this(client, metaStore, null, conf);
   }
 
-  public NamespaceFetcher(DFSClient client, MetaStore metaStore, ScheduledExecutorService service,
-                          SmartConf conf) {
-    this(client, metaStore, DEFAULT_INTERVAL, service, conf);
-  }
-
-  public NamespaceFetcher(DFSClient client, MetaStore metaStore, long fetchInterval) {
-    this(client, metaStore, fetchInterval, null, new SmartConf());
-  }
-
-  public NamespaceFetcher(DFSClient client, MetaStore metaStore, long fetchInterval,
-                          SmartConf conf) {
-    this(client, metaStore, fetchInterval, null, conf);
-  }
-
-  public NamespaceFetcher(DFSClient client, MetaStore metaStore, long fetchInterval,
+  public NamespaceFetcher(DFSClient client, MetaStore metaStore,
                           ScheduledExecutorService service, SmartConf conf) {
     int numProducers = conf.getInt(SmartConfKeys.SMART_NAMESPACE_FETCHER_PRODUCERS_NUM_KEY,
         SmartConfKeys.SMART_NAMESPACE_FETCHER_PRODUCERS_NUM_DEFAULT);
@@ -96,7 +79,10 @@ public class NamespaceFetcher {
     for (int i = 0; i < numConsumers; i++) {
       consumers[i] = new FileStatusIngester(metaStore);
     }
-    this.fetchInterval = fetchInterval;
+    this.fetchInterval = conf.getLong(
+        SmartConfKeys.SMART_NAMESPACE_FETCH_INTERVAL_MS_KEY,
+        SmartConfKeys.SMART_NAMESPACE_FETCH_INTERVAL_MS_DEFAULT
+    );
     if (service != null) {
       this.scheduledExecutorService = service;
     } else {
