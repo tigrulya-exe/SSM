@@ -48,7 +48,7 @@ public class TestMetaDataAction extends MiniClusterHarness {
     Map<String, String> args = new HashMap<>();
     args.put(MetaDataAction.FILE_PATH, srcPath + "/" + file);
     args.put(MetaDataAction.OWNER_NAME, "test");
-    args.put(MetaDataAction.PERMISSION, "777");
+    args.put(MetaDataAction.PERMISSION, "511");
 
     metaFileAction.init(args);
     metaFileAction.run();
@@ -74,7 +74,7 @@ public class TestMetaDataAction extends MiniClusterHarness {
     Map<String, String> args = new HashMap<>();
     args.put(MetaDataAction.FILE_PATH, dfs.getUri() + srcPath + "/" + file);
     args.put(MetaDataAction.OWNER_NAME, "test");
-    args.put(MetaDataAction.PERMISSION, "777");
+    args.put(MetaDataAction.PERMISSION, "511");
 
     metaFileAction.init(args);
     metaFileAction.run();

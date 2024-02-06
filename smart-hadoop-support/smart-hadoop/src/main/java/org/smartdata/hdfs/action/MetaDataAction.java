@@ -75,7 +75,7 @@ public class MetaDataAction extends HdfsAction {
     }
 
     if (args.containsKey(PERMISSION)) {
-      fileInfoDiff.setPermission(new FsPermission(args.get(PERMISSION)).toShort());
+      fileInfoDiff.setPermission(Short.parseShort(args.get(PERMISSION)));
     }
   }
 
