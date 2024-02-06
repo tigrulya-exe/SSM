@@ -193,7 +193,7 @@ public class InotifyEventApplier {
   }
 
   private boolean inBackup(String src) throws MetaStoreException {
-    return metaStore.srcInbackup(src);
+    return metaStore.srcInBackup(src);
   }
 
   //Todo: should update mtime? atime?
@@ -451,7 +451,7 @@ public class InotifyEventApplier {
   private void insertDeleteDiff(String path) throws MetaStoreException {
     // TODO: remove "/" appended in src or dest in backup_file table
     String pathWithSlash = path.endsWith("/") ? path : path + "/";
-    if (inBackup(pathWithSlash)) {
+    if (inBackup(path)) {
       List<BackUpInfo> backUpInfos = metaStore.getBackUpInfoBySrc(pathWithSlash);
       for (BackUpInfo backUpInfo : backUpInfos) {
         String destPath = pathWithSlash.replaceFirst(backUpInfo.getSrc(), backUpInfo.getDest());

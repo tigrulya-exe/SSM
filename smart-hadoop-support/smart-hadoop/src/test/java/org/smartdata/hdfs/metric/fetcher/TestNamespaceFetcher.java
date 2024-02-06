@@ -20,6 +20,7 @@ package org.smartdata.hdfs.metric.fetcher;
 import com.google.common.collect.Sets;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Optional;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -39,6 +40,7 @@ import org.smartdata.metastore.MetaStoreException;
 import static org.mockito.Mockito.*;
 import static org.smartdata.conf.SmartConfKeys.SMART_IGNORED_PATH_TEMPLATES_KEY;
 import static org.smartdata.conf.SmartConfKeys.SMART_IGNORE_DIRS_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_NAMESPACE_FETCH_INTERVAL_MS_KEY;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -73,13 +75,12 @@ public class TestNamespaceFetcher {
           return null;
         }
       }).when(adapter).insertFiles(any(FileInfo[].class));
-      NamespaceFetcher fetcher;
-      if(conf != null) {
-        fetcher = new NamespaceFetcher(client, adapter, 100, conf);
-      } else {
-        fetcher = new NamespaceFetcher(client, adapter, 100);
-      }
-      return fetcher;
+
+      SmartConf nonNullConfig = Optional.ofNullable(conf)
+          .orElseGet(SmartConf::new);
+      nonNullConfig.setLong(SMART_NAMESPACE_FETCH_INTERVAL_MS_KEY, 100L);
+
+      return new NamespaceFetcher(client, adapter, nonNullConfig);
   }
 
   @Test
