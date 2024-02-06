@@ -52,11 +52,17 @@ public class SecurityUtils {
   private static final Logger LOG = LoggerFactory.getLogger(SecurityUtils.class);
   
   public static void initSecurityManager(String shiroPath) {
-    IniWebEnvironment environment = new IniWebEnvironment();
-    environment.setConfigLocations("file:" + shiroPath);
-    environment.init();
-    SecurityManager securityManager = environment.getSecurityManager();
-    org.apache.shiro.SecurityUtils.setSecurityManager(securityManager);
+    try {
+      IniWebEnvironment environment = new IniWebEnvironment();
+      environment.setConfigLocations("file:" + shiroPath);
+      environment.init();
+      SecurityManager securityManager = environment.getSecurityManager();
+      org.apache.shiro.SecurityUtils.setSecurityManager(securityManager);
+    }
+    catch (Exception e) {
+      LOG.error("Cannot init shiro", e);
+      throw e;
+    }
     isEnabled = true;
   }
 
