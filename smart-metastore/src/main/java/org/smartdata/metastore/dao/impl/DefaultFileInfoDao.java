@@ -180,7 +180,6 @@ public class DefaultFileInfoDao extends AbstractDao implements FileInfoDao {
     parameters.put("path", fileInfo.getPath());
     parameters.put("length", fileInfo.getLength());
     parameters.put("block_replication", fileInfo.getBlockReplication());
-    parameters.put("block_size", fileInfo.getBlocksize());
     parameters.put("modification_time", fileInfo.getModificationTime());
     parameters.put("access_time", fileInfo.getAccessTime());
     parameters

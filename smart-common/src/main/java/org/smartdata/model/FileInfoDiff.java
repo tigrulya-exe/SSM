@@ -23,9 +23,7 @@ import java.util.Objects;
 public class FileInfoDiff {
   private String path;
   private Long length;
-  private Boolean isdir;
   private Short blockReplication;
-  private Long blocksize;
   private Long modificationTime;
   private Long accessTime;
   private Short permission;
@@ -51,30 +49,12 @@ public class FileInfoDiff {
     return this;
   }
 
-  public Boolean getIsdir() {
-    return isdir;
-  }
-
-  public FileInfoDiff setIsdir(boolean isdir) {
-    this.isdir = isdir;
-    return this;
-  }
-
   public Short getBlockReplication() {
     return blockReplication;
   }
 
   public FileInfoDiff setBlockReplication(Short blockReplication) {
     this.blockReplication = blockReplication;
-    return this;
-  }
-
-  public Long getBlocksize() {
-    return blocksize;
-  }
-
-  public FileInfoDiff setBlocksize(Long blocksize) {
-    this.blocksize = blocksize;
     return this;
   }
 
@@ -143,9 +123,7 @@ public class FileInfoDiff {
     FileInfoDiff that = (FileInfoDiff) o;
     return Objects.equals(path, that.path)
         && Objects.equals(length, that.length)
-        && Objects.equals(isdir, that.isdir)
         && Objects.equals(blockReplication, that.blockReplication)
-        && Objects.equals(blocksize, that.blocksize)
         && Objects.equals(modificationTime, that.modificationTime)
         && Objects.equals(accessTime, that.accessTime)
         && Objects.equals(permission, that.permission)
@@ -156,8 +134,8 @@ public class FileInfoDiff {
 
   @Override
   public int hashCode() {
-    return Objects.hash(path, length, isdir, blockReplication,
-        blocksize, modificationTime, accessTime, permission, owner, group, erasureCodingPolicy);
+    return Objects.hash(path, length, blockReplication,
+        modificationTime, accessTime, permission, owner, group, erasureCodingPolicy);
   }
 
   @Override
@@ -165,9 +143,7 @@ public class FileInfoDiff {
     return "FileInfoDiff{"
         + "path='" + path + '\''
         + ", length=" + length
-        + ", isdir=" + isdir
         + ", blockReplication=" + blockReplication
-        + ", blocksize=" + blocksize
         + ", modificationTime=" + modificationTime
         + ", accessTime=" + accessTime
         + ", permission=" + permission

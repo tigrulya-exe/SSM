@@ -231,6 +231,7 @@ public class TestDistCpAction extends MiniClusterHarness {
     }
   }
 
+  // todo inherit from MultiClusterHarness
   private void testCopyToCluster(FileSystem sourceFs, FileSystem targetFs) throws Exception {
     Map<String, String> args = new HashMap<>();
     String sourcePath = sourceFs.getUri() + "/test/source/dir1";

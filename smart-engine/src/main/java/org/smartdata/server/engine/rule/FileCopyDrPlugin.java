@@ -44,8 +44,8 @@ import java.util.StringJoiner;
 import static org.smartdata.utils.StringUtil.ssmPatternsToRegex;
 
 public class FileCopyDrPlugin implements RuleExecutorPlugin {
-  private MetaStore metaStore;
-  private Map<Long, List<BackUpInfo>> backups = new HashMap<>();
+  private final MetaStore metaStore;
+  private final Map<Long, List<BackUpInfo>> backups = new HashMap<>();
   private static final Logger LOG =
       LoggerFactory.getLogger(FileCopyDrPlugin.class.getName());
 
@@ -180,7 +180,7 @@ public class FileCopyDrPlugin implements RuleExecutorPlugin {
     }
 
     for (String attribute: rawPreserveArg.split(",")) {
-      CopyFileAction.PreserveAttribute.fromOption(attribute);
+      CopyFileAction.PreserveAttribute.validate(attribute);
     }
   }
 }

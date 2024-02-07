@@ -54,9 +54,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.smartdata.SmartConstants.DISTRIBUTED_FILE_SYSTEM;
-import static org.smartdata.SmartConstants.FS_HDFS_IMPL;
-import static org.smartdata.SmartConstants.SMART_FILE_SYSTEM;
+import static org.smartdata.utils.ConfigUtil.toRemoteClusterConfig;
 
 public class CopyScheduler extends ActionSchedulerService {
   static final Logger LOG =
@@ -418,11 +416,7 @@ public class CopyScheduler extends ActionSchedulerService {
       // We simply use local HDFS conf for getting remote file system.
       // The smart file system configured for local HDFS should not be
       // introduced to remote file system.
-      Configuration remoteConf = new Configuration(conf);
-      if (remoteConf.get(FS_HDFS_IMPL, "").equals(
-          SMART_FILE_SYSTEM)) {
-        remoteConf.set(FS_HDFS_IMPL, DISTRIBUTED_FILE_SYSTEM);
-      }
+      Configuration remoteConf = toRemoteClusterConfig(conf);
       fs = FileSystem.get(URI.create(dirName), remoteConf);
       tmpFileStatus = fs.listStatus(new Path(dirName));
       for (FileStatus fileStatus : tmpFileStatus) {

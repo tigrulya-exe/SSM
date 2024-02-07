@@ -273,7 +273,7 @@ public class CopyFileAction extends HdfsAction {
       fileInfoDiff.setModificationTime(srcFileStatus.getModificationTime());
     }
 
-    MetaDataAction.changeFileMetadata(destPath, fileInfoDiff, dfsClient, conf);
+    MetaDataAction.changeFileMetadata(destPath, fileInfoDiff, conf);
     appendLog("Successfully transferred file attributes: " + preserveAttributes);
   }
 
@@ -296,6 +296,10 @@ public class CopyFileAction extends HdfsAction {
           .findFirst()
           .orElseThrow(() ->
               new IllegalArgumentException("Wrong preserve attribute: " + option));
+    }
+
+    public static void validate(String option) {
+      fromOption(option);
     }
 
     @Override
