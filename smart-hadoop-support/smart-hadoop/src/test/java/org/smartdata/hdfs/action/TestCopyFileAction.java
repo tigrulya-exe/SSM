@@ -34,9 +34,9 @@ import java.util.HashMap;
 import java.util.Map;
 import org.smartdata.hdfs.MultiClusterHarness;
 
-import static org.smartdata.hdfs.action.CopyFileAction.PreserveAttribute.MODIFICATION_TIME;
-import static org.smartdata.hdfs.action.CopyFileAction.PreserveAttribute.OWNER;
-import static org.smartdata.hdfs.action.CopyFileAction.PreserveAttribute.REPLICATION_NUMBER;
+import static org.smartdata.hdfs.action.CopyPreservedAttributesAction.PreserveAttribute.MODIFICATION_TIME;
+import static org.smartdata.hdfs.action.CopyPreservedAttributesAction.PreserveAttribute.OWNER;
+import static org.smartdata.hdfs.action.CopyPreservedAttributesAction.PreserveAttribute.REPLICATION_NUMBER;
 
 /**
  * Test for CopyFileAction.
@@ -51,7 +51,7 @@ public class TestCopyFileAction extends MultiClusterHarness {
   }
 
   private void copyFile(Path src, Path dest, long length,
-      long offset, Set<CopyFileAction.PreserveAttribute> preserveAttributes) throws Exception {
+      long offset, Set<CopyPreservedAttributesAction.PreserveAttribute> preserveAttributes) throws Exception {
     CopyFileAction copyFileAction = new CopyFileAction();
     copyFileAction.setDfsClient(dfsClient);
     copyFileAction.setContext(smartContext);
@@ -122,7 +122,7 @@ public class TestCopyFileAction extends MultiClusterHarness {
     Path destPath = anotherClusterPath("/dest", srcPath.getName());
 
     copyFileWithAttributes(srcPath, destPath,
-        Sets.newHashSet(CopyFileAction.PreserveAttribute.values()));
+        Sets.newHashSet(CopyPreservedAttributesAction.PreserveAttribute.values()));
 
     FileStatus destFileStatus = anotherDfs.getFileStatus(destPath);
     Assert.assertEquals(new FsPermission("777"), destFileStatus.getPermission());
@@ -163,7 +163,7 @@ public class TestCopyFileAction extends MultiClusterHarness {
   }
 
   private void copyFileWithAttributes(Path srcFilePath, Path destPath,
-      Set<CopyFileAction.PreserveAttribute> preserveAttributes) throws Exception {
+      Set<CopyPreservedAttributesAction.PreserveAttribute> preserveAttributes) throws Exception {
     copyFile(srcFilePath, destPath, 0, 0, preserveAttributes);
     assertFileContent(destPath, FILE_TO_COPY_CONTENT);
   }

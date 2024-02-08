@@ -180,7 +180,7 @@ public class FileCopyDrPlugin implements RuleExecutorPlugin {
     }
 
     for (String attribute: rawPreserveArg.split(",")) {
-      CopyFileAction.PreserveAttribute.validate(attribute);
+      CopyFileAction.validatePreserveArg(attribute);
     }
   }
 }
