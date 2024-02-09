@@ -33,7 +33,7 @@ import org.smartdata.model.BackUpInfo;
 import org.smartdata.model.FileDiff;
 import org.smartdata.model.FileDiffType;
 import org.smartdata.model.FileInfo;
-import org.smartdata.model.FileInfoUpdate;
+import org.smartdata.model.FileInfoDiff;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -218,10 +218,10 @@ public class InotifyEventApplier {
         metaStore.insertFileDiff(fileDiff);
       }
     }
-    FileInfoUpdate fileInfoUpdate = new FileInfoUpdate()
+    FileInfoDiff fileInfoDiff = new FileInfoDiff()
         .setLength(closeEvent.getFileSize())
         .setModificationTime(closeEvent.getTimestamp());
-    metaStore.updateFileByPath(closeEvent.getPath(), fileInfoUpdate);
+    metaStore.updateFileByPath(closeEvent.getPath(), fileInfoDiff);
   }
 
   //Todo: should update mtime? atime?
@@ -333,7 +333,7 @@ public class InotifyEventApplier {
       fileDiff = new FileDiff(FileDiffType.METADATA);
       fileDiff.setSrc(metadataUpdateEvent.getPath());
     }
-    FileInfoUpdate fileInfoUpdate = new FileInfoUpdate();
+    FileInfoDiff fileInfoUpdate = new FileInfoDiff();
     switch (metadataUpdateEvent.getMetadataType()) {
       case TIMES:
         if (metadataUpdateEvent.getMtime() > 0) {

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.smartdata.SmartContext;
 import org.smartdata.action.SyncAction;
 import org.smartdata.conf.SmartConfKeys;
+import org.smartdata.hdfs.action.CopyFileAction;
 import org.smartdata.hdfs.action.HdfsAction;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
@@ -53,9 +54,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.smartdata.SmartConstants.DISTRIBUTED_FILE_SYSTEM;
-import static org.smartdata.SmartConstants.FS_HDFS_IMPL;
-import static org.smartdata.SmartConstants.SMART_FILE_SYSTEM;
+import static org.smartdata.utils.ConfigUtil.toRemoteClusterConfig;
 
 public class CopyScheduler extends ActionSchedulerService {
   static final Logger LOG =
@@ -149,6 +148,7 @@ public class CopyScheduler extends ActionSchedulerService {
     String srcDir = action.getArgs().get(SyncAction.SRC);
     String path = action.getArgs().get(HdfsAction.FILE_PATH);
     String destDir = action.getArgs().get(SyncAction.DEST);
+    String preserveAttributes = action.getArgs().get(SyncAction.PRESERVE);
     String destPath = path.replaceFirst(srcDir, destDir);
     // Check again to avoid corner cases
     long did = fileDiffChainMap.get(path).getHead();
@@ -192,6 +192,9 @@ public class CopyScheduler extends ActionSchedulerService {
       case APPEND:
         action.setActionType("copy");
         action.getArgs().put("-dest", destPath);
+        if (preserveAttributes != null) {
+          action.getArgs().put(CopyFileAction.PRESERVE, preserveAttributes);
+        }
         if (rateLimiter != null) {
           String strLen = fileDiff.getParameters().get("-length");
           if (strLen != null) {
@@ -413,11 +416,7 @@ public class CopyScheduler extends ActionSchedulerService {
       // We simply use local HDFS conf for getting remote file system.
       // The smart file system configured for local HDFS should not be
       // introduced to remote file system.
-      Configuration remoteConf = new Configuration(conf);
-      if (remoteConf.get(FS_HDFS_IMPL, "").equals(
-          SMART_FILE_SYSTEM)) {
-        remoteConf.set(FS_HDFS_IMPL, DISTRIBUTED_FILE_SYSTEM);
-      }
+      Configuration remoteConf = toRemoteClusterConfig(conf);
       fs = FileSystem.get(URI.create(dirName), remoteConf);
       tmpFileStatus = fs.listStatus(new Path(dirName));
       for (FileStatus fileStatus : tmpFileStatus) {

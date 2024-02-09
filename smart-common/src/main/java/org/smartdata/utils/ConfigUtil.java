@@ -15,30 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.action;
+package org.smartdata.utils;
 
-import org.smartdata.action.annotation.ActionSignature;
+import org.apache.hadoop.conf.Configuration;
 
-/**
- * Sync action is an abstract action for backup and copy.
- * Users can submit a sync action with detailed src path and
- * dest path, e.g., "sync -src /test/1 -dest hdfs:/remoteIP:port/test/1"
- */
-@ActionSignature(
-    actionId = "sync",
-    displayName = "sync",
-    usage = SyncAction.SRC + " $src "
-        + SyncAction.DEST + " $dest "
-        + SyncAction.PRESERVE + " $attributes"
-)
-public class SyncAction extends SmartAction {
-  // related to fileDiff.src
-  public static final String SRC = "-src";
-  // related to remote cluster and fileDiff.src
-  public static final String DEST = "-dest";
-  public static final String PRESERVE = "-preserve";
+import static org.smartdata.SmartConstants.DISTRIBUTED_FILE_SYSTEM;
+import static org.smartdata.SmartConstants.FS_HDFS_IMPL;
+import static org.smartdata.SmartConstants.SMART_FILE_SYSTEM;
 
-  @Override
-  protected void execute() throws Exception {
+public class ConfigUtil {
+  public static Configuration toRemoteClusterConfig(Configuration configuration) {
+    Configuration remoteConfig = new Configuration(configuration);
+    if (SMART_FILE_SYSTEM.equals(remoteConfig.get(FS_HDFS_IMPL))) {
+      remoteConfig.set(FS_HDFS_IMPL, DISTRIBUTED_FILE_SYSTEM);
+    }
+
+    return remoteConfig;
   }
 }
