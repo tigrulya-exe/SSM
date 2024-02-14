@@ -68,7 +68,7 @@ public class MiniSmartClusterHarness extends MiniClusterWithStoragesHarness {
       while (true) {
         try {
           SmartServiceState state = client.getServiceState();
-          if (state != SmartServiceState.SAFEMODE) {
+          if (state == SmartServiceState.ACTIVE) {
             break;
           }
           int secs = (int) (System.currentTimeMillis() - start) / 1000;
