@@ -17,6 +17,7 @@
  */
 package org.smartdata.server.engine.rule;
 
+import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Test;
 import org.smartdata.admin.SmartAdmin;
@@ -39,7 +40,7 @@ public class TestGetRuleInfo extends MiniSmartClusterHarness {
       long ruleId = client.submitRule(rule, RuleState.ACTIVE);
       RuleInfo info1 = client.getRuleInfo(ruleId);
       System.out.println(info1);
-      Assert.assertTrue(info1.getRuleText().equals(rule));
+      Assert.assertEquals(info1.getRuleText(), rule);
 
       RuleInfo infoTemp = info1;
       for (int i = 0; i < 3; i++) {
@@ -55,6 +56,8 @@ public class TestGetRuleInfo extends MiniSmartClusterHarness {
         Assert.fail("Should raise an exception when using a invalid rule id");
       } catch (IOException e) {
       }
+
+      client.deleteRule(ruleId, true);
     }
   }
 
@@ -67,16 +70,22 @@ public class TestGetRuleInfo extends MiniSmartClusterHarness {
     List<RuleInfo> ruleInfos;
     try (SmartAdmin client = new SmartAdmin(smartContext.getConf())) {
 
+      List<Long> ruleIds = new ArrayList<>();
       nRules = 10;
       for (int i = 0; i < nRules; i++) {
-        client.submitRule(rule, RuleState.ACTIVE);
+        long ruleId = client.submitRule(rule, RuleState.ACTIVE);
+        ruleIds.add(ruleId);
       }
 
       ruleInfos = client.listRulesInfo();
+      for (RuleInfo info : ruleInfos) {
+        System.out.println(info);
+      }
+      Assert.assertEquals(ruleInfos.size(), nRules);
+
+      for (long ruleId : ruleIds) {
+        client.deleteRule(ruleId, true);
+      }
     }
-    for (RuleInfo info : ruleInfos) {
-      System.out.println(info);
-    }
-    Assert.assertTrue(ruleInfos.size() == nRules);
   }
 }
