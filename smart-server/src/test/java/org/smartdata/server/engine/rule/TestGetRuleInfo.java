@@ -17,7 +17,6 @@
  */
 package org.smartdata.server.engine.rule;
 
-import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Test;
 import org.smartdata.admin.SmartAdmin;
@@ -26,6 +25,7 @@ import org.smartdata.model.RuleState;
 import org.smartdata.server.MiniSmartClusterHarness;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TestGetRuleInfo extends MiniSmartClusterHarness {
