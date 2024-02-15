@@ -17,6 +17,8 @@
  */
 package org.smartdata.metastore.dao;
 
+import org.smartdata.metastore.utils.Constants;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -28,17 +30,20 @@ public interface TableAddOpListener {
 
   static TableAddOpListener perDay(AccessCountTableDeque deque,
       AccessCountTableAggregator aggregator, ExecutorService service) {
-    return new AbstractTableAddOpListener.DayTableListener(deque, aggregator, service);
+    return new AggregatingTableAddOpListener(
+        deque, aggregator, service, Constants.ONE_DAY_IN_MILLIS);
   }
 
   static TableAddOpListener perHour(AccessCountTableDeque deque,
       AccessCountTableAggregator aggregator, ExecutorService service) {
-    return new AbstractTableAddOpListener.HourTableListener(deque, aggregator, service);
+    return new AggregatingTableAddOpListener(
+        deque, aggregator, service, Constants.ONE_HOUR_IN_MILLIS);
   }
 
   static TableAddOpListener perMinute(AccessCountTableDeque deque,
       AccessCountTableAggregator aggregator, ExecutorService service) {
-    return new AbstractTableAddOpListener.MinuteTableListener(deque, aggregator, service);
+    return new AggregatingTableAddOpListener(
+        deque, aggregator, service, Constants.ONE_MINUTE_IN_MILLIS);
   }
 
   static TableAddOpListener noOp() {

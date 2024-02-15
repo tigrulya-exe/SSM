@@ -111,6 +111,7 @@ public class TestAddTableOpListener {
         new AccessCountTable(23 * oneHour, 24 * oneHour);
 
     hourTableDeque.addAndNotifyListener(table1);
+    // todo
     Assert.assertTrue(dayTableDeque.isEmpty());
 
     hourTableDeque.addAndNotifyListener(table2);
