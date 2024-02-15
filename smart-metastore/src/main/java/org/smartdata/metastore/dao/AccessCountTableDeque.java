@@ -21,6 +21,8 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Use deque to accelerate remove operation.
  */
@@ -29,26 +31,26 @@ public class AccessCountTableDeque extends ArrayDeque<AccessCountTable> {
   private final TableEvictor tableEvictor;
 
   public AccessCountTableDeque(TableEvictor tableEvictor) {
-    this(tableEvictor, null);
+    this(tableEvictor, TableAddOpListener.noOp());
   }
 
   public AccessCountTableDeque(TableEvictor tableEvictor, TableAddOpListener listener) {
     super();
-    this.listener = listener;
-    this.tableEvictor = tableEvictor;
+    this.listener = checkNotNull(
+        listener, "listener should not be null");
+    this.tableEvictor = checkNotNull(
+        tableEvictor, "tableEvictor should not be null");
   }
 
-  public boolean addAndNotifyListener(AccessCountTable table) {
-    if (!this.isEmpty()) {
-      assert table.getEndTime() > this.peekLast().getEndTime();
+  public void addAndNotifyListener(AccessCountTable table) {
+    if (!isEmpty() && table.getEndTime() <= peekLast().getEndTime()) {
+      throw new IllegalArgumentException("Overlapping access count table: " + table);
     }
 
-    super.add(table);
-    if (this.listener != null) {
-      this.listener.tableAdded(this, table);
-    }
-    tableEvictor.evictTables(this, this.size());
-    return true;
+    add(table);
+
+    listener.tableAdded(this, table)
+        .thenRun(() -> tableEvictor.evictTables(this, size()));
   }
 
   public List<AccessCountTable> getTables(Long start, Long end) {

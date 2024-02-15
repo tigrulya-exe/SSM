@@ -39,7 +39,7 @@ public class CountEvictor extends TableEvictor {
         if (evictedCount > size - maxCount) {
           break;
         } else {
-          this.dropTable(table);
+          dropTable(table);
           iterator.remove();
         }
       }

@@ -74,21 +74,21 @@ public class AccessCountTableManager {
     AccessCountTableDeque dayTableDeque = new AccessCountTableDeque(
         new CountEvictor(metaStore, perDayAccessTablesCount));
     TableAddOpListener dayTableListener =
-        new TableAddOpListener.DayTableListener(dayTableDeque, aggregator, executorService);
+        TableAddOpListener.perDay(dayTableDeque, aggregator, executorService);
 
     int perHourAccessTablesCount = configuration.getInt(SMART_NUM_HOUR_TABLES_TO_KEEP_KEY,
         SMART_NUM_HOUR_TABLES_TO_KEEP_DEFAULT);
     AccessCountTableDeque hourTableDeque = new AccessCountTableDeque(
         new CountEvictor(metaStore, perHourAccessTablesCount), dayTableListener);
     TableAddOpListener hourTableListener =
-        new TableAddOpListener.HourTableListener(hourTableDeque, aggregator, executorService);
+        TableAddOpListener.perHour(hourTableDeque, aggregator, executorService);
 
     int perMinuteAccessTablesCount = configuration.getInt(SMART_NUM_MINUTE_TABLES_TO_KEEP_KEY,
         SMART_NUM_MINUTE_TABLES_TO_KEEP_DEFAULT);
     AccessCountTableDeque minuteTableDeque = new AccessCountTableDeque(
         new CountEvictor(metaStore, perMinuteAccessTablesCount), hourTableListener);
     TableAddOpListener minuteTableListener =
-        new TableAddOpListener.MinuteTableListener(minuteTableDeque, aggregator,
+        TableAddOpListener.perMinute(minuteTableDeque, aggregator,
             executorService);
 
     int perSecondAccessTablesCount = configuration.getInt(SMART_NUM_SECOND_TABLES_TO_KEEP_KEY,
@@ -96,13 +96,14 @@ public class AccessCountTableManager {
     this.secondTableDeque = new AccessCountTableDeque(
             new CountEvictor(metaStore, perSecondAccessTablesCount), minuteTableListener);
 
-    this.tableDeques.put(TimeGranularity.SECOND, this.secondTableDeque);
-    this.tableDeques.put(TimeGranularity.MINUTE, minuteTableDeque);
-    this.tableDeques.put(TimeGranularity.HOUR, hourTableDeque);
-    this.tableDeques.put(TimeGranularity.DAY, dayTableDeque);
-    this.recoverTables();
+    tableDeques.put(TimeGranularity.SECOND, secondTableDeque);
+    tableDeques.put(TimeGranularity.MINUTE, minuteTableDeque);
+    tableDeques.put(TimeGranularity.HOUR, hourTableDeque);
+    tableDeques.put(TimeGranularity.DAY, dayTableDeque);
+    recoverTables();
   }
 
+  // todo merge it to the biggest granularity table
   private void recoverTables() {
     try {
       List<AccessCountTable> tables = metaStore.getAllSortedTables();
@@ -122,15 +123,15 @@ public class AccessCountTableManager {
     if (LOG.isDebugEnabled()) {
       LOG.debug(accessCountTable.toString());
     }
-    this.secondTableDeque.addAndNotifyListener(accessCountTable);
+    secondTableDeque.addAndNotifyListener(accessCountTable);
   }
 
   public void onAccessEventsArrived(List<FileAccessEvent> accessEvents) {
-    this.accessEventAggregator.addAccessEvents(accessEvents);
+    accessEventAggregator.addAccessEvents(accessEvents);
   }
 
   public List<AccessCountTable> getTables(long lengthInMillis) throws MetaStoreException {
-    return AccessCountTableManager.getTables(this.tableDeques, this.metaStore, lengthInMillis);
+    return AccessCountTableManager.getTables(tableDeques, metaStore, lengthInMillis);
   }
 
   public static List<AccessCountTable> getTables(

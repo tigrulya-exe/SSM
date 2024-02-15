@@ -37,7 +37,7 @@ public class DurationEvictor extends TableEvictor {
       for (Iterator<AccessCountTable> iterator = tables.iterator(); iterator.hasNext();) {
         AccessCountTable table = iterator.next();
         if (table.getStartTime() < threshHold) {
-          this.dropTable(table);
+          dropTable(table);
           iterator.remove();
         } else {
           break;

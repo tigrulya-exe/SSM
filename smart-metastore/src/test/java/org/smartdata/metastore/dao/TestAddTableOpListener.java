@@ -34,12 +34,11 @@ public class TestAddTableOpListener {
 
   @Test
   public void testMinuteTableListener() throws InterruptedException {
-    Long oneSec = 1000L;
+    long oneSec = 1000L;
     TableEvictor tableEvictor = new CountEvictor(adapter, 10);
     AccessCountTableDeque minuteTableDeque = new AccessCountTableDeque(tableEvictor);
     TableAddOpListener minuteTableListener =
-        new TableAddOpListener.MinuteTableListener(minuteTableDeque, aggregator,
-            executorService);
+        TableAddOpListener.perMinute(minuteTableDeque, aggregator, executorService);
     AccessCountTableDeque secondTableDeque =
         new AccessCountTableDeque(tableEvictor, minuteTableListener);
 
@@ -51,25 +50,25 @@ public class TestAddTableOpListener {
         new AccessCountTable(55 * oneSec, 60 * oneSec);
 
     secondTableDeque.addAndNotifyListener(table1);
-    Assert.assertTrue(minuteTableDeque.size() == 0);
+    Assert.assertTrue(minuteTableDeque.isEmpty());
     secondTableDeque.addAndNotifyListener(table2);
-    Assert.assertTrue(minuteTableDeque.size() == 0);
+    Assert.assertTrue(minuteTableDeque.isEmpty());
 
     secondTableDeque.addAndNotifyListener(table3);
     Thread.sleep(1000);
 
-    Assert.assertTrue(minuteTableDeque.size() == 1);
+    Assert.assertEquals(1, minuteTableDeque.size());
     AccessCountTable expected = new AccessCountTable(0L, 60 * oneSec);
     Assert.assertEquals(minuteTableDeque.poll(), expected);
   }
 
   @Test
   public void testHourTableListener() throws InterruptedException {
-    Long oneMin = 60 * 1000L;
+    long oneMin = 60 * 1000L;
     TableEvictor tableEvictor = new CountEvictor(adapter, 10);
     AccessCountTableDeque hourTableDeque = new AccessCountTableDeque(tableEvictor);
     TableAddOpListener hourTableListener =
-        new TableAddOpListener.HourTableListener(hourTableDeque, aggregator, executorService);
+        TableAddOpListener.perHour(hourTableDeque, aggregator, executorService);
     AccessCountTableDeque minuteTableDeque =
         new AccessCountTableDeque(tableEvictor, hourTableListener);
 
@@ -81,26 +80,26 @@ public class TestAddTableOpListener {
         new AccessCountTable(59 * oneMin, 60 * oneMin);
 
     minuteTableDeque.addAndNotifyListener(table1);
-    Assert.assertTrue(hourTableDeque.size() == 0);
+    Assert.assertTrue(hourTableDeque.isEmpty());
 
     minuteTableDeque.addAndNotifyListener(table2);
-    Assert.assertTrue(hourTableDeque.size() == 0);
+    Assert.assertTrue(hourTableDeque.isEmpty());
 
     minuteTableDeque.addAndNotifyListener(table3);
     Thread.sleep(1000);
 
-    Assert.assertTrue(hourTableDeque.size() == 1);
+    Assert.assertEquals(1, hourTableDeque.size());
     AccessCountTable expected = new AccessCountTable(0L, 60 * oneMin);
     Assert.assertEquals(hourTableDeque.poll(), expected);
   }
 
   @Test
   public void testDayTableListener() throws InterruptedException {
-    Long oneHour = 60 * 60 * 1000L;
+    long oneHour = 60 * 60 * 1000L;
     TableEvictor tableEvictor = new CountEvictor(adapter, 10);
     AccessCountTableDeque dayTableDeque = new AccessCountTableDeque(tableEvictor);
     TableAddOpListener dayTableListener =
-        new TableAddOpListener.DayTableListener(dayTableDeque, aggregator, executorService);
+        TableAddOpListener.perDay(dayTableDeque, aggregator, executorService);
     AccessCountTableDeque hourTableDeque =
         new AccessCountTableDeque(tableEvictor, dayTableListener);
 
@@ -112,15 +111,15 @@ public class TestAddTableOpListener {
         new AccessCountTable(23 * oneHour, 24 * oneHour);
 
     hourTableDeque.addAndNotifyListener(table1);
-    Assert.assertTrue(dayTableDeque.size() == 0);
+    Assert.assertTrue(dayTableDeque.isEmpty());
 
     hourTableDeque.addAndNotifyListener(table2);
-    Assert.assertTrue(dayTableDeque.size() == 0);
+    Assert.assertTrue(dayTableDeque.isEmpty());
 
     hourTableDeque.addAndNotifyListener(table3);
     Thread.sleep(1000);
 
-    Assert.assertTrue(dayTableDeque.size() == 1);
+    Assert.assertEquals(1, dayTableDeque.size());
     AccessCountTable today = new AccessCountTable(0L, 24 * oneHour);
     Assert.assertEquals(dayTableDeque.poll(), today);
   }

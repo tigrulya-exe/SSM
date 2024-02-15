@@ -30,8 +30,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class AccessEventAggregator {
   private final MetaStore adapter;
@@ -39,7 +40,7 @@ public class AccessEventAggregator {
   private final AccessCountTableManager accessCountTableManager;
   private final List<FileAccessEvent> eventBuffer;
   private Window currentWindow;
-  private Map<String, Integer> lastAccessCount = new HashMap<>();
+  private Map<String, Integer> unmergedAccessCounts = new HashMap<>();
   public static final Logger LOG =
       LoggerFactory.getLogger(AccessEventAggregator.class);
 
@@ -56,19 +57,19 @@ public class AccessEventAggregator {
   }
 
   public void addAccessEvents(List<FileAccessEvent> eventList) {
-    if (this.currentWindow == null && !eventList.isEmpty()) {
-      this.currentWindow = assignWindow(eventList.get(0).getTimestamp());
+    if (currentWindow == null && !eventList.isEmpty()) {
+      currentWindow = assignWindow(eventList.get(0).getTimestamp());
     }
     for (FileAccessEvent event : eventList) {
-      if (!this.currentWindow.contains(event.getTimestamp())) {
+      if (!currentWindow.contains(event.getTimestamp())) {
         // New Window occurs
-        this.createTable();
-        this.currentWindow = assignWindow(event.getTimestamp());
-        this.eventBuffer.clear();
+        createTable();
+        currentWindow = assignWindow(event.getTimestamp());
+        eventBuffer.clear();
       }
       // Exclude watermark event
       if (!event.getPath().isEmpty()) {
-        this.eventBuffer.add(event);
+        eventBuffer.add(event);
       }
     }
   }
@@ -86,57 +87,57 @@ public class AccessEventAggregator {
       LOG.error("Create table error: " + table, e);
       return;
     }
-    if (!eventBuffer.isEmpty() || !lastAccessCount.isEmpty()) {
-      Map<String, Integer> accessCount = this.getAccessCountMap(eventBuffer);
-      Set<String> now = new HashSet<>(accessCount.keySet());
-      accessCount = mergeMap(accessCount, lastAccessCount);
+
+    if (!eventBuffer.isEmpty() || !unmergedAccessCounts.isEmpty()) {
+      Map<String, Integer> accessCounts = getAccessCountMap(eventBuffer);
+      Set<String> accessedFiles = new HashSet<>(accessCounts.keySet());
+      mergeMapsInPlace(accessCounts, unmergedAccessCounts);
 
       final Map<String, Long> pathToIDs;
       try {
-        pathToIDs = adapter.getFileIDs(accessCount.keySet());
+        pathToIDs = adapter.getFileIDs(accessCounts.keySet());
       } catch (MetaStoreException e) {
         // TODO: dirty handle here
         LOG.error("Create Table " + table.getTableName(), e);
         return;
       }
 
-      now.removeAll(pathToIDs.keySet());
-      Map<String, Integer> tmpLast = new HashMap<>();
-      for (String key : now) {
-        tmpLast.put(key, accessCount.get(key));
-      }
+      Map<String, Integer> accessCountsNotHandledBySSM = accessedFiles.stream()
+              .filter(file -> !pathToIDs.containsKey(file))
+              .collect(Collectors.toMap(
+                  Function.identity(),
+                  accessCounts::get
+              ));
 
-      List<String> values = new ArrayList<>();
+      List<String> sqlInsertValues = new ArrayList<>();
       for (String key : pathToIDs.keySet()) {
-        values.add(String.format("(%d, %d)", pathToIDs.get(key),
-            accessCount.get(key)));
+        sqlInsertValues.add(String.format("(%d, %d)", pathToIDs.get(key),
+            accessCounts.get(key)));
       }
 
-      if (LOG.isDebugEnabled()) {
-        if (!lastAccessCount.isEmpty()) {
-          Set<String> non = lastAccessCount.keySet();
-          non.removeAll(pathToIDs.keySet());
-          if (!non.isEmpty()) {
-            StringBuilder result = new StringBuilder("Access events ignored for file:\n");
-            for (String p : non) {
-              result.append(p).append(" --> ").append(lastAccessCount.get(p)).append("\n");
-            }
-            LOG.debug(result.toString());
+      if (LOG.isDebugEnabled() && !unmergedAccessCounts.isEmpty()) {
+        Set<String> non = unmergedAccessCounts.keySet();
+        non.removeAll(pathToIDs.keySet());
+        if (!non.isEmpty()) {
+          StringBuilder result = new StringBuilder("Access events ignored for file:\n");
+          for (String p : non) {
+            result.append(p).append(" --> ").append(unmergedAccessCounts.get(p)).append("\n");
           }
+          LOG.debug(result.toString());
         }
       }
-      lastAccessCount = tmpLast;
+      unmergedAccessCounts = accessCountsNotHandledBySSM;
 
-      if (!values.isEmpty()) {
+      if (!sqlInsertValues.isEmpty()) {
         String insertValue = String.format(
             "INSERT INTO %s (%s, %s) VALUES %s",
             table.getTableName(),
             DefaultAccessCountDao.FILE_FIELD,
             DefaultAccessCountDao.ACCESSCOUNT_FIELD,
-            StringUtils.join(values, ", "));
+            StringUtils.join(sqlInsertValues, ", "));
         try {
-          this.adapter.execute(insertValue);
-          this.adapter.updateCachedFiles(pathToIDs, eventBuffer);
+          adapter.execute(insertValue);
+          adapter.updateCachedFiles(pathToIDs, eventBuffer);
           if (LOG.isDebugEnabled()) {
             LOG.debug("Table created: " + table);
           }
@@ -145,32 +146,20 @@ public class AccessEventAggregator {
         }
       }
     }
-    this.accessCountTableManager.addTable(table);
+    accessCountTableManager.addTable(table);
   }
 
-  private Map<String, Integer> mergeMap(Map<String, Integer> map1, Map<String, Integer> map2) {
-    for (Entry<String, Integer> entry : map2.entrySet()) {
-      String key = entry.getKey();
-      if (map1.containsKey(key)) {
-        map1.put(key, map1.get(key) + entry.getValue());
-      } else {
-        map1.put(key, map2.get(key));
-      }
-    }
-    return map1;
+  private void mergeMapsInPlace(Map<String, Integer> resultMap, Map<String, Integer> mapToMerge) {
+    mapToMerge.forEach((key, value) -> resultMap.merge(key, value, Integer::sum));
   }
 
   private Map<String, Integer> getAccessCountMap(List<FileAccessEvent> events) {
-    Map<String, Integer> map = new HashMap<>();
-    for (FileAccessEvent event : events) {
-      String path = event.getPath();
-      if (map.containsKey(path)) {
-        map.put(path, map.get(path) + 1);
-      } else {
-        map.put(path, 1);
-      }
-    }
-    return map;
+    return events.stream()
+        .collect(Collectors.toMap(
+            FileAccessEvent::getPath,
+            event -> 1,
+            Integer::sum
+        ));
   }
 
   private Window assignWindow(long time) {
