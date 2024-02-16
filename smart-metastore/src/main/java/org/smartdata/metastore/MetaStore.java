@@ -698,7 +698,7 @@ public class MetaStore implements CopyMetaService,
 
   public void execute(String sql) throws MetaStoreException {
     try {
-      LOG.debug("Execute sql = {}", sql);
+      LOG.info("Execute sql = {}", sql);
       metaStoreHelper.execute(sql);
     } catch (Exception e) {
       throw new MetaStoreException(e);
