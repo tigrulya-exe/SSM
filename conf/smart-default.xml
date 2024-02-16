@@ -471,4 +471,12 @@
       The max time in milliseconds to wait an answer from the SmartAgent master actor during action submission.
     </description>
   </property>
+
+  <property>
+    <name>smart.access.count.aggregation.interval.ms</name>
+    <value>5000</value>
+    <description>
+      The interval in milliseconds that is covered by single second-granularity access count table.
+    </description>
+  </property>
 </configuration>
