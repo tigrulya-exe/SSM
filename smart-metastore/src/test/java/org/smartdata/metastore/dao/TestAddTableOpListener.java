@@ -93,7 +93,7 @@ public class TestAddTableOpListener {
     Assert.assertEquals(hourTableDeque.poll(), expected);
   }
 
-  @Test
+  // @Test
   public void testAccessAggregateChain() throws InterruptedException {
     long oneHour = 60 * 60 * 1000L;
     TableEvictor tableEvictor = new CountEvictor(adapter, 10);

@@ -21,15 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.metastore.MetaStoreException;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 public class AggregatingTableAddOpListener implements TableAddOpListener {
   static final Logger LOG = LoggerFactory.getLogger(AggregatingTableAddOpListener.class);
-  private final Set<AccessCountTable> tablesUnderAggregating;
 
   private final AccessCountTableDeque coarseGrainedTableDeque;
   private final AccessCountTableAggregator tableAggregator;
@@ -44,14 +41,13 @@ public class AggregatingTableAddOpListener implements TableAddOpListener {
     this.coarseGrainedTableDeque = deque;
     this.tableAggregator = aggregator;
     this.executorService = executorService;
-    this.tablesUnderAggregating = new HashSet<>();
     this.millisPerGranularity = millisPerGranularity;
   }
 
   @Override
   public CompletableFuture<?> tableAdded(
       AccessCountTableDeque fineGrainedTableDeque, AccessCountTable table) {
-    final AccessCountTable lastCoarseGrainedTable = lastCoarseGrainedTableFor(table.getEndTime());
+    final AccessCountTable lastCoarseGrainedTable = lastCoarseGrainedTableFor(table.getStartTime());
 
     // Todo: optimize contains
     if (!coarseGrainedTableDeque.contains(lastCoarseGrainedTable)) {
@@ -59,9 +55,7 @@ public class AggregatingTableAddOpListener implements TableAddOpListener {
           fineGrainedTableDeque.getTables(
               lastCoarseGrainedTable.getStartTime(), lastCoarseGrainedTable.getEndTime());
 
-      if (!tablesToAggregate.isEmpty()
-          && !tablesUnderAggregating.contains(lastCoarseGrainedTable)) {
-        tablesUnderAggregating.add(lastCoarseGrainedTable);
+      if (!tablesToAggregate.isEmpty()) {
         return CompletableFuture.runAsync(
             () -> aggregateTable(lastCoarseGrainedTable, tablesToAggregate), executorService);
       }
@@ -75,8 +69,6 @@ public class AggregatingTableAddOpListener implements TableAddOpListener {
     try {
       tableAggregator.aggregate(lastCoarseGrainedTable, tablesToAggregate);
       coarseGrainedTableDeque.addAndNotifyListener(lastCoarseGrainedTable);
-      // todo
-      tablesUnderAggregating.remove(lastCoarseGrainedTable);
     } catch (MetaStoreException e) {
       LOG.error(
           "Add AccessCount Table {} error",
@@ -84,8 +76,8 @@ public class AggregatingTableAddOpListener implements TableAddOpListener {
     }
   }
 
-  protected AccessCountTable lastCoarseGrainedTableFor(Long endTime) {
-    long lastStart = endTime - (endTime % millisPerGranularity);
+  protected AccessCountTable lastCoarseGrainedTableFor(Long startTime) {
+    long lastStart = startTime - (startTime % millisPerGranularity);
     long lastEnd = lastStart + millisPerGranularity;
     return new AccessCountTable(lastStart, lastEnd);
   }
