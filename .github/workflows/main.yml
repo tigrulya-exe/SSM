@@ -30,4 +30,4 @@ jobs:
         uses: mxschmitt/action-tmate@v3
 
       - name: Run tests
-        run: mvn test -Dmaven.test.redirectTestOutputToFile=false -pl '!smart-zeppelin,!org.smartdata:smart-zeppelin-interpreter,!org.smartdata:smart-zeppelin-zengine,!org.smartdata:smart-zeppelin-display,!org.smartdata:smart-zeppelin-server' -am -Phadoop-${{ matrix.hdfs-version }}
+        run: mvn test -Dmaven.test.redirectTestOutputToFile=false -pl '!smart-zeppelin,!org.smartdata:smart-zeppelin-interpreter,!org.smartdata:smart-zeppelin-zengine,!org.smartdata:smart-zeppelin-display,!org.smartdata:smart-zeppelin-server' -am -Phadoop-${{ matrix.hdfs-version }} -Dmaven.surefire.debug
