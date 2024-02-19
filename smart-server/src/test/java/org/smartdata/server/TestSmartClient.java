@@ -19,7 +19,6 @@ package org.smartdata.server;
 
 import org.apache.hadoop.conf.Configuration;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.smartdata.client.SmartClient;
 import org.smartdata.conf.SmartConfKeys;
@@ -30,7 +29,6 @@ import org.smartdata.model.NormalFileState;
 public class TestSmartClient extends MiniSmartClusterHarness {
 
   @Test
-  @Ignore("Fails on CI, no success reproducing it locally")
   public void testGetFileState() throws Exception {
     waitTillSSMExitSafeMode();
 
