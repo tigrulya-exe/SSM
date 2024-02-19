@@ -405,6 +405,8 @@
     <value>48</value>
     <description>
       The max number of access count per hour tables in the Metastore.
+      It should be at least 24 to cover the full day to be successfully
+      aggregated into a per day access count table.
     </description>
   </property>
 
@@ -413,6 +415,8 @@
     <value>120</value>
     <description>
       The max number of access count per minute tables in the Metastore.
+      It should be at least 60 to cover the full hour to be successfully
+      aggregated into a per hour access count table.
     </description>
   </property>
 
@@ -421,6 +425,8 @@
     <value>30</value>
     <description>
       The max number of access count per second tables in the Metastore.
+      It should be at least 60000/'smart.access.count.aggregation.interval.ms'
+      to cover the full minute to be successfully aggregated into a per minute access count table.
     </description>
   </property>
 
