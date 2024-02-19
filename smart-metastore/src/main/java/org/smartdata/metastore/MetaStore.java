@@ -1530,7 +1530,7 @@ public class MetaStore implements CopyMetaService,
     }
   }
 
-  public Long[] insertFileDiffs(List<FileDiff> fileDiffs)
+  public List<Long> insertFileDiffs(List<FileDiff> fileDiffs)
       throws MetaStoreException {
     try {
       return fileDiffDao.insert(fileDiffs);

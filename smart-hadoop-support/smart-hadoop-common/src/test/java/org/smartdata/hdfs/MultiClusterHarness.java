@@ -17,7 +17,6 @@
  */
 package org.smartdata.hdfs;
 
-import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSClient;
@@ -74,7 +73,7 @@ public abstract class MultiClusterHarness extends MiniClusterHarness {
   }
 
   @After
-  public void shutdown() throws IOException {
+  public void shutdownAnotherCluster() {
     if (anotherCluster != null) {
       anotherCluster.shutdown(true);
     }
