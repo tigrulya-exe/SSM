@@ -23,10 +23,13 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        with:
-          detached: true
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+
+#      - name: Setup tmate session
+#        uses: mxschmitt/action-tmate@v3
+#        with:
+#          detached: true
 
       - name: Build with Maven
         run: mvn clean install -Pdist,web,hadoop-${{ matrix.hdfs-version }} -DskipTests
