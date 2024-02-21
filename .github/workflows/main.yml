@@ -2,7 +2,7 @@ name: PR and master push checks
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "develop", "check-test-on-ci" ]
   pull_request:
     branches: [ "develop" ]
 
