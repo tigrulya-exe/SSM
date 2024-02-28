@@ -18,20 +18,36 @@
 package org.smartdata.metastore.dao;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.smartdata.metastore.MetaStore;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReentrantLock;
 
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.smartdata.metastore.TestDBUtil.addAccessCountTableToDeque;
 
 public class TestAddTableOpListener {
-  MetaStore adapter = mock(MetaStore.class);
-  ExecutorService executorService = Executors.newFixedThreadPool(4);
-  AccessCountTableAggregator aggregator = new AccessCountTableAggregator(
-      mock(MetaStore.class));
+
+  @Mock
+  private MetaStore adapter;
+
+  private final ExecutorService executorService = Executors.newFixedThreadPool(4);
+
+  private final ReentrantLock accessCountLock = new ReentrantLock();
+
+  private AccessCountTableAggregator aggregator;
+
+  @Before
+  public void setup() {
+    MockitoAnnotations.initMocks(this);
+    aggregator = new AccessCountTableAggregator(adapter);
+    when(adapter.getAccessCountLock()).thenReturn(accessCountLock);
+  }
 
   @Test
   public void testMinuteTableListener() throws Exception {

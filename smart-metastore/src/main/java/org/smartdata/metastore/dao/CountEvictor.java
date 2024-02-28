@@ -33,9 +33,8 @@ public class CountEvictor extends TableEvictor {
   public void evictTables(AccessCountTableDeque tables, long lastAggregatedIntervalEndTimestamp) {
     int elementsToRemove = tables.size() - maxCount;
 
-    int evictedCount = 0;
     for (Iterator<AccessCountTable> iterator = tables.iterator();
-         iterator.hasNext() && evictedCount++ < elementsToRemove;) {
+         iterator.hasNext() && elementsToRemove-- > 0;) {
       AccessCountTable table = iterator.next();
 
       if (table.getEndTime() > lastAggregatedIntervalEndTimestamp) {

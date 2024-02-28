@@ -41,16 +41,12 @@ public class AccessCountTableAggregator {
     }
 
     ReentrantLock accessCountLock = metaStore.getAccessCountLock();
-    if (accessCountLock != null) {
-      accessCountLock.lock();
-    }
+    accessCountLock.lock();
     try {
       metaStore.aggregateTables(destinationTable, tablesToAggregate);
       metaStore.insertAccessCountTable(destinationTable);
     } finally {
-      if (accessCountLock != null) {
-        accessCountLock.unlock();
-      }
+      accessCountLock.unlock();
     }
   }
 }

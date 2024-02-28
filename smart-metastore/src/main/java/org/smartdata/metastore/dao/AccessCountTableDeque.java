@@ -19,6 +19,7 @@ package org.smartdata.metastore.dao;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -44,7 +45,12 @@ public class AccessCountTableDeque extends ConcurrentLinkedDeque<AccessCountTabl
   }
 
   public CompletableFuture<Void> addAndNotifyListener(AccessCountTable table) {
-    if (!isEmpty() && table.getEndTime() <= peekLast().getEndTime()) {
+    boolean containsOverlappingTable = Optional.ofNullable(peekLast())
+        .map(AccessCountTable::getEndTime)
+        .filter(endTime -> table.getEndTime() <= endTime)
+        .isPresent();
+
+    if (containsOverlappingTable) {
       throw new IllegalArgumentException("Overlapping access count table: " + table);
     }
 

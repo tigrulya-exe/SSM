@@ -82,15 +82,11 @@ public class AccessEventAggregator {
 
   private void createTable() {
     AccessCountTable table = new AccessCountTable(currentWindow.start, currentWindow.end);
-    String createTable = AccessCountDao.createAccessCountTableSQL(table.getTableName());
+
     try {
-      if (adapter.tableExists(table.getTableName())) {
-        adapter.dropTable(table.getTableName());
-      }
-      adapter.execute(createTable);
-      adapter.insertAccessCountTable(table);
+      insertTableToMetastore(table);
     } catch (MetaStoreException e) {
-      LOG.error("Create table error: " + table, e);
+      LOG.error("Error creating access count table {}", table, e);
       return;
     }
 
@@ -104,55 +100,82 @@ public class AccessEventAggregator {
         pathToIDs = adapter.getFileIDs(accessCounts.keySet());
       } catch (MetaStoreException e) {
         // TODO: dirty handle here
-        LOG.error("Create Table " + table.getTableName(), e);
+        LOG.error("Error fetching file ids for paths {}", accessCounts.keySet(), e);
         return;
       }
 
-      Map<String, Integer> accessCountsNotHandledBySSM = accessedFiles.stream()
-              .filter(file -> !pathToIDs.containsKey(file))
-              .collect(Collectors.toMap(
-                  Function.identity(),
-                  accessCounts::get
-              ));
+      maybeLogUnmergedAccessCounts(pathToIDs.keySet());
+      unmergedAccessCounts = accessedFiles.stream()
+          .filter(file -> !pathToIDs.containsKey(file))
+          .collect(Collectors.toMap(
+              Function.identity(),
+              accessCounts::get
+          ));
 
-      List<String> sqlInsertValues = new ArrayList<>();
-      for (String key : pathToIDs.keySet()) {
-        sqlInsertValues.add(String.format("(%d, %d)", pathToIDs.get(key),
-            accessCounts.get(key)));
-      }
-
-      if (LOG.isDebugEnabled() && !unmergedAccessCounts.isEmpty()) {
-        Set<String> non = unmergedAccessCounts.keySet();
-        non.removeAll(pathToIDs.keySet());
-        if (!non.isEmpty()) {
-          StringBuilder result = new StringBuilder("Access events ignored for file:\n");
-          for (String p : non) {
-            result.append(p).append(" --> ").append(unmergedAccessCounts.get(p)).append("\n");
-          }
-          LOG.debug(result.toString());
-        }
-      }
-      unmergedAccessCounts = accessCountsNotHandledBySSM;
-
-      if (!sqlInsertValues.isEmpty()) {
-        String insertValue = String.format(
-            "INSERT INTO %s (%s, %s) VALUES %s",
-            table.getTableName(),
-            DefaultAccessCountDao.FILE_FIELD,
-            DefaultAccessCountDao.ACCESSCOUNT_FIELD,
-            StringUtils.join(sqlInsertValues, ", "));
-        try {
-          adapter.execute(insertValue);
-          adapter.updateCachedFiles(pathToIDs, eventBuffer);
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Table created: " + table);
-          }
-        } catch (MetaStoreException e) {
-          LOG.error("Create table error: " + table, e);
-        }
-      }
+      insertAccessCountsToMetastore(table, pathToIDs, accessCounts);
     }
     accessCountTableManager.addTable(table);
+  }
+
+  private void insertTableToMetastore(AccessCountTable table) throws MetaStoreException {
+    String createTable = AccessCountDao.createAccessCountTableSQL(table.getTableName());
+    if (adapter.tableExists(table.getTableName())) {
+      adapter.dropTable(table.getTableName());
+    }
+    adapter.execute(createTable);
+    adapter.insertAccessCountTable(table);
+  }
+
+  private void maybeLogUnmergedAccessCounts(Set<String> accessPaths) {
+    if (LOG.isDebugEnabled() && !unmergedAccessCounts.isEmpty()) {
+      Set<String> non = unmergedAccessCounts.keySet();
+      non.removeAll(accessPaths);
+      if (!non.isEmpty()) {
+        StringBuilder result = new StringBuilder("Access events ignored for file:\n");
+        for (String p : non) {
+          result.append(p).append(" --> ").append(unmergedAccessCounts.get(p)).append("\n");
+        }
+        LOG.debug(result.toString());
+      }
+    }
+  }
+
+  private void insertAccessCountsToMetastore(
+      AccessCountTable table, Map<String, Long> pathToIDs, Map<String, Integer> accessCounts) {
+    List<String> sqlInsertValues = new ArrayList<>();
+    for (String key : pathToIDs.keySet()) {
+      sqlInsertValues.add(String.format("(%d, %d)", pathToIDs.get(key),
+          accessCounts.get(key)));
+    }
+
+    if (!sqlInsertValues.isEmpty()) {
+      insertAccessCountsToMetastore(table, sqlInsertValues);
+      updateCachedFilesInMetastore(pathToIDs);
+    }
+  }
+
+  private void insertAccessCountsToMetastore(
+      AccessCountTable table, List<String> sqlInsertValues) {
+    String insertValue = String.format(
+        "INSERT INTO %s (%s, %s) VALUES %s",
+        table.getTableName(),
+        DefaultAccessCountDao.FILE_FIELD,
+        DefaultAccessCountDao.ACCESSCOUNT_FIELD,
+        StringUtils.join(sqlInsertValues, ", "));
+    try {
+      adapter.execute(insertValue);
+      LOG.debug("Inserted values {} to access count table {}", sqlInsertValues, table);
+    } catch (MetaStoreException e) {
+      LOG.error("Error inserting access counts {} to table {}", sqlInsertValues, table, e);
+    }
+  }
+
+  private void updateCachedFilesInMetastore(Map<String, Long> pathToIDs) {
+    try {
+      adapter.updateCachedFiles(pathToIDs, eventBuffer);
+    } catch (MetaStoreException e) {
+      LOG.error("Error updating cached files {}", pathToIDs, e);
+    }
   }
 
   private void mergeMapsInPlace(Map<String, Integer> resultMap, Map<String, Integer> mapToMerge) {

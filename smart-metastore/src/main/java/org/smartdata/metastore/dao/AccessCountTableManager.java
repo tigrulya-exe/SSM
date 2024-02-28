@@ -142,6 +142,7 @@ public class AccessCountTableManager {
       List<AccessCountTable> tables = metaStore.getAllSortedTables();
 
       if (tables.isEmpty()) {
+        LOG.info("No existing access count tables to recover.");
         return;
       }
 
