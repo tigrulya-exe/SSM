@@ -90,6 +90,10 @@ public class SmartConfKeys {
       "smart.metastore.mysql.legacy.enabled";
   public static final boolean SMART_METASTORE_LEGACY_MYSQL_SUPPORT_DEFAULT = false;
 
+  public static final String SMART_ACCESS_COUNT_AGGREGATION_INTERVAL_MS =
+      "smart.access.count.aggregation.interval.ms";
+  public static final int SMART_ACCESS_COUNT_AGGREGATION_INTERVAL_MS_DEFAULT = 5000;
+
   public static final String SMART_NUM_DAY_TABLES_TO_KEEP_KEY =
       "smart.access.count.day.tables.num";
   public static final int SMART_NUM_DAY_TABLES_TO_KEEP_DEFAULT = 30;
@@ -97,10 +101,12 @@ public class SmartConfKeys {
   public static final String SMART_NUM_HOUR_TABLES_TO_KEEP_KEY =
       "smart.access.count.hour.tables.num";
   public static final int SMART_NUM_HOUR_TABLES_TO_KEEP_DEFAULT = 48;
+  public static final int SMART_NUM_HOUR_TABLES_TO_KEEP_MIN = 24;
 
   public static final String SMART_NUM_MINUTE_TABLES_TO_KEEP_KEY =
       "smart.access.count.minute.tables.num";
   public static final int SMART_NUM_MINUTE_TABLES_TO_KEEP_DEFAULT = 120;
+  public static final int SMART_NUM_MINUTE_TABLES_TO_KEEP_MIN = 60;
 
   public static final String SMART_NUM_SECOND_TABLES_TO_KEEP_KEY =
       "smart.access.count.second.tables.num";
