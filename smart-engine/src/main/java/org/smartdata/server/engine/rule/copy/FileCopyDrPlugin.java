@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.server.engine.rule;
+package org.smartdata.server.engine.rule.copy;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ import org.smartdata.model.FileDiff;
 import org.smartdata.model.FileDiffType;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.rule.RuleExecutorPlugin;
-import org.smartdata.model.rule.TranslateResult;
+import org.smartdata.model.rule.RuleTranslationResult;
 import org.smartdata.utils.StringUtil;
 
 import java.util.ArrayList;
@@ -39,39 +39,47 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 
 import static org.smartdata.utils.StringUtil.ssmPatternsToRegex;
 
 public class FileCopyDrPlugin implements RuleExecutorPlugin {
   private final MetaStore metaStore;
+  private final FileCopyScheduleStrategy copyScheduleStrategy;
   private final Map<Long, List<BackUpInfo>> backups = new HashMap<>();
   private static final Logger LOG =
       LoggerFactory.getLogger(FileCopyDrPlugin.class.getName());
 
-  public FileCopyDrPlugin(MetaStore metaStore) {
+  public FileCopyDrPlugin(MetaStore metaStore, FileCopyScheduleStrategy copyScheduleStrategy) {
     this.metaStore = metaStore;
+    this.copyScheduleStrategy = copyScheduleStrategy;
   }
 
-  public void onNewRuleExecutor(final RuleInfo ruleInfo, TranslateResult tResult) {
+  public void onNewRuleExecutor(final RuleInfo ruleInfo, RuleTranslationResult tResult) {
     long ruleId = ruleInfo.getId();
     List<String> pathsCheckGlob = tResult.getGlobPathCheck();
     if (pathsCheckGlob.isEmpty()) {
       pathsCheckGlob = Collections.singletonList("/*");
     }
     List<String> pathsCheck = getPathMatchesList(pathsCheckGlob);
+
     String dirs = StringUtil.join(",", pathsCheck);
     CmdletDescriptor des = tResult.getCmdDescriptor();
     for (int i = 0; i < des.getActionSize(); i++) {
-      if (des.getActionName(i).equals("sync")) {
+      if (des.getActionName(i).equals(SyncAction.NAME)) {
         String rawPreserveArg = des.getActionArgs(i).get(SyncAction.PRESERVE);
         // fail fast if preserve arg is not valid
         validatePreserveArg(rawPreserveArg);
 
         List<String> statements = tResult.getSqlStatements();
-        String before = statements.get(statements.size() - 1);
-        String after = before.replace(";", " UNION " + referenceNonExists(pathsCheckGlob));
-        statements.set(statements.size() - 1, after);
+
+        String oldFetchFilesQuery = statements.get(statements.size() - 1)
+            .replace(";", "");
+        String wrappedQuery = copyScheduleStrategy
+            .wrapGetFilesToCopyQuery(oldFetchFilesQuery, pathsCheckGlob);
+        statements.set(statements.size() - 1, wrappedQuery);
+
+        LOG.info("Transformed '{}' rule's fetch files sql from '{}' to '{}'",
+            ruleInfo.getRuleText(), oldFetchFilesQuery, wrappedQuery);
 
         BackUpInfo backUpInfo = new BackUpInfo();
         backUpInfo.setRid(ruleId);
@@ -83,7 +91,7 @@ public class FileCopyDrPlugin implements RuleExecutorPlugin {
           des.addActionArg(i, SyncAction.DEST, dest);
         }
         backUpInfo.setDest(dest);
-        backUpInfo.setPeriod(tResult.getTbScheduleInfo().getMinimalEvery());
+        backUpInfo.setPeriod(tResult.getScheduleInfo().getMinimalEvery());
 
         des.addActionArg(i, SyncAction.SRC, dirs);
 
@@ -91,7 +99,7 @@ public class FileCopyDrPlugin implements RuleExecutorPlugin {
 
         synchronized (backups) {
           if (!backups.containsKey(ruleId)) {
-            backups.put(ruleId, new LinkedList<BackUpInfo>());
+            backups.put(ruleId, new LinkedList<>());
           }
         }
 
@@ -127,19 +135,7 @@ public class FileCopyDrPlugin implements RuleExecutorPlugin {
     return ret;
   }
 
-  private String referenceNonExists(List<String> globTemplates) {
-    String temp = "SELECT src FROM file_diff WHERE "
-        + "state = 0 AND diff_type IN (1,2) AND (%s);";
-
-    StringJoiner queryFilterBuilder = new StringJoiner(" OR ");
-    globTemplates.stream()
-        .map(StringUtil::ssmPatternToSqlLike)
-        .forEach(template -> queryFilterBuilder.add("src LIKE '" + template + "'"));
-
-    return String.format(temp, queryFilterBuilder);
-  }
-
-  public boolean preExecution(final RuleInfo ruleInfo, TranslateResult tResult) {
+  public boolean preExecution(final RuleInfo ruleInfo, RuleTranslationResult tResult) {
     return true;
   }
 
@@ -148,7 +144,7 @@ public class FileCopyDrPlugin implements RuleExecutorPlugin {
   }
 
   public CmdletDescriptor preSubmitCmdletDescriptor(
-      final RuleInfo ruleInfo, TranslateResult tResult, CmdletDescriptor descriptor) {
+      final RuleInfo ruleInfo, RuleTranslationResult tResult, CmdletDescriptor descriptor) {
     return descriptor;
   }
 

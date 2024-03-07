@@ -136,6 +136,9 @@ public class SmartConfKeys {
       "smart.dispatch.cmdlets.extra.num";
   public static final int SMART_DISPATCH_CMDLETS_EXTRA_NUM_DEFAULT = 10;
 
+  public static final String SMART_SYNC_SCHEDULE_STRATEGY_KEY = "smart.sync.schedule.strategy";
+  public static final String SMART_SYNC_SCHEDULE_STRATEGY_DEFAULT = "UNORDERED";
+
   // Keep it only for test
   public static final String SMART_ENABLE_ZEPPELIN_WEB = "smart.zeppelin.web.enable";
   public static final boolean SMART_ENABLE_ZEPPELIN_WEB_DEFAULT = true;
