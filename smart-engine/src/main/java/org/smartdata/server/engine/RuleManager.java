@@ -56,15 +56,16 @@ import static org.smartdata.conf.SmartConfKeys.SMART_SYNC_SCHEDULE_STRATEGY_KEY;
  * Manage and execute rules. We can have 'cache' here to decrease the needs to execute a SQL query.
  */
 public class RuleManager extends AbstractService {
+  public static final Logger LOG = LoggerFactory.getLogger(RuleManager.class.getName());
+
   private final ServerContext serverContext;
   private final StatesManager statesManager;
   private final CmdletManager cmdletManager;
   private final MetaStore metaStore;
 
   private boolean isClosed = false;
-  public static final Logger LOG = LoggerFactory.getLogger(RuleManager.class.getName());
 
-  private final ConcurrentHashMap<Long, RuleInfoRepo> mapRules = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<Long, RuleInfoRepo> mapRules;
 
   public ExecutorScheduler execScheduler;
 
@@ -79,6 +80,7 @@ public class RuleManager extends AbstractService {
                 SmartConfKeys.SMART_RULE_EXECUTORS_KEY, SmartConfKeys.SMART_RULE_EXECUTORS_DEFAULT);
     execScheduler = new ExecutorScheduler(numExecutors);
 
+    this.mapRules = new ConcurrentHashMap<>();
     this.statesManager = statesManager;
     this.cmdletManager = cmdletManager;
     this.serverContext = context;
@@ -123,7 +125,7 @@ public class RuleManager extends AbstractService {
 
     //check whitelist
     if (WhitelistHelper.isEnabled(serverContext.getConf())) {
-      for (String path : tr.getGlobPathCheck()) {
+      for (String path : tr.getPathPatterns()) {
         if (!WhitelistHelper.isInWhitelist(path, serverContext.getConf())) {
           throw new IOException("Path " + path + " is not in the whitelist.");
         }
@@ -279,7 +281,7 @@ public class RuleManager extends AbstractService {
     try {
       rules = metaStore.getRuleInfo();
     } catch (MetaStoreException e) {
-      LOG.error("Can not load rules from database:\n" + e.getMessage());
+      LOG.error("Can not load rules from database", e);
       return;
     }
     for (RuleInfo rule : rules) {

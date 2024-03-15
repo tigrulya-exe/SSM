@@ -21,16 +21,19 @@ package org.smartdata.server.engine.rule.copy;
 import java.util.List;
 
 public class DiffCreationTimeCopyScheduleStrategy implements FileCopyScheduleStrategy {
-  public DiffCreationTimeCopyScheduleStrategy(Order order) {
-    this.order = order;
+  public DiffCreationTimeCopyScheduleStrategy(DiffSelectionStrategy diffSelectionStrategy) {
+    this.diffSelectionStrategy = diffSelectionStrategy;
   }
 
-  public enum Order {
-    ASC,
-    DESC
+  /** Behaviour in case if there are several pending diff for the same file. */
+  public enum DiffSelectionStrategy {
+    /** Select pending diff with the earliest creation time. */
+    EARLIEST,
+    /** Select pending diff with the latest creation time. */
+    LATEST
   }
 
-  private final Order order;
+  private final DiffSelectionStrategy diffSelectionStrategy;
 
   @Override
   public String wrapGetFilesToCopyQuery(String query, List<String> pathTemplates) {
@@ -38,16 +41,20 @@ public class DiffCreationTimeCopyScheduleStrategy implements FileCopyScheduleStr
         + "FROM file_diff "
         + "LEFT JOIN (" + query + ") as q "
         + "ON file_diff.src = q.path "
+        // select diffs of files from query
         + "WHERE q.path IS NOT NULL OR "
+        // or pending diffs of files that were renamed/removed from HDFS
+        // and now are only available in the file diffs table
         + "(state = 0 AND diff_type IN (1,2) AND ("
         + FileCopyScheduleStrategy.pathTemplatesToSqlCondition(pathTemplates)
         + ")) "
+        // choose only one pending file_diff per file based on the provided strategy
         + "GROUP BY file_diff.src "
         + "ORDER BY " + orderClause() + ";";
   }
 
   private String orderClause() {
-    return order == Order.ASC
+    return diffSelectionStrategy == DiffSelectionStrategy.EARLIEST
         ? "MIN(create_time)"
         : "MAX(create_time) DESC";
   }

@@ -33,19 +33,23 @@ public class RuleTranslationResult {
   private final TimeBasedScheduleInfo scheduleInfo;
   private final CmdletDescriptor cmdDescriptor;
   private final int[] condPosition;
-  private List<String> globPathCheck;
+  private List<String> pathPatterns;
 
   public RuleTranslationResult(List<String> sqlStatements,
-      Map<String, List<Object>> dynamicParameters,
-      int retSqlIndex, TimeBasedScheduleInfo scheduleInfo,
-      CmdletDescriptor cmdDescriptor, int[] condPosition, List<String> globPathCheck) {
+                               Map<String,
+                               List<Object>> dynamicParameters,
+                               int retSqlIndex,
+                               TimeBasedScheduleInfo scheduleInfo,
+                               CmdletDescriptor cmdDescriptor,
+                               int[] condPosition,
+                               List<String> pathPatterns) {
     this.sqlStatements = sqlStatements;
     this.dynamicParameters = dynamicParameters;
     this.retSqlIndex = retSqlIndex;
     this.scheduleInfo = scheduleInfo;
     this.cmdDescriptor = cmdDescriptor;
     this.condPosition = condPosition;
-    this.globPathCheck = globPathCheck;
+    this.pathPatterns = pathPatterns;
   }
 
   public CmdletDescriptor getCmdDescriptor() {
@@ -72,12 +76,12 @@ public class RuleTranslationResult {
     return condPosition;
   }
 
-  public List<String> getGlobPathCheck() {
-    return globPathCheck;
+  public List<String> getPathPatterns() {
+    return pathPatterns;
   }
 
-  public void setGlobPathCheck(List<String> globPathCheck) {
-    this.globPathCheck = globPathCheck;
+  public void setPathPatterns(List<String> pathPatterns) {
+    this.pathPatterns = pathPatterns;
   }
 
   public RuleTranslationResult copy() {
@@ -88,7 +92,7 @@ public class RuleTranslationResult {
         scheduleInfo,
         cmdDescriptor,
         condPosition,
-        new ArrayList<>(globPathCheck)
+        new ArrayList<>(pathPatterns)
     );
   }
 }

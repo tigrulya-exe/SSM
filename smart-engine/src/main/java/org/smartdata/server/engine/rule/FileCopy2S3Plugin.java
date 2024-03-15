@@ -45,7 +45,7 @@ public class FileCopy2S3Plugin implements RuleExecutorPlugin {
   public void onNewRuleExecutor(RuleInfo ruleInfo,
       RuleTranslationResult tResult) {
     srcBases = new ArrayList<>();
-    List<String> pathsCheckGlob = tResult.getGlobPathCheck();
+    List<String> pathsCheckGlob = tResult.getPathPatterns();
     if (pathsCheckGlob.isEmpty()) {
       pathsCheckGlob = Collections.singletonList("/*");
     }

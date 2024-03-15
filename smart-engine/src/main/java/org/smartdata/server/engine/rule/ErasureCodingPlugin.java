@@ -39,18 +39,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ErasureCodingPlugin implements RuleExecutorPlugin {
   private final ServerContext context;
   private final MetaStore metaStore;
-  private final Map<Long, List<String>> ecPolicies = new ConcurrentHashMap<>();
-  private final List<ErasureCodingPolicyInfo> ecInfos = new ArrayList<>();
+  private final Map<Long, List<String>> ecPolicies;
+  private final List<ErasureCodingPolicyInfo> ecInfos;
   private long lastUpdateTime = 0;
-  private URI nnUri = null;
-  private DFSClient client = null;
+  private URI nnUri;
+  private DFSClient client;
 
   private static final Logger LOG =
       LoggerFactory.getLogger(ErasureCodingPlugin.class);
 
   public ErasureCodingPlugin(ServerContext context) {
+    this.ecPolicies = new ConcurrentHashMap<>();
+    this.ecInfos = new ArrayList<>();
     this.context = context;
-    metaStore = context.getMetaStore();
+    this.metaStore = context.getMetaStore();
     try {
       ecInfos.addAll(metaStore.getAllEcPolicies());
     } catch (Exception e) {
@@ -71,10 +73,8 @@ public class ErasureCodingPlugin implements RuleExecutorPlugin {
         if (policy == null) {
           continue;
         }
-        if (!ecPolicies.containsKey(ruleId)) {
-          ecPolicies.put(ruleId, new ArrayList<String>());
-        }
-        ecPolicies.get(ruleId).add(policy);
+        ecPolicies.computeIfAbsent(ruleId, key -> new ArrayList<>())
+            .add(policy);
       }
     }
   }

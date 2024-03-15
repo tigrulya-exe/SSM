@@ -59,9 +59,9 @@ public class RuleExecutor implements Runnable {
   private final RuleTranslationResult originalTranslationResult;
   private final ExecutionContext executionCtx;
   private final MetaStore metastore;
-  private final Stack<String> dynamicCleanups = new Stack<>();
+  private final Stack<String> dynamicCleanups;
 
-  private volatile boolean exited = false;
+  private volatile boolean exited;
   private long exitTime;
 
   public RuleExecutor(RuleManager ruleManager, ExecutionContext executionCtx,
@@ -71,6 +71,8 @@ public class RuleExecutor implements Runnable {
     this.metastore = metastore;
     this.translationResult = translationResult;
     this.originalTranslationResult = translationResult.copy();
+    this.dynamicCleanups = new Stack<>();
+    this.exited = false;
   }
 
   public RuleTranslationResult getTranslateResult() {

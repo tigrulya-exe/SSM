@@ -22,7 +22,10 @@ import org.smartdata.utils.StringUtil;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.StringJoiner;
+import java.util.stream.Collectors;
+
+import static org.smartdata.server.engine.rule.copy.DiffCreationTimeCopyScheduleStrategy.DiffSelectionStrategy.EARLIEST;
+import static org.smartdata.server.engine.rule.copy.DiffCreationTimeCopyScheduleStrategy.DiffSelectionStrategy.LATEST;
 
 public interface FileCopyScheduleStrategy {
   enum Strategy {
@@ -48,21 +51,18 @@ public interface FileCopyScheduleStrategy {
   static FileCopyScheduleStrategy of(Strategy strategyName) {
       switch (strategyName) {
         case FIFO:
-          return new DiffCreationTimeCopyScheduleStrategy(
-              DiffCreationTimeCopyScheduleStrategy.Order.ASC);
+          return new DiffCreationTimeCopyScheduleStrategy(EARLIEST);
         case LIFO:
-          return new DiffCreationTimeCopyScheduleStrategy(
-              DiffCreationTimeCopyScheduleStrategy.Order.DESC);
+          return new DiffCreationTimeCopyScheduleStrategy(LATEST);
         default:
           return new OrderAgnosticCopyScheduleStrategy();
       }
   }
 
   static String pathTemplatesToSqlCondition(List<String> pathTemplates) {
-    StringJoiner queryFilterBuilder = new StringJoiner(" OR ");
-    pathTemplates.stream()
+    return pathTemplates.stream()
         .map(StringUtil::ssmPatternToSqlLike)
-        .forEach(template -> queryFilterBuilder.add("src LIKE '" + template + "'"));
-    return queryFilterBuilder.toString();
+        .map(template -> "src LIKE '" + template + "'")
+        .collect(Collectors.joining(" OR "));
   }
 }

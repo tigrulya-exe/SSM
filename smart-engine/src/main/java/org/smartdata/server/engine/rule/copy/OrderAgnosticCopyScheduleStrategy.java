@@ -24,8 +24,13 @@ public class OrderAgnosticCopyScheduleStrategy implements FileCopyScheduleStrate
   @Override
   public String wrapGetFilesToCopyQuery(String query, List<String> pathTemplates) {
     return query
+        // files that were removed from HDFS also are removed from the file table,
+        // so we need to take them into account during copy
         + " UNION SELECT src FROM file_diff "
-        + "WHERE state = 0 AND diff_type IN (1,2) AND ("
+        // select only pending file diffs
+        + "WHERE state = 0 "
+        // with type REMOVE or DELETE
+        + "AND diff_type IN (1,2) AND ("
         + FileCopyScheduleStrategy.pathTemplatesToSqlCondition(pathTemplates)
         + ");";
   }

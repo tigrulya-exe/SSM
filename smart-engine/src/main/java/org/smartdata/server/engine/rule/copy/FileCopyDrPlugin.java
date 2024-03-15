@@ -33,106 +33,56 @@ import org.smartdata.model.rule.RuleExecutorPlugin;
 import org.smartdata.model.rule.RuleTranslationResult;
 import org.smartdata.utils.StringUtil;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.smartdata.utils.StringUtil.ssmPatternsToRegex;
 
 public class FileCopyDrPlugin implements RuleExecutorPlugin {
-  private final MetaStore metaStore;
-  private final FileCopyScheduleStrategy copyScheduleStrategy;
-  private final Map<Long, List<BackUpInfo>> backups = new HashMap<>();
   private static final Logger LOG =
       LoggerFactory.getLogger(FileCopyDrPlugin.class.getName());
+
+  private static final String ALL_FILES_PATTERN = "/*";
+  private static final String PATTERN_BASE_DIRS_DELIMITER = ",";
+
+  private final MetaStore metaStore;
+  private final FileCopyScheduleStrategy copyScheduleStrategy;
 
   public FileCopyDrPlugin(MetaStore metaStore, FileCopyScheduleStrategy copyScheduleStrategy) {
     this.metaStore = metaStore;
     this.copyScheduleStrategy = copyScheduleStrategy;
   }
 
-  public void onNewRuleExecutor(final RuleInfo ruleInfo, RuleTranslationResult tResult) {
+  public void onNewRuleExecutor(RuleInfo ruleInfo, RuleTranslationResult translationResult) {
     long ruleId = ruleInfo.getId();
-    List<String> pathsCheckGlob = tResult.getGlobPathCheck();
-    if (pathsCheckGlob.isEmpty()) {
-      pathsCheckGlob = Collections.singletonList("/*");
-    }
-    List<String> pathsCheck = getPathMatchesList(pathsCheckGlob);
+    List<String> pathPatterns = getPathPatterns(translationResult);
 
-    String dirs = StringUtil.join(",", pathsCheck);
-    CmdletDescriptor des = tResult.getCmdDescriptor();
-    for (int i = 0; i < des.getActionSize(); i++) {
-      if (des.getActionName(i).equals(SyncAction.NAME)) {
-        String rawPreserveArg = des.getActionArgs(i).get(SyncAction.PRESERVE);
+    CmdletDescriptor cmdletDescriptor = translationResult.getCmdDescriptor();
+    for (int i = 0; i < cmdletDescriptor.getActionSize(); i++) {
+      if (cmdletDescriptor.getActionName(i).equals(SyncAction.NAME)) {
+        String rawPreserveArg = cmdletDescriptor.getActionArgs(i)
+            .get(SyncAction.PRESERVE);
         // fail fast if preserve arg is not valid
         validatePreserveArg(rawPreserveArg);
 
-        List<String> statements = tResult.getSqlStatements();
+        wrapGetFilesToCopyQuery(translationResult, pathPatterns);
 
-        String oldFetchFilesQuery = statements.get(statements.size() - 1)
-            .replace(";", "");
-        String wrappedQuery = copyScheduleStrategy
-            .wrapGetFilesToCopyQuery(oldFetchFilesQuery, pathsCheckGlob);
-        statements.set(statements.size() - 1, wrappedQuery);
+        String dest = cmdletDescriptor.getActionArgs(i)
+            .computeIfPresent(SyncAction.DEST,
+                (arg, path) -> StringUtil.addPathSeparator(path));
+        BackUpInfo backUpInfo = buildBackupInfo(ruleId, dest, translationResult, pathPatterns);
 
-        LOG.info("Transformed '{}' rule's fetch files sql from '{}' to '{}'",
-            ruleInfo.getRuleText(), oldFetchFilesQuery, wrappedQuery);
+        cmdletDescriptor.addActionArg(i, SyncAction.SRC, backUpInfo.getSrc());
 
-        BackUpInfo backUpInfo = new BackUpInfo();
-        backUpInfo.setRid(ruleId);
-        backUpInfo.setSrc(dirs);
-        backUpInfo.setSrcPattern(ssmPatternsToRegex(pathsCheckGlob));
-        String dest = des.getActionArgs(i).get(SyncAction.DEST);
-        if (!dest.endsWith("/")) {
-          dest += "/";
-          des.addActionArg(i, SyncAction.DEST, dest);
-        }
-        backUpInfo.setDest(dest);
-        backUpInfo.setPeriod(tResult.getScheduleInfo().getMinimalEvery());
+        storeBackupInfo(ruleId, backUpInfo);
 
-        des.addActionArg(i, SyncAction.SRC, dirs);
-
-        LOG.debug("Rule executor added for sync rule {} src={}  dest={}", ruleInfo, dirs, dest);
-
-        synchronized (backups) {
-          if (!backups.containsKey(ruleId)) {
-            backups.put(ruleId, new LinkedList<>());
-          }
-        }
-
-        List<BackUpInfo> infos = backups.get(ruleId);
-        synchronized (infos) {
-          try {
-            metaStore.deleteBackUpInfo(ruleId);
-            // Add base Sync tag
-            FileDiff fileDiff = new FileDiff(FileDiffType.BASESYNC);
-            fileDiff.setSrc(backUpInfo.getSrc());
-            fileDiff.getParameters().put("-dest", backUpInfo.getDest());
-            metaStore.insertFileDiff(fileDiff);
-            metaStore.insertBackUpInfo(backUpInfo);
-            infos.add(backUpInfo);
-          } catch (MetaStoreException e) {
-            LOG.error("Insert backup info error:" + backUpInfo, e);
-          }
-        }
+        LOG.debug("Rule executor added for sync rule {} src={}  dest={}",
+            ruleInfo, backUpInfo.getSrc(), dest);
         break;
       }
     }
-  }
-
-  private List<String> getPathMatchesList(List<String> paths) {
-    List<String> ret = new ArrayList<>();
-    for (String p : paths) {
-      String dir = StringUtil.getBaseDir(p);
-      if (dir == null) {
-        continue;
-      }
-      ret.add(dir);
-    }
-    return ret;
   }
 
   public boolean preExecution(final RuleInfo ruleInfo, RuleTranslationResult tResult) {
@@ -144,30 +94,69 @@ public class FileCopyDrPlugin implements RuleExecutorPlugin {
   }
 
   public CmdletDescriptor preSubmitCmdletDescriptor(
-      final RuleInfo ruleInfo, RuleTranslationResult tResult, CmdletDescriptor descriptor) {
+      RuleInfo ruleInfo, RuleTranslationResult tResult, CmdletDescriptor descriptor) {
     return descriptor;
   }
 
-  public void onRuleExecutorExit(final RuleInfo ruleInfo) {
+  public void onRuleExecutorExit(RuleInfo ruleInfo) {
     long ruleId = ruleInfo.getId();
-    List<BackUpInfo> infos = backups.get(ruleId);
-    if (infos == null) {
-      return;
+    try {
+      metaStore.deleteBackUpInfo(ruleId);
+    } catch (MetaStoreException e) {
+      LOG.error("Error removing backup info for rule {}", ruleInfo.getId(), e);
     }
-    synchronized (infos) {
-      try {
-        if (infos.size() != 0) {
-          infos.remove(0);
-        }
+  }
 
-        if (infos.size() == 0) {
-          backups.remove(ruleId);
-          metaStore.deleteBackUpInfo(ruleId);
-        }
-      } catch (MetaStoreException e) {
-        LOG.error("Remove backup info error:" + ruleInfo, e);
-      }
+  private void storeBackupInfo(long ruleId, BackUpInfo backUpInfo) {
+    try {
+      // Add base Sync tag
+      FileDiff fileDiff = new FileDiff(FileDiffType.BASESYNC);
+      fileDiff.setSrc(backUpInfo.getSrc());
+      fileDiff.getParameters()
+          .put(SyncAction.DEST, backUpInfo.getDest());
+
+      metaStore.deleteBackUpInfo(ruleId);
+      metaStore.insertFileDiff(fileDiff);
+      metaStore.insertBackUpInfo(backUpInfo);
+    } catch (MetaStoreException exc) {
+      LOG.error("Error inserting backup info {}", backUpInfo, exc);
     }
+  }
+
+  private void wrapGetFilesToCopyQuery(
+      RuleTranslationResult tResult, List<String> pathsCheckGlob) {
+    List<String> statements = tResult.getSqlStatements();
+    String oldFetchFilesQuery = statements.get(statements.size() - 1)
+        .replace(";", "");
+    String wrappedQuery = copyScheduleStrategy
+        .wrapGetFilesToCopyQuery(oldFetchFilesQuery, pathsCheckGlob);
+    statements.set(statements.size() - 1, wrappedQuery);
+
+    LOG.info("Transformed '{}' rule's fetch files sql from '{}' to '{}'",
+        tResult.getCmdDescriptor().getCmdletString(), oldFetchFilesQuery, wrappedQuery);
+  }
+
+  private List<String> getPathPatternBaseDirs(List<String> paths) {
+    return paths.stream()
+        .map(StringUtil::getBaseDir)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
+  }
+
+  private BackUpInfo buildBackupInfo(
+      long ruleId, String dest, RuleTranslationResult tResult, List<String> pathPatterns) {
+    String patternBaseDirs = StringUtil.join(
+        PATTERN_BASE_DIRS_DELIMITER,
+        getPathPatternBaseDirs(pathPatterns));
+
+    BackUpInfo backUpInfo = new BackUpInfo();
+    backUpInfo.setRid(ruleId);
+    backUpInfo.setSrc(patternBaseDirs);
+    backUpInfo.setSrcPattern(ssmPatternsToRegex(pathPatterns));
+    backUpInfo.setDest(dest);
+    backUpInfo.setPeriod(tResult.getScheduleInfo().getMinimalEvery());
+
+    return backUpInfo;
   }
 
   private void validatePreserveArg(String rawPreserveArg) {
@@ -178,5 +167,12 @@ public class FileCopyDrPlugin implements RuleExecutorPlugin {
     for (String attribute: rawPreserveArg.split(",")) {
       CopyFileAction.validatePreserveArg(attribute);
     }
+  }
+
+  private List<String> getPathPatterns(RuleTranslationResult translationResult) {
+    List<String> pathPatterns = translationResult.getPathPatterns();
+    return pathPatterns.isEmpty()
+        ? Collections.singletonList(ALL_FILES_PATTERN)
+        : pathPatterns;
   }
 }
