@@ -57,7 +57,7 @@ public class TestCopyFileAction extends MultiClusterHarness {
     copyFileAction.setContext(smartContext);
     Map<String, String> args = new HashMap<>();
     args.put(CopyFileAction.FILE_PATH, src.toUri().getPath());
-    args.put(CopyFileAction.DEST_PATH, pathToActionArg(dest));
+    args.put(CopyFileAction.DEST_PATH, dest.toString());
     args.put(CopyFileAction.LENGTH, "" + length);
     args.put(CopyFileAction.OFFSET_INDEX, "" + offset);
 

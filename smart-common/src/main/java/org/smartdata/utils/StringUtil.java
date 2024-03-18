@@ -32,11 +32,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StringUtil {
-  private static final String DIR_SEP = "/";
-  private static final String[] GLOBS = new String[] {
-      "*", "?"
-  };
-
   public static String join(CharSequence delimiter,
                             Iterable<? extends CharSequence> elements) {
     if (elements == null) {
@@ -56,31 +51,6 @@ public class StringUtil {
       sb.append(it.next());
     }
     return sb.toString();
-  }
-
-  public static String getBaseDir(String path) {
-    if (path == null) {
-      return null;
-    }
-
-    int lastSeparatorIdx = path.lastIndexOf(DIR_SEP);
-    if (lastSeparatorIdx == -1) {
-      return null;
-    }
-
-    int firstGlobIdx = path.length();
-    for (String glob : GLOBS) {
-      int globIdx = path.indexOf(glob);
-      if (globIdx >= 0) {
-        firstGlobIdx = Math.min(globIdx, firstGlobIdx);
-      }
-    }
-
-    lastSeparatorIdx = path.substring(0, firstGlobIdx).lastIndexOf(DIR_SEP);
-    if (lastSeparatorIdx == -1) {
-      return null;
-    }
-    return path.substring(0, lastSeparatorIdx + 1);
   }
 
   public static String ssmPatternToSqlLike(String str) {
@@ -277,14 +247,5 @@ public class StringUtil {
         .replace(".", "\\.")
         .replace("*", ".*")
         .replace("?", ".");
-  }
-
-  public static String addPathSeparator(String path) {
-    return path.endsWith(DIR_SEP) ? path : path + DIR_SEP;
-  }
-
-  public static boolean pathStartsWith(String path, String prefixToCheck) {
-    return addPathSeparator(path)
-        .startsWith(addPathSeparator(prefixToCheck));
   }
 }

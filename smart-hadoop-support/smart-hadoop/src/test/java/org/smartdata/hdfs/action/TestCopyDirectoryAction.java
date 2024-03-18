@@ -49,7 +49,7 @@ public class TestCopyDirectoryAction extends MultiClusterHarness {
       Set<CopyPreservedAttributesAction.PreserveAttribute> preserveAttributes) throws Exception {
     Map<String, String> args = new HashMap<>();
     args.put(CopyDirectoryAction.FILE_PATH, src.toUri().getPath());
-    args.put(CopyDirectoryAction.DEST_PATH, pathToActionArg(dest));
+    args.put(CopyDirectoryAction.DEST_PATH, dest.toString());
 
     if (!preserveAttributes.isEmpty()) {
       String attributesOption = preserveAttributes.stream()

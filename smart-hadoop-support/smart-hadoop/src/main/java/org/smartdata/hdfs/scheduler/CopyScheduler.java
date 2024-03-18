@@ -19,6 +19,7 @@ package org.smartdata.hdfs.scheduler;
 
 import com.google.common.util.concurrent.RateLimiter;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
@@ -34,6 +35,7 @@ import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.hdfs.action.CopyDirectoryAction;
 import org.smartdata.hdfs.action.CopyFileAction;
 import org.smartdata.hdfs.action.HdfsAction;
+import org.smartdata.hdfs.file.equality.FileEqualityStrategy;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
 import org.smartdata.model.*;
@@ -59,12 +61,10 @@ import static org.smartdata.utils.ConfigUtil.toRemoteClusterConfig;
 import static org.smartdata.utils.FileDiffUtils.getDest;
 import static org.smartdata.utils.FileDiffUtils.getLength;
 import static org.smartdata.utils.FileDiffUtils.getOffset;
-import static org.smartdata.utils.StringUtil.pathStartsWith;
+import static org.smartdata.utils.PathUtil.pathStartsWith;
 
 public class CopyScheduler extends ActionSchedulerService {
   static final Logger LOG = LoggerFactory.getLogger(CopyScheduler.class);
-
-  private static final int NON_EXISTENT_FILE_OFFSET = -1;
 
   // todo make this and other threshold constants configurable options
   private static final int FILE_DIFF_ARCHIVE_SIZE = 1000;
@@ -107,6 +107,7 @@ public class CopyScheduler extends ActionSchedulerService {
   // record the file diff info in order for check use
   // todo encapsulate actions on archive in separate class
   private final List<FileDiff> fileDiffArchive;
+  private final FileEqualityStrategy fileEqualityStrategy;
 
   public CopyScheduler(SmartContext context, MetaStore metaStore) {
     super(context, metaStore);
@@ -144,6 +145,7 @@ public class CopyScheduler extends ActionSchedulerService {
       LOG.error("Failed to get num of useless file diffs!");
     }
     this.fileDiffArchive = new CopyOnWriteArrayList<>();
+    this.fileEqualityStrategy = FileEqualityStrategy.from(conf);
   }
 
   @Override
@@ -515,49 +517,45 @@ public class CopyScheduler extends ActionSchedulerService {
       return fileDiff;
     }
 
-    long remoteFileOffset = remoteFileLen(dest);
+    FileStatus remoteFileStatus = getFileStatus(dest);
+    long copyStartOffset = Optional.ofNullable(remoteFileStatus)
+        .map(FileStatus::getLen)
+        .filter(remoteFileLength -> remoteFileLength < srcFileInfo.getLength())
+        // Copy the full contents of the src file in case of dirty dest file
+        // or dest file with the same size but different content
+        // or dest file doesn't exist
+        .orElse(0L);
 
-    if (remoteFileOffset == NON_EXISTENT_FILE_OFFSET) {
-      remoteFileOffset = 0;
-    } else if (remoteFileOffset > srcFileInfo.getLength()) {
-      // Remove dirty remote file
-      // todo why source?
-      storeFileDelete(src);
-      remoteFileOffset = 0;
-    }
-
-    return createAppendFileDiff(src, srcFileInfo.getLength(), remoteFileOffset);
+    return createAppendFileDiff(srcFileInfo, remoteFileStatus, copyStartOffset);
   }
 
   private FileDiff createAppendFileDiff(
-      String src, long srcFileLength, long copyStartOffset) {
+      FileInfo srcFileInfo, FileStatus remoteFileStatus, long copyStartOffset) {
+
     FileDiff fileDiff = new FileDiff(FileDiffType.APPEND, FileDiffState.PENDING);
-    fileDiff.setSrc(src);
+    fileDiff.setSrc(srcFileInfo.getPath());
 
     fileDiff.setParameter(CopyFileAction.LENGTH,
-        String.valueOf(srcFileLength - copyStartOffset));
+        String.valueOf(srcFileInfo.getLength() - copyStartOffset));
+
     fileDiff.setParameter(CopyFileAction.OFFSET_INDEX,
         String.valueOf(copyStartOffset));
-    // todo use checksums instead of offsets
+
+    boolean areEqualFiles =
+        fileEqualityStrategy.areEqual(srcFileInfo, remoteFileStatus);
     fileDiff.setParameter(CopyFileAction.COPY_CONTENT,
-        String.valueOf(srcFileLength != copyStartOffset));
+        String.valueOf(!areEqualFiles));
+
     fileDiff.setRuleId(-1);
     return fileDiff;
   }
 
-  private void storeFileDelete(String path) throws MetaStoreException {
-    FileDiff fileDiff = new FileDiff(DELETE, FileDiffState.PENDING);
-    fileDiff.setSrc(path);
-    metaStore.insertFileDiff(fileDiff);
-  }
-
-  private long remoteFileLen(String path) {
+  private FileStatus getFileStatus(String path) {
     try {
       FileSystem fs = FileSystem.get(URI.create(path), conf);
-      FileStatus fileStatus = fs.getFileStatus(new Path(path));
-      return fileStatus.getLen();
+      return fs.getFileStatus(new Path(path));
     } catch (IOException e) {
-      return NON_EXISTENT_FILE_OFFSET;
+      return null;
     }
   }
 

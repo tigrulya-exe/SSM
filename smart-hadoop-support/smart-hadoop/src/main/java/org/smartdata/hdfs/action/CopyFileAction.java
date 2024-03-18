@@ -121,10 +121,10 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
 
     if (!copyContent) {
       appendLog("Src and dest files are equal, no need to copy content");
-    } else if (offset == 0 && length == 0) {
-      copySingleFile(srcPath, destPath);
     } else if (length != 0) {
       copyWithOffset(srcPath, destPath, bufferSize, offset, length);
+    } else if (offset == 0) {
+      copySingleFile(srcPath, destPath);
     }
 
     copyFileAttributes(srcPath, destPath, preserveAttributes);
