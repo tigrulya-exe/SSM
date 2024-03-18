@@ -15,28 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model.rule;
 
-import org.smartdata.model.RuleInfo;
+package org.smartdata.server.engine.rule.copy;
 
-import java.io.IOException;
+import java.util.List;
 
-public interface RulePlugin {
-
-  /**
-   * Called when new rule is going to be added to SSM.
-   *
-   * @param ruleInfo id in ruleInfo is not valid when calling.
-   * @param tr
-   * @throws IOException the rule won't be added if exception.
-   */
-  void onAddingNewRule(RuleInfo ruleInfo, RuleTranslationResult tr) throws IOException;
-
-  /**
-   * Called when new rule has been added into SSM.
-   *
-   * @param ruleInfo
-   * @param tr
-   */
-  void onNewRuleAdded(RuleInfo ruleInfo, RuleTranslationResult tr);
+public class OrderAgnosticCopyScheduleStrategy implements FileCopyScheduleStrategy {
+  @Override
+  public String wrapGetFilesToCopyQuery(String query, List<String> pathTemplates) {
+    return query
+        // files that were removed from HDFS also are removed from the file table,
+        // so we need to take them into account during copy
+        + " UNION SELECT src FROM file_diff "
+        // select only pending file diffs
+        + "WHERE state = 0 "
+        // with type REMOVE or DELETE
+        + "AND diff_type IN (1,2) AND ("
+        + FileCopyScheduleStrategy.pathTemplatesToSqlCondition(pathTemplates)
+        + ");";
+  }
 }

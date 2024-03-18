@@ -485,4 +485,15 @@
       The interval in milliseconds that is covered by single second-granularity access count table.
     </description>
   </property>
+
+  <property>
+    <name>smart.sync.schedule.strategy</name>
+    <value>UNORDERED</value>
+    <description>
+      Strategy of copying files during 'sync' rule. Possible values:
+        FIFO - the files created/modified first will be scheduled for transfer first
+        LIFO - the files created/modified last will be scheduled for transfer first
+        UNORDERED - no guarantees of the file scheduling order
+    </description>
+  </property>
 </configuration>
