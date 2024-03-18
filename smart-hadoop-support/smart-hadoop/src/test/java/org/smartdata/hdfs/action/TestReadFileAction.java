@@ -1,38 +1,24 @@
 package org.smartdata.hdfs.action;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.smartdata.hdfs.MiniClusterHarness;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 public class TestReadFileAction extends MiniClusterHarness {
   protected void writeFile(String filePath, int length) throws IOException {
-    try {
-      int bufferSize = 64 * 1024;
-      final OutputStream out = dfsClient.create(filePath, true);
-      // generate random data with given length
-      byte[] buffer = new byte[bufferSize];
-      new Random().nextBytes(buffer);
-      // write to HDFS
-      for (int pos = 0; pos < length; pos += bufferSize) {
-        int writeLength = pos + bufferSize < length ? bufferSize : length - pos;
-        out.write(buffer, 0, writeLength);
-      }
-      out.close();
-    } catch (IOException e) {
-      System.err.println("WriteFile Action fails!\n" + e.getMessage());
-    }
+    DFSTestUtil.createFile(dfs, new Path(filePath), length, (short) 1, 0L);
   }
 
   @Test
-  public void testInit() throws IOException {
+  public void testInit() {
     ReadFileAction readFileAction = new ReadFileAction();
-    Map<String, String> args = new HashMap();
+    Map<String, String> args = new HashMap<>();
     args.put(ReadFileAction.FILE_PATH, "Test");
     readFileAction.init(args);
     args.put(ReadFileAction.BUF_SIZE, "4096");
@@ -47,7 +33,7 @@ public class TestReadFileAction extends MiniClusterHarness {
     ReadFileAction readFileAction = new ReadFileAction();
     readFileAction.setDfsClient(dfsClient);
     readFileAction.setContext(smartContext);
-    Map<String, String> args = new HashMap();
+    Map<String, String> args = new HashMap<>();
     args.put(ReadFileAction.FILE_PATH, filePath);
     readFileAction.init(args);
     readFileAction.run();

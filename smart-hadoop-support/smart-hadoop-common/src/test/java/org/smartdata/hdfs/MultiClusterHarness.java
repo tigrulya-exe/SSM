@@ -28,6 +28,8 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.smartdata.hdfs.MultiClusterHarness.TestType.INTER_CLUSTER;
 import static org.smartdata.hdfs.MultiClusterHarness.TestType.INTRA_CLUSTER;
@@ -46,14 +48,14 @@ public abstract class MultiClusterHarness extends MiniClusterHarness {
   @Rule
   public TemporaryFolder tmpFolder = new TemporaryFolder();
 
-  @Parameterized.Parameter()
+  @Parameter
   public TestType testType;
 
   protected MiniDFSCluster anotherCluster;
   protected DistributedFileSystem anotherDfs;
   protected DFSClient anotherDfsClient;
 
-  @Parameterized.Parameters(name = "Test type - {0}")
+  @Parameters(name = "Test type - {0}")
   public static Object[] parameters() {
     return new Object[] {INTRA_CLUSTER, INTER_CLUSTER};
   }
@@ -68,6 +70,7 @@ public abstract class MultiClusterHarness extends MiniClusterHarness {
     Configuration clusterConfig = new Configuration(smartContext.getConf());
     clusterConfig.set("hdfs.minidfs.basedir", tmpFolder.newFolder().getAbsolutePath());
     anotherCluster = createCluster(clusterConfig);
+    anotherCluster.waitActive();
     anotherDfs = anotherCluster.getFileSystem();
     anotherDfsClient = anotherDfs.getClient();
   }
@@ -80,10 +83,12 @@ public abstract class MultiClusterHarness extends MiniClusterHarness {
   }
 
   protected Path anotherClusterPath(String parent, String child) {
-    return anotherDfs.makeQualified(new Path(parent, child));
+    return anotherClusterPath(new Path(parent, child));
   }
 
-  protected String pathToActionArg(Path path) {
-    return testType == TestType.INTER_CLUSTER ? path.toString() : path.toUri().getPath();
+  protected Path anotherClusterPath(Path unqualifiedPath) {
+    return testType == TestType.INTER_CLUSTER
+        ? anotherDfs.makeQualified(unqualifiedPath)
+        : unqualifiedPath;
   }
 }

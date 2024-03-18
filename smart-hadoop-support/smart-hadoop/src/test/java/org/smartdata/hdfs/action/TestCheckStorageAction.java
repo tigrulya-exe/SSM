@@ -17,12 +17,13 @@
  */
 package org.smartdata.hdfs.action;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.smartdata.hdfs.MiniClusterHarness;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,17 +37,14 @@ public class TestCheckStorageAction extends MiniClusterHarness {
     checkStorageAction.setDfsClient(dfsClient);
     checkStorageAction.setContext(smartContext);
     final String file = "/testPath/file1";
-    dfsClient.mkdirs("/testPath");
+    dfsClient.mkdirs("/testPath", null, true);
     dfsClient.setStoragePolicy("/testPath", "ONE_SSD");
 
     // write to HDFS
-    final OutputStream out = dfsClient.create(file, true);
-    byte[] content = ("This is a file containing two blocks" +
-        "......................").getBytes();
-    out.write(content);
-    out.close();
+    String content = "This is a file containing two blocks......................";
+    DFSTestUtil.writeFile(dfs, new Path(file), content);
 
-    Map<String, String> args = new HashMap();
+    Map<String, String> args = new HashMap<>();
     args.put(CheckStorageAction.FILE_PATH, file);
     // do CheckStorageAction
     checkStorageAction.init(args);
@@ -61,9 +59,9 @@ public class TestCheckStorageAction extends MiniClusterHarness {
     checkStorageAction.setContext(smartContext);
 
     final String file = "/testPath/wrongfile";
-    dfsClient.mkdirs("/testPath");
+    dfsClient.mkdirs("/testPath", null, true);
 
-    Map<String, String> args = new HashMap();
+    Map<String, String> args = new HashMap<>();
     args.put(CheckStorageAction.FILE_PATH, file);
     // do CheckStorageAction
     checkStorageAction.init(args);
