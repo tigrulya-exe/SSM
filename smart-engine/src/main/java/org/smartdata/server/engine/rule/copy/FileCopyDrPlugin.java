@@ -71,9 +71,10 @@ public class FileCopyDrPlugin implements RuleExecutorPlugin {
 
         wrapGetFilesToCopyQuery(translationResult, pathPatterns);
 
-        String dest = cmdletDescriptor.getActionArgs(i)
-            .computeIfPresent(SyncAction.DEST,
-                (arg, path) -> addPathSeparator(path));
+        String destActionArg = cmdletDescriptor.getActionArgs(i).get(SyncAction.DEST);
+        String dest = addPathSeparator(destActionArg);
+        cmdletDescriptor.addActionArg(i, SyncAction.DEST, dest);
+
         BackUpInfo backUpInfo = buildBackupInfo(ruleId, dest, translationResult, pathPatterns);
 
         cmdletDescriptor.addActionArg(i, SyncAction.SRC, backUpInfo.getSrc());

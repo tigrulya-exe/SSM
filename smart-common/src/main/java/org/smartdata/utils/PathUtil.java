@@ -58,7 +58,10 @@ public class PathUtil {
   }
 
   public static String addPathSeparator(String path) {
-    return path.endsWith(DIR_SEP) ? path : path + DIR_SEP;
+    return Optional.ofNullable(path)
+        .filter(p -> !p.endsWith(DIR_SEP))
+        .map(p -> p + DIR_SEP)
+        .orElse(path);
   }
 
   public static boolean pathStartsWith(String path, String prefixToCheck) {
