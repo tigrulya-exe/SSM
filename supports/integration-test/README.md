@@ -114,7 +114,7 @@ For dest, its default value is "/dest/" which means a directory of SSM's HDFS cl
 
 ### 6. Test Scripts for Small File Optimization
 
-This is a guide for SSM small file integration test with python scripts under the instruction of [Test Plan](https://github.com/Intel-bigdata/SSM/blob/trunk/supports/small-file-test/SSM%20Small%20File%20Optimization%20Test%20Plan.md).
+This is a guide for SSM small file integration test with python scripts under the instruction of [Test Plan](https://github.com/arenadata/SSM/blob/develop/supports/small-file-test/SSM%20Small%20File%20Optimization%20Test%20Plan.md).
 Note that user can get further instructions of below python scripts via parameter `-h`.
 
 #### Small File Rule

@@ -1,7 +1,7 @@
 <span id="_Toc392169190" class="anchor"><span id="_Toc415575594" class="anchor"></span></span>Admin API
 ==========================================================================================================
 
-This document introduces the definition of APIs exposed by Intel Smart
+This document introduces the definition of APIs exposed by Smart
 Storage Management (SSM) to make seamless integration with other Hadoop
 components.
 

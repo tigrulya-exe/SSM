@@ -5,25 +5,25 @@ Docker can greately reduce boring time for installing and maintaining software o
 
 ## Necessary Components
 
-### MetaStore(mysql) on Docker
+### MetaStore(Postgresql) on Docker
 
-#### Launch a mysql container
+#### Launch a postgresql container
 
-Pull latest mysql official image from docker store. You can use `mysql:tag` to specify the MySQL version (`tag`) you want.
+Pull latest postgresql official image from docker store. You can use `postgres:tag` to specify the Postgresql version (`tag`) you want.
 
 ```
-docker pull mysql
+docker pull postgres
 ```
 
-Launch a mysql container with a given passowrd on 3306, and create a test database/schema named `{database_name}`.
+Launch a postgres container with a given {passowrd} on 5432, and create a test database/schema named `{database_name}`.
 
 ```bash
-docker run -p 3306:3306 --name {container_name} -e MYSQL_ROOT_PASSWORD={root_password} -e MYSQL_DATABASE={database_name} -d mysql:latest
+docker run -p 5432:5432 --name {container_name} -e POSTGRES_PASSWORD={password} -e POSTGRES_DB={database_name} -d postgres:latest
 ```
 **Parameters:**
 
 - `container_name` name of container
-- `root_password` root password of user root for login and access.
+- `password` root password of user root for login and access.
 -  `database_name` Create a new database/schema with given name.
 
 ### HDFS on Docker
@@ -97,20 +97,20 @@ Use `bin/hdfs dfsadmin -report` to check status.
 
 #### Configure MetaStore for SSM
 
-Assuming you are in SSM root directory, modify `conf/druid.xml` to enable SSM to connect with mysql.
+Assuming you are in SSM root directory, modify `conf/druid.xml` to enable SSM to connect with postgres.
 
 ```
-	<entry key="url">jdbc:mysql://localhost/{database_name}</entry>
+	<entry key="url">jdbc:postgresql://localhost/{database_name}</entry>
 	<entry key="username">root</entry>
 	<entry key="password">{root_password}</entry>
 ```
 Wait for at least 10 seconds. Then, use `bin/start-smart.sh -format` to format (re-init) the database. Also, you can use this command to clear all data in database in tests.
 
-#### Stop/Remove Mysql container
+#### Stop/Remove Postgres container
 
-You can use the `docker stop {contrainer_name}` to stop mysql container. Then, this mysql service cannot be accessed, until you start it again with `docker start {contrainer_name}`. Note that, `stop/start` will not remove any data from your mysql container.
+You can use the `docker stop {contrainer_name}` to stop postgres container. Then, this postgres service cannot be accessed, until you start it again with `docker start {contrainer_name}`. Note that, `stop/start` will not remove any data from your postgres container.
 
-Use `docker rm {container_name}` to remove mysql container, if this container is not necessary. If you don't remember the specific name of container, you can use `docker ps -a` to look for it.
+Use `docker rm {container_name}` to remove postgres container, if this container is not necessary. If you don't remember the specific name of container, you can use `docker ps -a` to look for it.
 
 
 ### HDFS
@@ -133,5 +133,5 @@ Configure `namenode.rpcserver` in `smart-site.xml`.
 
 1. [Docker](https://www.docker.com/)
 2. [Docker doc](https://docs.docker.com/)
-3. [Mysql on Docker](https://store.docker.com/images/mysql)
+3. [Postgres on Docker](https://store.docker.com/images/postgres)
 4. [Docker CN mirror](https://www.docker-cn.com/registry-mirror) 

@@ -9,12 +9,12 @@ SSM supports configuring multiple Smart Servers to achieve high availability.
    Multiple servers can be configured as Smart Server, but only one is active in the cluster.
    The others are standby servers. Like an agent, the standby server just provides Cmdlet Executor service which executes the work assigned by active server.
 
-   ![](https://github.com/Intel-Bigdata/SSM/blob/trunk/docs/image/HA-active.png)
+   ![](https://github.com/arenadata/SSM/blob/develop/docs/image/HA-active.png)
 
    SSM employs hazelcast’s master election mechanism to manage multiple Smart Servers. If active server is down, a standby server is elected as an active one and then it will launch all required services.
    Each Smart Agent keeps a list of all Smart Server hosts. So it can find the active server by trying to connect to these hosts.
 
-   ![](https://github.com/Intel-Bigdata/SSM/blob/trunk/docs/image/HA-transition.png)
+   ![](https://github.com/arenadata/SSM/blob/develop/docs/image/HA-transition.png)
 
 2. HA Transition
 
