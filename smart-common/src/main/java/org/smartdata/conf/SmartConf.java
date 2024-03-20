@@ -31,8 +31,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * SSM related configurations as well as HDFS configurations.
@@ -145,6 +148,14 @@ public class SmartConf extends Configuration {
     } catch (IOException err) {
       throw new IOException(err.getMessage(), err);
     }
+  }
+
+  public Map<String, String> asMap() {
+    return StreamSupport.stream(spliterator(), false)
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            Map.Entry::getValue
+        ));
   }
 
   public static void main(String[] args) {
