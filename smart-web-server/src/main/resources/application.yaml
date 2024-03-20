@@ -1,0 +1,5 @@
+springdoc:
+  api-docs:
+    path: /openapi-spec
+  swagger-ui:
+    disable-swagger-default-url: true

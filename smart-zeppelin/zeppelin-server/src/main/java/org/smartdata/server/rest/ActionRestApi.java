@@ -93,15 +93,6 @@ public class ActionRestApi {
       @PathParam("pageIndex") String pageIndex,
       @PathParam("numPerPage") String numPerPage, @PathParam("orderBy") String orderBy,
       @PathParam("isDesc") String isDesc) {
-    String res = "";
-    for (Character i: path.toCharArray()) {
-      if (i == '%' || i == '_' || i == '"' || i == '/' || i == '\'') {
-        res += '/';
-      }
-      res += i;
-    }
-    path = res;
-
     try {
       List<String> orderByList = Arrays.asList(orderBy.split(","));
       List<String> isDescStringList = Arrays.asList(isDesc.split(","));
