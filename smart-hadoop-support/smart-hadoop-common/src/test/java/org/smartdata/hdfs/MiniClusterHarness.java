@@ -23,6 +23,7 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.server.balancer.TestBalancer;
+import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.junit.After;
 import org.junit.Before;
 import org.smartdata.SmartContext;
@@ -76,5 +77,7 @@ public abstract class MiniClusterHarness {
     if (cluster != null) {
       cluster.shutdown(true);
     }
+    // clear registered metric systems of name- and datanodes
+    DefaultMetricsSystem.instance().shutdown();
   }
 }

@@ -31,6 +31,7 @@ import org.smartdata.model.FileDiffType;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.rule.RuleExecutorPlugin;
 import org.smartdata.model.rule.RuleTranslationResult;
+import org.smartdata.utils.PathUtil;
 import org.smartdata.utils.StringUtil;
 
 import java.util.Collections;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static org.smartdata.utils.PathUtil.addPathSeparator;
 import static org.smartdata.utils.StringUtil.ssmPatternsToRegex;
 
 public class FileCopyDrPlugin implements RuleExecutorPlugin {
@@ -69,9 +71,10 @@ public class FileCopyDrPlugin implements RuleExecutorPlugin {
 
         wrapGetFilesToCopyQuery(translationResult, pathPatterns);
 
-        String dest = cmdletDescriptor.getActionArgs(i)
-            .computeIfPresent(SyncAction.DEST,
-                (arg, path) -> StringUtil.addPathSeparator(path));
+        String destActionArg = cmdletDescriptor.getActionArgs(i).get(SyncAction.DEST);
+        String dest = addPathSeparator(destActionArg);
+        cmdletDescriptor.addActionArg(i, SyncAction.DEST, dest);
+
         BackUpInfo backUpInfo = buildBackupInfo(ruleId, dest, translationResult, pathPatterns);
 
         cmdletDescriptor.addActionArg(i, SyncAction.SRC, backUpInfo.getSrc());
@@ -138,7 +141,7 @@ public class FileCopyDrPlugin implements RuleExecutorPlugin {
 
   private List<String> getPathPatternBaseDirs(List<String> paths) {
     return paths.stream()
-        .map(StringUtil::getBaseDir)
+        .map(PathUtil::getBaseDir)
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }

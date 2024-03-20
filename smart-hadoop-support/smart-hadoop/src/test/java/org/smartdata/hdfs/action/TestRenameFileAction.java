@@ -17,8 +17,8 @@
  */
 package org.smartdata.hdfs.action;
 
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.smartdata.hdfs.MiniClusterHarness;
@@ -43,9 +43,8 @@ public class TestRenameFileAction extends MiniClusterHarness {
     //the parent dir need to be exist
     dfs.mkdirs(new Path(destPath));
     //write to DISK
-    final FSDataOutputStream out1 = dfs.create(new Path(srcPath + "/" + file1));
-    out1.writeChars("testCopy1");
-    out1.close();
+
+    DFSTestUtil.writeFile(dfs, new Path(srcPath + "/" + file1), "testCopy1");
     Assert.assertTrue(dfsClient.exists(srcPath + "/" + file1));
 
     RenameFileAction renameFileAction = new RenameFileAction();
@@ -72,9 +71,7 @@ public class TestRenameFileAction extends MiniClusterHarness {
     dfs.mkdirs(new Path(dfs.getUri() + destPath));
 
     // write to DISK
-    final FSDataOutputStream out1 = dfs.create(new Path( dfs.getUri() + srcPath + "/" + file1));
-    out1.writeChars("testCopy1");
-    out1.close();
+    DFSTestUtil.writeFile(dfs, new Path(dfs.getUri() + srcPath + "/" + file1), "testCopy1");
 
     RenameFileAction renameFileAction = new RenameFileAction();
     renameFileAction.setDfsClient(dfsClient);
@@ -100,12 +97,8 @@ public class TestRenameFileAction extends MiniClusterHarness {
     dfs.mkdirs(new Path(dfs.getUri() + destPath));
 
     // write to DISK
-    final FSDataOutputStream out1 = dfs.create(new Path(dfs.getUri() + src));
-    out1.writeChars("testCopy1");
-    out1.close();
-    final FSDataOutputStream out2 = dfs.create(new Path(dfs.getUri() + dest));
-    out2.writeChars("testCopy2");
-    out2.close();
+    DFSTestUtil.writeFile(dfs, new Path(dfs.getUri() + src), "testCopy1");
+    DFSTestUtil.writeFile(dfs, new Path(dfs.getUri() + dest), "testCopy2");
 
     verifyRenameFailed(src, dest);
   }
@@ -127,6 +120,6 @@ public class TestRenameFileAction extends MiniClusterHarness {
     args.put(RenameFileAction.DEST_PATH , dest);
     renameFileAction.init(args);
     renameFileAction.run();
-    Assert.assertTrue(renameFileAction.getActionStatus().getThrowable() != null);
+    Assert.assertNotNull(renameFileAction.getActionStatus().getThrowable());
   }
 }

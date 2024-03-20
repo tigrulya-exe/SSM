@@ -496,4 +496,19 @@
         UNORDERED - no guarantees of the file scheduling order
     </description>
   </property>
+
+  <property>
+    <name>smart.sync.file.equality.strategy</name>
+    <value>CHECKSUM</value>
+    <description>
+      The strategy for checking whether the files with same relative path in the source and target clusters
+      are equal during scheduling of the sync action.
+      Possible values:
+        FILE_LENGTH - equality check based on the file length. This strategy is fast alternative to
+          comparing file contents/checksums, but have some corner cases when two different files with the same
+          length but with different content are considered equal.
+        CHECKSUM - equality check based on the file checksum. This strategy is more resource-intensive,
+          but it doesn't return false positive results, like previous one.
+    </description>
+  </property>
 </configuration>

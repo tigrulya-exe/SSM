@@ -24,11 +24,12 @@ import org.smartdata.model.CmdletDescriptor;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.rule.RuleExecutorPlugin;
 import org.smartdata.model.rule.RuleTranslationResult;
-import org.smartdata.utils.StringUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static org.smartdata.utils.PathUtil.getBaseDir;
 
 public class FileCopy2S3Plugin implements RuleExecutorPlugin {
 
@@ -57,7 +58,7 @@ public class FileCopy2S3Plugin implements RuleExecutorPlugin {
   private List<String> getPathMatchesList(List<String> paths) {
     List<String> ret = new ArrayList<>();
     for (String p : paths) {
-      String dir = StringUtil.getBaseDir(p);
+      String dir = getBaseDir(p);
       if (dir == null) {
         continue;
       }

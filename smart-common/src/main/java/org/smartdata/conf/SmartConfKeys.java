@@ -143,6 +143,10 @@ public class SmartConfKeys {
   public static final String SMART_ENABLE_ZEPPELIN_WEB = "smart.zeppelin.web.enable";
   public static final boolean SMART_ENABLE_ZEPPELIN_WEB_DEFAULT = true;
 
+  public static final String SMART_SYNC_FILE_EQUALITY_STRATEGY =
+      "smart.sync.file.equality.strategy";
+  public static final String SMART_SYNC_FILE_EQUALITY_STRATEGY_DEFAULT = "CHECKSUM";
+
   // Cmdlets
   public static final String SMART_CMDLET_MAX_NUM_PENDING_KEY =
       "smart.cmdlet.max.num.pending";
