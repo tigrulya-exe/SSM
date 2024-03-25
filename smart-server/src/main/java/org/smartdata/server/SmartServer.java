@@ -236,7 +236,7 @@ public class SmartServer {
       zeppelinServer.start();
     }
 
-    if (restServer != null) {
+    if (enabled && restServer != null) {
       restServer.start();
     }
   }
