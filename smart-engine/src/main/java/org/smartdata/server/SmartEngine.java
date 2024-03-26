@@ -31,6 +31,9 @@ import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.engine.ServerContext;
 import org.smartdata.server.engine.StandbyServerInfo;
 import org.smartdata.server.engine.StatesManager;
+import org.smartdata.server.engine.audit.AuditService;
+import org.smartdata.server.engine.audit.CmdletLifecycleLogger;
+import org.smartdata.server.engine.audit.RuleLifecycleLogger;
 import org.smartdata.server.engine.cmdlet.HazelcastExecutorService;
 import org.smartdata.server.engine.cmdlet.agent.AgentExecutorService;
 import org.smartdata.server.engine.cmdlet.agent.AgentInfo;
@@ -44,16 +47,16 @@ import java.util.Random;
 import java.util.Set;
 
 public class SmartEngine extends AbstractService {
-  private ConfManager confMgr;
-  private SmartConf conf;
-  private ServerContext serverContext;
+  public static final Logger LOG = LoggerFactory.getLogger(SmartEngine.class);
+
+  private final SmartConf conf;
+  private final ServerContext serverContext;
+  private final List<AbstractService> services = new ArrayList<>();
   private StatesManager statesMgr;
   private RuleManager ruleMgr;
   private CmdletManager cmdletManager;
   private AgentExecutorService agentService;
   private HazelcastExecutorService hazelcastService;
-  private List<AbstractService> services = new ArrayList<>();
-  public static final Logger LOG = LoggerFactory.getLogger(SmartEngine.class);
 
   public SmartEngine(ServerContext context) {
     super(context);
@@ -63,15 +66,19 @@ public class SmartEngine extends AbstractService {
 
   @Override
   public void init() throws IOException {
+    AuditService auditService = new AuditService();
+
     statesMgr = new StatesManager(serverContext);
     services.add(statesMgr);
-    cmdletManager = new CmdletManager(serverContext);
+    cmdletManager = new CmdletManager(
+        serverContext, new CmdletLifecycleLogger(auditService));
     services.add(cmdletManager);
     agentService = new AgentExecutorService(conf, cmdletManager);
     hazelcastService = new HazelcastExecutorService(cmdletManager);
     cmdletManager.registerExecutorService(agentService);
     cmdletManager.registerExecutorService(hazelcastService);
-    ruleMgr = new RuleManager(serverContext, statesMgr, cmdletManager);
+    ruleMgr = new RuleManager(serverContext, statesMgr,
+        cmdletManager, new RuleLifecycleLogger(auditService));
     services.add(ruleMgr);
 
     for (AbstractService s : services) {
@@ -131,10 +138,6 @@ public class SmartEngine extends AbstractService {
 
   public List<AgentInfo> getAgents() {
     return agentService.getAgentInfos();
-  }
-
-  public ConfManager getConfMgr() {
-    return confMgr;
   }
 
   public SmartConf getConf() {

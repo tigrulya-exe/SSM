@@ -39,6 +39,7 @@ import org.smartdata.server.engine.rule.ExecutorScheduler;
 import org.smartdata.server.engine.rule.FileCopy2S3Plugin;
 import org.smartdata.server.engine.rule.RuleExecutor;
 import org.smartdata.server.engine.rule.RuleInfoRepo;
+import org.smartdata.server.engine.rule.RuleLifecycleListener;
 import org.smartdata.server.engine.rule.SmallFilePlugin;
 import org.smartdata.server.engine.rule.copy.FileCopyDrPlugin;
 import org.smartdata.server.engine.rule.copy.FileCopyScheduleStrategy;
@@ -63,6 +64,8 @@ public class RuleManager extends AbstractService {
   private final CmdletManager cmdletManager;
   private final MetaStore metaStore;
 
+  private final RuleLifecycleListener lifecycleListener;
+
   private boolean isClosed = false;
 
   private final ConcurrentHashMap<Long, RuleInfoRepo> mapRules;
@@ -70,7 +73,10 @@ public class RuleManager extends AbstractService {
   public ExecutorScheduler execScheduler;
 
   public RuleManager(
-      ServerContext context, StatesManager statesManager, CmdletManager cmdletManager) {
+      ServerContext context,
+      StatesManager statesManager,
+      CmdletManager cmdletManager,
+      RuleLifecycleListener lifecycleListener) {
     super(context);
 
     int numExecutors =
@@ -84,6 +90,7 @@ public class RuleManager extends AbstractService {
     this.statesManager = statesManager;
     this.cmdletManager = cmdletManager;
     this.serverContext = context;
+    this.lifecycleListener = lifecycleListener;
     this.metaStore = context.getMetaStore();
 
     FileCopyScheduleStrategy copyScheduleStrategy = FileCopyScheduleStrategy.of(
@@ -147,8 +154,12 @@ public class RuleManager extends AbstractService {
 
     RuleInfoRepo infoRepo = new RuleInfoRepo(ruleInfo, metaStore, serverContext.getConf());
     mapRules.put(ruleInfo.getId(), infoRepo);
-    submitRuleToScheduler(infoRepo.launchExecutor(this));
 
+    lifecycleListener.ruleAdded(ruleInfo.getId());
+
+    submitRuleToScheduler(ruleInfo.getId(), infoRepo.launchExecutor(this));
+
+    // todo migrate RulePluginManager to lifecycleListener
     RulePluginManager.onNewRuleAdded(ruleInfo, tr);
 
     return ruleInfo.getId();
@@ -191,14 +202,15 @@ public class RuleManager extends AbstractService {
       if (dropPendingCmdlets && getCmdletManager() != null) {
         getCmdletManager().deleteCmdletByRule(ruleID);
       }
+      lifecycleListener.ruleDeleted(ruleID);
     } finally {
       infoRepo.delete();
     }
   }
 
-  public void activateRule(long ruleID) throws IOException {
-    RuleInfoRepo infoRepo = checkIfExists(ruleID);
-    submitRuleToScheduler(infoRepo.activate(this));
+  public void activateRule(long ruleId) throws IOException {
+    RuleInfoRepo infoRepo = checkIfExists(ruleId);
+    submitRuleToScheduler(ruleId, infoRepo.activate(this));
   }
 
   public void disableRule(long ruleID, boolean dropPendingCmdlets) throws IOException {
@@ -207,6 +219,7 @@ public class RuleManager extends AbstractService {
     if (dropPendingCmdlets && getCmdletManager() != null) {
       getCmdletManager().dropRuleCmdlets(ruleID);
     }
+    lifecycleListener.ruleStopped(ruleID);
   }
 
   private RuleInfoRepo checkIfExists(long ruleID) throws IOException {
@@ -292,6 +305,13 @@ public class RuleManager extends AbstractService {
       for (RuleInfo info : rules) {
         LOG.debug("\t" + info);
       }
+    }
+  }
+
+  private void submitRuleToScheduler(long ruleId, RuleExecutor executor) {
+    boolean ruleSubmitted = submitRuleToScheduler(executor);
+    if (ruleSubmitted) {
+      lifecycleListener.ruleStarted(ruleId);
     }
   }
 
