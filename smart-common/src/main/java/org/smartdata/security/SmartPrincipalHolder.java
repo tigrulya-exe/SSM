@@ -36,4 +36,8 @@ public class SmartPrincipalHolder {
   public static Optional<SmartPrincipal> getCurrentPrincipal() {
     return Optional.ofNullable(CURRENT_PRINCIPAL_THREAD_LOCAL.get());
   }
+
+  public static Optional<String> getCurrentPrincipalName() {
+    return getCurrentPrincipal().map(SmartPrincipal::getName);
+  }
 }

@@ -15,36 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.server.engine;
+package org.smartdata.server.engine.audit;
 
-import org.smartdata.SmartContext;
-import org.smartdata.conf.SmartConf;
-import org.smartdata.metastore.MetaStore;
+import org.smartdata.model.UserActivityResult;
 
-public class ServerContext extends SmartContext {
-
-  private final MetaStore metaStore;
-
-  private ServiceMode serviceMode;
-
-  public ServerContext(MetaStore metaStore) {
-    this.metaStore = metaStore;
-  }
-
-  public ServerContext(SmartConf conf, MetaStore metaStore) {
-    super(conf);
-    this.metaStore = metaStore;
-  }
-
-  public MetaStore getMetaStore() {
-    return metaStore;
-  }
-
-  public ServiceMode getServiceMode() {
-    return serviceMode;
-  }
-
-  public void setServiceMode(ServiceMode serviceMode) {
-    this.serviceMode = serviceMode;
-  }
+public interface UserCmdletLifecycleListener {
+  void onCmdletAdded(long cmdletId);
+  void onCmdletAddFailure(String cmdletText);
+  void onCmdletStop(long cmdletId, UserActivityResult result);
+  void onCmdletDelete(long cmdletId, UserActivityResult result);
 }
