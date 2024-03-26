@@ -46,7 +46,7 @@ public class TestRuleManager extends TestDaoBase {
     smartConf = new SmartConf();
     ServerContext serverContext = new ServerContext(smartConf, metaStore);
     serverContext.setServiceMode(ServiceMode.HDFS);
-    ruleManager = new RuleManager(serverContext, null, null);
+    ruleManager = new RuleManager(serverContext, null, null, null);
     ruleManager.init();
     ruleManager.start();
   }

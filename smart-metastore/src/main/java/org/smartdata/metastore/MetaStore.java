@@ -46,6 +46,7 @@ import org.smartdata.metastore.dao.SmallFileDao;
 import org.smartdata.metastore.dao.StorageDao;
 import org.smartdata.metastore.dao.StorageHistoryDao;
 import org.smartdata.metastore.dao.SystemInfoDao;
+import org.smartdata.metastore.dao.UserActivityDao;
 import org.smartdata.metastore.dao.UserInfoDao;
 import org.smartdata.metastore.dao.WhitelistDao;
 import org.smartdata.metastore.dao.XattrDao;
@@ -136,6 +137,7 @@ public class MetaStore implements CopyMetaService,
   private final SmallFileDao smallFileDao;
   private final ErasureCodingPolicyDao ecDao;
   private final WhitelistDao whitelistDao;
+  private final UserActivityDao userActivityDao;
   private final ReentrantLock accessCountLock;
   private final DBPool dbPool;
 
@@ -171,7 +173,12 @@ public class MetaStore implements CopyMetaService,
     smallFileDao = daoProvider.smallFileDao();
     ecDao = daoProvider.ecDao();
     whitelistDao = daoProvider.whitelistDao();
+    userActivityDao = daoProvider.userActivityDao();
     accessCountLock = new ReentrantLock();
+  }
+
+  public UserActivityDao userActivityDao() {
+    return userActivityDao;
   }
 
   public Long queryForLong(String sql) throws MetaStoreException {

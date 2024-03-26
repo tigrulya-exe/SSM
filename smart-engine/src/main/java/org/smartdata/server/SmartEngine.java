@@ -30,6 +30,9 @@ import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.engine.ServerContext;
 import org.smartdata.server.engine.StandbyServerInfo;
 import org.smartdata.server.engine.StatesManager;
+import org.smartdata.server.engine.audit.AuditService;
+import org.smartdata.server.engine.audit.CmdletLifecycleLogger;
+import org.smartdata.server.engine.audit.RuleLifecycleLogger;
 import org.smartdata.server.engine.cmdlet.HazelcastExecutorService;
 import org.smartdata.server.engine.cmdlet.agent.AgentExecutorService;
 import org.smartdata.server.engine.cmdlet.agent.AgentInfo;
@@ -62,15 +65,19 @@ public class SmartEngine extends AbstractService {
 
   @Override
   public void init() throws IOException {
+    AuditService auditService = new AuditService(serverContext.getMetaStore().userActivityDao());
+
     statesMgr = new StatesManager(serverContext);
     services.add(statesMgr);
-    cmdletManager = new CmdletManager(serverContext);
+    cmdletManager = new CmdletManager(
+        serverContext, new CmdletLifecycleLogger(auditService));
     services.add(cmdletManager);
     agentService = new AgentExecutorService(conf, cmdletManager);
     hazelcastService = new HazelcastExecutorService(cmdletManager);
     cmdletManager.registerExecutorService(agentService);
     cmdletManager.registerExecutorService(hazelcastService);
-    ruleMgr = new RuleManager(serverContext, statesMgr, cmdletManager);
+    ruleMgr = new RuleManager(serverContext, statesMgr,
+        cmdletManager, new RuleLifecycleLogger(auditService));
     services.add(ruleMgr);
 
     for (AbstractService s : services) {

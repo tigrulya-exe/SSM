@@ -41,6 +41,7 @@ import org.smartdata.metastore.dao.StorageDao;
 import org.smartdata.metastore.dao.StorageHistoryDao;
 import org.smartdata.metastore.dao.StoragePolicyDao;
 import org.smartdata.metastore.dao.SystemInfoDao;
+import org.smartdata.metastore.dao.UserActivityDao;
 import org.smartdata.metastore.dao.UserInfoDao;
 import org.smartdata.metastore.dao.WhitelistDao;
 import org.smartdata.metastore.dao.XattrDao;
@@ -177,5 +178,10 @@ public class DefaultDaoProvider implements DaoProvider {
   @Override
   public StoragePolicyDao storagePolicyDao() {
     return new DefaultStoragePolicyDao(dataSource);
+  }
+
+  @Override
+  public UserActivityDao userActivityDao() {
+    return new DefaultUserActivityDao(dataSource);
   }
 }

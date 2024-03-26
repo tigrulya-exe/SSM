@@ -67,4 +67,6 @@ public interface DaoProvider {
   WhitelistDao whitelistDao();
 
   StoragePolicyDao storagePolicyDao();
+
+  UserActivityDao userActivityDao();
 }

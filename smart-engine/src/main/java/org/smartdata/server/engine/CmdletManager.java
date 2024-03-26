@@ -54,6 +54,7 @@ import org.smartdata.server.cluster.ActiveServerNodeCmdletMetrics;
 import org.smartdata.server.cluster.NodeCmdletMetrics;
 import org.smartdata.server.engine.action.ActionInfoHandler;
 import org.smartdata.server.engine.action.ActionStatusUpdateListener;
+import org.smartdata.server.engine.audit.UserCmdletLifecycleListener;
 import org.smartdata.server.engine.cmdlet.CmdletDispatcher;
 import org.smartdata.server.engine.cmdlet.CmdletExecutorService;
 import org.smartdata.server.engine.cmdlet.CmdletInfoHandler;
@@ -81,6 +82,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import static org.smartdata.model.UserActivityResult.FAILURE;
+import static org.smartdata.model.UserActivityResult.SUCCESS;
 import static org.smartdata.model.action.ScheduleResult.RETRY;
 import static org.smartdata.model.action.ScheduleResult.isSuccessful;
 
@@ -113,16 +116,19 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
   private final CmdletInfoHandler cmdletInfoHandler;
   private final CmdletParser cmdletParser;
   private final ListMultimap<String, ActionScheduler> schedulers;
+  private final UserCmdletLifecycleListener lifecycleListener;
   private final PathChecker pathChecker;
   private List<ActionSchedulerService> schedulerServices;
   private CmdletDispatcher dispatcher;
 
-  public CmdletManager(ServerContext context) throws IOException {
+  public CmdletManager(
+      ServerContext context,
+      UserCmdletLifecycleListener lifecycleListener
+  ) throws IOException {
     super(context);
 
     this.metaStore = context.getMetaStore();
     this.executorService = Executors.newScheduledThreadPool(4);
-
     this.runningCmdlets = new ArrayList<>();
     this.pendingCmdlets = new LinkedList<>();
     this.schedulingCmdlets = new LinkedList<>();
@@ -138,6 +144,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     this.maxNumPendingCmdlets = context.getConf()
         .getInt(SmartConfKeys.SMART_CMDLET_MAX_NUM_PENDING_KEY,
             SmartConfKeys.SMART_CMDLET_MAX_NUM_PENDING_DEFAULT);
+    this.lifecycleListener = lifecycleListener;
 
     this.cmdletPurgeTask = new DeleteTerminatedCmdletsTask(getContext().getConf(), metaStore);
     this.inMemoryRegistry = new InMemoryRegistry(context, tracker, executorService);
@@ -312,6 +319,17 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
   }
 
   public long submitCmdlet(String cmdlet) throws IOException {
+    try {
+      long cmdletId = submitCmdletInternal(cmdlet);
+      lifecycleListener.onCmdletAdded(cmdletId);
+      return cmdletId;
+    } catch (Exception exception) {
+      lifecycleListener.onCmdletAddFailure(cmdlet);
+      throw exception;
+    }
+  }
+
+  private long submitCmdletInternal(String cmdlet) throws IOException {
     LOG.debug("Received Cmdlet -> [ {} ]", cmdlet);
     try {
       if (StringUtils.isBlank(cmdlet)) {
@@ -552,8 +570,19 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     }
   }
 
-  public void disableCmdlet(long cid) throws IOException {
-    CmdletInfo info = cmdletInfoHandler.getUnfinishedCmdlet(cid);
+
+  public void disableCmdlet(long cmdletId) throws IOException {
+    try {
+      disableCmdletInternal(cmdletId);
+      lifecycleListener.onCmdletStop(cmdletId, SUCCESS);
+    } catch (Exception exception) {
+      lifecycleListener.onCmdletStop(cmdletId, FAILURE);
+      throw exception;
+    }
+  }
+
+  public void disableCmdletInternal(long cmdletId) throws IOException {
+    CmdletInfo info = cmdletInfoHandler.getUnfinishedCmdlet(cmdletId);
     if (info == null) {
       return;
     }
@@ -561,16 +590,16 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
         new CmdletStatus(info.getCid(), System.currentTimeMillis(), CmdletState.DISABLED));
 
     synchronized (pendingCmdlets) {
-      pendingCmdlets.remove(cid);
+      pendingCmdlets.remove(cmdletId);
     }
 
-    schedulingCmdlets.remove(cid);
+    schedulingCmdlets.remove(cmdletId);
 
-    scheduledCmdlets.remove(cid);
+    scheduledCmdlets.remove(cmdletId);
 
     // Wait status update from status reporter, so need to update to MetaStore
-    if (runningCmdlets.contains(cid)) {
-      dispatcher.stopCmdlet(cid);
+    if (runningCmdlets.contains(cmdletId)) {
+      dispatcher.stopCmdlet(cmdletId);
     }
   }
 
@@ -593,14 +622,21 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     cmdletInfoHandler.store(cmdletInfo);
   }
 
-  public void deleteCmdlet(long cid) throws IOException {
-    disableCmdlet(cid);
-    cmdletInfoHandler.deleteCmdlet(cid);
+  public void deleteCmdlet(long cmdletId) throws IOException {
+    try {
+      disableCmdlet(cmdletId);
+      cmdletInfoHandler.deleteCmdlet(cmdletId);
+
+      lifecycleListener.onCmdletDelete(cmdletId, SUCCESS);
+    } catch (Exception exception) {
+      lifecycleListener.onCmdletDelete(cmdletId, FAILURE);
+      throw exception;
+    }
   }
 
   private void disableCmdlets(List<Long> cmdletIds) throws IOException {
     for (long cmdletId : cmdletIds) {
-      disableCmdlet(cmdletId);
+      disableCmdletInternal(cmdletId);
     }
   }
 

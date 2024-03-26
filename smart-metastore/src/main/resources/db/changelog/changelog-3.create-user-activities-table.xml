@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+    <changeSet id="2024.04.18_001" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="user_activity_event"/>
+            </not>
+        </preConditions>
+        <createTable tableName="user_activity_event">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="user" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="timestamp" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="object_type" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="object_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="operation" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="result" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="additional_info" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        <modifySql dbms="sqlite">
+            <!--
+                in SQLite autoincrement is supported only for INTEGER pks.
+                Since it's used only in tests int will be sufficient.
+            -->
+            <replace replace="BIGINT" with="INTEGER"/>
+        </modifySql>
+    </changeSet>
+
+</databaseChangeLog>

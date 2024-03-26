@@ -38,6 +38,7 @@ import org.smartdata.protocol.message.CmdletStatusUpdate;
 import org.smartdata.protocol.message.StatusReport;
 import org.smartdata.server.MiniSmartClusterHarness;
 import org.smartdata.server.engine.action.ActionInfoHandler;
+import org.smartdata.server.engine.audit.UserCmdletLifecycleListener;
 import org.smartdata.server.engine.cmdlet.CmdletDispatcher;
 import org.smartdata.server.engine.cmdlet.CmdletInfoHandler;
 
@@ -167,6 +168,8 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
     long cmdletId = 10;
     long actionId = 101;
     MetaStore metaStore = mock(MetaStore.class);
+    //todo
+    UserCmdletLifecycleListener lifecycleListener = mock(UserCmdletLifecycleListener.class);
     Assert.assertNotNull(metaStore);
     when(metaStore.getMaxCmdletId()).thenReturn(cmdletId);
     when(metaStore.getMaxActionId()).thenReturn(actionId);
@@ -175,7 +178,7 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
     when(dispatcher.canDispatchMore()).thenReturn(true);
     ServerContext serverContext = new ServerContext(new SmartConf(), metaStore);
     serverContext.setServiceMode(ServiceMode.HDFS);
-    CmdletManager cmdletManager = new CmdletManager(serverContext);
+    CmdletManager cmdletManager = new CmdletManager(serverContext, lifecycleListener);
     cmdletManager.init();
     cmdletManager.setDispatcher(dispatcher);
 
