@@ -73,6 +73,9 @@
     <commons-configuration.version>2.1.1</commons-configuration.version>
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
     <servlet.api.version>4.0.1</servlet.api.version>
+    <springdoc.openapi.version>1.7.0</springdoc.openapi.version>
+    <hibernate.validator.version>6.2.5.Final</hibernate.validator.version>
+    <spring.boot.version>2.7.18</spring.boot.version>
   </properties>
 
   <profiles>
