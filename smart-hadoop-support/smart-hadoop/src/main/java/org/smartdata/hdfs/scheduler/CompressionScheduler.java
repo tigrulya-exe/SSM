@@ -187,8 +187,7 @@ public class CompressionScheduler extends ActionSchedulerService {
   }
 
   @Override
-  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo,
-      int actionIndex) {
+  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo) {
     String srcPath = actionInfo.getArgs().get(HdfsAction.FILE_PATH);
 
     if (!actions.contains(actionInfo.getActionName())) {
@@ -223,7 +222,7 @@ public class CompressionScheduler extends ActionSchedulerService {
 
   @Override
   public ScheduleResult onSchedule(CmdletInfo cmdletInfo, ActionInfo actionInfo,
-      LaunchCmdlet cmdlet, LaunchAction action, int actionIndex) {
+      LaunchCmdlet cmdlet, LaunchAction action) {
     // For compression, add compressTmp argument. This arg is assigned by CompressionScheduler
     // and persisted to MetaStore for easily debugging.
     String tmpName = createTmpName(action);
@@ -294,7 +293,7 @@ public class CompressionScheduler extends ActionSchedulerService {
   }
 
   @Override
-  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex) {
+  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo) {
     if (!actionInfo.isFinished()) {
       return;
     }

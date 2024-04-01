@@ -37,12 +37,12 @@ import java.util.List;
 public class AbstractServiceFactory {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractServiceFactory.class);
 
-  public static AbstractService createStatesUpdaterService(Configuration conf,
+  public static AbstractService createStatesUpdaterService(
       ServerContext context, MetaStore metaStore) throws IOException {
     String source = getStatesUpdaterName(context.getServiceMode());
     try {
-      Class clazz = Class.forName(source);
-      Constructor c = clazz.getConstructor(SmartContext.class, MetaStore.class);
+      Class<?> clazz = Class.forName(source);
+      Constructor<?> c = clazz.getConstructor(SmartContext.class, MetaStore.class);
       return (StatesUpdateService) c.newInstance(context, metaStore);
     } catch (ClassNotFoundException | IllegalAccessException
         | InstantiationException | NoSuchMethodException
@@ -62,14 +62,14 @@ public class AbstractServiceFactory {
     }
   }
 
-  public static List<ActionSchedulerService> createActionSchedulerServices(Configuration conf,
+  public static List<ActionSchedulerService> createActionSchedulerServices(
       ServerContext context, MetaStore metaStore, boolean allMustSuccess) throws IOException {
     List<ActionSchedulerService> services = new ArrayList<>();
     String[] serviceNames = getActionSchedulerNames(context.getServiceMode());
     for (String name : serviceNames) {
       try {
-        Class clazz = Class.forName(name);
-        Constructor c = clazz.getConstructor(SmartContext.class, MetaStore.class);
+        Class<?> clazz = Class.forName(name);
+        Constructor<?> c = clazz.getConstructor(SmartContext.class, MetaStore.class);
         services.add((ActionSchedulerService) c.newInstance(context, metaStore));
       } catch (ClassNotFoundException | IllegalAccessException
           | InstantiationException | NoSuchMethodException

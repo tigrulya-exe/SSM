@@ -17,6 +17,7 @@
  */
 package org.smartdata.server;
 
+import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.AbstractService;
@@ -44,15 +45,14 @@ import java.util.Random;
 import java.util.Set;
 
 public class SmartEngine extends AbstractService {
-  private ConfManager confMgr;
-  private SmartConf conf;
-  private ServerContext serverContext;
+  private final SmartConf conf;
+  private final ServerContext serverContext;
   private StatesManager statesMgr;
   private RuleManager ruleMgr;
   private CmdletManager cmdletManager;
   private AgentExecutorService agentService;
   private HazelcastExecutorService hazelcastService;
-  private List<AbstractService> services = new ArrayList<>();
+  private final List<AbstractService> services = new ArrayList<>();
   public static final Logger LOG = LoggerFactory.getLogger(SmartEngine.class);
 
   public SmartEngine(ServerContext context) {
@@ -133,10 +133,6 @@ public class SmartEngine extends AbstractService {
     return agentService.getAgentInfos();
   }
 
-  public ConfManager getConfMgr() {
-    return confMgr;
-  }
-
   public SmartConf getConf() {
     return serverContext.getConf();
   }
@@ -161,7 +157,7 @@ public class SmartEngine extends AbstractService {
       long begin, long end) throws IOException {
     long now = System.currentTimeMillis();
     if (begin == end && Math.abs(begin - now) <= 5) {
-      return Arrays.asList(getUtilization(resourceName));
+      return Collections.singletonList(getUtilization(resourceName));
     }
 
     List<StorageCapacity> cs = serverContext.getMetaStore().getStorageHistoryData(
@@ -173,25 +169,9 @@ public class SmartEngine extends AbstractService {
     return us;
   }
 
-  private List<Utilization> getFackData(String resourceName, long granularity,
-      long begin, long end) {
-    List<Utilization> utils = new ArrayList<>();
-    long ts = begin;
-    if (ts % granularity != 0) {
-      ts += granularity;
-      ts = (ts / granularity) * granularity;
-    }
-    Random rand = new Random(ts);
-
-    for (; ts <= end; ts += granularity) {
-      utils.add(new Utilization(ts, 100, rand.nextInt(100)));
-    }
-    return utils;
-  }
-
   public List<NodeInfo> getSsmNodesInfo() {
     List<NodeInfo> ret = new LinkedList<>();
-    ret.addAll(Arrays.asList(ActiveServerInfo.getInstance()));
+    ret.add(ActiveServerInfo.getInstance());
     ret.addAll(getStandbyServers());
     ret.addAll(getAgents());
     return ret;

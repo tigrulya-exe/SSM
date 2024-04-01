@@ -579,7 +579,7 @@ public class SmartRuleVisitTranslator extends SmartRuleBaseVisitor<TreeNode> {
   }
 
   private TreeNode pharseConstTimeInterval(String str) {
-    long intval = StringUtil.pharseTimeString(str);
+    long intval = StringUtil.parseTimeString(str);
     return new ValueNode(new VisitResult(ValueType.TIMEINTVAL, intval));
   }
 

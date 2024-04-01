@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,16 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model.action;
+package org.smartdata.server.engine.model;
 
-public enum ScheduleResult {
-  SUCCESS,  // OK for dispatch
-  SUCCESS_NO_EXECUTION,  // No need for further execution, mark the action finished successfully
-  RETRY,    // Need re-schedule later
-  FAIL;
+import java.util.List;
+import org.smartdata.model.CmdletInfo;
 
-  public static boolean isSuccessfull(ScheduleResult result) {
-    return result == SUCCESS
-        || result == SUCCESS_NO_EXECUTION;
+public class CmdletGroup {
+    private final List<CmdletInfo> cmdlets;
+    private final long totalNumOfCmdlets;
+
+    public CmdletGroup(List<CmdletInfo> cmdlets, long totalNumOfCmdlets) {
+      this.cmdlets = cmdlets;
+      this.totalNumOfCmdlets = totalNumOfCmdlets;
+    }
+
+    public List<CmdletInfo> getCmdlets() {
+      return cmdlets;
+    }
+
+    public long getTotalNumOfCmdlets() {
+      return totalNumOfCmdlets;
+    }
   }
-}

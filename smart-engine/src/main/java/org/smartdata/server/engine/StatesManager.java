@@ -236,8 +236,7 @@ public class StatesManager extends AbstractService implements Reconfigurable {
     try {
       try {
         statesUpdaterService = AbstractServiceFactory
-            .createStatesUpdaterService(getContext().getConf(),
-                serverContext, serverContext.getMetaStore());
+            .createStatesUpdaterService(serverContext, serverContext.getMetaStore());
         statesUpdaterService.init();
       } catch (IOException e) {
         statesUpdaterService = null;

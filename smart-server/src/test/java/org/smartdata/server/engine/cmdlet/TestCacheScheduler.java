@@ -38,7 +38,7 @@ public class TestCacheScheduler extends MiniSmartClusterHarness {
   @Test(timeout = 100000)
   public void testCacheUncacheFile() throws Exception {
     waitTillSSMExitSafeMode();
-    String filePath = new String("/testFile");
+    String filePath = "/testFile";
     FSDataOutputStream out = dfs.create(new Path(filePath));
     out.writeChars("test content");
     out.close();
@@ -46,7 +46,10 @@ public class TestCacheScheduler extends MiniSmartClusterHarness {
     CmdletManager cmdletManager = ssm.getCmdletManager();
     long cid = cmdletManager.submitCmdlet("cache -file " + filePath);
     while (true) {
-      if (cmdletManager.getCmdletInfo(cid).getState().equals(CmdletState.DONE)) {
+      if (cmdletManager.getCmdletInfoHandler()
+          .getCmdletInfo(cid)
+          .getState()
+          .equals(CmdletState.DONE)) {
         break;
       }
     }
@@ -67,7 +70,10 @@ public class TestCacheScheduler extends MiniSmartClusterHarness {
 
     long cid1 = cmdletManager.submitCmdlet("uncache -file " + filePath);
     while (true) {
-      if (cmdletManager.getCmdletInfo(cid1).getState().equals(CmdletState.DONE)) {
+      if (cmdletManager.getCmdletInfoHandler()
+          .getCmdletInfo(cid1)
+          .getState()
+          .equals(CmdletState.DONE)) {
         break;
       }
     }

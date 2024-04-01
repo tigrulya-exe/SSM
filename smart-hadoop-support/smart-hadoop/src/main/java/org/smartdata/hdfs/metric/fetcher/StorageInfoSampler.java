@@ -75,7 +75,7 @@ public class StorageInfoSampler {
     for (String s : items) {
       if (!s.equals("")) {
         String[] samples = s.split(",");
-        Long interval = StringUtil.pharseTimeString(samples[0]);
+        Long interval = StringUtil.parseTimeString(samples[0]);
         Integer maxNum;
         if (samples.length == 2) {
           maxNum = Integer.valueOf(samples[1]);

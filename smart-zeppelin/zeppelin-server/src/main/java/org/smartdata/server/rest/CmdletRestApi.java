@@ -21,6 +21,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.server.SmartEngine;
+import org.smartdata.server.engine.CmdletManager;
 import org.smartdata.server.rest.message.JsonResponse;
 
 import javax.ws.rs.GET;
@@ -36,12 +37,12 @@ import javax.ws.rs.core.Response;
 @Path("/cmdlets")
 @Produces("application/json")
 public class CmdletRestApi {
-  private SmartEngine smartEngine;
+  private final CmdletManager cmdletManager;
   private static final Logger logger =
           LoggerFactory.getLogger(CmdletRestApi.class);
 
   public CmdletRestApi(SmartEngine smartEngine) {
-    this.smartEngine = smartEngine;
+    this.cmdletManager = smartEngine.getCmdletManager();
   }
 
   @GET
@@ -50,7 +51,9 @@ public class CmdletRestApi {
     Long longNumber = Long.parseLong(cmdletId);
     try {
       return new JsonResponse<>(Response.Status.OK,
-              smartEngine.getCmdletManager().getCmdletInfo(longNumber)).build();
+          cmdletManager
+              .getCmdletInfoHandler()
+              .getCmdletInfo(longNumber)).build();
     } catch (Exception e) {
       logger.error("Exception in CmdletRestApi while getting info", e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
@@ -63,8 +66,9 @@ public class CmdletRestApi {
   public Response list() {
     try {
       return new JsonResponse<>(Response.Status.OK,
-              smartEngine.getCmdletManager()
-                      .listCmdletsInfo(-1, null))
+          cmdletManager
+              .getCmdletInfoHandler()
+              .listCmdletsInfo(-1, null))
               .build();
     } catch (Exception e) {
       logger.error("Exception in CmdletRestApi while listing cmdlets", e);
@@ -77,8 +81,8 @@ public class CmdletRestApi {
   @Path("/submit")
   public Response submitCmdlet(String args) {
     try {
-      return new JsonResponse<>(Response.Status.CREATED, smartEngine.getCmdletManager()
-              .submitCmdlet(args)).build();
+      return new JsonResponse<>(Response.Status.CREATED,
+          cmdletManager.submitCmdlet(args)).build();
     } catch (Exception e) {
       logger.error("Exception in ActionRestApi while adding cmdlet: " + e.getLocalizedMessage());
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
@@ -91,7 +95,7 @@ public class CmdletRestApi {
   public Response stop(@PathParam("cmdletId") String cmdletId) {
     Long longNumber = Long.parseLong(cmdletId);
     try {
-      smartEngine.getCmdletManager().disableCmdlet(longNumber);
+      cmdletManager.disableCmdlet(longNumber);
       return new JsonResponse<>(Response.Status.OK).build();
     } catch (Exception e) {
       logger.error("Exception in CmdletRestApi while stop cmdlet " + longNumber, e);

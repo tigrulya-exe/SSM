@@ -22,6 +22,7 @@ package org.smartdata.utils;
 
 import com.google.common.hash.Hashing;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.smartdata.conf.SmartConfKeys;
 
 public class StringUtil {
   public static String join(CharSequence delimiter,
@@ -58,13 +60,15 @@ public class StringUtil {
         .replace("?", "_");
   }
 
+
+  // todo replace this function with java std duration
   /**
    * Convert time string into milliseconds representation.
    *
    * @param str
    * @return -1 if error
    */
-  public static long pharseTimeString(String str) {
+  public static long parseTimeString(String str) {
     long intval = 0L;
     str = str.trim();
     Pattern p = Pattern.compile("([0-9]+)([a-z]+)");
@@ -73,33 +77,33 @@ public class StringUtil {
     while (m.find(start)) {
       String digStr = m.group(1);
       String unitStr = m.group(2);
-      long value = 0;
+      long value;
       try {
         value = Long.parseLong(digStr);
       } catch (NumberFormatException e) {
+        throw new IllegalArgumentException("Invalid time duration format:" + str);
       }
 
       switch (unitStr) {
         case "d":
         case "day":
-          intval += value * 24 * 3600 * 1000;
-          break;
+          value *= 24;
         case "h":
         case "hour":
-          intval += value * 3600 * 1000;
-          break;
+          value *= 60;
         case "m":
         case "min":
-          intval += value * 60 * 1000;
-          break;
+          value *= 60;
         case "s":
         case "sec":
-          intval += value * 1000;
-          break;
+          value *= 1000;
         case "ms":
           intval += value;
           break;
+        default:
+          throw new IllegalArgumentException("Invalid time duration format:" + str);
       }
+
       start += m.group().length();
     }
     return intval;

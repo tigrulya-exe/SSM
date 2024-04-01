@@ -75,7 +75,7 @@ public class CacheScheduler extends ActionSchedulerService {
   }
 
   @Override
-  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex) {
+  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo) {
     if (isLocked(actionInfo)) {
       return false;
     }
@@ -84,7 +84,7 @@ public class CacheScheduler extends ActionSchedulerService {
 
   @Override
   public ScheduleResult onSchedule(CmdletInfo cmdletInfo, ActionInfo actionInfo,
-      LaunchCmdlet cmdlet, LaunchAction action, int actionIndex) {
+      LaunchCmdlet cmdlet, LaunchAction action) {
     String srcPath = actionInfo.getArgs().get(HdfsAction.FILE_PATH);
     fileLock.add(srcPath);
     return ScheduleResult.SUCCESS;
@@ -123,7 +123,7 @@ public class CacheScheduler extends ActionSchedulerService {
   }
 
   @Override
-  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex) {
+  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo) {
     if (!ACTIONS.contains(actionInfo.getActionName())) {
       return;
     }

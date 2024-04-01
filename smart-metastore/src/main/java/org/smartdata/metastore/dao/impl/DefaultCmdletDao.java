@@ -364,9 +364,9 @@ public class DefaultCmdletDao extends AbstractDao implements CmdletDao {
     @Override
     public CmdletInfo mapRow(ResultSet resultSet, int i) throws SQLException {
       CmdletInfo.Builder builder = CmdletInfo.newBuilder();
-      builder.setCid(resultSet.getLong("cid"));
-      builder.setRid(resultSet.getLong("rid"));
-      builder.setAids(convertStringListToLong(resultSet.getString("aids").split(",")));
+      builder.setId(resultSet.getLong("cid"));
+      builder.setRuleId(resultSet.getLong("rid"));
+      builder.setActionIds(convertStringListToLong(resultSet.getString("aids").split(",")));
       builder.setState(CmdletState.fromValue((int) resultSet.getByte("state")));
       builder.setParameters(resultSet.getString("parameters"));
       builder.setGenerateTime(resultSet.getLong("generate_time"));

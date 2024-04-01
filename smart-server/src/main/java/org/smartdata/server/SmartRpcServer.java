@@ -213,7 +213,7 @@ public class SmartRpcServer implements SmartServerProtocols {
   @Override
   public void activateCmdlet(long cmdletID) throws IOException {
     checkIfActive();
-    ssm.getCmdletManager().activateCmdlet(cmdletID);
+    // no-op
   }
 
   @Override

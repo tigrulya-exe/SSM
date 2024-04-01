@@ -150,7 +150,7 @@ public class CopyScheduler extends ActionSchedulerService {
 
   @Override
   public ScheduleResult onSchedule(CmdletInfo cmdletInfo, ActionInfo actionInfo,
-      LaunchCmdlet cmdlet, LaunchAction action, int actionIndex) {
+      LaunchCmdlet cmdlet, LaunchAction action) {
     if (!actionInfo.getActionName().equals("sync")) {
       return ScheduleResult.FAIL;
     }
@@ -289,7 +289,7 @@ public class CopyScheduler extends ActionSchedulerService {
   }
 
   @Override
-  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex)
+  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo)
       throws IOException {
     // check args
     if (actionInfo.getArgs() == null) {
@@ -307,7 +307,7 @@ public class CopyScheduler extends ActionSchedulerService {
   }
 
   @Override
-  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex) {
+  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo) {
     // Remove lock
     FileDiff fileDiff = null;
     if (actionInfo.isFinished()) {

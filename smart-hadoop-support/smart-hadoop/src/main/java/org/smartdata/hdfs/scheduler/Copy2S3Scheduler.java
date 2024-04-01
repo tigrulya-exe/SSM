@@ -82,7 +82,7 @@ public class Copy2S3Scheduler extends ActionSchedulerService {
   }
 
   @Override
-  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex)
+  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo)
       throws IOException {
     // check args
     if (actionInfo.getArgs() == null) {
@@ -104,7 +104,7 @@ public class Copy2S3Scheduler extends ActionSchedulerService {
   }
 
   @Override
-  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex) {
+  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo) {
     String path = actionInfo.getArgs().get(HdfsAction.FILE_PATH);
     if (actionInfo.isFinished() && actionInfo.isSuccessful()) {
       // Insert fileState

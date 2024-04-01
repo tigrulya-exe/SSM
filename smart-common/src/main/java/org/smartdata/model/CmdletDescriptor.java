@@ -76,14 +76,10 @@ public class CmdletDescriptor {
     this.cmdletString = toCmdletString();
   }
 
-  public String getCmdletParameter(String key) {
-    return actionCommon.get(key);
-  }
-
   public long getRuleId() {
     String idStr = actionCommon.get(RULE_ID);
     try {
-      return idStr == null ? 0 : Long.valueOf(idStr);
+      return idStr == null ? 0 : Long.parseLong(idStr);
     } catch (Exception e) {
       return 0;
     }
@@ -124,16 +120,6 @@ public class CmdletDescriptor {
     actionArgs.get(index).put(key, value);
   }
 
-  public String deleteActionArg(int index, String key) {
-    Map<String, String> args = actionArgs.get(index);
-    String value = null;
-    if (args.containsKey(key)) {
-      value = args.get(key);
-      args.remove(key);
-    }
-    return value;
-  }
-
   public int getActionSize() {
     return actionNames.size();
   }
@@ -146,8 +132,7 @@ public class CmdletDescriptor {
    */
   public static CmdletDescriptor fromCmdletString(String cmdString)
       throws ParseException {
-    CmdletDescriptor des = new CmdletDescriptor(cmdString);
-    return des;
+    return new CmdletDescriptor(cmdString);
   }
 
   public String toCmdletString() {
@@ -155,13 +140,17 @@ public class CmdletDescriptor {
       return "";
     }
 
-    String cmds = getActionName(0) + " "
-        + formatActionArguments(getActionArgs(0));
+    StringBuilder cmdletBuilder = new StringBuilder(getActionName(0))
+        .append(" ")
+        .append(formatActionArguments(getActionArgs(0)));
+
     for (int i = 1; i < getActionSize(); i++) {
-      cmds += " ; " + getActionName(i) + " "
-          + formatActionArguments(getActionArgs(i));
+      cmdletBuilder.append(" ; ")
+          .append(getActionName(i))
+          .append(" ")
+          .append(formatActionArguments(getActionArgs(i)));
     }
-    return cmds;
+    return cmdletBuilder.toString();
   }
 
   public boolean equals(CmdletDescriptor des) {
@@ -194,7 +183,7 @@ public class CmdletDescriptor {
   public String toString() {
     return String.format(
         "CmdletDescriptor{actionCommon=%s, actionNames=%s, "
-            + "actionArgs=%s, cmdletString=\'%s\'}",
+            + "actionArgs=%s, cmdletString='%s'}",
         actionCommon, actionNames, actionArgs, cmdletString);
   }
 
@@ -223,7 +212,7 @@ public class CmdletDescriptor {
 
   private void parseCmdletString(String cmdlet)
       throws ParseException {
-    if (cmdlet == null || cmdlet.length() == 0) {
+    if (cmdlet == null || cmdlet.isEmpty()) {
       return;
     }
 
@@ -308,13 +297,13 @@ public class CmdletDescriptor {
       throw new ParseException("Unexpect tail of string", chars.length);
     }
 
-    if (blocks.size() > 0) {
+    if (!blocks.isEmpty()) {
       verify(blocks, chars.length);
     }
   }
 
   private void verify(List<String> blocks, int offset) throws ParseException {
-    if (blocks.size() == 0) {
+    if (blocks.isEmpty()) {
       throw new ParseException("Contains NULL action", offset);
     }
 
@@ -340,7 +329,7 @@ public class CmdletDescriptor {
     if (blocks.get(0).equals(".defer")) {
       long interval = -1;
       if (blocks.size() == 2) {
-        interval = StringUtil.pharseTimeString(blocks.get(1));
+        interval = StringUtil.parseTimeString(blocks.get(1));
       }
 
       if (interval == -1) {
@@ -356,10 +345,6 @@ public class CmdletDescriptor {
 
   public long getDeferIntervalMs() {
     return deferIntervalMs;
-  }
-
-  public void setDeferIntervalMs(long deferIntervalMs) {
-    this.deferIntervalMs = deferIntervalMs;
   }
 
   public static List<String> toArgList(Map<String, String> args) {
@@ -400,34 +385,16 @@ public class CmdletDescriptor {
     return ret;
   }
 
-  private String formatActionArguments(String[] args) {
-    if (args == null || args.length == 0) {
-      return "";
-    }
-
-    String ret = "";
-    for (String arg : args) {
-      String rep = arg.replace("\\", "\\\\");
-      rep = rep.replace("\"", "\\\"");
-      if (rep.matches(".*\\s+.*")) {
-        ret += " \"" + rep + "\"";
-      } else {
-        ret += " " + rep;
-      }
-    }
-    return ret.trim();
-  }
-
   private String formatActionArguments(Map<String, String> args) {
-    if (args == null || args.size() == 0) {
+    if (args == null || args.isEmpty()) {
       return "";
     }
 
-    String ret = "";
+    StringBuilder ret = new StringBuilder();
     for (String key : args.keySet()) {
-      ret += " " + formatItems(key) + " " + formatItems(args.get(key));
+      ret.append(" ").append(formatItems(key)).append(" ").append(formatItems(args.get(key)));
     }
-    return ret.trim();
+    return ret.toString().trim();
   }
 
   private String formatItems(String arg) {

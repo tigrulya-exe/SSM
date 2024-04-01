@@ -27,6 +27,9 @@ import org.smartdata.model.ActionInfo;
 import org.smartdata.model.DetailedFileAction;
 import org.smartdata.server.SmartEngine;
 import org.smartdata.server.engine.CmdletManager;
+import org.smartdata.server.engine.action.ActionInfoHandler;
+import org.smartdata.server.engine.model.ActionGroup;
+import org.smartdata.server.engine.model.DetailedFileActionGroup;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,10 +50,10 @@ import java.util.List;
 )
 @Validated
 public class ActionController {
-  private final CmdletManager cmdletManager;
+  private final ActionInfoHandler actionInfoHandler;
 
-  public ActionController(SmartEngine smartEngine) {
-    this.cmdletManager = smartEngine.getCmdletManager();
+  public ActionController(CmdletManager cmdletManager) {
+    this.actionInfoHandler = cmdletManager.getActionInfoHandler();
   }
 
   @Operation(summary = "List supported actions")
@@ -61,23 +64,23 @@ public class ActionController {
 
   @Operation(summary = "List actions")
   @GetMapping("/list/{pageIndex}/{numPerPage}/{orderBy}/{isDesc}")
-  public CmdletManager.ActionGroup getActions(
+  public ActionGroup getActions(
       @PathVariable @Min(0) int pageIndex,
       @PathVariable @Min(0) int numPerPage,
       @PathVariable List<String> orderBy,
       @PathVariable List<Boolean> isDesc) throws MetaStoreException, IOException {
-    return cmdletManager.listActions(pageIndex, numPerPage, orderBy, isDesc);
+    return actionInfoHandler.listActions(pageIndex, numPerPage, orderBy, isDesc);
   }
 
   @Operation(summary = "Find actions by query")
   @GetMapping("/search/{search}/{pageIndex}/{numPerPage}/{orderBy}/{isDesc}")
-  public CmdletManager.ActionGroup searchActions(
+  public ActionGroup searchActions(
       @PathVariable String search,
       @PathVariable @Min(0) int pageIndex,
       @PathVariable @Min(0) int numPerPage,
       @PathVariable List<String> orderBy,
       @PathVariable List<Boolean> isDesc) throws IOException {
-    return cmdletManager.searchAction(search, pageIndex, numPerPage, orderBy, isDesc);
+    return actionInfoHandler.searchAction(search, pageIndex, numPerPage, orderBy, isDesc);
   }
 
   @Operation(summary = "List actions of rule")
@@ -85,16 +88,16 @@ public class ActionController {
   public List<ActionInfo> getActions(
       @PathVariable @Min(0) int actionLimit,
       @PathVariable long ruleId) throws IOException {
-    return cmdletManager.getActions(ruleId, actionLimit);
+    return actionInfoHandler.getActions(ruleId, actionLimit);
   }
 
   @Operation(summary = "List file actions of rule")
   @GetMapping("/filelist/{ruleId}/{pageIndex}/{numPerPage}")
-  public CmdletManager.DetailedFileActionGroup getFileActions(
+  public DetailedFileActionGroup getFileActions(
       @PathVariable long ruleId,
       @PathVariable @Min(0) int pageIndex,
       @PathVariable @Min(0) int numPerPage) throws IOException, MetaStoreException {
-    return cmdletManager.getFileActions(ruleId, pageIndex, numPerPage);
+    return actionInfoHandler.getFileActions(ruleId, pageIndex, numPerPage);
   }
 
   @Operation(summary = "List file actions of rule")
@@ -102,7 +105,7 @@ public class ActionController {
   public List<DetailedFileAction> getFileActions(
       @PathVariable long ruleId,
       @PathVariable @Min(0) int actionLimit) throws IOException {
-    return cmdletManager.getFileActions(ruleId, actionLimit);
+    return actionInfoHandler.getFileActions(ruleId, actionLimit);
   }
 
   @Operation(summary = "Get the last created instances of action")
@@ -110,12 +113,12 @@ public class ActionController {
   public List<ActionInfo> getLastActions(
       @PathVariable @Min(0) int actionLimit,
       @PathVariable String actionName) throws IOException {
-    return cmdletManager.listNewCreatedActions(actionName, actionLimit);
+    return actionInfoHandler.listNewCreatedActions(actionName, actionLimit);
   }
 
   @Operation(summary = "Get detailed info about action")
   @GetMapping("/{actionId}/info")
   public ActionInfo getActionInfo(@PathVariable long actionId) throws IOException {
-    return cmdletManager.getActionInfo(actionId);
+    return actionInfoHandler.getActionInfo(actionId);
   }
 }

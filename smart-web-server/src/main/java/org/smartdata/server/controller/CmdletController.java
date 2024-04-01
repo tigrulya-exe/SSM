@@ -49,13 +49,13 @@ public class CmdletController {
   @Operation(summary = "Get detailed info about cmdlet")
   @GetMapping("/{cmdletId}/info")
   public CmdletInfo getCmdletInfo(@PathVariable long cmdletId) throws IOException {
-    return cmdletManager.getCmdletInfo(cmdletId);
+    return cmdletManager.getCmdletInfoHandler().getCmdletInfo(cmdletId);
   }
 
   @Operation(summary = "List cmdlets")
   @GetMapping("/list")
   public List<CmdletInfo> getCmdletInfos() throws IOException {
-    return cmdletManager.listCmdletsInfo(-1, null);
+    return cmdletManager.getCmdletInfoHandler().listCmdletsInfo(-1, null);
   }
 
   @Operation(summary = "Submit cmdlet")

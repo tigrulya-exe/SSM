@@ -201,13 +201,17 @@ public class SmallFilePlugin implements RuleExecutorPlugin {
       // Remove container file which is being used
       try {
         List<Long> aids = new ArrayList<>();
-        List<CmdletInfo> list = cmdletManager.listCmdletsInfo(ruleInfo.getId());
+        List<CmdletInfo> list = cmdletManager
+            .getCmdletInfoHandler()
+            .listCmdletsInfo(ruleInfo.getId());
         for (CmdletInfo cmdletInfo : list) {
           if (!CmdletState.isTerminalState(cmdletInfo.getState())) {
             aids.addAll(cmdletInfo.getAids());
           }
         }
-        List<ActionInfo> actionInfos = cmdletManager.getActions(aids);
+        List<ActionInfo> actionInfos = cmdletManager
+            .getActionInfoHandler()
+            .getActions(aids);
         for (ActionInfo actionInfo : actionInfos) {
           Map<String, String> args = actionInfo.getArgs();
           if (args.containsKey(SmallFileCompactAction.CONTAINER_FILE)) {

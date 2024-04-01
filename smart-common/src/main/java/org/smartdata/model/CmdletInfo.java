@@ -29,17 +29,17 @@ public class CmdletInfo {
   private List<Long> aids;
   private CmdletState state;
   private String parameters;
-  private long generateTime;
   private long stateChangedTime;
-  private long deferedToTime;
+  private final long generateTime;
+  private final long deferedToTime;
 
   public CmdletInfo(long cid, long rid, CmdletState state,
-      String parameters, long generateTime, long stateChangedTime) {
-    this(cid, rid, state, parameters, generateTime, stateChangedTime, generateTime);
+                    String parameters, long generateTime, long stateChangedTime) {
+    this(cid, rid, new ArrayList<>(), state, parameters, generateTime, stateChangedTime, generateTime);
   }
 
-  public CmdletInfo(long cid, long rid, CmdletState state,
-      String parameters, long generateTime, long stateChangedTime, long deferedToTime) {
+  public CmdletInfo(long cid, long rid, List<Long> aids, CmdletState state,
+                    String parameters, long generateTime, long stateChangedTime, long deferedToTime) {
     this.cid = cid;
     this.rid = rid;
     this.state = state;
@@ -47,18 +47,6 @@ public class CmdletInfo {
     this.generateTime = generateTime;
     this.stateChangedTime = stateChangedTime;
     this.deferedToTime = deferedToTime;
-    this.aids = new ArrayList<>();
-  }
-
-  public CmdletInfo(long cid, long rid, List<Long> aids, CmdletState state,
-      String parameters, long generateTime, long stateChangedTime) {
-    this(cid, rid, state, parameters, generateTime, stateChangedTime);
-    this.aids = aids;
-  }
-
-  public CmdletInfo(long cid, long rid, List<Long> aids, CmdletState state,
-      String parameters, long generateTime, long stateChangedTime, long deferedToTime) {
-    this(cid, rid, state, parameters, generateTime, stateChangedTime, deferedToTime);
     this.aids = aids;
   }
 
@@ -91,8 +79,8 @@ public class CmdletInfo {
     return cid;
   }
 
-  public void setCid(long cid) {
-    this.cid = cid;
+  public void setId(long id) {
+    this.cid = id;
   }
 
   public long getRid() {
@@ -176,31 +164,31 @@ public class CmdletInfo {
   }
 
   public static class Builder {
-    private long cid;
-    private long rid;
-    private List<Long> aids;
+    private long id;
+    private long ruleId;
+    private List<Long> actionIds;
     private CmdletState state;
     private String parameters;
     private long generateTime;
     private long stateChangedTime;
-    private long deferedToTime;
+    private long deferredToTime;
 
     public static Builder create() {
       return new Builder();
     }
 
-    public Builder setCid(long cid) {
-      this.cid = cid;
+    public Builder setId(long id) {
+      this.id = id;
       return this;
     }
 
-    public Builder setRid(long rid) {
-      this.rid = rid;
+    public Builder setRuleId(long ruleId) {
+      this.ruleId = ruleId;
       return this;
     }
 
-    public Builder setAids(List<Long> aids) {
-      this.aids = aids;
+    public Builder setActionIds(List<Long> actionIds) {
+      this.actionIds = actionIds;
       return this;
     }
 
@@ -225,15 +213,15 @@ public class CmdletInfo {
       return this;
     }
 
-    public Builder setDeferedToTime(long deferedToTime) {
-      this.deferedToTime = deferedToTime;
+    public Builder setDeferredToTime(long deferredToTime) {
+      this.deferredToTime = deferredToTime;
       return this;
     }
 
     public CmdletInfo build() {
-      return new CmdletInfo(cid, rid, aids, state, parameters,
+      return new CmdletInfo(id, ruleId, actionIds, state, parameters,
           generateTime, stateChangedTime,
-          deferedToTime == 0 ? generateTime : deferedToTime);
+          deferredToTime == 0 ? generateTime : deferredToTime);
     }
   }
 }
