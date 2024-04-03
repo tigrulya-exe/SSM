@@ -18,7 +18,6 @@
 
 package org.smartdata.server.engine;
 
-import java.util.Collections;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
@@ -39,10 +38,11 @@ import org.smartdata.protocol.message.StatusReport;
 import org.smartdata.server.MiniSmartClusterHarness;
 import org.smartdata.server.engine.action.ActionInfoHandler;
 import org.smartdata.server.engine.cmdlet.CmdletDispatcher;
+import org.smartdata.server.engine.cmdlet.CmdletInfoHandler;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
-import org.smartdata.server.engine.cmdlet.CmdletInfoHandler;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -76,7 +76,8 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
             + "write -file /test -length 1024";
     CmdletDescriptor cmdletDescriptor = generateCmdletDescriptor(cmd);
     CmdletInfo cmdletInfo = CmdletInfo.newBuilder().setId(0).build();
-    List<ActionInfo> actionInfos = actionInfoHandler.createActionInfos(cmdletDescriptor, cmdletInfo);
+    List<ActionInfo> actionInfos = actionInfoHandler
+        .createActionInfos(cmdletDescriptor, cmdletInfo);
     Assert.assertEquals(cmdletDescriptor.getActionSize(), actionInfos.size());
   }
 
@@ -186,13 +187,13 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
     ActionStatus actionStatus = new ActionStatus(cmdletId, true, actionId, startTime, null);
     StatusReport statusReport = new StatusReport(Collections.singletonList(actionStatus));
     cmdletManager.updateStatus(statusReport);
-    ActionInfo actionInfo = actionInfoHandler.getActionInfo(actionId);
-    CmdletInfo cmdletInfo = cmdletInfoHandler.getCmdletInfo(cmdletId);
+    ActionInfo actionInfo = cmdletManager.getActionInfoHandler().getActionInfo(actionId);
+    CmdletInfo cmdletInfo = cmdletManager.getCmdletInfoHandler().getCmdletInfo(cmdletId);
     Assert.assertNotNull(actionInfo);
 
     cmdletManager.updateStatus(
         new CmdletStatusUpdate(cmdletId, System.currentTimeMillis(), CmdletState.EXECUTING));
-    CmdletInfo info = cmdletInfoHandler.getCmdletInfo(cmdletId);
+    CmdletInfo info = cmdletManager.getCmdletInfoHandler().getCmdletInfo(cmdletId);
     Assert.assertNotNull(info);
     Assert.assertEquals(info.getParameters(), "echo");
     Assert.assertEquals(info.getAids().size(), 1);
@@ -223,7 +224,6 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
   @Test(timeout = 40000)
   public void testReloadCmdletsInDB() throws Exception {
     waitTillSSMExitSafeMode();
-    cmdletManager.setTimeout(1000);
     MetaStore metaStore = ssm.getMetaStore();
     String cmd = "write -file /test -length 1024; read -file /test";
     CmdletDescriptor cmdletDescriptor = generateCmdletDescriptor(cmd);

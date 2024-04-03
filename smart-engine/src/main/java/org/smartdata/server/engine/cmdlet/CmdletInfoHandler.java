@@ -19,16 +19,6 @@
 package org.smartdata.server.engine.cmdlet;
 
 import com.google.common.collect.Lists;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.metastore.MetaStore;
@@ -43,6 +33,17 @@ import org.smartdata.protocol.message.LaunchCmdlet;
 import org.smartdata.server.engine.ActiveServerInfo;
 import org.smartdata.server.engine.action.ActionInfoHandler;
 import org.smartdata.server.engine.model.CmdletGroup;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class CmdletInfoHandler {
   private static final Logger LOG = LoggerFactory.getLogger(CmdletInfoHandler.class);
@@ -99,7 +100,7 @@ public class CmdletInfoHandler {
   }
 
   public CmdletInfo getCmdletInfo(long cid) throws IOException {
-    CmdletInfo cmdletInfo = inMemoryRegistry.getUnfinishedCmdlet(cid);
+    CmdletInfo cmdletInfo = getUnfinishedCmdlet(cid);
     try {
       return cmdletInfo == null
           ? metaStore.getCmdletById(cid)
@@ -116,6 +117,21 @@ public class CmdletInfoHandler {
     List<CmdletInfo> cmdlets = metaStore.listPageCmdlets(rid,
         (pageIndex - 1) * numPerPage, numPerPage, orderBy, isDesc);
     return new CmdletGroup(cmdlets, metaStore.getNumCmdletsByRid(rid));
+  }
+
+  public void storeUnfinished(CmdletInfo cmdletInfo) {
+    inMemoryRegistry.addUnfinishedCmdlet(cmdletInfo);
+    if (cmdletInfo.getState() == CmdletState.PENDING) {
+      store(cmdletInfo);
+    }
+  }
+
+  public void store(CmdletInfo cmdletInfo) {
+    inMemoryRegistry.addCmdlet(cmdletInfo);
+  }
+
+  public CmdletInfo getUnfinishedCmdlet(long cmdletId) {
+    return inMemoryRegistry.getUnfinishedCmdlet(cmdletId);
   }
 
   public List<CmdletInfo> listCmdletsInfo(long rid, CmdletState cmdletState) throws IOException {
@@ -211,7 +227,8 @@ public class CmdletInfoHandler {
     List<Long> cmdletIds = inMemoryRegistry.getUnfinishedCmdlets()
         .values()
         .stream()
-        .filter(cmdlet -> cmdlet.getRid() == ruleId && !CmdletState.isTerminalState(cmdlet.getState()))
+        .filter(cmdlet -> cmdlet.getRid() == ruleId
+            && !CmdletState.isTerminalState(cmdlet.getState()))
         .map(CmdletInfo::getCid)
         .collect(Collectors.toList());
 

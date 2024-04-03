@@ -18,13 +18,6 @@
 package org.smartdata.server.engine.action;
 
 import com.google.common.collect.Lists;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.action.ActionException;
@@ -43,6 +36,14 @@ import org.smartdata.server.engine.cmdlet.CmdletManagerContext;
 import org.smartdata.server.engine.cmdlet.InMemoryRegistry;
 import org.smartdata.server.engine.model.ActionGroup;
 import org.smartdata.server.engine.model.DetailedFileActionGroup;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ActionInfoHandler {
   private static final Logger LOG = LoggerFactory.getLogger(ActionInfoHandler.class);
@@ -81,16 +82,24 @@ public class ActionInfoHandler {
         args);
   }
 
-  public ActionInfo getActionInfo(long actionID) throws IOException {
-    ActionInfo actionInfo = inMemoryRegistry.getUnfinishedAction(actionID);
+  public ActionInfo getActionInfo(long actionId) throws IOException {
+    ActionInfo actionInfo = getUnfinishedAction(actionId);
     try {
       return actionInfo == null
-          ? metaStore.getActionById(actionID)
+          ? metaStore.getActionById(actionId)
           : actionInfo;
     } catch (MetaStoreException e) {
-      LOG.error("ActionId -> [ {} ], get ActionInfo from DB error", actionID, e);
+      LOG.error("ActionId -> [ {} ], get ActionInfo from DB error", actionId, e);
       throw new IOException(e);
     }
+  }
+
+  public void store(ActionInfo actionInfo) {
+    inMemoryRegistry.addAction(actionInfo);
+  }
+
+  public ActionInfo getUnfinishedAction(long actionId) {
+    return inMemoryRegistry.getUnfinishedAction(actionId);
   }
 
   public List<ActionInfo> listNewCreatedActions(String actionName,
@@ -117,8 +126,11 @@ public class ActionInfoHandler {
     }
   }
 
-  public ActionGroup listActions(long pageIndex, long numPerPage,
-                                 List<String> orderBy, List<Boolean> isDesc) throws MetaStoreException {
+  public ActionGroup listActions(
+      long pageIndex,
+      long numPerPage,
+      List<String> orderBy,
+      List<Boolean> isDesc) throws MetaStoreException {
     if (pageIndex == Long.parseLong("0")) {
       if (tmpActions.getTotalNumOfActions() != 0) {
         return tmpActions;
@@ -129,7 +141,7 @@ public class ActionInfoHandler {
     List<ActionInfo> infos = metaStore.listPageAction((pageIndex - 1) * numPerPage,
         numPerPage, orderBy, isDesc);
     for (ActionInfo info : infos) {
-      ActionInfo memInfo = inMemoryRegistry.getUnfinishedAction(info.getActionId());
+      ActionInfo memInfo = getUnfinishedAction(info.getActionId());
       if (memInfo != null) {
         info.setCreateTime(memInfo.getCreateTime());
         info.setProgress(memInfo.getProgress());
@@ -155,7 +167,7 @@ public class ActionInfoHandler {
           numPerPage, orderBy, isDesc, total);
       for (ActionInfo info : infos) {
         LOG.debug("[metaStore search] " + info.getActionName());
-        ActionInfo memInfo = inMemoryRegistry.getUnfinishedAction(info.getActionId());
+        ActionInfo memInfo = getUnfinishedAction(info.getActionId());
         if (memInfo != null) {
           info.setCreateTime(memInfo.getCreateTime());
           info.setProgress(memInfo.getProgress());

@@ -25,7 +25,6 @@ import org.smartdata.metastore.MetaStoreException;
 import org.smartdata.model.ActionDescriptor;
 import org.smartdata.model.ActionInfo;
 import org.smartdata.model.DetailedFileAction;
-import org.smartdata.server.SmartEngine;
 import org.smartdata.server.engine.CmdletManager;
 import org.smartdata.server.engine.action.ActionInfoHandler;
 import org.smartdata.server.engine.model.ActionGroup;

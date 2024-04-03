@@ -33,13 +33,26 @@ public class CmdletInfo {
   private final long generateTime;
   private final long deferedToTime;
 
-  public CmdletInfo(long cid, long rid, CmdletState state,
-                    String parameters, long generateTime, long stateChangedTime) {
-    this(cid, rid, new ArrayList<>(), state, parameters, generateTime, stateChangedTime, generateTime);
+  public CmdletInfo(
+      long cid,
+      long rid,
+      CmdletState state,
+      String parameters,
+      long generateTime,
+      long stateChangedTime) {
+    this(cid, rid, new ArrayList<>(), state,
+        parameters, generateTime, stateChangedTime, generateTime);
   }
 
-  public CmdletInfo(long cid, long rid, List<Long> aids, CmdletState state,
-                    String parameters, long generateTime, long stateChangedTime, long deferedToTime) {
+  public CmdletInfo(
+      long cid,
+      long rid,
+      List<Long> aids,
+      CmdletState state,
+      String parameters,
+      long generateTime,
+      long stateChangedTime,
+      long deferedToTime) {
     this.cid = cid;
     this.rid = rid;
     this.state = state;
@@ -79,8 +92,8 @@ public class CmdletInfo {
     return cid;
   }
 
-  public void setId(long id) {
-    this.cid = id;
+  public void setCid(long cid) {
+    this.cid = cid;
   }
 
   public long getRid() {
@@ -166,7 +179,7 @@ public class CmdletInfo {
   public static class Builder {
     private long id;
     private long ruleId;
-    private List<Long> actionIds;
+    private List<Long> actionIds = new ArrayList<>();
     private CmdletState state;
     private String parameters;
     private long generateTime;

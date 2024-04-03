@@ -22,7 +22,6 @@ package org.smartdata.utils;
 
 import com.google.common.hash.Hashing;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.smartdata.conf.SmartConfKeys;
 
 public class StringUtil {
   public static String join(CharSequence delimiter,
@@ -87,16 +85,20 @@ public class StringUtil {
       switch (unitStr) {
         case "d":
         case "day":
-          value *= 24;
+          intval += value * 24 * 3600 * 1000;
+          break;
         case "h":
         case "hour":
-          value *= 60;
+          intval += value * 3600 * 1000;
+          break;
         case "m":
         case "min":
-          value *= 60;
+          intval += value * 60 * 1000;
+          break;
         case "s":
         case "sec":
-          value *= 1000;
+          intval += value * 1000;
+          break;
         case "ms":
           intval += value;
           break;

@@ -17,8 +17,9 @@
  */
 package org.smartdata.server.engine.model;
 
-import java.util.List;
 import org.smartdata.model.CmdletInfo;
+
+import java.util.List;
 
 public class CmdletGroup {
     private final List<CmdletInfo> cmdlets;

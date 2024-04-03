@@ -18,30 +18,9 @@
 
 package org.smartdata.server.engine;
 
-import static org.smartdata.model.action.ScheduleResult.RETRY;
-import static org.smartdata.model.action.ScheduleResult.isSuccessfull;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -77,10 +56,31 @@ import org.smartdata.server.engine.cmdlet.CmdletDispatcher;
 import org.smartdata.server.engine.cmdlet.CmdletExecutorService;
 import org.smartdata.server.engine.cmdlet.CmdletInfoHandler;
 import org.smartdata.server.engine.cmdlet.CmdletManagerContext;
-import org.smartdata.server.engine.cmdlet.CmdletPurgeTask;
-import org.smartdata.server.engine.cmdlet.DetectFailedActionTask;
+import org.smartdata.server.engine.cmdlet.DeleteTerminatedCmdletsTask;
+import org.smartdata.server.engine.cmdlet.DetectTimeoutActionsTask;
 import org.smartdata.server.engine.cmdlet.InMemoryRegistry;
 import org.smartdata.server.engine.cmdlet.TaskTracker;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+
+import static org.smartdata.model.action.ScheduleResult.RETRY;
+import static org.smartdata.model.action.ScheduleResult.isSuccessfull;
 
 /**
  * When a Cmdlet is submitted, it's string descriptor will be stored into set submittedCmdlets
@@ -108,14 +108,12 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
   private final ListMultimap<String, ActionScheduler> schedulers = ArrayListMultimap.create();
   private List<ActionSchedulerService> schedulerServices = new ArrayList<>();
 
-  private final CmdletPurgeTask cmdletPurgeTask;
-  private final DetectFailedActionTask detectFailedActionTask;
-
+  private final DeleteTerminatedCmdletsTask cmdletPurgeTask;
+  private final DetectTimeoutActionsTask detectTimeoutActionsTask;
+  private final InMemoryRegistry inMemoryRegistry;
   private final ActionInfoHandler actionInfoHandler;
   private final CmdletInfoHandler cmdletInfoHandler;
   private final PathChecker pathChecker;
-
-  private final InMemoryRegistry inMemoryRegistry;
 
   public CmdletManager(ServerContext context) throws IOException {
     super(context);
@@ -135,17 +133,13 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
         .getInt(SmartConfKeys.SMART_CMDLET_MAX_NUM_PENDING_KEY,
             SmartConfKeys.SMART_CMDLET_MAX_NUM_PENDING_DEFAULT);
 
-    this.cmdletPurgeTask = new CmdletPurgeTask(getContext().getConf(), metaStore);
+    this.cmdletPurgeTask = new DeleteTerminatedCmdletsTask(getContext().getConf(), metaStore);
     this.inMemoryRegistry = new InMemoryRegistry(context, tracker, executorService);
 
     CmdletManagerContext cmdletManagerContext = new CmdletManagerContext(
-        getContext().getConf(),
-        metaStore,
-        inMemoryRegistry,
-        schedulers
-    );
-    this.detectFailedActionTask =
-        new DetectFailedActionTask(cmdletManagerContext, this, idToLaunchCmdlets.keySet());
+        getContext().getConf(), metaStore, inMemoryRegistry, schedulers);
+    this.detectTimeoutActionsTask =
+        new DetectTimeoutActionsTask(cmdletManagerContext, this, idToLaunchCmdlets.keySet());
     this.actionInfoHandler = new ActionInfoHandler(cmdletManagerContext);
     this.cmdletInfoHandler = new CmdletInfoHandler(cmdletManagerContext, actionInfoHandler);
   }
@@ -168,6 +162,8 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     LOG.info("Initializing ...");
     try {
       cmdletPurgeTask.init();
+      cmdletInfoHandler.init();
+      actionInfoHandler.init();
 
       schedulerServices = AbstractServiceFactory.createActionSchedulerServices(
           (ServerContext) getContext(), metaStore, false);
@@ -269,8 +265,10 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     LOG.info("Starting ...");
     executorService.scheduleAtFixedRate(cmdletPurgeTask, 10, 5000, TimeUnit.MILLISECONDS);
     executorService.scheduleAtFixedRate(new ScheduleTask(), 100, 50, TimeUnit.MILLISECONDS);
-    executorService.scheduleAtFixedRate(detectFailedActionTask, 1000, 5000,
+    executorService.scheduleAtFixedRate(detectTimeoutActionsTask, 1000, 5000,
         TimeUnit.MILLISECONDS);
+
+    inMemoryRegistry.start();
 
     for (ActionSchedulerService scheduler : schedulerServices) {
       scheduler.start();
@@ -284,9 +282,12 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     LOG.info("Stopping ...");
     dispatcher.stop();
 
-    ListIterator<ActionSchedulerService> reversedSchedulersIter = schedulerServices.listIterator();
-    while (reversedSchedulersIter.hasPrevious()) {
-      reversedSchedulersIter.previous().stop();
+    for (ActionSchedulerService scheduler:  schedulerServices) {
+      try {
+        scheduler.stop();
+      } catch (Exception exception) {
+        LOG.error("Error stopping scheduler {}", scheduler.getClass(), exception);
+      }
     }
 
     executorService.shutdown();
@@ -333,8 +334,10 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     }
     validatePendingCmdletsCount();
 
-    CmdletInfo cmdletInfo = cmdletInfoHandler.createCmdletInfo(cmdletDescriptor);
-    List<ActionInfo> actionInfos = actionInfoHandler.createActionInfos(cmdletDescriptor, cmdletInfo);
+    CmdletInfo cmdletInfo = cmdletInfoHandler
+        .createCmdletInfo(cmdletDescriptor);
+    List<ActionInfo> actionInfos = actionInfoHandler
+        .createActionInfos(cmdletDescriptor, cmdletInfo);
 
     // Check if action path is in whitelist
     WhitelistHelper.validateCmdletPathCovered(cmdletDescriptor, pathChecker);
@@ -354,12 +357,11 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
    */
   private void syncCmdAction(CmdletInfo cmdletInfo,
                              List<ActionInfo> actionInfos) {
-    LOG.debug("Cache cmd {}", cmdletInfo);
-    actionInfos.forEach(inMemoryRegistry::addAction);
-    inMemoryRegistry.addUnfinishedCmdlet(cmdletInfo);
+    LOG.debug("Cache cmdlet {}", cmdletInfo);
+    actionInfos.forEach(actionInfoHandler::store);
+    cmdletInfoHandler.storeUnfinished(cmdletInfo);
 
     if (cmdletInfo.getState() == CmdletState.PENDING) {
-      inMemoryRegistry.addCmdlet(cmdletInfo);
       synchronized (pendingCmdlets) {
         pendingCmdlets.add(cmdletInfo.getCid());
       }
@@ -399,7 +401,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
 
     Iterator<Long> cmdletIdsIter = schedulingCmdlets.iterator();
     while (cmdletIdsIter.hasNext() && !shouldStopSchedule()) {
-      CmdletInfo cmdlet = inMemoryRegistry.getUnfinishedCmdlet(cmdletIdsIter.next());
+      CmdletInfo cmdlet = cmdletInfoHandler.getUnfinishedCmdlet(cmdletIdsIter.next());
       if (cmdlet == null) {
         cmdletIdsIter.remove();
         continue;
@@ -477,7 +479,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     ScheduleResult scheduleResult = ScheduleResult.SUCCESS_NO_EXECUTION;
 
     for (idx = 0; idx < actionIds.size() && isSuccessfull(scheduleResult); idx++) {
-      ActionInfo actionInfo = inMemoryRegistry.getUnfinishedAction(actionIds.get(idx));
+      ActionInfo actionInfo = actionInfoHandler.getUnfinishedAction(actionIds.get(idx));
       LaunchAction launchAction = launchCmdlet.getLaunchActions().get(idx);
 
       List<ActionScheduler> actionSchedulers = schedulers.get(actionInfo.getActionName());
@@ -486,7 +488,8 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
         continue;
       }
 
-      for (schIdx = 0; schIdx < actionSchedulers.size() && isSuccessfull(scheduleResult); schIdx++) {
+      for (schIdx = 0; schIdx < actionSchedulers.size()
+          && isSuccessfull(scheduleResult); schIdx++) {
         ActionScheduler scheduler = actionSchedulers.get(schIdx);
         try {
           scheduleResult = scheduler.onSchedule(info, actionInfo, launchCmdlet, launchAction);
@@ -516,7 +519,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
       int lastAction,
       int lastScheduler) {
     for (int aidx = lastAction; aidx >= 0; aidx--) {
-      ActionInfo info = inMemoryRegistry.getUnfinishedAction(actions.get(aidx));
+      ActionInfo info = actionInfoHandler.getUnfinishedAction(actions.get(aidx));
       List<ActionScheduler> actionSchedulers = schedulers.get(info.getActionName());
       if (CollectionUtils.isEmpty(actionSchedulers)) {
         continue;
@@ -538,7 +541,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
   }
 
   public void disableCmdlet(long cid) throws IOException {
-    CmdletInfo info = inMemoryRegistry.getUnfinishedCmdlet(cid);
+    CmdletInfo info = cmdletInfoHandler.getUnfinishedCmdlet(cid);
     if (info == null) {
       return;
     }
@@ -575,7 +578,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     runningCmdlets.remove(cmdletInfo.getCid());
     idToLaunchCmdlets.remove(cmdletInfo.getCid());
 
-    inMemoryRegistry.addCmdlet(cmdletInfo);
+    cmdletInfoHandler.store(cmdletInfo);
   }
 
   public void deleteCmdlet(long cid) throws IOException {
@@ -632,7 +635,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
   @Override
   public void onStatusUpdate(ActionStatus actionStatus) throws IOException {
     onActionStatusUpdate(actionStatus);
-    ActionInfo actionInfo = inMemoryRegistry.getUnfinishedAction(actionStatus.getActionId());
+    ActionInfo actionInfo = actionInfoHandler.getUnfinishedAction(actionStatus.getActionId());
     inferCmdletStatus(actionInfo);
   }
 
@@ -647,7 +650,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     if (CmdletState.isTerminalState(state)) {
       cmdletFinished(cmdletInfo);
     } else if (state == CmdletState.DISPATCHED) {
-      inMemoryRegistry.addCmdlet(cmdletInfo);
+      cmdletInfoHandler.store(cmdletInfo);
     }
   }
 
@@ -657,7 +660,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
       return;
     }
     CmdletInfo cmdletInfo =
-        inMemoryRegistry.getUnfinishedCmdlet(status.getCmdletId());
+        cmdletInfoHandler.getUnfinishedCmdlet(status.getCmdletId());
     ActionInfo actionInfo =
         actionInfoHandler.updateActionStatus(status.getActionId(), status);
 
@@ -675,7 +678,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
 
     long cmdletId = actionInfo.getCmdletId();
 
-    CmdletInfo cmdletInfo = inMemoryRegistry.getUnfinishedCmdlet(cmdletId);
+    CmdletInfo cmdletInfo = cmdletInfoHandler.getUnfinishedCmdlet(cmdletId);
     List<Long> actionIds = cmdletInfo.getAids();
     int actionIndex = actionIds.indexOf(actionInfo.getActionId());
 

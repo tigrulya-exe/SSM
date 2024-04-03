@@ -17,8 +17,9 @@
  */
 package org.smartdata.server.engine.model;
 
-import java.util.List;
 import org.smartdata.model.DetailedFileAction;
+
+import java.util.List;
 
 public class DetailedFileActionGroup {
     private final List<DetailedFileAction> detailedFileActions;

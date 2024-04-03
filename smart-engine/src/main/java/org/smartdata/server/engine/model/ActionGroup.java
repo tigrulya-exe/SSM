@@ -17,8 +17,9 @@
  */
 package org.smartdata.server.engine.model;
 
-import java.util.List;
 import org.smartdata.model.ActionInfo;
+
+import java.util.List;
 
 public class ActionGroup {
     private final List<ActionInfo> actions;

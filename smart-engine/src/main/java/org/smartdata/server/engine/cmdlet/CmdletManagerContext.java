@@ -18,18 +18,22 @@
 package org.smartdata.server.engine.cmdlet;
 
 import com.google.common.collect.ListMultimap;
-import java.util.List;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.model.action.ActionScheduler;
 import org.smartdata.server.engine.ServerContext;
 
+import java.util.List;
+
 public class CmdletManagerContext extends ServerContext {
   private final InMemoryRegistry inMemoryRegistry;
   private final ListMultimap<String, ActionScheduler> schedulers;
 
-  public CmdletManagerContext(SmartConf conf, MetaStore metaStore, InMemoryRegistry inMemoryRegistry,
-                              ListMultimap<String, ActionScheduler> schedulers) {
+  public CmdletManagerContext(
+      SmartConf conf,
+      MetaStore metaStore,
+      InMemoryRegistry inMemoryRegistry,
+      ListMultimap<String, ActionScheduler> schedulers) {
     super(conf, metaStore);
     this.inMemoryRegistry = inMemoryRegistry;
     this.schedulers = schedulers;

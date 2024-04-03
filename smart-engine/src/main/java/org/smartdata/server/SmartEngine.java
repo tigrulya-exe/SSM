@@ -17,7 +17,6 @@
  */
 package org.smartdata.server;
 
-import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.AbstractService;
@@ -27,7 +26,6 @@ import org.smartdata.model.Utilization;
 import org.smartdata.server.cluster.NodeInfo;
 import org.smartdata.server.engine.ActiveServerInfo;
 import org.smartdata.server.engine.CmdletManager;
-import org.smartdata.server.engine.ConfManager;
 import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.engine.ServerContext;
 import org.smartdata.server.engine.StandbyServerInfo;
@@ -38,10 +36,9 @@ import org.smartdata.server.engine.cmdlet.agent.AgentInfo;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 public class SmartEngine extends AbstractService {

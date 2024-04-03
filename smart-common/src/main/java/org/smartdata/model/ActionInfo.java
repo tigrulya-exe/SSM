@@ -59,13 +59,13 @@ public class ActionInfo {
     this.actionName = actionName;
     this.args = args;
     this.result = result;
+    this.log = log;
     this.execHost = "";
     this.successful = successful;
     this.createTime = createTime;
     this.finished = finished;
     this.finishTime = finishTime;
     this.progress = progress;
-    setLog(log);
   }
 
   public long getActionId() {
@@ -151,7 +151,7 @@ public class ActionInfo {
   }
 
   public void setLog(String log) {
-    this.log = log == null ? "" : log;
+    this.log = log;
   }
 
   public void appendLog(String log) {
@@ -275,7 +275,7 @@ public class ActionInfo {
     private long cmdletId;
     private String actionName;
     private Map<String, String> args;
-    private String result;
+    private String result = "";
     private String log = "";
 
     private boolean successful;

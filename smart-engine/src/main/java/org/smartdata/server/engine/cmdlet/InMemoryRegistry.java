@@ -17,6 +17,17 @@
  */
 package org.smartdata.server.engine.cmdlet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.smartdata.SmartService;
+import org.smartdata.conf.SmartConfKeys;
+import org.smartdata.metastore.MetaStore;
+import org.smartdata.metastore.MetaStoreException;
+import org.smartdata.model.ActionInfo;
+import org.smartdata.model.CmdletInfo;
+import org.smartdata.model.CmdletState;
+import org.smartdata.server.engine.ServerContext;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,16 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.smartdata.SmartService;
-import org.smartdata.conf.SmartConfKeys;
-import org.smartdata.metastore.MetaStore;
-import org.smartdata.metastore.MetaStoreException;
-import org.smartdata.model.ActionInfo;
-import org.smartdata.model.CmdletInfo;
-import org.smartdata.model.CmdletState;
-import org.smartdata.server.engine.ServerContext;
 
 public class InMemoryRegistry implements SmartService {
   private static final Logger LOG = LoggerFactory.getLogger(InMemoryRegistry.class);
@@ -57,8 +58,7 @@ public class InMemoryRegistry implements SmartService {
   public InMemoryRegistry(
       ServerContext context,
       TaskTracker tracker,
-      ScheduledExecutorService executorService
-  ) {
+      ScheduledExecutorService executorService) {
     this.tracker = tracker;
     this.executorService = executorService;
     this.unfinishedCmdlets = new ConcurrentHashMap<>();
@@ -137,14 +137,13 @@ public class InMemoryRegistry implements SmartService {
     return actions;
   }
 
-  public void syncWithMetastore() {
+  private void syncWithMetastore() {
     if (cmdlets.isEmpty() && cmdletsToDelete.isEmpty()) {
       return;
     }
     List<CmdletInfo> cmdletInfos = new ArrayList<>();
     List<ActionInfo> actionInfos = new ArrayList<>();
     List<CmdletInfo> cmdletFinished = new ArrayList<>();
-    LOG.debug("Number of cached cmds {}", cmdlets.size());
 
     int cmdletsToDeleteCount;
     synchronized (cmdletsToDelete) {
@@ -181,7 +180,7 @@ public class InMemoryRegistry implements SmartService {
 
   private void storeToMetastore(List<CmdletInfo> cmdletInfos, List<ActionInfo> actionInfos) {
     if (!cmdletInfos.isEmpty()) {
-      LOG.debug("Number of cmds {} to submit", cmdletInfos.size());
+      LOG.debug("Number of cmdlets {} to submit", cmdletInfos.size());
       try {
         metaStore.insertActions(
             actionInfos.toArray(new ActionInfo[0]));
@@ -216,7 +215,7 @@ public class InMemoryRegistry implements SmartService {
     }
 
     if (!cmdletsToDeleteBatch.isEmpty()) {
-      LOG.debug("Number of cmds {} to delete", cmdletsToDeleteBatch.size());
+      LOG.debug("Number of cmdlets {} to delete", cmdletsToDeleteBatch.size());
       try {
         metaStore.batchDeleteCmdlet(cmdletsToDeleteBatch);
         metaStore.batchDeleteCmdletActions(cmdletsToDeleteBatch);

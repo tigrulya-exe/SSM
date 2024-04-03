@@ -41,6 +41,7 @@ import org.smartdata.model.FileState;
 import org.smartdata.model.action.ActionScheduler;
 import org.smartdata.server.MiniSmartClusterHarness;
 import org.smartdata.server.engine.CmdletManager;
+import org.smartdata.server.engine.action.ActionInfoHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -48,7 +49,6 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import org.smartdata.server.engine.action.ActionInfoHandler;
 
 public class TestCompressDecompress extends MiniSmartClusterHarness {
   private DFSClient smartDFSClient;
@@ -405,8 +405,8 @@ public class TestCompressDecompress extends MiniSmartClusterHarness {
       }
       // Wait for 20s.
       if (++n == 20) {
-        throw new Exception("Time out in waiting for cmdlet: " +
-            cmdletInfoHandler.getCmdletInfo(cmdId).toString());
+        throw new Exception("Time out in waiting for cmdlet: "
+            + cmdletInfoHandler.getCmdletInfo(cmdId).toString());
       }
     }
   }

@@ -200,14 +200,18 @@ public class SmartRpcServer implements SmartServerProtocols {
   @Override
   public CmdletInfo getCmdletInfo(long cmdletID) throws IOException {
     checkIfActive();
-    return ssm.getCmdletManager().getCmdletInfo(cmdletID);
+    return ssm.getCmdletManager()
+        .getCmdletInfoHandler()
+        .getCmdletInfo(cmdletID);
   }
 
   @Override
   public List<CmdletInfo> listCmdletInfo(long rid, CmdletState cmdletState)
       throws IOException {
     checkIfActive();
-    return ssm.getCmdletManager().listCmdletsInfo(rid, cmdletState);
+    return ssm.getCmdletManager()
+        .getCmdletInfoHandler()
+        .listCmdletsInfo(rid, cmdletState);
   }
 
   @Override
@@ -231,14 +235,18 @@ public class SmartRpcServer implements SmartServerProtocols {
   @Override
   public ActionInfo getActionInfo(long actionID) throws IOException {
     checkIfActive();
-    return ssm.getCmdletManager().getActionInfo(actionID);
+    return ssm.getCmdletManager()
+        .getActionInfoHandler()
+        .getActionInfo(actionID);
   }
 
   @Override
   public List<ActionInfo> listActionInfoOfLastActions(int maxNumActions)
       throws IOException {
     checkIfActive();
-    return ssm.getCmdletManager().listNewCreatedActions(maxNumActions);
+    return ssm.getCmdletManager()
+        .getActionInfoHandler()
+        .listNewCreatedActions(maxNumActions);
   }
 
   @Override

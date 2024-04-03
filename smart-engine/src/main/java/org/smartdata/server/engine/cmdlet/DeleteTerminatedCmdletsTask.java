@@ -17,7 +17,6 @@
  */
 package org.smartdata.server.engine.cmdlet;
 
-import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.conf.SmartConf;
@@ -26,8 +25,14 @@ import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
 import org.smartdata.utils.StringUtil;
 
-public class CmdletPurgeTask implements Runnable {
-  private static final Logger LOG = LoggerFactory.getLogger(CmdletPurgeTask.class);
+import java.util.concurrent.atomic.AtomicLong;
+
+/**
+ * Deletes terminated cmdlets from metastore, that are older than the configured lifetime,
+ * or if their number exceeds the specified threshold.
+ */
+public class DeleteTerminatedCmdletsTask implements Runnable {
+  private static final Logger LOG = LoggerFactory.getLogger(DeleteTerminatedCmdletsTask.class);
 
   private static final long CMDLET_LIFETIME_MIN_VALUE_MS = 5000;
   private static final int CMDLET_LIFETIME_CHECKS_PER_INTERVAL = 20;
@@ -40,7 +45,7 @@ public class CmdletPurgeTask implements Runnable {
   private final long lifetimeCheckInterval;
   private long lastPurgeTimestamp;
 
-  public CmdletPurgeTask(SmartConf conf, MetaStore metaStore) {
+  public DeleteTerminatedCmdletsTask(SmartConf conf, MetaStore metaStore) {
     this.metaStore = metaStore;
     this.numCmdletsFinished = new AtomicLong(0);
     this.lastPurgeTimestamp = System.currentTimeMillis();

@@ -17,11 +17,6 @@
  */
 package org.smartdata.server.engine.cmdlet;
 
-import com.google.common.annotations.VisibleForTesting;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.action.ActionException;
@@ -33,17 +28,27 @@ import org.smartdata.protocol.message.ActionStatus;
 import org.smartdata.protocol.message.ActionStatusFactory;
 import org.smartdata.server.engine.action.ActionStatusUpdateListener;
 
-public class DetectFailedActionTask implements Runnable {
-  private static final Logger LOG = LoggerFactory.getLogger(DetectFailedActionTask.class);
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+/**
+ Detects completed actions that exceed the specified execution time,
+ tries to predict the result of execution (success or failure)
+ and notifies the ActionStatusUpdateListener about it.
+ */
+public class DetectTimeoutActionsTask implements Runnable {
+  private static final Logger LOG = LoggerFactory.getLogger(DetectTimeoutActionsTask.class);
   public static final int TIMEOUT_MULTIPLIER = 100;
   public static final int TIMEOUT_MIN_MILLISECOND = 30000;
 
   private final Set<Long> cmdletsToLaunch;
   private final ActionStatusUpdateListener actionStatusUpdateListener;
   private final CmdletManagerContext context;
-  private long timeout;
+  private final long timeout;
 
-  public DetectFailedActionTask(
+  public DetectTimeoutActionsTask(
       CmdletManagerContext context,
       ActionStatusUpdateListener actionStatusUpdateListener,
       Set<Long> cmdletsToLaunch) {
@@ -98,11 +103,6 @@ public class DetectFailedActionTask implements Runnable {
     } catch (Exception t) {
       LOG.error("Unexpected exception occurs.", t);
     }
-  }
-
-  @VisibleForTesting
-  void setTimeout(long timeout) {
-    this.timeout = timeout;
   }
 
   private boolean isTimeout(ActionInfo actionInfo) {
