@@ -23,7 +23,7 @@ public enum ScheduleResult {
   RETRY,    // Need re-schedule later
   FAIL;
 
-  public static boolean isSuccessfull(ScheduleResult result) {
+  public static boolean isSuccessful(ScheduleResult result) {
     return result == SUCCESS
         || result == SUCCESS_NO_EXECUTION;
   }

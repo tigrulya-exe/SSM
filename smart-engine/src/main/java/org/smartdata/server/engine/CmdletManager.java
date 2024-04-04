@@ -80,7 +80,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static org.smartdata.model.action.ScheduleResult.RETRY;
-import static org.smartdata.model.action.ScheduleResult.isSuccessfull;
+import static org.smartdata.model.action.ScheduleResult.isSuccessful;
 
 /**
  * When a Cmdlet is submitted, it's string descriptor will be stored into set submittedCmdlets
@@ -473,14 +473,15 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
 
   private ScheduleResult scheduleCmdletActions(CmdletInfo info, LaunchCmdlet launchCmdlet) {
     List<Long> actionIds = info.getAids();
-    int idx;
+    int actionIdx;
     int schIdx = 0;
     boolean skipped = false;
     ScheduleResult scheduleResult = ScheduleResult.SUCCESS_NO_EXECUTION;
 
-    for (idx = 0; idx < actionIds.size() && isSuccessfull(scheduleResult); idx++) {
-      ActionInfo actionInfo = actionInfoHandler.getUnfinishedAction(actionIds.get(idx));
-      LaunchAction launchAction = launchCmdlet.getLaunchActions().get(idx);
+    actionsCycle:
+    for (actionIdx = 0; actionIdx < actionIds.size(); actionIdx++) {
+      ActionInfo actionInfo = actionInfoHandler.getUnfinishedAction(actionIds.get(actionIdx));
+      LaunchAction launchAction = launchCmdlet.getLaunchActions().get(actionIdx);
 
       List<ActionScheduler> actionSchedulers = schedulers.get(actionInfo.getActionName());
       if (CollectionUtils.isEmpty(actionSchedulers)) {
@@ -488,8 +489,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
         continue;
       }
 
-      for (schIdx = 0; schIdx < actionSchedulers.size()
-          && isSuccessfull(scheduleResult); schIdx++) {
+      for (schIdx = 0; schIdx < actionSchedulers.size(); schIdx++) {
         ActionScheduler scheduler = actionSchedulers.get(schIdx);
         try {
           scheduleResult = scheduler.onSchedule(info, actionInfo, launchCmdlet, launchAction);
@@ -497,18 +497,22 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
           actionInfo.appendLogLine("OnSchedule exception: " + exception);
           scheduleResult = ScheduleResult.FAIL;
         }
+
+        if (!isSuccessful(scheduleResult)) {
+          break actionsCycle;
+        }
       }
     }
 
-    if (isSuccessfull(scheduleResult)) {
-      idx--;
+    if (isSuccessful(scheduleResult)) {
+      actionIdx--;
       schIdx--;
       // todo check do we need it
       if (skipped) {
         scheduleResult = ScheduleResult.SUCCESS;
       }
     }
-    postScheduleCmdletActions(info, actionIds, scheduleResult, idx, schIdx);
+    postScheduleCmdletActions(info, actionIds, scheduleResult, actionIdx, schIdx);
     return scheduleResult;
   }
 
@@ -516,19 +520,19 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
       CmdletInfo cmdletInfo,
       List<Long> actions,
       ScheduleResult result,
-      int lastAction,
-      int lastScheduler) {
-    for (int aidx = lastAction; aidx >= 0; aidx--) {
-      ActionInfo info = actionInfoHandler.getUnfinishedAction(actions.get(aidx));
+      int lastActionIdx,
+      int lastSchedulerIdx) {
+    for (int actionIdx = lastActionIdx; actionIdx >= 0; actionIdx--) {
+      ActionInfo info = actionInfoHandler.getUnfinishedAction(actions.get(actionIdx));
       List<ActionScheduler> actionSchedulers = schedulers.get(info.getActionName());
       if (CollectionUtils.isEmpty(actionSchedulers)) {
         continue;
       }
-      if (lastScheduler < 0) {
-        lastScheduler = actionSchedulers.size() - 1;
+      if (lastSchedulerIdx < 0) {
+        lastSchedulerIdx = actionSchedulers.size() - 1;
       }
 
-      for (int schedulerIdx = lastScheduler; schedulerIdx >= 0; schedulerIdx--) {
+      for (int schedulerIdx = lastSchedulerIdx; schedulerIdx >= 0; schedulerIdx--) {
         try {
           actionSchedulers.get(schedulerIdx).postSchedule(cmdletInfo, info, result);
         } catch (Exception exception) {
@@ -536,7 +540,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
         }
       }
 
-      lastScheduler = -1;
+      lastSchedulerIdx = -1;
     }
   }
 
