@@ -31,7 +31,6 @@ public class CmdletInfo {
   private String parameters;
   private long stateChangedTime;
   private final long generateTime;
-  private final long deferedToTime;
 
   public CmdletInfo(
       long cid,
@@ -41,7 +40,7 @@ public class CmdletInfo {
       long generateTime,
       long stateChangedTime) {
     this(cid, rid, new ArrayList<>(), state,
-        parameters, generateTime, stateChangedTime, generateTime);
+        parameters, generateTime, stateChangedTime);
   }
 
   public CmdletInfo(
@@ -51,15 +50,13 @@ public class CmdletInfo {
       CmdletState state,
       String parameters,
       long generateTime,
-      long stateChangedTime,
-      long deferedToTime) {
+      long stateChangedTime) {
     this.cid = cid;
     this.rid = rid;
     this.state = state;
     this.parameters = parameters;
     this.generateTime = generateTime;
     this.stateChangedTime = stateChangedTime;
-    this.deferedToTime = deferedToTime;
     this.aids = aids;
   }
 
@@ -143,10 +140,6 @@ public class CmdletInfo {
     this.stateChangedTime = stateChangedTime;
   }
 
-  public long getDeferedToTime() {
-    return deferedToTime;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -160,7 +153,6 @@ public class CmdletInfo {
         && rid == that.rid
         && generateTime == that.generateTime
         && stateChangedTime == that.stateChangedTime
-        && deferedToTime == that.deferedToTime
         && Objects.equals(aids, that.aids)
         && state == that.state
         && Objects.equals(parameters, that.parameters);
@@ -169,25 +161,24 @@ public class CmdletInfo {
   @Override
   public int hashCode() {
     return Objects.hash(cid, rid, aids, state, parameters,
-        generateTime, stateChangedTime, deferedToTime);
+        generateTime, stateChangedTime);
   }
 
   public static Builder newBuilder() {
-    return Builder.create();
+    return new Builder();
   }
 
   public static class Builder {
     private long id;
     private long ruleId;
-    private List<Long> actionIds = new ArrayList<>();
+    private List<Long> actionIds;
     private CmdletState state;
     private String parameters;
     private long generateTime;
     private long stateChangedTime;
-    private long deferredToTime;
 
-    public static Builder create() {
-      return new Builder();
+    public Builder() {
+      this.actionIds = new ArrayList<>();
     }
 
     public Builder setId(long id) {
@@ -226,15 +217,9 @@ public class CmdletInfo {
       return this;
     }
 
-    public Builder setDeferredToTime(long deferredToTime) {
-      this.deferredToTime = deferredToTime;
-      return this;
-    }
-
     public CmdletInfo build() {
       return new CmdletInfo(id, ruleId, actionIds, state, parameters,
-          generateTime, stateChangedTime,
-          deferredToTime == 0 ? generateTime : deferredToTime);
+          generateTime, stateChangedTime);
     }
   }
 }

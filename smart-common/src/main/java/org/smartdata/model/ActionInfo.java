@@ -142,10 +142,6 @@ public class ActionInfo {
     this.result = result;
   }
 
-  public void appendResult(String result) {
-    this.result += result;
-  }
-
   public String getLog() {
     return log;
   }
@@ -250,24 +246,24 @@ public class ActionInfo {
 
   @Override
   public String toString() {
-    return String.format(
-        "ActionInfo{actionId=%s, cmdletId=%s, actionName=\'%s\', args=%s, result=\'%s\', "
-            + "log=\'%s\', successful=%s, createTime=%s, finished=%s, progress=%s}",
-        actionId,
-        cmdletId,
-        actionName,
-        args,
-        result,
-        log,
-        successful,
-        createTime,
-        finished,
-        finishTime,
-        progress);
+    return "ActionInfo{"
+        + "actionId=" + actionId
+        + ", cmdletId=" + cmdletId
+        + ", actionName='" + actionName + "'"
+        + ", args=" + args
+        + ", result='" + result + "'"
+        + ", log='" + log + "'"
+        + ", execHost='" + execHost + "'"
+        + ", successful=" + successful
+        + ", createTime=" + createTime
+        + ", finished=" + finished
+        + ", finishTime=" + finishTime
+        + ", progress=" + progress
+        + '}';
   }
 
   public static Builder newBuilder() {
-    return Builder.create();
+    return new Builder();
   }
 
   public static class Builder {
@@ -275,8 +271,8 @@ public class ActionInfo {
     private long cmdletId;
     private String actionName;
     private Map<String, String> args;
-    private String result = "";
-    private String log = "";
+    private String result;
+    private String log;
 
     private boolean successful;
 
@@ -285,6 +281,11 @@ public class ActionInfo {
     private long finishTime;
 
     private float progress;
+
+    public Builder() {
+      this.result = "";
+      this.log = "";
+    }
 
     public Builder setActionId(long actionId) {
       this.actionId = actionId;
@@ -339,10 +340,6 @@ public class ActionInfo {
     public Builder setProgress(float progress) {
       this.progress = progress;
       return this;
-    }
-
-    public static Builder create() {
-      return new Builder();
     }
 
     public ActionInfo build() {

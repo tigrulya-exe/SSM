@@ -18,7 +18,6 @@
 
 package org.smartdata.server.engine.cmdlet;
 
-import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.metastore.MetaStore;
@@ -53,7 +52,6 @@ public class CmdletInfoHandler {
   private final InMemoryRegistry inMemoryRegistry;
   private AtomicLong maxCmdletId;
 
-
   public CmdletInfoHandler(CmdletManagerContext context, ActionInfoHandler actionInfoHandler) {
     this.metaStore = context.getMetaStore();
     this.inMemoryRegistry = context.getInMemoryRegistry();
@@ -80,7 +78,6 @@ public class CmdletInfoHandler {
         .setParameters(cmdletDescriptor.getCmdletString())
         .setGenerateTime(submitTime)
         .setStateChangedTime(submitTime)
-        .setDeferredToTime(submitTime + cmdletDescriptor.getDeferIntervalMs())
         .build();
   }
 
@@ -135,42 +132,25 @@ public class CmdletInfoHandler {
   }
 
   public List<CmdletInfo> listCmdletsInfo(long rid, CmdletState cmdletState) throws IOException {
-    List<CmdletInfo> result = new ArrayList<>();
+    Map<Long, CmdletInfo> result = new HashMap<>();
     try {
-      if (rid == -1) {
-        result.addAll(metaStore.getCmdlets(null, null, cmdletState));
-      } else {
-        result.addAll(metaStore.getCmdlets(null, String.format("= %d", rid), cmdletState));
-      }
+      String ridCondition = rid == -1 ? null : String.format("= %d", rid);
+      List<CmdletInfo> cmdlets = metaStore.getCmdlets(null, ridCondition, cmdletState);
+      cmdlets.forEach(cmdlet -> result.put(cmdlet.getCid(), cmdlet));
     } catch (MetaStoreException e) {
       LOG.error("RuleId -> [ {} ], List CmdletInfo from DB error", rid, e);
       throw new IOException(e);
     }
     for (CmdletInfo info : inMemoryRegistry.getUnfinishedCmdlets().values()) {
       if (info.getRid() == rid && info.getState().equals(cmdletState)) {
-        result.add(info);
+        result.put(info.getCid(), info);
       }
     }
-    return result;
+    return new ArrayList<>(result.values());
   }
 
   public List<CmdletInfo> listCmdletsInfo(long rid) throws IOException {
-    Map<Long, CmdletInfo> result = new HashMap<>();
-    try {
-      String ridCondition = rid == -1 ? null : String.format("= %d", rid);
-      for (CmdletInfo info : metaStore.getCmdlets(null, ridCondition, null)) {
-        result.put(info.getCid(), info);
-      }
-    } catch (MetaStoreException e) {
-      LOG.error("RuleId -> [ {} ], List CmdletInfo from DB error", rid, e);
-      throw new IOException(e);
-    }
-    for (CmdletInfo info : inMemoryRegistry.getUnfinishedCmdlets().values()) {
-      if (info.getRid() == rid) {
-        result.put(info.getCid(), info);
-      }
-    }
-    return Lists.newArrayList(result.values());
+    return listCmdletsInfo(rid, null);
   }
 
   public void onCmdletFinished(CmdletInfo cmdletInfo, boolean success) {

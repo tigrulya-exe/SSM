@@ -63,7 +63,7 @@ public class CmdletDispatcher {
   private final int[] cmdExecSrvInsts;
   private int cmdExecSrvTotalInsts;
   private final AtomicInteger[] execSrvSlotsLeft;
-  private final AtomicInteger totalSlotsLeft = new AtomicInteger();
+  private final AtomicInteger totalSlotsLeft;
 
   private final Map<Long, ExecutorType> dispatchedToSrvs;
   private final boolean disableLocalExec;
@@ -74,13 +74,13 @@ public class CmdletDispatcher {
   // TODO: to be refined
   private final int defaultSlots;
   private final int executorsNum;
-  private final AtomicInteger index = new AtomicInteger(0);
+  private final AtomicInteger index;
 
-  private final Map<String, AtomicInteger> regNodes = new HashMap<>();
-  private final Map<String, NodeCmdletMetrics> regNodeInfos = new HashMap<>();
+  private final Map<String, AtomicInteger> regNodes;
+  private final Map<String, NodeCmdletMetrics> regNodeInfos;
 
-  private final List<List<String>> cmdExecSrvNodeIds = new ArrayList<>();
-  private final String[] completeOn = new String[ExecutorType.values().length];
+  private final List<List<String>> cmdExecSrvNodeIds;
+  private final String[] completeOn;
 
   private final SmartConf conf;
 
@@ -93,6 +93,14 @@ public class CmdletDispatcher {
     this.runningCmdlets = runningCmdlets;
     this.idToLaunchCmdlet = idToLaunchCmdlet;
     this.schedulers = schedulers;
+
+    this.index = new AtomicInteger(0);
+    this.regNodes = new HashMap<>();
+    this.regNodeInfos = new HashMap<>();
+    this.cmdExecSrvNodeIds = new ArrayList<>();
+    this.completeOn = new String[ExecutorType.values().length];
+    this.totalSlotsLeft = new AtomicInteger();
+
     this.executorsNum = conf.getInt(SmartConfKeys.SMART_CMDLET_EXECUTORS_KEY,
         SmartConfKeys.SMART_CMDLET_EXECUTORS_DEFAULT);
     int delta = conf.getInt(SmartConfKeys.SMART_DISPATCH_CMDLETS_EXTRA_NUM_KEY,
@@ -104,7 +112,7 @@ public class CmdletDispatcher {
     this.execSrvSlotsLeft = new AtomicInteger[ExecutorType.values().length];
     for (int i = 0; i < execSrvSlotsLeft.length; i++) {
       execSrvSlotsLeft[i] = new AtomicInteger(0);
-      cmdExecSrvNodeIds.add(new ArrayList<String>());
+      cmdExecSrvNodeIds.add(new ArrayList<>());
     }
     this.cmdExecSrvTotalInsts = 0;
     this.dispatchedToSrvs = new ConcurrentHashMap<>();

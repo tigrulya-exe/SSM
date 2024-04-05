@@ -20,6 +20,8 @@ package org.smartdata.rule.parser;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
+import org.smartdata.cmdlet.parser.CmdletParser;
+import org.smartdata.cmdlet.parser.ParsedCmdlet;
 import org.smartdata.model.CmdletDescriptor;
 import org.smartdata.model.rule.RuleTranslationResult;
 import org.smartdata.model.rule.TimeBasedScheduleInfo;
@@ -47,27 +49,30 @@ import static org.smartdata.utils.StringUtil.ssmPatternToSqlLike;
 
 /** Convert SSM parse tree into internal representation. */
 public class SmartRuleVisitTranslator extends SmartRuleBaseVisitor<TreeNode> {
-  private Map<String, SmartObject> objects = new HashMap<>();
-  private TreeNode objFilter = null;
-  private TreeNode conditions = null;
-  private List<PropertyRealParas> realParases = new LinkedList<>();
+  private final Map<String, SmartObject> objects;
+  private final List<String> pathCheckGlob;
+  private final TranslationContext transCtx;
 
-  private TimeBasedScheduleInfo timeBasedScheduleInfo = null;
-  private CmdletDescriptor cmdDescriptor = null;
-  private TranslationContext transCtx = null;
-  private int[] condPostion;
-  private long minTimeInverval = Long.MAX_VALUE;
-  private List<String> pathCheckGlob = new ArrayList<>();
+  private final CmdletParser cmdletParser;
 
-  public SmartRuleVisitTranslator() {}
+  private TreeNode objFilter;
+  private TreeNode conditions;
+
+  private TimeBasedScheduleInfo timeBasedScheduleInfo;
+  private CmdletDescriptor cmdDescriptor;
+  private int[] condPosition;
+  private long minTimeInterval;
+
+  public SmartRuleVisitTranslator() {
+    this(null);
+  }
 
   public SmartRuleVisitTranslator(TranslationContext transCtx) {
     this.transCtx = transCtx;
-  }
-
-  @Override
-  public TreeNode visitRuleLine(SmartRuleParser.RuleLineContext ctx) {
-    return visitChildren(ctx);
+    this.objects = new HashMap<>();
+    this.pathCheckGlob = new ArrayList<>();
+    this.minTimeInterval = Long.MAX_VALUE;
+    this.cmdletParser = new CmdletParser();
   }
 
   @Override
@@ -92,9 +97,9 @@ public class SmartRuleVisitTranslator extends SmartRuleBaseVisitor<TreeNode> {
   @Override
   public TreeNode visitConditions(SmartRuleParser.ConditionsContext ctx) {
     // System.out.println("Condition: " + ctx.getText());
-    condPostion = new int[2];
-    condPostion[0] = ctx.getStart().getStartIndex();
-    condPostion[1] = ctx.getStop().getStopIndex();
+    condPosition = new int[2];
+    condPosition[0] = ctx.getStart().getStartIndex();
+    condPosition[1] = ctx.getStop().getStopIndex();
     conditions = visit(ctx.boolvalue());
     return conditions;
   }
@@ -288,7 +293,6 @@ public class SmartRuleVisitTranslator extends SmartRuleBaseVisitor<TreeNode> {
       throw new RuleParserException("Should have no parameter(s) for " + ctx.getText());
     }
     PropertyRealParas realParas = new PropertyRealParas(p, null);
-    realParases.add(realParas);
     return new ValueNode(new VisitResult(p.getValueType(), null, realParas));
   }
 
@@ -308,7 +312,6 @@ public class SmartRuleVisitTranslator extends SmartRuleBaseVisitor<TreeNode> {
       throw new RuleParserException("Should have no parameter(s) for " + ctx.getText());
     }
     PropertyRealParas realParas = new PropertyRealParas(p, null);
-    realParases.add(realParas);
     return new ValueNode(new VisitResult(p.getValueType(), null, realParas));
   }
 
@@ -397,13 +400,12 @@ public class SmartRuleVisitTranslator extends SmartRuleBaseVisitor<TreeNode> {
       paras.add(value);
 
       if (p.getParamsTypes().get(paraIndex) == ValueType.TIMEINTVAL) {
-        minTimeInverval = Math.min((long) value, minTimeInverval);
+        minTimeInterval = Math.min((long) value, minTimeInterval);
       }
 
       paraIndex++;
     }
     PropertyRealParas realParas = new PropertyRealParas(p, paras);
-    realParases.add(realParas);
     return new ValueNode(new VisitResult(p.getValueType(), null, realParas));
   }
 
@@ -465,7 +467,7 @@ public class SmartRuleVisitTranslator extends SmartRuleBaseVisitor<TreeNode> {
           if (!right.isOperNode()) {
             VisitResult vs = ((ValueNode) right).eval();
             if (vs.isConst() && vs.getValueType() == ValueType.TIMEINTVAL) {
-              minTimeInverval = Math.min((long) vs.getValue(), minTimeInverval);
+              minTimeInterval = Math.min((long) vs.getValue(), minTimeInterval);
             }
           }
         }
@@ -629,7 +631,8 @@ public class SmartRuleVisitTranslator extends SmartRuleBaseVisitor<TreeNode> {
     Interval i = new Interval(ctx.getStart().getStartIndex(), ctx.getStop().getStopIndex());
     String cmd = ctx.getStart().getInputStream().getText(i);
     try {
-      cmdDescriptor = CmdletDescriptor.fromCmdletString(cmd);
+      ParsedCmdlet parsedCmdlet = cmdletParser.parse(cmd);
+      cmdDescriptor = new CmdletDescriptor(parsedCmdlet);
     } catch (ParseException e) {
       throw new RuleParserException(e.getMessage());
     }
@@ -652,8 +655,8 @@ public class SmartRuleVisitTranslator extends SmartRuleBaseVisitor<TreeNode> {
   private void setDefaultTimeBasedScheduleInfo() {
     if (timeBasedScheduleInfo == null) {
       long intval = 5000;
-      if (minTimeInverval != Long.MAX_VALUE) {
-        intval = Math.max(intval, minTimeInverval / 20);
+      if (minTimeInterval != Long.MAX_VALUE) {
+        intval = Math.max(intval, minTimeInterval / 20);
       }
       timeBasedScheduleInfo =
           new TimeBasedScheduleInfo(getTimeNow(),
@@ -699,7 +702,7 @@ public class SmartRuleVisitTranslator extends SmartRuleBaseVisitor<TreeNode> {
         sqlStatements.size() - 1,
         timeBasedScheduleInfo,
         cmdDescriptor,
-        condPostion,
+        condPosition,
         pathCheckGlob);
   }
 

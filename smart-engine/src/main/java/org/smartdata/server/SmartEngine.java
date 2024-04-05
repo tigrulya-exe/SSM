@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Set;
 
 public class SmartEngine extends AbstractService {
+  public static final Logger LOG = LoggerFactory.getLogger(SmartEngine.class);
+
   private final SmartConf conf;
   private final ServerContext serverContext;
   private StatesManager statesMgr;
@@ -49,13 +51,13 @@ public class SmartEngine extends AbstractService {
   private CmdletManager cmdletManager;
   private AgentExecutorService agentService;
   private HazelcastExecutorService hazelcastService;
-  private final List<AbstractService> services = new ArrayList<>();
-  public static final Logger LOG = LoggerFactory.getLogger(SmartEngine.class);
+  private final List<AbstractService> services;
 
   public SmartEngine(ServerContext context) {
     super(context);
     this.serverContext = context;
     this.conf = serverContext.getConf();
+    this.services = new ArrayList<>();
   }
 
   @Override

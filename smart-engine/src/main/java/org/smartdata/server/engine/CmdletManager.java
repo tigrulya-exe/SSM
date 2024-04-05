@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.AbstractService;
 import org.smartdata.action.ActionException;
+import org.smartdata.cmdlet.parser.CmdletParser;
+import org.smartdata.cmdlet.parser.ParsedCmdlet;
 import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.exception.QueueFullException;
 import org.smartdata.hdfs.scheduler.ActionSchedulerService;
@@ -95,7 +97,6 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
 
   private final ScheduledExecutorService executorService;
   private final MetaStore metaStore;
-  private CmdletDispatcher dispatcher;
   private final int maxNumPendingCmdlets;
   private final List<Long> pendingCmdlets;
   private final List<Long> schedulingCmdlets;
@@ -105,31 +106,36 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
   // Track a CmdletDescriptor from the submission to
   // the finish.
   private final TaskTracker tracker;
-  private final ListMultimap<String, ActionScheduler> schedulers = ArrayListMultimap.create();
-  private List<ActionSchedulerService> schedulerServices = new ArrayList<>();
-
   private final DeleteTerminatedCmdletsTask cmdletPurgeTask;
   private final DetectTimeoutActionsTask detectTimeoutActionsTask;
   private final InMemoryRegistry inMemoryRegistry;
   private final ActionInfoHandler actionInfoHandler;
   private final CmdletInfoHandler cmdletInfoHandler;
+  private final CmdletParser cmdletParser;
+  private final ListMultimap<String, ActionScheduler> schedulers;
   private final PathChecker pathChecker;
+  private List<ActionSchedulerService> schedulerServices;
+  private CmdletDispatcher dispatcher;
 
   public CmdletManager(ServerContext context) throws IOException {
     super(context);
 
     this.metaStore = context.getMetaStore();
     this.executorService = Executors.newScheduledThreadPool(4);
+
     this.runningCmdlets = new ArrayList<>();
     this.pendingCmdlets = new LinkedList<>();
     this.schedulingCmdlets = new LinkedList<>();
     this.scheduledCmdlets = new LinkedBlockingQueue<>();
     this.idToLaunchCmdlets = new ConcurrentHashMap<>();
+    this.schedulers = ArrayListMultimap.create();
+    this.schedulerServices = new ArrayList<>();
+
     this.tracker = new TaskTracker();
     this.dispatcher = new CmdletDispatcher(context, this, scheduledCmdlets,
         idToLaunchCmdlets, runningCmdlets, schedulers);
     this.pathChecker = new PathChecker(context.getConf());
-    maxNumPendingCmdlets = context.getConf()
+    this.maxNumPendingCmdlets = context.getConf()
         .getInt(SmartConfKeys.SMART_CMDLET_MAX_NUM_PENDING_KEY,
             SmartConfKeys.SMART_CMDLET_MAX_NUM_PENDING_DEFAULT);
 
@@ -142,6 +148,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
         new DetectTimeoutActionsTask(cmdletManagerContext, this, idToLaunchCmdlets.keySet());
     this.actionInfoHandler = new ActionInfoHandler(cmdletManagerContext);
     this.cmdletInfoHandler = new CmdletInfoHandler(cmdletManagerContext, actionInfoHandler);
+    this.cmdletParser = new CmdletParser();
   }
 
   @VisibleForTesting
@@ -224,7 +231,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
       CmdletInfo cmdletInfo,
       Consumer<List<ActionInfo>> actionInfosHandler) throws IOException, ParseException {
     CmdletDescriptor cmdletDescriptor =
-        CmdletDescriptor.fromCmdletString(cmdletInfo.getParameters());
+        buildCmdletDescriptor(cmdletInfo.getParameters());
     cmdletDescriptor.setRuleId(cmdletInfo.getRid());
     tracker.track(cmdletInfo.getCid(), cmdletDescriptor);
 
@@ -310,12 +317,17 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
       if (StringUtils.isBlank(cmdlet)) {
         throw new IOException("Cannot submit an empty action!");
       }
-      CmdletDescriptor cmdletDescriptor = CmdletDescriptor.fromCmdletString(cmdlet);
+      CmdletDescriptor cmdletDescriptor = buildCmdletDescriptor(cmdlet);
       return submitCmdlet(cmdletDescriptor);
     } catch (ParseException e) {
       LOG.error("Wrong format for cmdlet '{}'", cmdlet, e);
       throw new IOException(e);
     }
+  }
+
+  private CmdletDescriptor buildCmdletDescriptor(String cmdlet) throws ParseException {
+    ParsedCmdlet parsedCmdlet = cmdletParser.parse(cmdlet);
+    return new CmdletDescriptor(parsedCmdlet);
   }
 
   private void validatePendingCmdletsCount() throws QueueFullException {
@@ -424,10 +436,6 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
 
   private Optional<ScheduleResult> scheduleCmdlet(CmdletInfo cmdlet, LaunchCmdlet launchCmdlet) {
     if (Objects.requireNonNull(cmdlet.getState()) == CmdletState.PENDING) {
-      if (cmdlet.getDeferedToTime() > System.currentTimeMillis()) {
-        return Optional.of(RETRY);
-      }
-
       try {
         return Optional.of(scheduleCmdletActions(cmdlet, launchCmdlet));
       } catch (Exception exception) {

@@ -17,6 +17,7 @@
  */
 package org.smartdata.metastore.dao;
 
+import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.model.ActionInfo;
 
 import java.util.List;
@@ -50,8 +51,8 @@ public interface ActionDao {
 
   List<ActionInfo> getAPageOfAction(long start, long offset);
 
-  List<ActionInfo> searchAction(String path, long start, long offset, List<String> orderBy,
-                                List<Boolean> isDesc, long[] retTotalNumActions);
+  SearchResult<ActionInfo> searchAction(String path, long start, long offset, List<String> orderBy,
+                                        List<Boolean> isDesc);
 
   List<ActionInfo> getLatestActions(String actionType, int size,
                                     boolean finished);

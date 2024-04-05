@@ -51,6 +51,7 @@ import org.smartdata.metastore.dao.WhitelistDao;
 import org.smartdata.metastore.dao.XattrDao;
 import org.smartdata.metastore.db.DbSchemaManager;
 import org.smartdata.metastore.db.metadata.DbMetadataProvider;
+import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.utils.MetaStoreUtils;
 import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.model.ActionInfo;
@@ -1186,13 +1187,13 @@ public class MetaStore implements CopyMetaService,
     }
   }
 
-  public List<ActionInfo> searchAction(String path, long start,
-                                       long offset, List<String> orderBy, List<Boolean> desc,
-                                       long[] retTotalNumActions) throws MetaStoreException {
+  public SearchResult<ActionInfo> searchAction(
+      String path, long start, long offset, List<String> orderBy, List<Boolean> desc
+  ) throws MetaStoreException {
     try {
-      return actionDao.searchAction(path, start, offset, orderBy, desc, retTotalNumActions);
+      return actionDao.searchAction(path, start, offset, orderBy, desc);
     } catch (EmptyResultDataAccessException e) {
-      return new ArrayList<>();
+      return SearchResult.emptyResult();
     } catch (Exception e) {
       throw new MetaStoreException(e);
     }

@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartdata.action.ActionRegistry;
+import org.smartdata.cmdlet.parser.CmdletParser;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
@@ -54,16 +55,18 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
   private CmdletManager cmdletManager;
   private CmdletInfoHandler cmdletInfoHandler;
   private ActionInfoHandler actionInfoHandler;
+  private CmdletParser cmdletParser;
 
   @Before
   public void initCmdletManager() {
     cmdletManager = ssm.getCmdletManager();
     cmdletInfoHandler = cmdletManager.getCmdletInfoHandler();
     actionInfoHandler = cmdletManager.getActionInfoHandler();
+    cmdletParser = new CmdletParser();
   }
 
   private CmdletDescriptor generateCmdletDescriptor(String cmd) throws Exception {
-    CmdletDescriptor cmdletDescriptor = new CmdletDescriptor(cmd);
+    CmdletDescriptor cmdletDescriptor = new CmdletDescriptor(cmdletParser.parse(cmd));
     cmdletDescriptor.setRuleId(1);
     return cmdletDescriptor;
   }

@@ -17,7 +17,6 @@
  */
 package org.smartdata.server.engine.action;
 
-import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.action.ActionException;
@@ -26,6 +25,7 @@ import org.smartdata.action.SmartAction;
 import org.smartdata.hdfs.action.move.AbstractMoveFileAction;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
+import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.model.ActionInfo;
 import org.smartdata.model.CmdletDescriptor;
 import org.smartdata.model.CmdletInfo;
@@ -38,6 +38,7 @@ import org.smartdata.server.engine.model.ActionGroup;
 import org.smartdata.server.engine.model.DetailedFileActionGroup;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,8 +51,6 @@ public class ActionInfoHandler {
 
   private final MetaStore metaStore;
   private AtomicLong maxActionId;
-  // todo remove it after zeppelin web removal
-  private ActionGroup tmpActions = new ActionGroup();
 
   private final InMemoryRegistry inMemoryRegistry;
 
@@ -119,7 +118,7 @@ public class ActionInfoHandler {
         actionInfos.put(info.getActionId(), info);
       }
       actionInfos.putAll(inMemoryRegistry.getUnfinishedActions());
-      return Lists.newArrayList(actionInfos.values());
+      return new ArrayList<>(actionInfos.values());
     } catch (MetaStoreException e) {
       LOG.error("Get Finished Actions from DB error", e);
       throw new IOException(e);
@@ -131,13 +130,11 @@ public class ActionInfoHandler {
       long numPerPage,
       List<String> orderBy,
       List<Boolean> isDesc) throws MetaStoreException {
-    if (pageIndex == Long.parseLong("0")) {
-      if (tmpActions.getTotalNumOfActions() != 0) {
-        return tmpActions;
-      } else {
-        pageIndex = 1;
-      }
+    // todo remove it after zeppelin web removal
+    if (pageIndex == 0) {
+      pageIndex = 1;
     }
+
     List<ActionInfo> infos = metaStore.listPageAction((pageIndex - 1) * numPerPage,
         numPerPage, orderBy, isDesc);
     for (ActionInfo info : infos) {
@@ -147,34 +144,29 @@ public class ActionInfoHandler {
         info.setProgress(memInfo.getProgress());
       }
     }
-    tmpActions = new ActionGroup(infos, metaStore.getCountOfAllAction());
-    return tmpActions;
+    return new ActionGroup(infos, metaStore.getCountOfAllAction());
   }
 
   public ActionGroup searchAction(String path, long pageIndex, long numPerPage,
                                   List<String> orderBy, List<Boolean> isDesc) throws IOException {
     try {
+      // todo remove it after zeppelin web removal
       if (pageIndex == 0) {
-        if (tmpActions.getTotalNumOfActions() != 0) {
-          return tmpActions;
-        }
         pageIndex = 1;
       }
 
-      long[] total = new long[1];
       String escapedPath = path.replaceAll("[%_\"/']", "/$0");
-      List<ActionInfo> infos = metaStore.searchAction(escapedPath, (pageIndex - 1) * numPerPage,
-          numPerPage, orderBy, isDesc, total);
-      for (ActionInfo info : infos) {
-        LOG.debug("[metaStore search] " + info.getActionName());
+      SearchResult<ActionInfo> infos = metaStore.searchAction(
+          escapedPath, (pageIndex - 1) * numPerPage, numPerPage, orderBy, isDesc);
+      for (ActionInfo info : infos.getItems()) {
+        LOG.debug("[metaStore search] {}", info.getActionName());
         ActionInfo memInfo = getUnfinishedAction(info.getActionId());
         if (memInfo != null) {
           info.setCreateTime(memInfo.getCreateTime());
           info.setProgress(memInfo.getProgress());
         }
       }
-      tmpActions = new ActionGroup(infos, total[0]);
-      return tmpActions;
+      return new ActionGroup(infos.getItems(), infos.getTotal());
     } catch (MetaStoreException e) {
       LOG.error("Search [ {} ], Get Finished Actions by search from DB error", path, e);
       throw new IOException(e);
@@ -222,7 +214,18 @@ public class ActionInfoHandler {
         actionInfo -> updateActionStatusInternal(actionInfo, status));
   }
 
-  public void updateActionStatusInternal(ActionInfo actionInfo, ActionStatus status) {
+  public List<ActionInfo> createActionInfos(
+      CmdletDescriptor cmdletDescriptor, CmdletInfo cmdletInfo) throws IOException {
+
+    validateActionNames(cmdletDescriptor);
+
+    return IntStream.range(0, cmdletDescriptor.getActionSize())
+        .mapToObj(actionIdx ->
+            createInitialActionInfo(cmdletDescriptor, cmdletInfo, actionIdx))
+        .collect(Collectors.toList());
+  }
+
+  private void updateActionStatusInternal(ActionInfo actionInfo, ActionStatus status) {
     if (actionInfo.isFinished()) {
       return;
     }
@@ -246,7 +249,6 @@ public class ActionInfoHandler {
     }
   }
 
-  //Todo: remove this implementation
   private void updateStorageIfNeeded(ActionInfo info) {
     SmartAction action;
     try {
@@ -274,18 +276,7 @@ public class ActionInfoHandler {
     }
   }
 
-  public List<ActionInfo> createActionInfos(
-      CmdletDescriptor cmdletDescriptor, CmdletInfo cmdletInfo) throws IOException {
-
-    validateActionNames(cmdletDescriptor);
-
-    return IntStream.range(0, cmdletDescriptor.getActionSize())
-        .mapToObj(actionIdx ->
-            createInitialActionInfo(cmdletDescriptor, cmdletInfo, actionIdx))
-        .collect(Collectors.toList());
-  }
-
-  public ActionInfo createInitialActionInfo(
+  private ActionInfo createInitialActionInfo(
       CmdletDescriptor cmdletDescriptor, CmdletInfo cmdletInfo, int actionIndex) {
     return ActionInfo.newBuilder()
         .setActionId(maxActionId.getAndIncrement())

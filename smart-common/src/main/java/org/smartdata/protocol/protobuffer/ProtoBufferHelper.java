@@ -18,6 +18,7 @@
 package org.smartdata.protocol.protobuffer;
 
 import com.google.protobuf.ServiceException;
+import org.smartdata.cmdlet.parser.CmdletParser;
 import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.model.ActionDescriptor;
 import org.smartdata.model.ActionInfo;
@@ -33,14 +34,12 @@ import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
 import org.smartdata.protocol.AdminServerProto.ActionDescriptorProto;
 import org.smartdata.protocol.AdminServerProto.ActionInfoProto;
-import org.smartdata.protocol.AdminServerProto.ActionInfoProto.Builder;
 import org.smartdata.protocol.AdminServerProto.CmdletInfoProto;
 import org.smartdata.protocol.AdminServerProto.RuleInfoProto;
 import org.smartdata.protocol.ClientServerProto.CompactFileStateProto;
 import org.smartdata.protocol.ClientServerProto.CompressionFileStateProto;
 import org.smartdata.protocol.ClientServerProto.FileStateProto;
 import org.smartdata.protocol.ClientServerProto.ReportFileAccessEventRequestProto;
-import org.smartdata.protocol.ClientServerProto.S3FileStateProto;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -89,29 +88,29 @@ public class ProtoBufferHelper {
 
   public static CmdletInfo convert(CmdletInfoProto proto) {
     // TODO replace actionType with aids
-    CmdletInfo.Builder builder = CmdletInfo.newBuilder();
-    builder.setId(proto.getCid())
+    List<Long> actionIds = proto.getAidsList();
+    return CmdletInfo.newBuilder()
+        .setId(proto.getCid())
         .setRuleId(proto.getRid())
         .setState(CmdletState.fromValue(proto.getState()))
         .setParameters(proto.getParameters())
         .setGenerateTime(proto.getGenerateTime())
-        .setStateChangedTime(proto.getStateChangedTime());
-    List<Long> list = proto.getAidsList();
-    builder.setActionIds(list);
-    return builder.build();
+        .setStateChangedTime(proto.getStateChangedTime())
+        .setActionIds(actionIds)
+        .build();
   }
 
   public static CmdletInfoProto convert(CmdletInfo info) {
     // TODO replace actionType with aids
-    CmdletInfoProto.Builder builder = CmdletInfoProto.newBuilder();
-    builder.setCid(info.getCid())
+    return CmdletInfoProto.newBuilder()
+        .setCid(info.getCid())
         .setRid(info.getRid())
         .setState(info.getState().getValue())
         .setParameters(info.getParameters())
         .setGenerateTime(info.getGenerateTime())
-        .setStateChangedTime(info.getStateChangedTime());
-    builder.addAllAids(info.getAids());
-    return builder.build();
+        .setStateChangedTime(info.getStateChangedTime())
+        .addAllAids(info.getAids())
+        .build();
   }
 
   public static ReportFileAccessEventRequestProto convert(FileAccessEvent event) {
@@ -123,8 +122,8 @@ public class ProtoBufferHelper {
   }
 
   public static ActionInfoProto convert(ActionInfo actionInfo) {
-    Builder builder = ActionInfoProto.newBuilder();
-    builder.setActionName(actionInfo.getActionName())
+    return ActionInfoProto.newBuilder()
+        .setActionName(actionInfo.getActionName())
         .setResult(actionInfo.getResult())
         .setLog(actionInfo.getLog())
         .setSuccessful(actionInfo.isSuccessful())
@@ -133,14 +132,14 @@ public class ProtoBufferHelper {
         .setFinishTime(actionInfo.getFinishTime())
         .setProgress(actionInfo.getProgress())
         .setActionId(actionInfo.getActionId())
-        .setCmdletId(actionInfo.getCmdletId());
-    builder.addAllArgs(CmdletDescriptor.toArgList(actionInfo.getArgs()));
-    return builder.build();
+        .setCmdletId(actionInfo.getCmdletId())
+        .addAllArgs(CmdletDescriptor.toArgList(actionInfo.getArgs()))
+        .build();
   }
 
   public static ActionInfo convert(ActionInfoProto infoProto) {
-    ActionInfo.Builder builder = ActionInfo.newBuilder();
-    builder.setActionName(infoProto.getActionName())
+    ActionInfo.Builder builder = ActionInfo.newBuilder()
+        .setActionName(infoProto.getActionName())
         .setResult(infoProto.getResult())
         .setLog(infoProto.getLog())
         .setSuccessful(infoProto.getSuccessful())
@@ -152,7 +151,7 @@ public class ProtoBufferHelper {
         .setCmdletId(infoProto.getCmdletId());
     List<String> list = infoProto.getArgsList();
     try {
-      builder.setArgs(CmdletDescriptor.toArgMap(list));
+      builder.setArgs(CmdletParser.toArgMap(list));
     } catch (ParseException e) {
       return null;
     }
@@ -194,8 +193,6 @@ public class ProtoBufferHelper {
     String path = proto.getPath();
     FileState.FileType type = FileState.FileType.fromValue(proto.getType());
     FileState.FileStage stage = FileState.FileStage.fromValue(proto.getStage());
-    /// Unusable temporarily
-    // FileState.FileStage stage = FileState.FileStage.fromValue(proto.getStage());
     if (type == null) {
       return new NormalFileState(path);
     }
@@ -212,19 +209,14 @@ public class ProtoBufferHelper {
         // convert to CompressionFileState
         fileState = convert(path, stage, compressionProto);
         break;
-      case S3:
-        S3FileStateProto s3Proto = proto.getS3FileState();
-        // convert to S3FileState
-        // fileState = convert(path, type, stage, s3Proto);
-        break;
       default:
     }
     return fileState;
   }
 
   public static FileStateProto convert(FileState fileState) {
-    FileStateProto.Builder builder = FileStateProto.newBuilder();
-    builder.setPath(fileState.getPath())
+    FileStateProto.Builder builder = FileStateProto.newBuilder()
+        .setPath(fileState.getPath())
         .setType(fileState.getFileType().getValue())
         .setStage(fileState.getFileStage().getValue());
     if (fileState instanceof CompactFileState) {
@@ -237,36 +229,31 @@ public class ProtoBufferHelper {
     } else if (fileState instanceof CompressionFileState) {
       builder.setCompressionFileState(convert((CompressionFileState) fileState));
     }
-    /*else if (fileState instanceof S3FileState) {
-      builder.setS3FileState();
-    } else if (fileState instanceof ) {
-    }
-    */
     return builder.build();
   }
 
   public static CompressionFileState convert(String path,
       FileState.FileStage stage, CompressionFileStateProto proto) {
-    CompressionFileState.Builder builder = CompressionFileState.newBuilder();
-    builder.setFileName(path)
+    return CompressionFileState.newBuilder()
+        .setFileName(path)
         .setFileStage(stage)
         .setBufferSize(proto.getBufferSize())
         .setCompressImpl(proto.getCompressionImpl())
         .setOriginalLength(proto.getOriginalLength())
         .setCompressedLength(proto.getCompressedLength())
         .setOriginalPos(proto.getOriginalPosList())
-        .setCompressedPos(proto.getCompressedPosList());
-    return builder.build();
+        .setCompressedPos(proto.getCompressedPosList())
+        .build();
   }
 
   public static CompressionFileStateProto convert(CompressionFileState fileState) {
-    CompressionFileStateProto.Builder builder = CompressionFileStateProto.newBuilder();
-    builder.setBufferSize(fileState.getBufferSize())
+    return CompressionFileStateProto.newBuilder()
+        .setBufferSize(fileState.getBufferSize())
         .setCompressionImpl(fileState.getCompressionImpl())
         .setOriginalLength(fileState.getOriginalLength())
-        .setCompressedLength(fileState.getCompressedLength());
-    builder.addAllOriginalPos(Arrays.asList(fileState.getOriginalPos()));
-    builder.addAllCompressedPos(Arrays.asList(fileState.getCompressedPos()));
-    return builder.build();
+        .setCompressedLength(fileState.getCompressedLength())
+        .addAllOriginalPos(Arrays.asList(fileState.getOriginalPos()))
+        .addAllCompressedPos(Arrays.asList(fileState.getCompressedPos()))
+        .build();
   }
 }
