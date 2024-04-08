@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.smartdata.cmdlet.parser.CmdletParserContext.State.EMPTY;
+import static org.smartdata.cmdlet.parser.CmdletParserContext.State.ESCAPED_CHAR;
 import static org.smartdata.cmdlet.parser.CmdletParserContext.State.INSIDE_STR_LITERAL;
 import static org.smartdata.cmdlet.parser.CmdletParserContext.State.INSIDE_TOKEN;
 
@@ -39,7 +39,7 @@ public class CmdletParser {
     char[] chars = (cmdlet + " ").toCharArray();
 
     CmdletParserContext context = new CmdletParserContext(cmdlet);
-    for (int idx = 0; idx < chars.length; idx++) {
+    for (int idx = 0; idx < chars.length; ++idx) {
       context.setParseIndex(idx);
 
       switch (chars[idx]) {
@@ -58,15 +58,18 @@ public class CmdletParser {
           onNewLine(context);
           break;
         case '\\':
-          ++idx;
-          break;
+          // handle case of escaped '\'
+          if (!context.isInState(ESCAPED_CHAR)) {
+            context.inAdditionalState(ESCAPED_CHAR);
+            break;
+          }
         default:
           onTokenChar(context, chars[idx]);
       }
     }
 
-    if (context.getState() == INSIDE_STR_LITERAL) {
-      throw new ParseException("Unexpect tail of string", chars.length);
+    if (context.isInState(INSIDE_STR_LITERAL)) {
+      throw new ParseException("Unexpected break of string literal", chars.length);
     }
 
     if (!context.getCurrentTokens().isEmpty()) {
@@ -77,33 +80,33 @@ public class CmdletParser {
   }
 
   private void onWhitespace(CmdletParserContext context, char currentChar) {
-    if (context.getState() == INSIDE_STR_LITERAL) {
+    if (context.isInState(INSIDE_STR_LITERAL)) {
       context.addChar(currentChar);
-    } else if (context.getState() == INSIDE_TOKEN) {
+    } else if (context.isInState(INSIDE_TOKEN)) {
       context.tokenEnded();
     }
   }
 
   private void onTokenChar(CmdletParserContext context, char currentChar) {
-    if (context.getState() == EMPTY) {
+    if (!context.isInState(INSIDE_STR_LITERAL)) {
       context.stateTransition(INSIDE_TOKEN);
     }
     context.addChar(currentChar);
   }
 
   private void onActionDelimiter(CmdletParserContext context) throws ParseException {
-    if (context.getState() == INSIDE_STR_LITERAL) {
+    if (context.isInState(INSIDE_STR_LITERAL)) {
       throw new ParseException("Unexpected break of string literal", context.getParseIndex());
-    } else if (context.getState() == INSIDE_TOKEN) {
+    } else if (context.isInState(INSIDE_TOKEN)) {
       context.tokenEnded();
     }
     parseAction(context);
   }
 
   private void onQuote(CmdletParserContext context) throws ParseException {
-    if (context.getState() == INSIDE_TOKEN) {
+    if (context.isInState(INSIDE_TOKEN)) {
       throw new ParseException("Unexpected \"", context.getParseIndex());
-    } else if (context.getState() == INSIDE_STR_LITERAL) {
+    } else if (context.isInState(INSIDE_STR_LITERAL)) {
       context.tokenEnded();
     } else {
       context.stateTransition(INSIDE_STR_LITERAL);
@@ -111,9 +114,9 @@ public class CmdletParser {
   }
 
   private void onNewLine(CmdletParserContext context) throws ParseException {
-    if (context.getState() == INSIDE_TOKEN) {
+    if (context.isInState(INSIDE_TOKEN)) {
       context.tokenEnded();
-    } else if (context.getState() == INSIDE_STR_LITERAL) {
+    } else if (context.isInState(INSIDE_STR_LITERAL)) {
       throw new ParseException("Multiline string literals not supported", context.getParseIndex());
     }
   }
@@ -121,7 +124,8 @@ public class CmdletParser {
   private void parseAction(CmdletParserContext context) throws ParseException {
     List<String> tokens = context.getCurrentTokens();
     if (tokens.isEmpty()) {
-      throw new ParseException("Contains NULL action", context.getParseIndex());
+      throw new ParseException("Cmdlet should have at least one action",
+          context.getParseIndex());
     }
 
     String actionName = tokens.get(0);
@@ -147,7 +151,7 @@ public class CmdletParser {
       }
       if (lastOptionKey == null) {
         throw new ParseException(
-            "Unknown action option name: '" + arg + "'", 0);
+            "Invalid action option format: '" + arg + "'", 0);
       }
       argsMap.put(lastOptionKey, arg);
       lastOptionKey = null;

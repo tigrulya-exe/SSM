@@ -19,6 +19,7 @@ package org.smartdata.cmdlet.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class ParsedCmdlet {
@@ -76,8 +77,8 @@ public class ParsedCmdlet {
       this.actions = new ArrayList<>();
     }
 
-    public Builder addAction(ParsedAction action) {
-      this.actions.add(action);
+    public Builder addAction(String name, Map<String, String> args) {
+      this.actions.add(new ParsedAction(name, args));
       return this;
     }
 

@@ -18,36 +18,37 @@
 package org.smartdata.cmdlet.parser;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class CmdletParserContext {
 
   public enum State {
     INSIDE_STR_LITERAL,
     INSIDE_TOKEN,
+    ESCAPED_CHAR,
     EMPTY
   }
 
   private final char[] tokenBuffer;
-
   private final List<String> currentTokens;
-
   private final ParsedCmdlet.Builder cmdletBuilder;
+  private final Set<State> currentState;
 
   private int parseIndex;
   private int currentTokenLen;
-
-  private State state;
 
   public CmdletParserContext(String cmdlet) {
     this.tokenBuffer = new char[cmdlet.length()];
     this.currentTokens = new ArrayList<>();
     this.parseIndex = 0;
     this.currentTokenLen = 0;
-    this.state = State.EMPTY;
     this.cmdletBuilder = ParsedCmdlet.newBuilder()
         .setCmdletString(cmdlet);
+    this.currentState = new HashSet<>();
+    currentState.add(State.EMPTY);
   }
 
   public void addChar(char ch) {
@@ -61,7 +62,7 @@ public class CmdletParserContext {
   }
 
   public void addAction(String name, Map<String, String> args) {
-    cmdletBuilder.addAction(new ParsedAction(name, args));
+    cmdletBuilder.addAction(name, args);
   }
 
   public void clearTokens() {
@@ -69,15 +70,20 @@ public class CmdletParserContext {
   }
 
   public void stateTransition(State newState) {
-    this.state = newState;
+    currentState.clear();
+    currentState.add(newState);
+  }
+
+  public void inAdditionalState(State state) {
+    currentState.add(state);
   }
 
   public List<String> getCurrentTokens() {
     return currentTokens;
   }
 
-  public State getState() {
-    return state;
+  public boolean isInState(State state) {
+    return currentState.contains(state);
   }
 
   public int getParseIndex() {
