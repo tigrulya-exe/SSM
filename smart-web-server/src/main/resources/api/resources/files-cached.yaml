@@ -1,0 +1,32 @@
+get:
+  tags:
+    - Files
+  summary: List cached files
+  operationId: getCachedFiles
+  parameters:
+    - $ref: '../parameters/common/page-request.yaml'
+    - $ref: '../parameters/files/path-like.yaml'
+    - $ref: '../parameters/files/last-accessed-time.yaml'
+    - $ref: '../parameters/files/cached-time.yaml'
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            title: CachedFiles
+            allOf:
+              - $ref: '../schemas/common/PageResponse.yaml'
+              - type: object
+                properties:
+                  items:
+                    type: array
+                    description: List of files
+                    items:
+                      $ref: '../schemas/files/CachedFileInfo.yaml'
+    '400':
+      description: Data is filled incorrectly
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/common/ErrorResponse.yaml'

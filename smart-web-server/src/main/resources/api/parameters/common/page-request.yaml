@@ -1,0 +1,6 @@
+name: pageRequest
+in: query
+required: false
+explode: true
+schema:
+  $ref: "./PageRequest.yaml"
