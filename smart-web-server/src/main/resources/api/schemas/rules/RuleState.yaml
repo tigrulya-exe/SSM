@@ -1,0 +1,6 @@
+title: RuleState
+type: string
+description: Current state of the rule
+enum:
+  - ACTIVE
+  - DISABLED

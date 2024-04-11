@@ -1,0 +1,16 @@
+title: Action
+type: object
+allOf:
+  - $ref: "./ActionInfo.yaml"
+  - type: object
+    properties:
+      log:
+        type: string
+        description: Action log
+required:
+  - id
+  - cmdletId
+  - textRepresentation
+  - submissionTime
+  - state
+  - source
