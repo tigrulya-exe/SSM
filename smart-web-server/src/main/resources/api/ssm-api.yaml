@@ -16,35 +16,35 @@ servers:
 
 paths:
   # Rules
-  /api/v1/rules:
+  /api/v2/rules:
     $ref: './resources/rules.yaml'
-  /api/v1/rules/{id}:
+  /api/v2/rules/{id}:
     $ref: './resources/rule.yaml'
-  /api/v1/rules/{id}/start:
+  /api/v2/rules/{id}/start:
     $ref: './resources/rule-start.yaml'
-  /api/v1/rules/{id}/stop:
+  /api/v2/rules/{id}/stop:
     $ref: './resources/rule-stop.yaml'
 
   # Cmdlets
-  /api/v1/cmdlets:
+  /api/v2/cmdlets:
     $ref: './resources/cmdlets.yaml'
-  /api/v1/cmdlets/{id}:
+  /api/v2/cmdlets/{id}:
     $ref: './resources/cmdlet.yaml'
-  /api/v1/cmdlets/{id}/stop:
+  /api/v2/cmdlets/{id}/stop:
     $ref: './resources/cmdlet-stop.yaml'
 
   # Actions
-  /api/v1/actions:
+  /api/v2/actions:
     $ref: './resources/actions.yaml'
-  /api/v1/actions/{id}:
+  /api/v2/actions/{id}:
     $ref: './resources/action.yaml'
 
   # Files
-  /api/v1/files/access-counts:
+  /api/v2/files/access-counts:
     $ref: './resources/files-access-counts.yaml'
-  /api/v1/files/cached:
+  /api/v2/files/cached:
     $ref: './resources/files-cached.yaml'
 
   # Cluster
-  /api/v1/cluster/nodes:
+  /api/v2/cluster/nodes:
     $ref: './resources/cluster-nodes.yaml'
