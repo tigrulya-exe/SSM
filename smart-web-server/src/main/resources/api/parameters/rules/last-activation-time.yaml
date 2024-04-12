@@ -1,8 +1,22 @@
-name: lastCheckTime
+name: lastActivationTime
 in: query
 required: false
-style: deepObject
-explode: true
 description: Time interval in which the rule was activated
 schema:
-  $ref: '../common/TimeInterval.yaml'
+  title: LastActivationTimeInterval
+  type: object
+  properties:
+    lastActivationTimeFrom:
+      type: integer
+      format: int64
+      nullable: true
+      default: null
+      minimum: 0
+      description: UNIX timestamp (UTC) of the interval start
+    lastActivationTimeTo:
+      type: integer
+      format: int64
+      nullable: true
+      default: null
+      minimum: 0
+      description: UNIX timestamp (UTC) of the interval end

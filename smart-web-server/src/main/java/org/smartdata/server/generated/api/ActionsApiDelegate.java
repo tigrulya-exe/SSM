@@ -9,9 +9,10 @@ import org.smartdata.server.generated.model.ActionInfoDto;
 import org.smartdata.server.generated.model.ActionSourceDto;
 import org.smartdata.server.generated.model.ActionsDto;
 import org.smartdata.server.generated.model.CmdletStateDto;
+import org.smartdata.server.generated.model.CompletionTimeIntervalDto;
 import org.smartdata.server.generated.model.PageRequestDto;
+import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
 import org.smartdata.server.generated.model.SubmitActionRequestDto;
-import org.smartdata.server.generated.model.TimeIntervalDto;
 import org.springframework.web.context.request.NativeWebRequest;
 
 /**
@@ -42,7 +43,7 @@ public interface ActionsApiDelegate {
      * GET /api/v2/actions : List all actions
      *
      * @param pageRequest  (optional)
-     * @param textRepresentationLike The object&#39;s text representation filter (optional)
+     * @param textRepresentationLike The object&#39;s text representation filter.  May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param submissionTime Time interval in which the entity was submitted (optional)
      * @param hosts List of hosts on which the action is/was running (optional)
      * @param states List of cmdlet states (optional)
@@ -54,11 +55,11 @@ public interface ActionsApiDelegate {
      */
     default ActionsDto getActions(PageRequestDto pageRequest,
         String textRepresentationLike,
-        TimeIntervalDto submissionTime,
+        SubmissionTimeIntervalDto submissionTime,
         List<String> hosts,
         List<@Valid CmdletStateDto> states,
         List<@Valid ActionSourceDto> sources,
-        TimeIntervalDto completionTime) throws Exception {
+        CompletionTimeIntervalDto completionTime) throws Exception {
         throw new IllegalArgumentException("Not implemented");
 
     }

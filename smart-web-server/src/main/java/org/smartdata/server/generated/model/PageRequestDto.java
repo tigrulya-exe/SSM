@@ -53,9 +53,10 @@ public class PageRequestDto {
 
   /**
    * Offset of the first record to search from
+   * minimum: 0
    * @return offset
   */
-  
+  @Min(0) 
   @Schema(name = "offset", description = "Offset of the first record to search from", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("offset")
   public Integer getOffset() {

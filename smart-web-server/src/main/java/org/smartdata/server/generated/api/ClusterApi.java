@@ -17,7 +17,7 @@ import javax.validation.Valid;
 import org.smartdata.server.generated.model.ClusterNodesDto;
 import org.smartdata.server.generated.model.ErrorResponseDto;
 import org.smartdata.server.generated.model.PageRequestDto;
-import org.smartdata.server.generated.model.TimeIntervalDto;
+import org.smartdata.server.generated.model.RegistrationTimeIntervalDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,7 +63,7 @@ public interface ClusterApi {
     
     default ClusterNodesDto getClusterNodes(
         @Parameter(name = "pageRequest", description = "", in = ParameterIn.QUERY) @Valid PageRequestDto pageRequest,
-        @Parameter(name = "registrationTime", description = "Time interval in which node was registered in master", in = ParameterIn.QUERY) @Valid TimeIntervalDto registrationTime
+        @Parameter(name = "registrationTime", description = "Time interval in which node was registered in master", in = ParameterIn.QUERY) @Valid RegistrationTimeIntervalDto registrationTime
     ) throws Exception {
         return getDelegate().getClusterNodes(pageRequest, registrationTime);
     }

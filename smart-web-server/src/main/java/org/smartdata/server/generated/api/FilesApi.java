@@ -15,10 +15,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.annotation.Generated;
 import javax.validation.Valid;
 import org.smartdata.server.generated.model.CachedFilesDto;
+import org.smartdata.server.generated.model.CachedTimeIntervalDto;
 import org.smartdata.server.generated.model.ErrorResponseDto;
 import org.smartdata.server.generated.model.FileAccessCountsDto;
+import org.smartdata.server.generated.model.LastAccessedTimeIntervalDto;
 import org.smartdata.server.generated.model.PageRequestDto;
-import org.smartdata.server.generated.model.TimeIntervalDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +40,7 @@ public interface FilesApi {
      * GET /api/v2/files/access-counts : List access counts of files
      *
      * @param pageRequest  (optional)
-     * @param pathLike The file path filter (optional)
+     * @param pathLike The file path filter. May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param lastAccessedTime Time interval in which the file was accessed (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
@@ -66,8 +67,8 @@ public interface FilesApi {
     
     default FileAccessCountsDto getAccessCounts(
         @Parameter(name = "pageRequest", description = "", in = ParameterIn.QUERY) @Valid PageRequestDto pageRequest,
-        @Parameter(name = "pathLike", description = "The file path filter", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pathLike", required = false) String pathLike,
-        @Parameter(name = "lastAccessedTime", description = "Time interval in which the file was accessed", in = ParameterIn.QUERY) @Valid TimeIntervalDto lastAccessedTime
+        @Parameter(name = "pathLike", description = "The file path filter. May contain special characters like \"/\", \"'\", so should be encoded.", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pathLike", required = false) String pathLike,
+        @Parameter(name = "lastAccessedTime", description = "Time interval in which the file was accessed", in = ParameterIn.QUERY) @Valid LastAccessedTimeIntervalDto lastAccessedTime
     ) throws Exception {
         return getDelegate().getAccessCounts(pageRequest, pathLike, lastAccessedTime);
     }
@@ -77,7 +78,7 @@ public interface FilesApi {
      * GET /api/v2/files/cached : List cached files
      *
      * @param pageRequest  (optional)
-     * @param pathLike The file path filter (optional)
+     * @param pathLike The file path filter. May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param lastAccessedTime Time interval in which the file was accessed (optional)
      * @param cachedTime Time interval in which the file was cached (optional)
      * @return OK (status code 200)
@@ -105,9 +106,9 @@ public interface FilesApi {
     
     default CachedFilesDto getCachedFiles(
         @Parameter(name = "pageRequest", description = "", in = ParameterIn.QUERY) @Valid PageRequestDto pageRequest,
-        @Parameter(name = "pathLike", description = "The file path filter", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pathLike", required = false) String pathLike,
-        @Parameter(name = "lastAccessedTime", description = "Time interval in which the file was accessed", in = ParameterIn.QUERY) @Valid TimeIntervalDto lastAccessedTime,
-        @Parameter(name = "cachedTime", description = "Time interval in which the file was cached", in = ParameterIn.QUERY) @Valid TimeIntervalDto cachedTime
+        @Parameter(name = "pathLike", description = "The file path filter. May contain special characters like \"/\", \"'\", so should be encoded.", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pathLike", required = false) String pathLike,
+        @Parameter(name = "lastAccessedTime", description = "Time interval in which the file was accessed", in = ParameterIn.QUERY) @Valid LastAccessedTimeIntervalDto lastAccessedTime,
+        @Parameter(name = "cachedTime", description = "Time interval in which the file was cached", in = ParameterIn.QUERY) @Valid CachedTimeIntervalDto cachedTime
     ) throws Exception {
         return getDelegate().getCachedFiles(pageRequest, pathLike, lastAccessedTime, cachedTime);
     }

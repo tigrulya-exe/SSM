@@ -16,12 +16,13 @@ import java.util.List;
 import javax.annotation.Generated;
 import javax.validation.Valid;
 import org.smartdata.server.generated.model.ErrorResponseDto;
+import org.smartdata.server.generated.model.LastActivationTimeIntervalDto;
 import org.smartdata.server.generated.model.PageRequestDto;
 import org.smartdata.server.generated.model.RuleDto;
 import org.smartdata.server.generated.model.RuleStateDto;
 import org.smartdata.server.generated.model.RulesDto;
+import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
 import org.smartdata.server.generated.model.SubmitRuleRequestDto;
-import org.smartdata.server.generated.model.TimeIntervalDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -140,10 +141,10 @@ public interface RulesApi {
      * GET /api/v2/rules : List all rules
      *
      * @param pageRequest  (optional)
-     * @param textRepresentationLike The object&#39;s text representation filter (optional)
+     * @param textRepresentationLike The object&#39;s text representation filter.  May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param submissionTime Time interval in which the entity was submitted (optional)
      * @param ruleStates List of rule states (optional)
-     * @param lastCheckTime Time interval in which the rule was activated (optional)
+     * @param lastActivationTime Time interval in which the rule was activated (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
      */
@@ -169,12 +170,12 @@ public interface RulesApi {
     
     default RulesDto getRules(
         @Parameter(name = "pageRequest", description = "", in = ParameterIn.QUERY) @Valid PageRequestDto pageRequest,
-        @Parameter(name = "textRepresentationLike", description = "The object's text representation filter", in = ParameterIn.QUERY) @Valid @RequestParam(value = "textRepresentationLike", required = false) String textRepresentationLike,
-        @Parameter(name = "submissionTime", description = "Time interval in which the entity was submitted", in = ParameterIn.QUERY) @Valid TimeIntervalDto submissionTime,
+        @Parameter(name = "textRepresentationLike", description = "The object's text representation filter.  May contain special characters like \"/\", \"'\", so should be encoded.", in = ParameterIn.QUERY) @Valid @RequestParam(value = "textRepresentationLike", required = false) String textRepresentationLike,
+        @Parameter(name = "submissionTime", description = "Time interval in which the entity was submitted", in = ParameterIn.QUERY) @Valid SubmissionTimeIntervalDto submissionTime,
         @Parameter(name = "ruleStates", description = "List of rule states", in = ParameterIn.QUERY) @Valid @RequestParam(value = "ruleStates", required = false) List<@Valid RuleStateDto> ruleStates,
-        @Parameter(name = "lastCheckTime", description = "Time interval in which the rule was activated", in = ParameterIn.QUERY) @Valid TimeIntervalDto lastCheckTime
+        @Parameter(name = "lastActivationTime", description = "Time interval in which the rule was activated", in = ParameterIn.QUERY) @Valid LastActivationTimeIntervalDto lastActivationTime
     ) throws Exception {
-        return getDelegate().getRules(pageRequest, textRepresentationLike, submissionTime, ruleStates, lastCheckTime);
+        return getDelegate().getRules(pageRequest, textRepresentationLike, submissionTime, ruleStates, lastActivationTime);
     }
 
 

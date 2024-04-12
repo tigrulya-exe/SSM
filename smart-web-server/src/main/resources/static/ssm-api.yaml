@@ -23,20 +23,19 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/PageRequest'
-      - description: The object's text representation filter
+      - description: "The object's text representation filter.  May contain special\
+          \ characters like \"/\", \"'\", so should be encoded."
         in: query
         name: textRepresentationLike
         required: false
         schema:
           type: string
       - description: Time interval in which the entity was submitted
-        explode: true
         in: query
         name: submissionTime
         required: false
         schema:
-          $ref: '#/components/schemas/TimeInterval'
-        style: deepObject
+          $ref: '#/components/schemas/SubmissionTimeInterval'
       - description: List of rule states
         in: query
         name: ruleStates
@@ -46,13 +45,11 @@ paths:
             $ref: '#/components/schemas/RuleState'
           type: array
       - description: Time interval in which the rule was activated
-        explode: true
         in: query
-        name: lastCheckTime
+        name: lastActivationTime
         required: false
         schema:
-          $ref: '#/components/schemas/TimeInterval'
-        style: deepObject
+          $ref: '#/components/schemas/LastActivationTimeInterval'
       responses:
         "200":
           content:
@@ -198,20 +195,19 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/PageRequest'
-      - description: The object's text representation filter
+      - description: "The object's text representation filter.  May contain special\
+          \ characters like \"/\", \"'\", so should be encoded."
         in: query
         name: textRepresentationLike
         required: false
         schema:
           type: string
       - description: Time interval in which the entity was submitted
-        explode: true
         in: query
         name: submissionTime
         required: false
         schema:
-          $ref: '#/components/schemas/TimeInterval'
-        style: deepObject
+          $ref: '#/components/schemas/SubmissionTimeInterval'
       - description: Ids of the rules that cmdlets belong to
         in: query
         name: ruleIds
@@ -230,13 +226,11 @@ paths:
             $ref: '#/components/schemas/CmdletState'
           type: array
       - description: Time interval in which the state of the cmdlet was changed
-        explode: true
         in: query
         name: stateChangedTime
         required: false
         schema:
-          $ref: '#/components/schemas/TimeInterval'
-        style: deepObject
+          $ref: '#/components/schemas/StateChangeTimeInterval'
       responses:
         "200":
           content:
@@ -350,20 +344,19 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/PageRequest'
-      - description: The object's text representation filter
+      - description: "The object's text representation filter.  May contain special\
+          \ characters like \"/\", \"'\", so should be encoded."
         in: query
         name: textRepresentationLike
         required: false
         schema:
           type: string
       - description: Time interval in which the entity was submitted
-        explode: true
         in: query
         name: submissionTime
         required: false
         schema:
-          $ref: '#/components/schemas/TimeInterval'
-        style: deepObject
+          $ref: '#/components/schemas/SubmissionTimeInterval'
       - description: List of hosts on which the action is/was running
         in: query
         name: hosts
@@ -389,13 +382,11 @@ paths:
             $ref: '#/components/schemas/ActionSource'
           type: array
       - description: Time interval in which the action was finished
-        explode: true
         in: query
         name: completionTime
         required: false
         schema:
-          $ref: '#/components/schemas/TimeInterval'
-        style: deepObject
+          $ref: '#/components/schemas/CompletionTimeInterval'
       responses:
         "200":
           content:
@@ -470,20 +461,19 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/PageRequest'
-      - description: The file path filter
+      - description: "The file path filter. May contain special characters like \"\
+          /\", \"'\", so should be encoded."
         in: query
         name: pathLike
         required: false
         schema:
           type: string
       - description: Time interval in which the file was accessed
-        explode: true
         in: query
         name: lastAccessedTime
         required: false
         schema:
-          $ref: '#/components/schemas/TimeInterval'
-        style: deepObject
+          $ref: '#/components/schemas/LastAccessedTimeInterval'
       responses:
         "200":
           content:
@@ -510,28 +500,25 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/PageRequest'
-      - description: The file path filter
+      - description: "The file path filter. May contain special characters like \"\
+          /\", \"'\", so should be encoded."
         in: query
         name: pathLike
         required: false
         schema:
           type: string
       - description: Time interval in which the file was accessed
-        explode: true
         in: query
         name: lastAccessedTime
         required: false
         schema:
-          $ref: '#/components/schemas/TimeInterval'
-        style: deepObject
+          $ref: '#/components/schemas/LastAccessedTimeInterval'
       - description: Time interval in which the file was cached
-        explode: true
         in: query
         name: cachedTime
         required: false
         schema:
-          $ref: '#/components/schemas/TimeInterval'
-        style: deepObject
+          $ref: '#/components/schemas/CachedTimeInterval'
       responses:
         "200":
           content:
@@ -559,13 +546,11 @@ paths:
         schema:
           $ref: '#/components/schemas/PageRequest'
       - description: Time interval in which node was registered in master
-        explode: true
         in: query
         name: registrationTime
         required: false
         schema:
-          $ref: '#/components/schemas/TimeInterval'
-        style: deepObject
+          $ref: '#/components/schemas/RegistrationTimeInterval'
       responses:
         "200":
           content:
@@ -592,7 +577,8 @@ components:
       schema:
         $ref: '#/components/schemas/PageRequest'
     text-representation-like:
-      description: The object's text representation filter
+      description: "The object's text representation filter.  May contain special\
+        \ characters like \"/\", \"'\", so should be encoded."
       in: query
       name: textRepresentationLike
       required: false
@@ -600,13 +586,11 @@ components:
         type: string
     submission-time:
       description: Time interval in which the entity was submitted
-      explode: true
       in: query
       name: submissionTime
       required: false
       schema:
-        $ref: '#/components/schemas/TimeInterval'
-      style: deepObject
+        $ref: '#/components/schemas/SubmissionTimeInterval'
     rule-states:
       description: List of rule states
       in: query
@@ -618,13 +602,11 @@ components:
         type: array
     last-activation-time:
       description: Time interval in which the rule was activated
-      explode: true
       in: query
-      name: lastCheckTime
+      name: lastActivationTime
       required: false
       schema:
-        $ref: '#/components/schemas/TimeInterval'
-      style: deepObject
+        $ref: '#/components/schemas/LastActivationTimeInterval'
     id:
       description: Id of the resource
       in: path
@@ -655,13 +637,11 @@ components:
         type: array
     state-changed-time:
       description: Time interval in which the state of the cmdlet was changed
-      explode: true
       in: query
       name: stateChangedTime
       required: false
       schema:
-        $ref: '#/components/schemas/TimeInterval'
-      style: deepObject
+        $ref: '#/components/schemas/StateChangeTimeInterval'
     hosts:
       description: List of hosts on which the action is/was running
       in: query
@@ -682,15 +662,14 @@ components:
         type: array
     completion-time:
       description: Time interval in which the action was finished
-      explode: true
       in: query
       name: completionTime
       required: false
       schema:
-        $ref: '#/components/schemas/TimeInterval'
-      style: deepObject
+        $ref: '#/components/schemas/CompletionTimeInterval'
     path-like:
-      description: The file path filter
+      description: "The file path filter. May contain special characters like \"/\"\
+        , \"'\", so should be encoded."
       in: query
       name: pathLike
       required: false
@@ -698,31 +677,25 @@ components:
         type: string
     last-accessed-time:
       description: Time interval in which the file was accessed
-      explode: true
       in: query
       name: lastAccessedTime
       required: false
       schema:
-        $ref: '#/components/schemas/TimeInterval'
-      style: deepObject
+        $ref: '#/components/schemas/LastAccessedTimeInterval'
     cached-time:
       description: Time interval in which the file was cached
-      explode: true
       in: query
       name: cachedTime
       required: false
       schema:
-        $ref: '#/components/schemas/TimeInterval'
-      style: deepObject
+        $ref: '#/components/schemas/CachedTimeInterval'
     registration-time:
       description: Time interval in which node was registered in master
-      explode: true
       in: query
       name: registrationTime
       required: false
       schema:
-        $ref: '#/components/schemas/TimeInterval'
-      style: deepObject
+        $ref: '#/components/schemas/RegistrationTimeInterval'
   schemas:
     PageRequest:
       properties:
@@ -735,6 +708,7 @@ components:
         offset:
           default: 0
           description: Offset of the first record to search from
+          minimum: 0
           nullable: true
           type: integer
         sort:
@@ -744,20 +718,6 @@ components:
           nullable: true
           type: array
       title: PageRequest
-      type: object
-    TimeInterval:
-      properties:
-        from:
-          description: UNIX timestamp (UTC) of the interval start
-          format: int64
-          nullable: true
-          type: integer
-        to:
-          description: UNIX timestamp (UTC) of the interval end
-          format: int64
-          nullable: true
-          type: integer
-      title: TimeInterval
       type: object
     RuleState:
       description: Current state of the rule
@@ -1146,6 +1106,38 @@ components:
       - AGENT
       title: ExecutorType
       type: string
+    SubmissionTimeInterval:
+      properties:
+        submissionTimeFrom:
+          description: UNIX timestamp (UTC) of the interval start
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+        submissionTimeTo:
+          description: UNIX timestamp (UTC) of the interval end
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+      title: SubmissionTimeInterval
+      type: object
+    LastActivationTimeInterval:
+      properties:
+        lastActivationTimeFrom:
+          description: UNIX timestamp (UTC) of the interval start
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+        lastActivationTimeTo:
+          description: UNIX timestamp (UTC) of the interval end
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+      title: LastActivationTimeInterval
+      type: object
     Rules:
       allOf:
       - $ref: '#/components/schemas/PageResponse'
@@ -1174,6 +1166,22 @@ components:
           state: null
           cmdletsGenerated: 5
       title: Rules
+    StateChangeTimeInterval:
+      properties:
+        stateChangedTimeFrom:
+          description: UNIX timestamp (UTC) of the interval start
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+        stateChangedTimeTo:
+          description: UNIX timestamp (UTC) of the interval end
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+      title: StateChangeTimeInterval
+      type: object
     Cmdlets:
       allOf:
       - $ref: '#/components/schemas/PageResponse'
@@ -1206,6 +1214,22 @@ components:
           ruleId: 1
           submissionTime: 5
       title: Cmdlets
+    CompletionTimeInterval:
+      properties:
+        completionTimeFrom:
+          description: UNIX timestamp (UTC) of the interval start
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+        completionTimeTo:
+          description: UNIX timestamp (UTC) of the interval end
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+      title: CompletionTimeInterval
+      type: object
     Actions:
       allOf:
       - $ref: '#/components/schemas/PageResponse'
@@ -1236,6 +1260,22 @@ components:
           cmdletId: 1
           submissionTime: 5
       title: Actions
+    LastAccessedTimeInterval:
+      properties:
+        lastAccessedTimeFrom:
+          description: UNIX timestamp (UTC) of the interval start
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+        lastAccessedTimeTo:
+          description: UNIX timestamp (UTC) of the interval end
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+      title: LastAccessedTimeInterval
+      type: object
     FileAccessCounts:
       allOf:
       - $ref: '#/components/schemas/PageResponse'
@@ -1258,6 +1298,22 @@ components:
           lastAccessTime: 5
           id: 6
       title: FileAccessCounts
+    CachedTimeInterval:
+      properties:
+        cachedTimeFrom:
+          description: UNIX timestamp (UTC) of the interval start
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+        cachedTimeTo:
+          description: UNIX timestamp (UTC) of the interval end
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+      title: CachedTimeInterval
+      type: object
     CachedFiles:
       allOf:
       - $ref: '#/components/schemas/PageResponse'
@@ -1282,6 +1338,22 @@ components:
           id: 6
           cachedTime: 5
       title: CachedFiles
+    RegistrationTimeInterval:
+      properties:
+        registrationTimeFrom:
+          description: UNIX timestamp (UTC) of the interval start
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+        registrationTimeTo:
+          description: UNIX timestamp (UTC) of the interval end
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+      title: RegistrationTimeInterval
+      type: object
     ClusterNodes:
       allOf:
       - $ref: '#/components/schemas/PageResponse'

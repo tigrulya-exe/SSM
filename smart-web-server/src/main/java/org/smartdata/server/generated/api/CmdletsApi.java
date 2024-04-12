@@ -20,8 +20,9 @@ import org.smartdata.server.generated.model.CmdletStateDto;
 import org.smartdata.server.generated.model.CmdletsDto;
 import org.smartdata.server.generated.model.ErrorResponseDto;
 import org.smartdata.server.generated.model.PageRequestDto;
+import org.smartdata.server.generated.model.StateChangeTimeIntervalDto;
+import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
 import org.smartdata.server.generated.model.SubmitCmdletRequestDto;
-import org.smartdata.server.generated.model.TimeIntervalDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -108,7 +109,7 @@ public interface CmdletsApi {
      * GET /api/v2/cmdlets : List all cmdlets
      *
      * @param pageRequest  (optional)
-     * @param textRepresentationLike The object&#39;s text representation filter (optional)
+     * @param textRepresentationLike The object&#39;s text representation filter.  May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param submissionTime Time interval in which the entity was submitted (optional)
      * @param ruleIds Ids of the rules that cmdlets belong to (optional)
      * @param states List of cmdlet states (optional)
@@ -138,11 +139,11 @@ public interface CmdletsApi {
     
     default CmdletsDto getCmdlets(
         @Parameter(name = "pageRequest", description = "", in = ParameterIn.QUERY) @Valid PageRequestDto pageRequest,
-        @Parameter(name = "textRepresentationLike", description = "The object's text representation filter", in = ParameterIn.QUERY) @Valid @RequestParam(value = "textRepresentationLike", required = false) String textRepresentationLike,
-        @Parameter(name = "submissionTime", description = "Time interval in which the entity was submitted", in = ParameterIn.QUERY) @Valid TimeIntervalDto submissionTime,
+        @Parameter(name = "textRepresentationLike", description = "The object's text representation filter.  May contain special characters like \"/\", \"'\", so should be encoded.", in = ParameterIn.QUERY) @Valid @RequestParam(value = "textRepresentationLike", required = false) String textRepresentationLike,
+        @Parameter(name = "submissionTime", description = "Time interval in which the entity was submitted", in = ParameterIn.QUERY) @Valid SubmissionTimeIntervalDto submissionTime,
         @Parameter(name = "ruleIds", description = "Ids of the rules that cmdlets belong to", in = ParameterIn.QUERY) @Valid @RequestParam(value = "ruleIds", required = false) List<Long> ruleIds,
         @Parameter(name = "states", description = "List of cmdlet states", in = ParameterIn.QUERY) @Valid @RequestParam(value = "states", required = false) List<@Valid CmdletStateDto> states,
-        @Parameter(name = "stateChangedTime", description = "Time interval in which the state of the cmdlet was changed", in = ParameterIn.QUERY) @Valid TimeIntervalDto stateChangedTime
+        @Parameter(name = "stateChangedTime", description = "Time interval in which the state of the cmdlet was changed", in = ParameterIn.QUERY) @Valid StateChangeTimeIntervalDto stateChangedTime
     ) throws Exception {
         return getDelegate().getCmdlets(pageRequest, textRepresentationLike, submissionTime, ruleIds, states, stateChangedTime);
     }

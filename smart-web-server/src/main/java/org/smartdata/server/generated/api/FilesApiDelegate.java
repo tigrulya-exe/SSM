@@ -3,9 +3,10 @@ package org.smartdata.server.generated.api;
 import java.util.Optional;
 import javax.annotation.Generated;
 import org.smartdata.server.generated.model.CachedFilesDto;
+import org.smartdata.server.generated.model.CachedTimeIntervalDto;
 import org.smartdata.server.generated.model.FileAccessCountsDto;
+import org.smartdata.server.generated.model.LastAccessedTimeIntervalDto;
 import org.smartdata.server.generated.model.PageRequestDto;
-import org.smartdata.server.generated.model.TimeIntervalDto;
 import org.springframework.web.context.request.NativeWebRequest;
 
 /**
@@ -23,7 +24,7 @@ public interface FilesApiDelegate {
      * GET /api/v2/files/access-counts : List access counts of files
      *
      * @param pageRequest  (optional)
-     * @param pathLike The file path filter (optional)
+     * @param pathLike The file path filter. May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param lastAccessedTime Time interval in which the file was accessed (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
@@ -31,7 +32,7 @@ public interface FilesApiDelegate {
      */
     default FileAccessCountsDto getAccessCounts(PageRequestDto pageRequest,
         String pathLike,
-        TimeIntervalDto lastAccessedTime) throws Exception {
+        LastAccessedTimeIntervalDto lastAccessedTime) throws Exception {
         throw new IllegalArgumentException("Not implemented");
 
     }
@@ -40,7 +41,7 @@ public interface FilesApiDelegate {
      * GET /api/v2/files/cached : List cached files
      *
      * @param pageRequest  (optional)
-     * @param pathLike The file path filter (optional)
+     * @param pathLike The file path filter. May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param lastAccessedTime Time interval in which the file was accessed (optional)
      * @param cachedTime Time interval in which the file was cached (optional)
      * @return OK (status code 200)
@@ -49,8 +50,8 @@ public interface FilesApiDelegate {
      */
     default CachedFilesDto getCachedFiles(PageRequestDto pageRequest,
         String pathLike,
-        TimeIntervalDto lastAccessedTime,
-        TimeIntervalDto cachedTime) throws Exception {
+        LastAccessedTimeIntervalDto lastAccessedTime,
+        CachedTimeIntervalDto cachedTime) throws Exception {
         throw new IllegalArgumentException("Not implemented");
 
     }

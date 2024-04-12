@@ -24,10 +24,9 @@
 
 **/HomeController.java
 **/RFC3339DateFormat.java
+**/ApiUtil.java
 
 pom.xml
 README.md
 **/application.properties
 **/openapi.yaml
-
-.openapi-generator/**

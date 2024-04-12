@@ -8,8 +8,9 @@ import org.smartdata.server.generated.model.CmdletDto;
 import org.smartdata.server.generated.model.CmdletStateDto;
 import org.smartdata.server.generated.model.CmdletsDto;
 import org.smartdata.server.generated.model.PageRequestDto;
+import org.smartdata.server.generated.model.StateChangeTimeIntervalDto;
+import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
 import org.smartdata.server.generated.model.SubmitCmdletRequestDto;
-import org.smartdata.server.generated.model.TimeIntervalDto;
 import org.springframework.web.context.request.NativeWebRequest;
 
 /**
@@ -53,7 +54,7 @@ public interface CmdletsApiDelegate {
      * GET /api/v2/cmdlets : List all cmdlets
      *
      * @param pageRequest  (optional)
-     * @param textRepresentationLike The object&#39;s text representation filter (optional)
+     * @param textRepresentationLike The object&#39;s text representation filter.  May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param submissionTime Time interval in which the entity was submitted (optional)
      * @param ruleIds Ids of the rules that cmdlets belong to (optional)
      * @param states List of cmdlet states (optional)
@@ -64,10 +65,10 @@ public interface CmdletsApiDelegate {
      */
     default CmdletsDto getCmdlets(PageRequestDto pageRequest,
         String textRepresentationLike,
-        TimeIntervalDto submissionTime,
+        SubmissionTimeIntervalDto submissionTime,
         List<Long> ruleIds,
         List<@Valid CmdletStateDto> states,
-        TimeIntervalDto stateChangedTime) throws Exception {
+        StateChangeTimeIntervalDto stateChangedTime) throws Exception {
         throw new IllegalArgumentException("Not implemented");
 
     }

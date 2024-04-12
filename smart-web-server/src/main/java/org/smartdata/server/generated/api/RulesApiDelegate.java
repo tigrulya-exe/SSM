@@ -4,12 +4,13 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.Generated;
 import javax.validation.Valid;
+import org.smartdata.server.generated.model.LastActivationTimeIntervalDto;
 import org.smartdata.server.generated.model.PageRequestDto;
 import org.smartdata.server.generated.model.RuleDto;
 import org.smartdata.server.generated.model.RuleStateDto;
 import org.smartdata.server.generated.model.RulesDto;
+import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
 import org.smartdata.server.generated.model.SubmitRuleRequestDto;
-import org.smartdata.server.generated.model.TimeIntervalDto;
 import org.springframework.web.context.request.NativeWebRequest;
 
 /**
@@ -66,19 +67,19 @@ public interface RulesApiDelegate {
      * GET /api/v2/rules : List all rules
      *
      * @param pageRequest  (optional)
-     * @param textRepresentationLike The object&#39;s text representation filter (optional)
+     * @param textRepresentationLike The object&#39;s text representation filter.  May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param submissionTime Time interval in which the entity was submitted (optional)
      * @param ruleStates List of rule states (optional)
-     * @param lastCheckTime Time interval in which the rule was activated (optional)
+     * @param lastActivationTime Time interval in which the rule was activated (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
      * @see RulesApi#getRules
      */
     default RulesDto getRules(PageRequestDto pageRequest,
         String textRepresentationLike,
-        TimeIntervalDto submissionTime,
+        SubmissionTimeIntervalDto submissionTime,
         List<@Valid RuleStateDto> ruleStates,
-        TimeIntervalDto lastCheckTime) throws Exception {
+        LastActivationTimeIntervalDto lastActivationTime) throws Exception {
         throw new IllegalArgumentException("Not implemented");
 
     }

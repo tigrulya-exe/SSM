@@ -1,8 +1,22 @@
 name: lastAccessedTime
 in: query
 required: false
-style: deepObject
-explode: true
 description: Time interval in which the file was accessed
 schema:
-  $ref: '../common/TimeInterval.yaml'
+  title: LastAccessedTimeInterval
+  type: object
+  properties:
+    lastAccessedTimeFrom:
+      type: integer
+      format: int64
+      nullable: true
+      default: null
+      minimum: 0
+      description: UNIX timestamp (UTC) of the interval start
+    lastAccessedTimeTo:
+      type: integer
+      format: int64
+      nullable: true
+      default: null
+      minimum: 0
+      description: UNIX timestamp (UTC) of the interval end

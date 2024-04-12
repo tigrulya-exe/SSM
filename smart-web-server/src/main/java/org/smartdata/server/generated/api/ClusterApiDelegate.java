@@ -4,7 +4,7 @@ import java.util.Optional;
 import javax.annotation.Generated;
 import org.smartdata.server.generated.model.ClusterNodesDto;
 import org.smartdata.server.generated.model.PageRequestDto;
-import org.smartdata.server.generated.model.TimeIntervalDto;
+import org.smartdata.server.generated.model.RegistrationTimeIntervalDto;
 import org.springframework.web.context.request.NativeWebRequest;
 
 /**
@@ -28,7 +28,7 @@ public interface ClusterApiDelegate {
      * @see ClusterApi#getClusterNodes
      */
     default ClusterNodesDto getClusterNodes(PageRequestDto pageRequest,
-        TimeIntervalDto registrationTime) throws Exception {
+        RegistrationTimeIntervalDto registrationTime) throws Exception {
         throw new IllegalArgumentException("Not implemented");
 
     }
