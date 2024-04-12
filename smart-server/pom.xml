@@ -49,6 +49,11 @@
         </dependency>
         <dependency>
             <groupId>org.smartdata</groupId>
+            <artifactId>smart-web-server</artifactId>
+            <version>1.6.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.smartdata</groupId>
             <artifactId>smart-engine</artifactId>
             <version>1.6.0-SNAPSHOT</version>
             <exclusions>
@@ -210,12 +215,6 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>mysql</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>2.10.3</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

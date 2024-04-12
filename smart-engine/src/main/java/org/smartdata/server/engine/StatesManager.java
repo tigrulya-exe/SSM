@@ -135,8 +135,8 @@ public class StatesManager extends AbstractService implements Reconfigurable {
     return serverContext.getMetaStore().getCachedFileStatus();
   }
 
-  public List<AccessCountTable> getTablesInLast(long timeInMills) throws MetaStoreException {
-    return this.accessCountTableManager.getTables(timeInMills);
+  public List<AccessCountTable> getTablesForLast(long timeInMills) throws MetaStoreException {
+    return accessCountTableManager.getTables(timeInMills);
   }
 
   public void reportFileAccessEvent(FileAccessEvent event) {
@@ -154,6 +154,12 @@ public class StatesManager extends AbstractService implements Reconfigurable {
     }
     event.setTimeStamp(System.currentTimeMillis());
     this.fileAccessEventSource.insertEventFromSmartClient(event);
+  }
+
+  public List<FileAccessInfo> getHotFilesForLast(long timeInMills, int fileLimit)
+      throws IOException, MetaStoreException {
+    List<AccessCountTable> tables = getTablesForLast(timeInMills);
+    return getHotFiles(tables, fileLimit);
   }
 
   public List<FileAccessInfo> getHotFiles(List<AccessCountTable> tables,

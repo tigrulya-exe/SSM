@@ -294,7 +294,7 @@ public class RuleExecutor implements Runnable {
 
     List<AccessCountTable> accTables = null;
     try {
-      accTables = ruleManager.getStatesManager().getTablesInLast(lastInterval);
+      accTables = ruleManager.getStatesManager().getTablesForLast(lastInterval);
     } catch (MetaStoreException e) {
       LOG.error("Rule " + executionCtx.getRuleId() + " get access info tables exception", e);
     }

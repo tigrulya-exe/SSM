@@ -65,6 +65,7 @@ public class SmartServer {
 
   private SmartRpcServer rpcServer;
   private SmartZeppelinServer zeppelinServer;
+  private SmartRestServer restServer;
 
   static {
     SLF4JBridgeHandler.removeHandlersForRootLogger();
@@ -87,6 +88,7 @@ public class SmartServer {
     engine = new SmartEngine(context);
     rpcServer = new SmartRpcServer(this, conf);
     zeppelinServer = new SmartZeppelinServer(conf, engine);
+    restServer = new SmartRestServer(conf, engine);
 
     LOG.info("Finish Init Smart Server");
   }
@@ -233,6 +235,10 @@ public class SmartServer {
     if (zeppelinServer != null) {
       zeppelinServer.start();
     }
+
+    if (enabled && restServer != null) {
+      restServer.start();
+    }
   }
 
   private void startEngines() throws Exception {
@@ -280,6 +286,14 @@ public class SmartServer {
       }
     } catch (Exception exception) {
       LOG.error("Error during stopping Zeppelin server", exception);
+    }
+
+    try {
+      if (restServer != null) {
+        restServer.stop();
+      }
+    } catch (Exception exception) {
+      LOG.error("Error during stopping Spring REST server", exception);
     }
 
     try {

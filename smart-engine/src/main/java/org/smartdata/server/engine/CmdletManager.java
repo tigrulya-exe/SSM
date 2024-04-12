@@ -979,38 +979,62 @@ public class CmdletManager extends AbstractService {
     }
   }
 
-  private class DetailedFileActionGroup {
-    private List<DetailedFileAction> detailedFileActions;
-    private long totalNumOfActions;
+  public static class DetailedFileActionGroup {
+    private final List<DetailedFileAction> detailedFileActions;
+    private final long totalNumOfActions;
 
     public DetailedFileActionGroup(List<DetailedFileAction> detailedFileActions,
                                    long totalNumOfActions) {
       this.detailedFileActions = detailedFileActions;
       this.totalNumOfActions = totalNumOfActions;
     }
+
+    public List<DetailedFileAction> getDetailedFileActions() {
+      return detailedFileActions;
+    }
+
+    public long getTotalNumOfActions() {
+      return totalNumOfActions;
+    }
   }
 
-  private class CmdletGroup {
-    private List<CmdletInfo> cmdlets;
-    private long totalNumOfCmdlets;
+  public static class CmdletGroup {
+    private final List<CmdletInfo> cmdlets;
+    private final long totalNumOfCmdlets;
 
     public CmdletGroup(List<CmdletInfo> cmdlets, long totalNumOfCmdlets) {
       this.cmdlets = cmdlets;
       this.totalNumOfCmdlets = totalNumOfCmdlets;
     }
+
+    public List<CmdletInfo> getCmdlets() {
+      return cmdlets;
+    }
+
+    public long getTotalNumOfCmdlets() {
+      return totalNumOfCmdlets;
+    }
   }
 
-  private class ActionGroup {
-    private List<ActionInfo> actions;
-    private long totalNumOfActions;
+  public static class ActionGroup {
+    private final List<ActionInfo> actions;
+    private final long totalNumOfActions;
 
     public ActionGroup() {
-      this.totalNumOfActions = 0;
+      this(null, 0);
     }
 
     public ActionGroup(List<ActionInfo> actions, long totalNumOfActions) {
       this.actions = actions;
       this.totalNumOfActions = totalNumOfActions;
+    }
+
+    public List<ActionInfo> getActions() {
+      return actions;
+    }
+
+    public long getTotalNumOfActions() {
+      return totalNumOfActions;
     }
   }
 
@@ -1039,15 +1063,16 @@ public class CmdletManager extends AbstractService {
   public ActionGroup searchAction(String path, long pageIndex, long numPerPage,
       List<String> orderBy, List<Boolean> isDesc) throws IOException {
     try {
-      if (pageIndex == Long.parseLong("0")) {
+      if (pageIndex == 0) {
         if (tmpActions.totalNumOfActions != 0) {
           return tmpActions;
-        } else {
-          pageIndex = 1;
         }
+        pageIndex = 1;
       }
+
       long[] total = new long[1];
-      List<ActionInfo> infos =  metaStore.searchAction(path, (pageIndex - 1) * numPerPage,
+      String escapedPath = path.replaceAll("[%_\"/']", "/$0");
+      List<ActionInfo> infos =  metaStore.searchAction(escapedPath, (pageIndex - 1) * numPerPage,
           numPerPage, orderBy, isDesc, total);
       for (ActionInfo info : infos) {
         LOG.debug("[metaStore search] " + info.getActionName());

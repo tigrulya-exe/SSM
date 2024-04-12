@@ -21,8 +21,8 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.conf.SmartConfKeys;
-import org.smartdata.metastore.dao.AccessCountTable;
 import org.smartdata.metastore.utils.Constants;
+import org.smartdata.model.FileAccessInfo;
 import org.smartdata.server.SmartEngine;
 import org.smartdata.server.rest.message.JsonResponse;
 
@@ -83,10 +83,9 @@ public class ClusterRestApi {
   @Path("/primary/hotfiles")
   public Response hotFiles() {
     try {
-      List<AccessCountTable> tables =
-          smartEngine.getStatesManager().getTablesInLast(Constants.ONE_HOUR_IN_MILLIS);
-      return new JsonResponse<>(Response.Status.OK,
-          smartEngine.getStatesManager().getHotFiles(tables, 0)).build();
+      List<FileAccessInfo> hotFilesInLastHour =
+          smartEngine.getStatesManager().getHotFilesForLast(Constants.ONE_HOUR_IN_MILLIS, 0);
+      return new JsonResponse<>(Response.Status.OK, hotFilesInLastHour).build();
     } catch (Exception e) {
       logger.error("Exception in ClusterRestApi while listing hot files", e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,

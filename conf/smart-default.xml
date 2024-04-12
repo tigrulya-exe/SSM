@@ -511,4 +511,10 @@
           but it doesn't return false positive results, like previous one.
     </description>
   </property>
+
+  <property>
+    <name>smart.rest.server.port</name>
+    <value>8081</value>
+    <description>SSM Rest Server port</description>
+  </property>
 </configuration>
