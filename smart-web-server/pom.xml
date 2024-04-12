@@ -28,8 +28,8 @@
   <artifactId>smart-web-server</artifactId>
 
   <properties>
-    <merged.api.spec.name>ssm-web-api.yaml</merged.api.spec.name>
-    <merged.api.spec.directory>${project.build.directory}/docs</merged.api.spec.directory>
+    <merged.api.spec.name>ssm-api.yaml</merged.api.spec.name>
+    <merged.api.spec.directory>${project.basedir}/src/main/resources/static</merged.api.spec.directory>
     <openapi.codegen.output.dir>${project.basedir}</openapi.codegen.output.dir>
     <openapi.codegen.package.base>org.smartdata.server.generated</openapi.codegen.package.base>
   </properties>
@@ -130,29 +130,6 @@
           </execution>
         </executions>
       </plugin>
-
-      <plugin>
-        <groupId>org.openapitools</groupId>
-        <artifactId>openapi-generator-maven-plugin</artifactId>
-        <version>${openapi.generator.version}</version>
-        <executions>
-          <execution>
-            <id>generate-merged-api-spec</id>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-            <configuration>
-              <inputSpec>${project.basedir}/src/main/resources/api/ssm-api.yaml</inputSpec>
-              <generatorName>openapi-yaml</generatorName>
-              <configOptions>
-                <outputFile>${merged.api.spec.name}</outputFile>
-              </configOptions>
-              <output>${merged.api.spec.directory}</output>
-              <supportingFilesToGenerate>${merged.api.spec.name}</supportingFilesToGenerate>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
@@ -166,6 +143,21 @@
             <artifactId>openapi-generator-maven-plugin</artifactId>
             <version>${openapi.generator.version}</version>
             <executions>
+              <execution>
+                <id>generate-merged-api-spec</id>
+                <goals>
+                  <goal>generate</goal>
+                </goals>
+                <configuration>
+                  <inputSpec>${project.basedir}/src/main/resources/api/ssm-api.yaml</inputSpec>
+                  <generatorName>openapi-yaml</generatorName>
+                  <configOptions>
+                    <outputFile>${merged.api.spec.name}</outputFile>
+                  </configOptions>
+                  <output>${merged.api.spec.directory}</output>
+                  <supportingFilesToGenerate>${merged.api.spec.name}</supportingFilesToGenerate>
+                </configuration>
+              </execution>
               <execution>
                 <id>generate-ssm-web-server</id>
                 <goals>
