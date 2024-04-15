@@ -25,6 +25,11 @@ import org.springframework.boot.autoconfigure.hazelcast.HazelcastAutoConfigurati
 import org.springframework.boot.autoconfigure.web.embedded.EmbeddedWebServerFactoryCustomizerAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.smartdata.conf.SmartConfKeys.SMART_CONF_KEYS_PREFIX;
+
 public class SmartRestServer {
   private final SpringApplication springApplication;
 
@@ -32,6 +37,8 @@ public class SmartRestServer {
 
   public SmartRestServer(SmartConf ssmConfig, SmartEngine smartEngine) {
     this.springApplication = new SpringApplication(RestServerApplication.class);
+
+    injectToSpringProperties(ssmConfig);
 
     SsmContextInitializer contextInitializer =
         new SsmContextInitializer(smartEngine, ssmConfig);
@@ -45,11 +52,19 @@ public class SmartRestServer {
   public void stop() {
     if (isRunning()) {
       SpringApplication.exit(applicationContext);
+      applicationContext = null;
     }
   }
 
   private boolean isRunning() {
     return applicationContext != null;
+  }
+
+  private void injectToSpringProperties(SmartConf ssmConfig) {
+    Map<String, Object> ssmSpringProperties = new HashMap<>(
+        // we want to save only SSM-related options
+        ssmConfig.asMap(key -> key.startsWith(SMART_CONF_KEYS_PREFIX)));
+    springApplication.setDefaultProperties(ssmSpringProperties);
   }
 
   @SpringBootApplication(exclude = {

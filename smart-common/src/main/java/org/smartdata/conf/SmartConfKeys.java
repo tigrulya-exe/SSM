@@ -21,6 +21,7 @@ package org.smartdata.conf;
  * This class contains the configure keys needed by SSM.
  */
 public class SmartConfKeys {
+  public static final String SMART_CONF_KEYS_PREFIX = "smart.";
   public static final String SMART_DFS_ENABLED = "smart.dfs.enabled";
   public static final boolean SMART_DFS_ENABLED_DEFAULT = true;
 
