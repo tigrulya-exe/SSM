@@ -31,37 +31,37 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class TaskTracker {
   // Contains CmdletDescriptor being tackled.
-  private Set<CmdletDescriptor> tacklingCmdDesptors;
+  private final Set<CmdletDescriptor> cmdletDescriptors;
   // The ID of a submitted cmdlet to the corresponding CmdletDescriptor.
-  private Map<Long, CmdletDescriptor> cidToCmdDesptor;
+  private final Map<Long, CmdletDescriptor> idToDescriptor;
 
   public TaskTracker() {
-    this.tacklingCmdDesptors = ConcurrentHashMap.newKeySet();
-    this.cidToCmdDesptor = new ConcurrentHashMap<>();
+    this.cmdletDescriptors = ConcurrentHashMap.newKeySet();
+    this.idToDescriptor = new ConcurrentHashMap<>();
   }
 
   /**
    * Start tracking the CmdletDescriptor which is wrapped by a executable
-   * cmdlet whose ID is cid.
+   * cmdlet whose ID is cmdletId.
    **/
-  public void track(long cid, CmdletDescriptor cmdDesptor) {
-    tacklingCmdDesptors.add(cmdDesptor);
-    cidToCmdDesptor.put(cid, cmdDesptor);
+  public void track(long cmdletId, CmdletDescriptor cmdletDescriptor) {
+    cmdletDescriptors.add(cmdletDescriptor);
+    idToDescriptor.put(cmdletId, cmdletDescriptor);
   }
 
   /**
    * Untrack the CmdletDescriptor when the corresponding Cmdlet is finished.
-   * @param cid the ID of the finished Cmdlet.
+   * @param cmdletId the ID of the finished Cmdlet.
    */
-  public void untrack(long cid) {
-    Optional.ofNullable(cidToCmdDesptor.remove(cid)).ifPresent(
-        cmdDesptor -> tacklingCmdDesptors.remove(cmdDesptor));
+  public void stopTracking(long cmdletId) {
+    Optional.ofNullable(idToDescriptor.remove(cmdletId))
+        .ifPresent(cmdletDescriptors::remove);
   }
 
   /**
    * Used to avoid repeatedly submitting cmdlet for same CmdletDescriptor.
    */
-  public boolean contains(CmdletDescriptor cmdDesptor) {
-    return tacklingCmdDesptors.contains(cmdDesptor);
+  public boolean contains(CmdletDescriptor cmdletDescriptor) {
+    return cmdletDescriptors.contains(cmdletDescriptor);
   }
 }

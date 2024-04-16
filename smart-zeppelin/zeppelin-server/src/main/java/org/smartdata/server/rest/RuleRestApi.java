@@ -23,6 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.model.RuleState;
 import org.smartdata.server.SmartEngine;
+import org.smartdata.server.engine.RuleManager;
+import org.smartdata.server.engine.cmdlet.CmdletInfoHandler;
 import org.smartdata.server.rest.message.JsonResponse;
 
 import javax.ws.rs.FormParam;
@@ -42,10 +44,12 @@ import java.util.List;
 @Produces("application/json")
 public class RuleRestApi {
   private static final Logger LOGGER = LoggerFactory.getLogger(RuleRestApi.class);
-  private final SmartEngine smartEngine;
+  private final RuleManager ruleManager;
+  private final CmdletInfoHandler cmdletInfoHandler;
 
   public RuleRestApi(SmartEngine smartEngine) {
-    this.smartEngine = smartEngine;
+    this.ruleManager = smartEngine.getRuleManager();
+    this.cmdletInfoHandler = ruleManager.getCmdletManager().getCmdletInfoHandler();
   }
 
   @POST
@@ -53,7 +57,7 @@ public class RuleRestApi {
   public Response addRule(@FormParam("ruleText") String ruleText) {
     try {
       LOGGER.info("Adding rule: " + ruleText);
-      long ruleId = smartEngine.getRuleManager().submitRule(ruleText, RuleState.NEW);
+      long ruleId = ruleManager.submitRule(ruleText, RuleState.NEW);
       return new JsonResponse<>(Response.Status.CREATED, ruleId).build();
     } catch (Exception e) {
       LOGGER.error("Exception in RuleRestApi while adding rule: " + e.getLocalizedMessage());
@@ -66,7 +70,7 @@ public class RuleRestApi {
   @Path("/{ruleId}/delete")
   public Response deleteRule(@PathParam("ruleId") long ruleId) {
     try {
-      smartEngine.getRuleManager().deleteRule(ruleId, false);
+      ruleManager.deleteRule(ruleId, false);
       return new JsonResponse<>(Response.Status.OK).build();
     } catch (Exception e) {
       LOGGER.error("Exception in RuleRestApi while deleting rule ", e);
@@ -80,7 +84,7 @@ public class RuleRestApi {
   public Response start(@PathParam("ruleId") long ruleId) {
     LOGGER.info("Start rule{}", ruleId);
     try {
-      smartEngine.getRuleManager().activateRule(ruleId);
+      ruleManager.activateRule(ruleId);
       return new JsonResponse<>(Response.Status.OK).build();
     } catch (Exception e) {
       LOGGER.error("Exception in RuleRestApi while starting rule: " + e.getMessage());
@@ -94,7 +98,7 @@ public class RuleRestApi {
   public Response stop(@PathParam("ruleId") long ruleId) {
     LOGGER.info("Stop rule{}", ruleId);
     try {
-      smartEngine.getRuleManager().disableRule(ruleId, true);
+      ruleManager.disableRule(ruleId, true);
       return new JsonResponse<>(Response.Status.OK).build();
     } catch (Exception e) {
       LOGGER.error("Exception in RuleRestApi while stopping rule ", e);
@@ -108,7 +112,7 @@ public class RuleRestApi {
   public Response info(@PathParam("ruleId") long ruleId) {
     try {
       return new JsonResponse<>(Response.Status.OK,
-          smartEngine.getRuleManager().getRuleInfo(ruleId)).build();
+          ruleManager.getRuleInfo(ruleId)).build();
     } catch (Exception e) {
       LOGGER.error("Exception in RuleRestApi while getting rule info", e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
@@ -134,7 +138,7 @@ public class RuleRestApi {
           .collect(Collectors.toList());
 
       return new JsonResponse<>(Response.Status.OK,
-          smartEngine.getCmdletManager().listCmdletsInfo(ruleId,
+          cmdletInfoHandler.listCmdletsInfo(ruleId,
               pageIndex,
               numPerPage, orderByList, isDescList)).build();
     } catch (Exception e) {
@@ -149,7 +153,7 @@ public class RuleRestApi {
   public Response cmdlets(@PathParam("ruleId") long ruleId) {
     try {
       return new JsonResponse<>(Response.Status.OK,
-          smartEngine.getCmdletManager().listCmdletsInfo(ruleId, null)).build();
+          cmdletInfoHandler.listCmdletsInfo(ruleId, null)).build();
     } catch (Exception e) {
       LOGGER.error("Exception in RuleRestApi while getting cmdlets", e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
@@ -162,7 +166,7 @@ public class RuleRestApi {
   public Response ruleList() {
     try {
       return new JsonResponse<>(Response.Status.OK,
-          smartEngine.getRuleManager().listRulesInfo()).build();
+          ruleManager.listRulesInfo()).build();
     } catch (Exception e) {
       LOGGER.error("Exception in RuleRestApi while listing rules", e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
@@ -175,7 +179,7 @@ public class RuleRestApi {
   public Response ruleMoveList() {
     try {
       return new JsonResponse<>(Response.Status.OK,
-          smartEngine.getRuleManager().listRulesMoveInfo()).build();
+          ruleManager.listRulesMoveInfo()).build();
     } catch (Exception e) {
       LOGGER.error("Exception in RuleRestApi while listing Move rules", e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
@@ -188,7 +192,7 @@ public class RuleRestApi {
   public Response ruleSyncList() {
     try {
       return new JsonResponse<>(Response.Status.OK,
-          smartEngine.getRuleManager().listRulesSyncInfo()).build();
+          ruleManager.listRulesSyncInfo()).build();
     } catch (Exception e) {
       LOGGER.error("Exception in RuleRestApi while listing Sync rules", e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,

@@ -38,28 +38,27 @@ public abstract class ActionSchedulerService extends AbstractService implements 
   }
 
   @Override
-  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex)
-      throws IOException {
+  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo) throws IOException {
     return true;
   }
 
   @Override
   public ScheduleResult onSchedule(CmdletInfo cmdletInfo, ActionInfo actionInfo,
-      LaunchCmdlet cmdlet, LaunchAction action, int actionIndex) {
+      LaunchCmdlet cmdlet, LaunchAction action) {
     return ScheduleResult.SUCCESS;
   }
 
   @Override
-  public void postSchedule(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex,
+  public void postSchedule(CmdletInfo cmdletInfo, ActionInfo actionInfo,
       ScheduleResult result) {
   }
 
   @Override
-  public void onPreDispatch(LaunchCmdlet cmdlet, LaunchAction action, int actionIndex) {
+  public void onPreDispatch(LaunchCmdlet cmdlet, LaunchAction action) {
   }
 
   @Override
-  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex) {
+  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo) {
   }
 
   @Override

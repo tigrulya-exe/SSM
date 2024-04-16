@@ -15,36 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.server.engine;
+package org.smartdata.metastore.model;
 
-import org.smartdata.conf.ReconfigurableBase;
-import org.smartdata.conf.ReconfigureException;
-import org.smartdata.conf.SmartConf;
-import org.smartdata.conf.SmartConfKeys;
-
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-public class ConfManager extends ReconfigurableBase {
+public class SearchResult<T> {
+  private final List<T> items;
+  private final long total;
 
-  private SmartConf conf;
-
-  public ConfManager(SmartConf conf) {
-    this.conf = conf;
+  public SearchResult(List<T> items, long total) {
+    this.items = items;
+    this.total = total;
   }
 
-  @Override
-  public void reconfigureProperty(String property, String newVal)
-      throws ReconfigureException {
-    if (property.equals(SmartConfKeys.SMART_DFS_NAMENODE_RPCSERVER_KEY)) {
-      conf.set(property, newVal);
-    }
+  public List<T> getItems() {
+    return items;
   }
 
-  @Override
-  public List<String> getReconfigurableProperties() {
-    return Arrays.asList(
-        SmartConfKeys.SMART_DFS_NAMENODE_RPCSERVER_KEY
-    );
+  public long getTotal() {
+    return total;
+  }
+
+  public static <T> SearchResult<T> emptyResult() {
+    return new SearchResult<>(Collections.emptyList(), 0);
   }
 }

@@ -62,7 +62,7 @@ import static org.smartdata.model.ActionInfo.OLD_FILE_ID;
 import static org.smartdata.model.WhitelistHelper.validatePathsCovered;
 
 public class SmallFileScheduler extends ActionSchedulerService {
-  private MetaStore metaStore;
+  private final MetaStore metaStore;
 
   /**
    * Container file lock.
@@ -160,7 +160,7 @@ public class SmallFileScheduler extends ActionSchedulerService {
   }
 
   @Override
-  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex)
+  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo)
       throws IOException {
     // check args
     if (actionInfo.getArgs() == null) {
@@ -453,7 +453,7 @@ public class SmallFileScheduler extends ActionSchedulerService {
 
   @Override
   public ScheduleResult onSchedule(CmdletInfo cmdletInfo, ActionInfo actionInfo,
-      LaunchCmdlet cmdlet, LaunchAction action, int actionIndex) {
+      LaunchCmdlet cmdlet, LaunchAction action) {
     if (COMPACT_ACTION_NAME.equals(actionInfo.getActionName())) {
       return getCompactScheduleResult(actionInfo);
     } else if (UNCOMPACT_ACTION_NAME.equals(actionInfo.getActionName())) {
@@ -602,8 +602,7 @@ public class SmallFileScheduler extends ActionSchedulerService {
   }
 
   @Override
-  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo,
-      int actionIndex) {
+  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo) {
     if (!actionInfo.getActionName().equals(COMPACT_ACTION_NAME) &&
         !actionInfo.getActionName().equals(UNCOMPACT_ACTION_NAME)) {
       return;

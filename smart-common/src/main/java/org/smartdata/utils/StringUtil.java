@@ -58,13 +58,15 @@ public class StringUtil {
         .replace("?", "_");
   }
 
+
+  // todo replace this function with java std duration
   /**
    * Convert time string into milliseconds representation.
    *
    * @param str
    * @return -1 if error
    */
-  public static long pharseTimeString(String str) {
+  public static long parseTimeString(String str) {
     long intval = 0L;
     str = str.trim();
     Pattern p = Pattern.compile("([0-9]+)([a-z]+)");
@@ -73,10 +75,11 @@ public class StringUtil {
     while (m.find(start)) {
       String digStr = m.group(1);
       String unitStr = m.group(2);
-      long value = 0;
+      long value;
       try {
         value = Long.parseLong(digStr);
       } catch (NumberFormatException e) {
+        throw new IllegalArgumentException("Invalid time duration format:" + str);
       }
 
       switch (unitStr) {
@@ -99,7 +102,10 @@ public class StringUtil {
         case "ms":
           intval += value;
           break;
+        default:
+          throw new IllegalArgumentException("Invalid time duration format:" + str);
       }
+
       start += m.group().length();
     }
     return intval;

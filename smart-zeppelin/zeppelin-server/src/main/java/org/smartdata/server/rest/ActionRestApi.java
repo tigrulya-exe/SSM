@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.action.ActionRegistry;
 import org.smartdata.server.SmartEngine;
+import org.smartdata.server.engine.action.ActionInfoHandler;
 import org.smartdata.server.rest.message.JsonResponse;
 
 import javax.ws.rs.GET;
@@ -39,12 +40,12 @@ import java.util.List;
 @Path("/actions")
 @Produces("application/json")
 public class ActionRestApi {
-  SmartEngine smartEngine;
+  private final ActionInfoHandler actionInfoHandler;
   private static final Logger logger =
       LoggerFactory.getLogger(ActionRestApi.class);
 
   public ActionRestApi(SmartEngine smartEngine) {
-    this.smartEngine = smartEngine;
+    this.actionInfoHandler = smartEngine.getCmdletManager().getActionInfoHandler();
   }
 
   @GET
@@ -78,7 +79,7 @@ public class ActionRestApi {
         isDescList.add(Boolean.parseBoolean(isDescStringList.get(i)));
       }
       return new JsonResponse<>(Response.Status.OK,
-        smartEngine.getCmdletManager().listActions(Long.parseLong(pageIndex),
+          actionInfoHandler.listActions(Long.parseLong(pageIndex),
           Long.parseLong(numPerPage), orderByList, isDescList)).build();
     } catch (Exception e) {
       logger.error("Exception in ActionRestApi while listing action types", e);
@@ -101,7 +102,7 @@ public class ActionRestApi {
         isDescList.add(Boolean.parseBoolean(isDescStringList.get(i)));
       }
       return new JsonResponse<>(Response.Status.OK,
-        smartEngine.getCmdletManager().searchAction(path, Long.parseLong(pageIndex),
+          actionInfoHandler.searchAction(path, Long.parseLong(pageIndex),
           Long.parseLong(numPerPage), orderByList, isDescList)).build();
     } catch (Exception e) {
       logger.error("Exception in ActionRestApi while listing action types", e);
@@ -118,7 +119,7 @@ public class ActionRestApi {
     intNumber = intNumber > 0 ? intNumber : 0;
     try {
       return new JsonResponse<>(Response.Status.OK,
-        smartEngine.getCmdletManager().getActions(Long.valueOf(ruleId), intNumber)).build();
+          actionInfoHandler.getActions(Long.valueOf(ruleId), intNumber)).build();
     } catch (Exception e) {
       logger.error("Exception in ActionRestApi while listing action types", e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
@@ -137,7 +138,7 @@ public class ActionRestApi {
     }
     try {
       return new JsonResponse<>(Response.Status.OK,
-        smartEngine.getCmdletManager().getFileActions(Long.valueOf(ruleId),
+          actionInfoHandler.getFileActions(Long.valueOf(ruleId),
           Long.valueOf(pageIndex), Long.valueOf(numPerPage))).build();
     } catch (Exception e) {
       logger.error("Exception in ActionRestApi while listing file actions", e);
@@ -154,7 +155,7 @@ public class ActionRestApi {
     intNumber = intNumber > 0 ? intNumber : 0;
     try {
       return new JsonResponse<>(Response.Status.OK,
-        smartEngine.getCmdletManager().getFileActions(Long.valueOf(ruleId), intNumber)).build();
+          actionInfoHandler.getFileActions(Long.valueOf(ruleId), intNumber)).build();
     } catch (Exception e) {
       logger.error("Exception in ActionRestApi while listing file actions", e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
@@ -171,8 +172,7 @@ public class ActionRestApi {
     intNumber = intNumber > 0 ? intNumber : 0;
     try {
       return new JsonResponse<>(Response.Status.OK,
-        smartEngine.getCmdletManager()
-          .listNewCreatedActions(actionName, intNumber)).build();
+          actionInfoHandler.listNewCreatedActions(actionName, intNumber)).build();
     } catch (Exception e) {
       logger.error("Exception in ActionRestApi while listing action types", e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
@@ -186,7 +186,7 @@ public class ActionRestApi {
     Long longNumber = Long.parseLong(actionId);
     try {
       return new JsonResponse<>(Response.Status.OK,
-        smartEngine.getCmdletManager().getActionInfo(longNumber)).build();
+          actionInfoHandler.getActionInfo(longNumber)).build();
     } catch (Exception e) {
       logger.error("Exception in ActionRestApi while getting info", e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,

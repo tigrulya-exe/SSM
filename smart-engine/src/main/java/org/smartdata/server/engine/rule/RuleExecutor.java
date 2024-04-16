@@ -36,7 +36,6 @@ import org.smartdata.server.engine.data.ExecutionContext;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -449,18 +448,20 @@ public class RuleExecutor implements Runnable {
     }
     int nSubmitted = 0;
     List<RuleExecutorPlugin> plugins = RuleExecutorPluginManager.getPlugins();
-    String template = translationResult.getCmdDescriptor().toCmdletString();
+    CmdletDescriptor templateCmdlet = translationResult.getCmdDescriptor();
     for (String file : files) {
       if (exited) {
         break;
       }
       try {
-        CmdletDescriptor cmd = new CmdletDescriptor(template, ruleId);
-        cmd.setCmdletParameter(CmdletDescriptor.HDFS_FILE_PATH, file);
+        CmdletDescriptor cmdletDescriptor = new CmdletDescriptor(templateCmdlet);
+        cmdletDescriptor.setRuleId(ruleId);
+        cmdletDescriptor.setCmdletParameter(CmdletDescriptor.HDFS_FILE_PATH, file);
         for (RuleExecutorPlugin plugin : plugins) {
-          cmd = plugin.preSubmitCmdletDescriptor(ruleInfo, translationResult, cmd);
+          cmdletDescriptor = plugin.preSubmitCmdletDescriptor(
+              ruleInfo, translationResult, cmdletDescriptor);
         }
-        long cid = ruleManager.getCmdletManager().submitCmdlet(cmd);
+        long cid = ruleManager.getCmdletManager().submitCmdlet(cmdletDescriptor);
         // Not really submitted if cid is -1.
         if (cid != -1) {
           nSubmitted++;
@@ -470,8 +471,6 @@ public class RuleExecutor implements Runnable {
       } catch (IOException e) {
         // it's common here, ignore this and continue submit
         LOG.debug("Failed to submit cmdlet for file {} due to IOException", file, e);
-      } catch (ParseException e) {
-        LOG.error("Failed to submit cmdlet for file: {}", file, e);
       }
     }
     return nSubmitted;
@@ -484,9 +483,5 @@ public class RuleExecutor implements Runnable {
   public void setExited() {
     exitTime = System.currentTimeMillis();
     exited = true;
-  }
-
-  public long getExitTime() {
-    return exitTime;
   }
 }

@@ -29,36 +29,34 @@ public class CmdletInfo {
   private List<Long> aids;
   private CmdletState state;
   private String parameters;
-  private long generateTime;
   private long stateChangedTime;
-  private long deferedToTime;
+  private final long generateTime;
 
-  public CmdletInfo(long cid, long rid, CmdletState state,
-      String parameters, long generateTime, long stateChangedTime) {
-    this(cid, rid, state, parameters, generateTime, stateChangedTime, generateTime);
+  public CmdletInfo(
+      long cid,
+      long rid,
+      CmdletState state,
+      String parameters,
+      long generateTime,
+      long stateChangedTime) {
+    this(cid, rid, new ArrayList<>(), state,
+        parameters, generateTime, stateChangedTime);
   }
 
-  public CmdletInfo(long cid, long rid, CmdletState state,
-      String parameters, long generateTime, long stateChangedTime, long deferedToTime) {
+  public CmdletInfo(
+      long cid,
+      long rid,
+      List<Long> aids,
+      CmdletState state,
+      String parameters,
+      long generateTime,
+      long stateChangedTime) {
     this.cid = cid;
     this.rid = rid;
     this.state = state;
     this.parameters = parameters;
     this.generateTime = generateTime;
     this.stateChangedTime = stateChangedTime;
-    this.deferedToTime = deferedToTime;
-    this.aids = new ArrayList<>();
-  }
-
-  public CmdletInfo(long cid, long rid, List<Long> aids, CmdletState state,
-      String parameters, long generateTime, long stateChangedTime) {
-    this(cid, rid, state, parameters, generateTime, stateChangedTime);
-    this.aids = aids;
-  }
-
-  public CmdletInfo(long cid, long rid, List<Long> aids, CmdletState state,
-      String parameters, long generateTime, long stateChangedTime, long deferedToTime) {
-    this(cid, rid, state, parameters, generateTime, stateChangedTime, deferedToTime);
     this.aids = aids;
   }
 
@@ -142,10 +140,6 @@ public class CmdletInfo {
     this.stateChangedTime = stateChangedTime;
   }
 
-  public long getDeferedToTime() {
-    return deferedToTime;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -159,7 +153,6 @@ public class CmdletInfo {
         && rid == that.rid
         && generateTime == that.generateTime
         && stateChangedTime == that.stateChangedTime
-        && deferedToTime == that.deferedToTime
         && Objects.equals(aids, that.aids)
         && state == that.state
         && Objects.equals(parameters, that.parameters);
@@ -168,39 +161,38 @@ public class CmdletInfo {
   @Override
   public int hashCode() {
     return Objects.hash(cid, rid, aids, state, parameters,
-        generateTime, stateChangedTime, deferedToTime);
+        generateTime, stateChangedTime);
   }
 
   public static Builder newBuilder() {
-    return Builder.create();
+    return new Builder();
   }
 
   public static class Builder {
-    private long cid;
-    private long rid;
-    private List<Long> aids;
+    private long id;
+    private long ruleId;
+    private List<Long> actionIds;
     private CmdletState state;
     private String parameters;
     private long generateTime;
     private long stateChangedTime;
-    private long deferedToTime;
 
-    public static Builder create() {
-      return new Builder();
+    public Builder() {
+      this.actionIds = new ArrayList<>();
     }
 
-    public Builder setCid(long cid) {
-      this.cid = cid;
+    public Builder setId(long id) {
+      this.id = id;
       return this;
     }
 
-    public Builder setRid(long rid) {
-      this.rid = rid;
+    public Builder setRuleId(long ruleId) {
+      this.ruleId = ruleId;
       return this;
     }
 
-    public Builder setAids(List<Long> aids) {
-      this.aids = aids;
+    public Builder setActionIds(List<Long> actionIds) {
+      this.actionIds = actionIds;
       return this;
     }
 
@@ -225,15 +217,9 @@ public class CmdletInfo {
       return this;
     }
 
-    public Builder setDeferedToTime(long deferedToTime) {
-      this.deferedToTime = deferedToTime;
-      return this;
-    }
-
     public CmdletInfo build() {
-      return new CmdletInfo(cid, rid, aids, state, parameters,
-          generateTime, stateChangedTime,
-          deferedToTime == 0 ? generateTime : deferedToTime);
+      return new CmdletInfo(id, ruleId, actionIds, state, parameters,
+          generateTime, stateChangedTime);
     }
   }
 }

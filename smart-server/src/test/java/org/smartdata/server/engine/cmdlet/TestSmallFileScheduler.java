@@ -52,7 +52,7 @@ public class TestSmallFileScheduler extends MiniSmartClusterHarness {
       int bytesRemaining = (int) fileLen;
       while (bytesRemaining > 0) {
         rb.nextBytes(buf);
-        int bytesToWrite = (bytesRemaining < buf.length) ? bytesRemaining : buf.length;
+        int bytesToWrite = Math.min(bytesRemaining, buf.length);
         out.write(buf, 0, bytesToWrite);
         bytesRemaining -= bytesToWrite;
       }
@@ -73,7 +73,9 @@ public class TestSmallFileScheduler extends MiniSmartClusterHarness {
 
     while (true) {
       Thread.sleep(3000);
-      CmdletState state = cmdletManager.getCmdletInfo(cmdId).getState();
+      CmdletState state = cmdletManager.getCmdletInfoHandler()
+          .getCmdletInfo(cmdId)
+          .getState();
       if (state == CmdletState.DONE) {
         long containerFileLen = dfsClient.getFileInfo(
             "/test/small_files/container_file_2").getLen();

@@ -34,7 +34,6 @@ import org.smartdata.hdfs.HadoopUtil;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.utils.MetaStoreUtils;
 import org.smartdata.server.engine.CmdletManager;
-import org.smartdata.server.engine.ConfManager;
 import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.engine.ServerContext;
 import org.smartdata.server.engine.ServiceMode;
@@ -45,7 +44,6 @@ import static org.smartdata.SmartConstants.NUMBER_OF_SMART_AGENT;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +55,6 @@ import java.util.Scanner;
 public class SmartServer {
   public static final Logger LOG = LoggerFactory.getLogger(SmartServer.class);
 
-  private ConfManager confMgr;
   private final SmartConf conf;
   private SmartEngine engine;
   private ServerContext context;
@@ -74,7 +71,6 @@ public class SmartServer {
 
   public SmartServer(SmartConf conf) {
     this.conf = conf;
-    this.confMgr = new ConfManager(conf);
     this.enabled = false;
   }
 
@@ -113,7 +109,7 @@ public class SmartServer {
     return this.context;
   }
 
-  public static StartupOption processArgs(String[] args, SmartConf conf) throws Exception {
+  private static StartupOption processArgs(String[] args, SmartConf conf) throws Exception {
     if (args == null) {
       args = new String[0];
     }
@@ -126,17 +122,15 @@ public class SmartServer {
       } else if (StartupOption.REGULAR.getName().equalsIgnoreCase(arg)) {
         startOpt = StartupOption.REGULAR;
       } else if (arg.equals("-h") || arg.equals("-help")) {
-        if (parseHelpArgument(new String[]{arg}, USAGE, System.out, true)) {
+        if (parseHelpArgument(new String[]{arg}, USAGE, System.out)) {
           return null;
         }
       } else {
         list.add(arg);
       }
     }
-    if (list != null) {
-      String remainArgs[] = list.toArray(new String[list.size()]);
-      new GenericOptionsParser(conf, remainArgs);
-    }
+    String[] remainArgs = list.toArray(new String[0]);
+    new GenericOptionsParser(conf, remainArgs);
 
     return startOpt;
   }
@@ -200,14 +194,14 @@ public class SmartServer {
   }
 
   private static boolean parseHelpArgument(String[] args,
-    String helpDescription, PrintStream out, boolean printGenericCmdletUsage) {
+    String helpDescription, PrintStream out) {
     try {
       CommandLineParser parser = new PosixParser();
       CommandLine cmdLine = parser.parse(helpOptions, args);
       if (cmdLine.hasOption(helpOpt.getOpt())
           || cmdLine.hasOption(helpOpt.getLongOpt())) {
         // should print out the help information
-        out.println(helpDescription + "\n");
+        out.println(helpDescription);
         return true;
       }
     } catch (ParseException pe) {
@@ -245,16 +239,6 @@ public class SmartServer {
     enabled = true;
     engine.init();
     engine.start();
-  }
-
-  public void enable() throws IOException {
-    if (getSSMServiceState() == SmartServiceState.DISABLED) {
-      try {
-        startEngines();
-      } catch (Exception e) {
-        throw new IOException(e);
-      }
-    }
   }
 
   public SmartServiceState getSSMServiceState() {
@@ -323,7 +307,7 @@ public class SmartServer {
     FORMAT("-format"),
     REGULAR("-regular");
 
-    private String name;
+    private final String name;
 
     StartupOption(String arg) {
       this.name = arg;

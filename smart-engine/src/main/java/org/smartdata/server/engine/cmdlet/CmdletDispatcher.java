@@ -21,7 +21,6 @@ import com.google.common.collect.ListMultimap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.SmartContext;
-import org.smartdata.action.ActionException;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.model.CmdletState;
@@ -40,10 +39,7 @@ import org.smartdata.server.engine.message.NodeMessage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -55,7 +51,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class CmdletDispatcher {
   private static final Logger LOG = LoggerFactory.getLogger(CmdletDispatcher.class);
-  private Queue<Long> pendingCmdlets;
+  private final Queue<Long> pendingCmdlets;
   private final CmdletManager cmdletManager;
   private final List<Long> runningCmdlets;
   private final Map<Long, LaunchCmdlet> idToLaunchCmdlet;
@@ -63,30 +59,30 @@ public class CmdletDispatcher {
 
   private final ScheduledExecutorService schExecService;
 
-  private CmdletExecutorService[] cmdExecServices;
-  private int[] cmdExecSrvInsts;
+  private final CmdletExecutorService[] cmdExecServices;
+  private final int[] cmdExecSrvInsts;
   private int cmdExecSrvTotalInsts;
-  private AtomicInteger[] execSrvSlotsLeft;
-  private AtomicInteger totalSlotsLeft = new AtomicInteger();
+  private final AtomicInteger[] execSrvSlotsLeft;
+  private final AtomicInteger totalSlotsLeft;
 
-  private Map<Long, ExecutorType> dispatchedToSrvs;
-  private boolean disableLocalExec;
-  private boolean logDispResult;
-  private DispatchTask[] dispatchTasks;
-  private int outputDispMetricsInterval; // 0 means no output
+  private final Map<Long, ExecutorType> dispatchedToSrvs;
+  private final boolean disableLocalExec;
+  private final boolean logDispResult;
+  private final DispatchTask[] dispatchTasks;
+  private final int outputDispMetricsInterval; // 0 means no output
 
   // TODO: to be refined
   private final int defaultSlots;
   private final int executorsNum;
-  private AtomicInteger index = new AtomicInteger(0);
+  private final AtomicInteger index;
 
-  private Map<String, AtomicInteger> regNodes = new HashMap<>();
-  private Map<String, NodeCmdletMetrics> regNodeInfos = new HashMap<>();
+  private final Map<String, AtomicInteger> regNodes;
+  private final Map<String, NodeCmdletMetrics> regNodeInfos;
 
-  private List<List<String>> cmdExecSrvNodeIds = new ArrayList<>();
-  private String[] completeOn = new String[ExecutorType.values().length];
+  private final List<List<String>> cmdExecSrvNodeIds;
+  private final String[] completeOn;
 
-  private SmartConf conf;
+  private final SmartConf conf;
 
   public CmdletDispatcher(SmartContext smartContext, CmdletManager cmdletManager,
       Queue<Long> scheduledCmdlets, Map<Long, LaunchCmdlet> idToLaunchCmdlet,
@@ -97,6 +93,14 @@ public class CmdletDispatcher {
     this.runningCmdlets = runningCmdlets;
     this.idToLaunchCmdlet = idToLaunchCmdlet;
     this.schedulers = schedulers;
+
+    this.index = new AtomicInteger(0);
+    this.regNodes = new HashMap<>();
+    this.regNodeInfos = new HashMap<>();
+    this.cmdExecSrvNodeIds = new ArrayList<>();
+    this.completeOn = new String[ExecutorType.values().length];
+    this.totalSlotsLeft = new AtomicInteger();
+
     this.executorsNum = conf.getInt(SmartConfKeys.SMART_CMDLET_EXECUTORS_KEY,
         SmartConfKeys.SMART_CMDLET_EXECUTORS_DEFAULT);
     int delta = conf.getInt(SmartConfKeys.SMART_DISPATCH_CMDLETS_EXTRA_NUM_KEY,
@@ -108,7 +112,7 @@ public class CmdletDispatcher {
     this.execSrvSlotsLeft = new AtomicInteger[ExecutorType.values().length];
     for (int i = 0; i < execSrvSlotsLeft.length; i++) {
       execSrvSlotsLeft[i] = new AtomicInteger(0);
-      cmdExecSrvNodeIds.add(new ArrayList<String>());
+      cmdExecSrvNodeIds.add(new ArrayList<>());
     }
     this.cmdExecSrvTotalInsts = 0;
     this.dispatchedToSrvs = new ConcurrentHashMap<>();
@@ -169,7 +173,7 @@ public class CmdletDispatcher {
     }
   }
 
-  public LaunchCmdlet getNextCmdletToRun() throws IOException {
+  public LaunchCmdlet getNextCmdletToRun() {
     Long cmdletId = pendingCmdlets.poll();
     if (cmdletId == null) {
       return null;
@@ -203,8 +207,6 @@ public class CmdletDispatcher {
       cmdletManager.onCmdletStatusUpdate(cmdletStatus);
     } catch (IOException e) {
       LOG.info("update status failed.", e);
-    } catch (ActionException e) {
-      LOG.info("update action status failed.", e);
     }
   }
 
@@ -218,7 +220,7 @@ public class CmdletDispatcher {
     private int statFull = 0;
     private LaunchCmdlet launchCmdlet = null;
 
-    private int[] dispInstIdxs = new int[ExecutorType.values().length];
+    private final int[] dispInstIdxs = new int[ExecutorType.values().length];
 
     public DispatchTask(CmdletDispatcher dispatcher, int taskId) {
       this.dispatcher = dispatcher;
@@ -426,12 +428,10 @@ public class CmdletDispatcher {
   }
 
   public void cmdletPreExecutionProcess(LaunchCmdlet cmdlet) {
-    int actionIndex = 0;
     for (LaunchAction action : cmdlet.getLaunchActions()) {
       for (ActionScheduler p : schedulers.get(action.getActionType())) {
-        p.onPreDispatch(cmdlet, action, actionIndex);
+        p.onPreDispatch(cmdlet, action);
       }
-      actionIndex++;
     }
   }
 
@@ -566,15 +566,11 @@ public class CmdletDispatcher {
       cmdletManager.updateNodeCmdletMetrics(metrics);
     }
     // TODO: temp implementation
-    List<NodeCmdletMetrics> ret = new LinkedList<>();
-    ret.addAll(regNodeInfos.values());
-    Collections.sort(ret, new Comparator<NodeCmdletMetrics>() {
-      @Override
-      public int compare(NodeCmdletMetrics a, NodeCmdletMetrics b) {
-        int tp = a.getNodeInfo().getExecutorType().ordinal()
-            - b.getNodeInfo().getExecutorType().ordinal();
-        return tp == 0 ? a.getNodeInfo().getId().compareToIgnoreCase(b.getNodeInfo().getId()) : tp;
-      }
+    List<NodeCmdletMetrics> ret = new ArrayList<>(regNodeInfos.values());
+    ret.sort((a, b) -> {
+      int tp = a.getNodeInfo().getExecutorType().ordinal()
+          - b.getNodeInfo().getExecutorType().ordinal();
+      return tp == 0 ? a.getNodeInfo().getId().compareToIgnoreCase(b.getNodeInfo().getId()) : tp;
     });
     return ret;
   }

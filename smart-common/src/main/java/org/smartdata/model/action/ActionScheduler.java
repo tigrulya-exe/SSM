@@ -38,7 +38,7 @@ public interface ActionScheduler {
    * @return acceptable if true, or discard
    * @throws IOException
    */
-  boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex)
+  boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo)
       throws IOException;
 
   /**
@@ -52,7 +52,7 @@ public interface ActionScheduler {
    * @return
    */
   ScheduleResult onSchedule(CmdletInfo cmdletInfo, ActionInfo actionInfo,
-      LaunchCmdlet cmdlet, LaunchAction action, int actionIndex);
+      LaunchCmdlet cmdlet, LaunchAction action);
 
   /**
    * Called after and an Cmdlet get scheduled.
@@ -60,22 +60,21 @@ public interface ActionScheduler {
    * @param actionInfo
    * @param result
    */
-  void postSchedule(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex,
-      ScheduleResult result);
+  void postSchedule(CmdletInfo cmdletInfo, ActionInfo actionInfo, ScheduleResult result);
 
   /**
    *  Called just before dispatch for execution.
    *
    * @param action
    */
-  void onPreDispatch(LaunchCmdlet cmdlet, LaunchAction action, int actionIndex);
+  void onPreDispatch(LaunchCmdlet cmdlet, LaunchAction action);
 
   /**
    *  Called when action finished execution.
    *
    * @param actionInfo
    */
-  void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex);
+  void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo);
 
   /**
    * Speculate whether timeout action is finished.

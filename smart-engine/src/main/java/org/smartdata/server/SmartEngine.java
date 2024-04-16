@@ -26,7 +26,6 @@ import org.smartdata.model.Utilization;
 import org.smartdata.server.cluster.NodeInfo;
 import org.smartdata.server.engine.ActiveServerInfo;
 import org.smartdata.server.engine.CmdletManager;
-import org.smartdata.server.engine.ConfManager;
 import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.engine.ServerContext;
 import org.smartdata.server.engine.StandbyServerInfo;
@@ -37,28 +36,28 @@ import org.smartdata.server.engine.cmdlet.agent.AgentInfo;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 public class SmartEngine extends AbstractService {
-  private ConfManager confMgr;
-  private SmartConf conf;
-  private ServerContext serverContext;
+  public static final Logger LOG = LoggerFactory.getLogger(SmartEngine.class);
+
+  private final SmartConf conf;
+  private final ServerContext serverContext;
   private StatesManager statesMgr;
   private RuleManager ruleMgr;
   private CmdletManager cmdletManager;
   private AgentExecutorService agentService;
   private HazelcastExecutorService hazelcastService;
-  private List<AbstractService> services = new ArrayList<>();
-  public static final Logger LOG = LoggerFactory.getLogger(SmartEngine.class);
+  private final List<AbstractService> services;
 
   public SmartEngine(ServerContext context) {
     super(context);
     this.serverContext = context;
     this.conf = serverContext.getConf();
+    this.services = new ArrayList<>();
   }
 
   @Override
@@ -133,10 +132,6 @@ public class SmartEngine extends AbstractService {
     return agentService.getAgentInfos();
   }
 
-  public ConfManager getConfMgr() {
-    return confMgr;
-  }
-
   public SmartConf getConf() {
     return serverContext.getConf();
   }
@@ -161,7 +156,7 @@ public class SmartEngine extends AbstractService {
       long begin, long end) throws IOException {
     long now = System.currentTimeMillis();
     if (begin == end && Math.abs(begin - now) <= 5) {
-      return Arrays.asList(getUtilization(resourceName));
+      return Collections.singletonList(getUtilization(resourceName));
     }
 
     List<StorageCapacity> cs = serverContext.getMetaStore().getStorageHistoryData(
@@ -173,25 +168,9 @@ public class SmartEngine extends AbstractService {
     return us;
   }
 
-  private List<Utilization> getFackData(String resourceName, long granularity,
-      long begin, long end) {
-    List<Utilization> utils = new ArrayList<>();
-    long ts = begin;
-    if (ts % granularity != 0) {
-      ts += granularity;
-      ts = (ts / granularity) * granularity;
-    }
-    Random rand = new Random(ts);
-
-    for (; ts <= end; ts += granularity) {
-      utils.add(new Utilization(ts, 100, rand.nextInt(100)));
-    }
-    return utils;
-  }
-
   public List<NodeInfo> getSsmNodesInfo() {
     List<NodeInfo> ret = new LinkedList<>();
-    ret.addAll(Arrays.asList(ActiveServerInfo.getInstance()));
+    ret.add(ActiveServerInfo.getInstance());
     ret.addAll(getStandbyServers());
     ret.addAll(getAgents());
     return ret;

@@ -125,7 +125,7 @@ public class MoverScheduler extends ActionSchedulerService {
   }
 
   @Override
-  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex)
+  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo)
       throws IOException {
     // check args
     if (actionInfo.getArgs() == null) {
@@ -142,7 +142,7 @@ public class MoverScheduler extends ActionSchedulerService {
 
   @Override
   public ScheduleResult onSchedule(CmdletInfo cmdletInfo, ActionInfo actionInfo,
-      LaunchCmdlet cmdlet, LaunchAction action, int actionIndex) {
+      LaunchCmdlet cmdlet, LaunchAction action) {
     if (!actions.contains(action.getActionType())) {
       return ScheduleResult.SUCCESS;
     }
@@ -205,8 +205,7 @@ public class MoverScheduler extends ActionSchedulerService {
   }
 
   @Override
-  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo,
-      int actionIndex) {
+  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo) {
     fileLock.remove(actionInfo.getArgs().get(HdfsAction.FILE_PATH));
   }
 

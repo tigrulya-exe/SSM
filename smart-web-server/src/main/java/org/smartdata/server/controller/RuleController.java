@@ -27,6 +27,8 @@ import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
 import org.smartdata.server.engine.CmdletManager;
 import org.smartdata.server.engine.RuleManager;
+import org.smartdata.server.engine.cmdlet.CmdletInfoHandler;
+import org.smartdata.server.engine.model.CmdletGroup;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,11 +53,11 @@ import java.util.List;
 @Validated
 public class RuleController {
   private final RuleManager ruleManager;
-  private final CmdletManager cmdletManager;
+  private final CmdletInfoHandler cmdletInfoHandler;
 
   public RuleController(RuleManager ruleManager, CmdletManager cmdletManager) {
     this.ruleManager = ruleManager;
-    this.cmdletManager = cmdletManager;
+    this.cmdletInfoHandler = cmdletManager.getCmdletInfoHandler();
   }
 
   @Operation(summary = "Submit rule")
@@ -91,7 +93,7 @@ public class RuleController {
   @Operation(summary = "List all cmdlets of specified rule")
   @GetMapping("/{ruleId}/cmdlets")
   public List<CmdletInfo> getCmdlets(@PathVariable long ruleId) throws IOException {
-    return cmdletManager.listCmdletsInfo(ruleId, null);
+    return cmdletInfoHandler.listCmdletsInfo(ruleId, null);
   }
 
   @Operation(summary = "List all rules")
@@ -114,13 +116,13 @@ public class RuleController {
 
   @Operation(summary = "List all cmdlets of specified rule")
   @GetMapping("/{ruleId}/cmdlets/{pageIndex}/{numPerPage}/{orderBy}/{isDesc}")
-  public CmdletManager.CmdletGroup getCmdlets(
+  public CmdletGroup getCmdlets(
       @PathVariable long ruleId,
       @PathVariable @Min(0) int pageIndex,
       @PathVariable @Min(0) int numPerPage,
       @PathVariable List<String> orderBy,
-      @PathVariable List<Boolean> isDesc) throws MetaStoreException, IOException {
-    return cmdletManager.listCmdletsInfo(
+      @PathVariable List<Boolean> isDesc) throws MetaStoreException {
+    return cmdletInfoHandler.listCmdletsInfo(
         ruleId, pageIndex, numPerPage, orderBy, isDesc);
   }
 }

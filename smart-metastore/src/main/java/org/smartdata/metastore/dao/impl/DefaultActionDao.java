@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.smartdata.metastore.MetaStoreException;
 import org.smartdata.metastore.dao.AbstractDao;
 import org.smartdata.metastore.dao.ActionDao;
+import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.utils.MetaStoreUtils;
 import org.smartdata.model.ActionInfo;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -206,8 +207,9 @@ public class DefaultActionDao extends AbstractDao implements ActionDao {
   }
 
   @Override
-  public List<ActionInfo> searchAction(String path, long start, long offset, List<String> orderBy,
-                                       List<Boolean> isDesc, long[] retTotalNumActions) {
+  public SearchResult<ActionInfo> searchAction(
+      String path, long start, long offset, List<String> orderBy, List<Boolean> isDesc
+  ) {
     List<ActionInfo> ret;
     boolean ifHasAid = false;
     String sqlFilter = TABLE_NAME + " WHERE ("
@@ -219,13 +221,13 @@ public class DefaultActionDao extends AbstractDao implements ActionDao {
         + "OR progress LIKE '%" + path + "%' ESCAPE '/' "
         + "OR log LIKE '%" + path + "%' ESCAPE '/' "
         + "OR action_name LIKE '%" + path + "%' ESCAPE '/')";
-    String sql = "SELECT * FROM " + sqlFilter;
+    StringBuilder sql = new StringBuilder("SELECT * FROM " + sqlFilter);
     String sqlCount = "SELECT count(*) FROM " + sqlFilter + ";";
-    if (orderBy.size() == 0) {
-      sql += " LIMIT " + offset + " OFFSET " + start + ";";
-      ret = jdbcTemplate.query(sql, new ActionRowMapper());
+    if (orderBy.isEmpty()) {
+      sql.append(" LIMIT ").append(offset).append(" OFFSET ").append(start).append(";");
+      ret = jdbcTemplate.query(sql.toString(), new ActionRowMapper());
     } else {
-      sql += " ORDER BY ";
+      sql.append(" ORDER BY ");
 
       for (int i = 0; i < orderBy.size(); i++) {
         String ob = orderBy.get(i);
@@ -238,33 +240,32 @@ public class DefaultActionDao extends AbstractDao implements ActionDao {
         }
 
         if (ob.equals(RUNNING_TIME)) {
-          sql = sql + "(finish_time - create_time)";
+          sql.append("(finish_time - create_time)");
         } else {
-          sql = sql + ob;
+          sql.append(ob);
         }
 
         if (isDesc.size() > i) {
           if (isDesc.get(i)) {
-            sql = sql + " desc ";
+            sql.append(" desc ");
           }
-          sql = sql + ",";
+          sql.append(",");
         }
       }
 
       if (!ifHasAid) {
-        sql = sql + "aid,";
+        sql.append("aid,");
       }
 
       //delete the last char
-      sql = sql.substring(0, sql.length() - 1);
+      sql = new StringBuilder(sql.substring(0, sql.length() - 1));
       //add limit
-      sql = sql + " LIMIT " + offset + " OFFSET " + start + ";";
-      ret = jdbcTemplate.query(sql, new ActionRowMapper());
+      sql.append(" LIMIT ").append(offset).append(" OFFSET ").append(start).append(";");
+      ret = jdbcTemplate.query(sql.toString(), new ActionRowMapper());
     }
-    if (retTotalNumActions != null) {
-      retTotalNumActions[0] = jdbcTemplate.queryForObject(sqlCount, Long.class);
-    }
-    return ret;
+
+    long totalActions = jdbcTemplate.queryForObject(sqlCount, Long.class);
+    return new SearchResult<>(ret, totalActions);
   }
 
   @Override

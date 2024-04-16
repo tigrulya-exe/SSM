@@ -24,7 +24,7 @@ import org.smartdata.metastore.MetaStore;
 
 public class ServerContext extends SmartContext {
 
-  private MetaStore metaStore;
+  private final MetaStore metaStore;
 
   private ServiceMode serviceMode;
 

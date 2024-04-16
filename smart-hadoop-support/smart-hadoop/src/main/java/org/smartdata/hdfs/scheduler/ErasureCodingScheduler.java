@@ -118,7 +118,7 @@ public class ErasureCodingScheduler extends ActionSchedulerService {
   }
 
   @Override
-  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex)
+  public boolean onSubmit(CmdletInfo cmdletInfo, ActionInfo actionInfo)
       throws IOException {
     if (!isECSupported()) {
       throw new IOException(actionInfo.getActionName() +
@@ -154,7 +154,7 @@ public class ErasureCodingScheduler extends ActionSchedulerService {
 
   @Override
   public ScheduleResult onSchedule(CmdletInfo cmdletInfo, ActionInfo actionInfo,
-      LaunchCmdlet cmdlet, LaunchAction action, int actionIndex) {
+      LaunchCmdlet cmdlet, LaunchAction action) {
     if (!actions.contains(action.getActionType())) {
       return ScheduleResult.SUCCESS;
     }
@@ -293,7 +293,7 @@ public class ErasureCodingScheduler extends ActionSchedulerService {
   }
 
   @Override
-  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo, int actionIndex) {
+  public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo) {
     if (!actionInfo.isFinished()) {
       return;
     }
