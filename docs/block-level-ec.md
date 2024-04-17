@@ -1,4 +1,4 @@
-Continuous Block Layout Erasure Coding (EC) [unimplemented]
+Continuous Block Layout Erasure Coding (EC) [not fully implemented]
 ===========================================================
 
 The default HDFS 3x replication scheme is expensive. It incurs a 200%
@@ -8,14 +8,12 @@ introduced to address this challenge. After a study of the HDFS
 file-size distribution, the first phase of HDFS Erasure Coding is to
 support erasure coding with striped layout. In this design document, we
 propose the contiguous block layout erasure coding within SSM framework.
-The [HDFS RAID](https://wiki.apache.org/hadoop/HDFS-RAID) solution is an
-excellent pioneer in continuous block erasure coding. We have learned a
-lot from its design and experience.
+
 
 Striped EC vs Block EC
 ======================
 EC with striped layout can achieve storage saving for both small files and large files. It supports online erasure coding and when data written to HDFS, the coding is already done. On high speed network environment, it outperforms replica because at the same time it can write to more than one datanode in parallel. While one drawback is that it loses the data locality advantage which may impact the performance of upper layer applications especially those particularly optimized according to the advantage. For more Striped EC introduction,
-refer to this [our joint blog with Cloudera](https://blog.cloudera.com/blog/2015/09/introduction-to-hdfs-erasure-coding-in-apache-hadoop/).
+refer to this [blog](https://blog.cloudera.com/blog/2015/09/introduction-to-hdfs-erasure-coding-in-apache-hadoop/).
 
 Block EC is very suitable for those large files of enough blocks needed by a erasure coding group. The erasure coding is done offline and in background instead of online while client writing data. Compared with striped EC, block EC keeps data locality, having less performance impact to some frameworks and applications.
 

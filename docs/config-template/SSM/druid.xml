@@ -22,7 +22,7 @@
 
 <properties>
     <!-- <entry key="url">jdbc:sqlite:sqlit-db-path</entry> -->
-    <entry key="url">jdbc:mysql://sr01:3306/ssm</entry>
+    <entry key="url">jdbc:postgresql://sr01:5432/ssm</entry>
     <entry key="username">root</entry>
     <entry key="password">123456</entry>
 
