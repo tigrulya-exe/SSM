@@ -32,6 +32,7 @@ public class UserActivityEvent {
     STOP
   }
 
+  private final Long id;
   private final String userName;
   private final Instant timestamp;
   private final Long objectId;
@@ -41,6 +42,7 @@ public class UserActivityEvent {
   private final String additionalInfo;
 
   public UserActivityEvent(
+      Long id,
       String userName,
       Instant timestamp,
       Long objectId,
@@ -48,6 +50,7 @@ public class UserActivityEvent {
       Operation operation,
       UserActivityResult result,
       String additionalInfo) {
+    this.id = id;
     this.userName = userName;
     this.timestamp = timestamp;
     this.objectId = objectId;
@@ -55,6 +58,10 @@ public class UserActivityEvent {
     this.operation = operation;
     this.result = result;
     this.additionalInfo = additionalInfo;
+  }
+
+  public Long getId() {
+    return id;
   }
 
   public String getUserName() {
@@ -90,6 +97,7 @@ public class UserActivityEvent {
   }
 
   public static class Builder {
+    private Long id;
     private String userName;
     private Instant timestamp;
     private Long objectId;
@@ -97,6 +105,11 @@ public class UserActivityEvent {
     private Operation operation;
     private UserActivityResult result;
     private String additionalInfo;
+
+    public Builder id(long id) {
+      this.id = id;
+      return this;
+    }
 
     public Builder userName(String userName) {
       this.userName = userName;
@@ -135,6 +148,7 @@ public class UserActivityEvent {
 
     public UserActivityEvent build() {
       return new UserActivityEvent(
+          id,
           userName,
           timestamp,
           objectId,

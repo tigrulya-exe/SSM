@@ -214,7 +214,7 @@ public class RuleManager extends AbstractService {
     }
   }
 
-  public void deleteRuleInternal(long ruleId, boolean dropPendingCmdlets) throws IOException {
+  private void deleteRuleInternal(long ruleId, boolean dropPendingCmdlets) throws IOException {
     RuleInfoRepo infoRepo = checkIfExists(ruleId);
     try {
       if (dropPendingCmdlets && getCmdletManager() != null) {

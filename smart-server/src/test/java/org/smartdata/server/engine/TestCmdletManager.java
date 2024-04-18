@@ -168,8 +168,8 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
     long cmdletId = 10;
     long actionId = 101;
     MetaStore metaStore = mock(MetaStore.class);
-    //todo
     UserCmdletLifecycleListener lifecycleListener = mock(UserCmdletLifecycleListener.class);
+
     Assert.assertNotNull(metaStore);
     when(metaStore.getMaxCmdletId()).thenReturn(cmdletId);
     when(metaStore.getMaxActionId()).thenReturn(actionId);

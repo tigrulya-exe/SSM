@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,10 +17,12 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.smartdata.model.UserActivityEvent;
-import org.smartdata.model.request.AuditSearchRequest;
+import org.smartdata.metastore.model.SearchResult;
+import org.smartdata.metastore.queries.PageRequest;
 
-public interface UserActivityDao
-    extends SearchableDao<AuditSearchRequest, UserActivityEvent> {
-  void insert(UserActivityEvent event);
+import java.util.List;
+
+public interface SearchableDao<RequestT, EntityT> {
+  SearchResult<EntityT> search(RequestT searchRequest, PageRequest pageRequest);
+  List<EntityT> search(RequestT searchRequest);
 }

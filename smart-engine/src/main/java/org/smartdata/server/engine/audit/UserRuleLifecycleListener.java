@@ -21,8 +21,12 @@ import org.smartdata.model.UserActivityResult;
 
 public interface UserRuleLifecycleListener {
   void onRuleAdded(long ruleId);
+
   void onRuleAddFailure(String ruleText);
+
   void onRuleStart(long ruleId, UserActivityResult result);
+
   void onRuleStop(long ruleId, UserActivityResult result);
+
   void onRuleDelete(long ruleId, UserActivityResult result);
 }

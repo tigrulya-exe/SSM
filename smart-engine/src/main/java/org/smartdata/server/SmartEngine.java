@@ -54,6 +54,7 @@ public class SmartEngine extends AbstractService {
   private CmdletManager cmdletManager;
   private AgentExecutorService agentService;
   private HazelcastExecutorService hazelcastService;
+  private AuditService auditService;
   private final List<AbstractService> services;
 
   public SmartEngine(ServerContext context) {
@@ -65,10 +66,9 @@ public class SmartEngine extends AbstractService {
 
   @Override
   public void init() throws IOException {
-    AuditService auditService = new AuditService(serverContext.getMetaStore().userActivityDao());
-
     statesMgr = new StatesManager(serverContext);
     services.add(statesMgr);
+    auditService = new AuditService(serverContext.getMetaStore().userActivityDao());
     cmdletManager = new CmdletManager(
         serverContext, new CmdletLifecycleLogger(auditService));
     services.add(cmdletManager);
@@ -149,6 +149,10 @@ public class SmartEngine extends AbstractService {
 
   public RuleManager getRuleManager() {
     return ruleMgr;
+  }
+
+  public AuditService getAuditService() {
+    return auditService;
   }
 
   public CmdletManager getCmdletManager() {

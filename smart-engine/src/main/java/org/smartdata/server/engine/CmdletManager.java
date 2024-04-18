@@ -123,8 +123,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
 
   public CmdletManager(
       ServerContext context,
-      UserCmdletLifecycleListener lifecycleListener
-  ) throws IOException {
+      UserCmdletLifecycleListener lifecycleListener) throws IOException {
     super(context);
 
     this.metaStore = context.getMetaStore();
@@ -581,7 +580,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     }
   }
 
-  public void disableCmdletInternal(long cmdletId) throws IOException {
+  private void disableCmdletInternal(long cmdletId) throws IOException {
     CmdletInfo info = cmdletInfoHandler.getUnfinishedCmdlet(cmdletId);
     if (info == null) {
       return;

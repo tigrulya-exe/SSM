@@ -18,7 +18,10 @@
 package org.smartdata.server.engine.audit;
 
 import org.smartdata.metastore.dao.UserActivityDao;
+import org.smartdata.metastore.model.SearchResult;
+import org.smartdata.metastore.queries.PageRequest;
 import org.smartdata.model.UserActivityEvent;
+import org.smartdata.model.request.AuditSearchRequest;
 
 public class AuditService {
   private final UserActivityDao userActivityDao;
@@ -28,6 +31,11 @@ public class AuditService {
   }
 
   public void logEvent(UserActivityEvent event) {
-    userActivityDao.save(event);
+    userActivityDao.insert(event);
+  }
+
+  public SearchResult<UserActivityEvent> search(
+      AuditSearchRequest searchRequest, PageRequest pageRequest) {
+    return userActivityDao.search(searchRequest, pageRequest);
   }
 }

@@ -45,14 +45,18 @@ import org.smartdata.metastore.dao.UserActivityDao;
 import org.smartdata.metastore.dao.UserInfoDao;
 import org.smartdata.metastore.dao.WhitelistDao;
 import org.smartdata.metastore.dao.XattrDao;
+import org.springframework.jdbc.support.JdbcTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
 public class DefaultDaoProvider implements DaoProvider {
   protected final DataSource dataSource;
+  protected final PlatformTransactionManager transactionManager;
 
   public DefaultDaoProvider(DBPool dbPool) {
     this.dataSource = dbPool.getDataSource();
+    this.transactionManager = new JdbcTransactionManager(dataSource);
   }
 
   @Override
@@ -182,6 +186,6 @@ public class DefaultDaoProvider implements DaoProvider {
 
   @Override
   public UserActivityDao userActivityDao() {
-    return new DefaultUserActivityDao(dataSource);
+    return new DefaultUserActivityDao(dataSource, transactionManager);
   }
 }
