@@ -20,24 +20,29 @@ package org.smartdata.metastore.queries;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.smartdata.metastore.queries.expression.MetastoreQueryExpression;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.and;
+
 /**
  * Builds SQL SELECT query with named placeholders for later use by NamedJdbcTemplate.
  * */
 public class MetastoreQuery {
   private final StringBuilder queryBuilder;
+  private final StringBuilder filtersBuilder;
   private final Map<String, Object> parameters;
+  private String table;
 
   private MetastoreQuery(String baseQuery) {
     this.queryBuilder = new StringBuilder();
+    this.filtersBuilder = new StringBuilder();
     this.parameters = new HashMap<>();
+    this.table = null;
 
     queryBuilder.append(baseQuery).append("\n");
   }
@@ -54,31 +59,44 @@ public class MetastoreQuery {
     queryBuilder.append("FROM ")
         .append(table)
         .append("\n");
+    this.table = table;
     return this;
   }
 
   public MetastoreQuery where(MetastoreQueryExpression operator) {
-    String operatorSql = operator.build();
+    where(operator.build(), operator.getParameters());
+    return this;
+  }
 
-    if (StringUtils.isNotBlank(operatorSql)) {
+  private MetastoreQuery where(String filterSql, Map<String, Object> filterParameters) {
+    if (StringUtils.isNotBlank(filterSql)) {
+      filtersBuilder.append(filterSql);
+
       queryBuilder.append("WHERE ")
-          .append(operatorSql)
+          .append(filtersBuilder)
           .append("\n");
 
-      parameters.putAll(operator.getParameters());
+      parameters.putAll(filterParameters);
     }
 
     return this;
   }
 
+  public MetastoreQuery where(MetastoreQueryExpression... operators) {
+    return where(and(operators));
+  }
+
   public MetastoreQuery withPagination(PageRequest pageRequest) {
+    if (pageRequest == null) {
+      return this;
+    }
+    orderBy(pageRequest.getSortColumns());
+
     Optional.ofNullable(pageRequest.getLimit())
         .ifPresent(this::limit);
 
     Optional.ofNullable(pageRequest.getOffset())
         .ifPresent(this::offset);
-
-    orderBy(pageRequest.getSortColumns());
     return this;
   }
 
@@ -111,12 +129,15 @@ public class MetastoreQuery {
     return this;
   }
 
-  public <T> List<T> execute(NamedParameterJdbcTemplate jdbcTemplate, RowMapper<T> rowMapper) {
-    return jdbcTemplate.query(toSqlQuery(), parameters, rowMapper);
-  }
-
   public String toSqlQuery() {
     return queryBuilder.toString();
+  }
+
+  public String toSqlCountQuery() {
+    return select("COUNT(*)")
+        .from(table)
+        .where(filtersBuilder.toString(), parameters)
+        .toSqlQuery();
   }
 
   public Map<String, Object> getParameters() {

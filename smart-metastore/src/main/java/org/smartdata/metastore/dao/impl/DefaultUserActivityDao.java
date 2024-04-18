@@ -17,29 +17,87 @@
  */
 package org.smartdata.metastore.dao.impl;
 
-import org.smartdata.metastore.dao.AbstractDao;
+import org.smartdata.metastore.SearchableAbstractDao;
 import org.smartdata.metastore.dao.UserActivityDao;
+import org.smartdata.metastore.queries.MetastoreQuery;
+import org.smartdata.model.TimeInterval;
 import org.smartdata.model.UserActivityEvent;
+import org.smartdata.model.UserActivityResult;
+import org.smartdata.model.request.AuditSearchRequest;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
-public class DefaultUserActivityDao extends AbstractDao implements UserActivityDao {
-  public DefaultUserActivityDao(DataSource dataSource) {
-    super(dataSource, "user_activity_event");
+import static org.smartdata.metastore.queries.MetastoreQuery.selectAll;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.greaterThanEqual;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.in;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.lessThanEqual;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.like;
+
+public class DefaultUserActivityDao
+    extends SearchableAbstractDao<AuditSearchRequest, UserActivityEvent>
+    implements UserActivityDao {
+  private static final String TABLE_NAME = "user_activity_event";
+
+  public DefaultUserActivityDao(
+      DataSource dataSource,
+      PlatformTransactionManager transactionManager) {
+    super(dataSource, transactionManager, TABLE_NAME);
   }
 
   @Override
-  public void save(UserActivityEvent event) {
+  public void insert(UserActivityEvent event) {
     insert(event, this::toMap);
+  }
+
+  @Override
+  protected MetastoreQuery searchQuery(AuditSearchRequest searchRequest) {
+    Instant timestampFrom = Optional.ofNullable(searchRequest.getTimestampBetween())
+        .map(TimeInterval::getFrom)
+        .orElse(null);
+
+    Instant timestampTo = Optional.ofNullable(searchRequest.getTimestampBetween())
+        .map(TimeInterval::getTo)
+        .orElse(null);
+
+    return selectAll()
+        .from(TABLE_NAME)
+        .where(
+            like("user", searchRequest.getUserLike()),
+            greaterThanEqual("timestamp", timestampFrom),
+            lessThanEqual("timestamp", timestampTo),
+            in("object_type", searchRequest.getObjectTypes()),
+            in("object_id", searchRequest.getObjectIds()),
+            in("operation", searchRequest.getOperations()),
+            in("result", searchRequest.getResults())
+        );
+  }
+
+  @Override
+  protected UserActivityEvent mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+    return UserActivityEvent.newBuilder()
+        .id(resultSet.getLong(1))
+        .userName(resultSet.getString(2))
+        .timestamp(Instant.ofEpochMilli(resultSet.getLong(3)))
+        .objectType(UserActivityEvent.ObjectType.valueOf(resultSet.getString(4)))
+        .objectId(resultSet.getLong(5))
+        .operation(UserActivityEvent.Operation.valueOf(resultSet.getString(6)))
+        .result(UserActivityResult.valueOf(resultSet.getString(7)))
+        .additionalInfo(resultSet.getString(8))
+        .build();
   }
 
   private Map<String, Object> toMap(UserActivityEvent event) {
     Map<String, Object> properties = new HashMap<>();
     properties.put("user", event.getUserName());
-    properties.put("timestamp", event.getTimestamp());
+    properties.put("timestamp", event.getTimestamp().toEpochMilli());
     properties.put("object_type", event.getObjectType());
     properties.put("object_id", event.getObjectId());
     properties.put("operation", event.getOperation());

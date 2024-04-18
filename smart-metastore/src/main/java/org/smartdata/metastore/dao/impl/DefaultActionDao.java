@@ -265,7 +265,7 @@ public class DefaultActionDao extends AbstractDao implements ActionDao {
     }
 
     long totalActions = jdbcTemplate.queryForObject(sqlCount, Long.class);
-    return new SearchResult<>(ret, totalActions);
+    return SearchResult.of(ret, totalActions);
   }
 
   @Override

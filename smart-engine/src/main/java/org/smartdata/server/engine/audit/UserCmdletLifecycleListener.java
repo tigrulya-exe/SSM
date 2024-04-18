@@ -21,7 +21,10 @@ import org.smartdata.model.UserActivityResult;
 
 public interface UserCmdletLifecycleListener {
   void onCmdletAdded(long cmdletId);
+
   void onCmdletAddFailure(String cmdletText);
+
   void onCmdletStop(long cmdletId, UserActivityResult result);
+
   void onCmdletDelete(long cmdletId, UserActivityResult result);
 }
