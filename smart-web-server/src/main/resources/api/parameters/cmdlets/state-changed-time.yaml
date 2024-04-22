@@ -1,0 +1,22 @@
+name: stateChangedTime
+in: query
+required: false
+description: Time interval in which the state of the cmdlet was changed
+schema:
+  title: StateChangeTimeInterval
+  type: object
+  properties:
+    stateChangedTimeFrom:
+      type: integer
+      format: int64
+      nullable: true
+      default: null
+      minimum: 0
+      description: UNIX timestamp (UTC) of the interval start
+    stateChangedTimeTo:
+      type: integer
+      format: int64
+      nullable: true
+      default: null
+      minimum: 0
+      description: UNIX timestamp (UTC) of the interval end

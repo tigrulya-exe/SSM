@@ -1,0 +1,57 @@
+get:
+  tags:
+    - Rules
+  summary: List all rules
+  operationId: getRules
+  parameters:
+    - $ref: '../parameters/common/page-request.yaml'
+    - $ref: '../parameters/common/text-representation-like.yaml'
+    - $ref: '../parameters/common/submission-time.yaml'
+    - $ref: '../parameters/rules/rule-states.yaml'
+    - $ref: '../parameters/rules/last-activation-time.yaml'
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            title: Rules
+            allOf:
+              - $ref: '../schemas/common/PageResponse.yaml'
+              - type: object
+                properties:
+                  items:
+                    type: array
+                    description: List of rules
+                    items:
+                      $ref: '../schemas/rules/Rule.yaml'
+    '400':
+      description: Data is filled incorrectly
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/common/ErrorResponse.yaml'
+post:
+  tags:
+    - Rules
+  summary: Submit rule
+  operationId: addRule
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/requests/SubmitRuleRequest.yaml'
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/rules/Rule.yaml'
+    '400':
+      description: Data is filled incorrectly
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/common/ErrorResponse.yaml'

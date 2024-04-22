@@ -1,0 +1,22 @@
+name: registrationTime
+in: query
+required: false
+description: Time interval in which node was registered in master
+schema:
+  title: RegistrationTimeInterval
+  type: object
+  properties:
+    registrationTimeFrom:
+      type: integer
+      format: int64
+      nullable: true
+      default: null
+      minimum: 0
+      description: UNIX timestamp (UTC) of the interval start
+    registrationTimeTo:
+      type: integer
+      format: int64
+      nullable: true
+      default: null
+      minimum: 0
+      description: UNIX timestamp (UTC) of the interval end

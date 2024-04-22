@@ -2,4 +2,5 @@ springdoc:
   api-docs:
     path: /openapi-spec
   swagger-ui:
+    url: /ssm-api.yaml
     disable-swagger-default-url: true

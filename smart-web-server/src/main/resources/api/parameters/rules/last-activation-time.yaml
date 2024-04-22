@@ -1,0 +1,22 @@
+name: lastActivationTime
+in: query
+required: false
+description: Time interval in which the rule was activated
+schema:
+  title: LastActivationTimeInterval
+  type: object
+  properties:
+    lastActivationTimeFrom:
+      type: integer
+      format: int64
+      nullable: true
+      default: null
+      minimum: 0
+      description: UNIX timestamp (UTC) of the interval start
+    lastActivationTimeTo:
+      type: integer
+      format: int64
+      nullable: true
+      default: null
+      minimum: 0
+      description: UNIX timestamp (UTC) of the interval end

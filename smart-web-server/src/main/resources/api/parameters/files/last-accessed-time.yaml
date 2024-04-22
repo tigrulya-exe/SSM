@@ -1,0 +1,22 @@
+name: lastAccessedTime
+in: query
+required: false
+description: Time interval in which the file was accessed
+schema:
+  title: LastAccessedTimeInterval
+  type: object
+  properties:
+    lastAccessedTimeFrom:
+      type: integer
+      format: int64
+      nullable: true
+      default: null
+      minimum: 0
+      description: UNIX timestamp (UTC) of the interval start
+    lastAccessedTimeTo:
+      type: integer
+      format: int64
+      nullable: true
+      default: null
+      minimum: 0
+      description: UNIX timestamp (UTC) of the interval end

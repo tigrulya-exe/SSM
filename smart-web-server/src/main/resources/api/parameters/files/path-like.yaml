@@ -1,0 +1,6 @@
+name: pathLike
+in: query
+required: false
+description: The file path filter. May contain special characters like "/", "'", so should be encoded.
+schema:
+  type: string

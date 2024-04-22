@@ -1,0 +1,8 @@
+name: textRepresentationLike
+in: query
+required: false
+description: >-
+  The object's text representation filter. 
+  May contain special characters like "/", "'", so should be encoded.
+schema:
+  type: string

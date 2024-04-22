@@ -1,0 +1,50 @@
+openapi: 3.0.1
+info:
+  description: SSM REST service specification
+  version: 1.0.0
+  title: SSM API Documentation
+tags:
+  - name: Rules
+  - name: Cmdlets
+  - name: Actions
+  - name: Files
+  - name: Cluster
+
+servers:
+  - url: http://localhost:8081
+    description: Local SSM server url
+
+paths:
+  # Rules
+  /api/v2/rules:
+    $ref: './resources/rules.yaml'
+  /api/v2/rules/{id}:
+    $ref: './resources/rule.yaml'
+  /api/v2/rules/{id}/start:
+    $ref: './resources/rule-start.yaml'
+  /api/v2/rules/{id}/stop:
+    $ref: './resources/rule-stop.yaml'
+
+  # Cmdlets
+  /api/v2/cmdlets:
+    $ref: './resources/cmdlets.yaml'
+  /api/v2/cmdlets/{id}:
+    $ref: './resources/cmdlet.yaml'
+  /api/v2/cmdlets/{id}/stop:
+    $ref: './resources/cmdlet-stop.yaml'
+
+  # Actions
+  /api/v2/actions:
+    $ref: './resources/actions.yaml'
+  /api/v2/actions/{id}:
+    $ref: './resources/action.yaml'
+
+  # Files
+  /api/v2/files/access-counts:
+    $ref: './resources/files-access-counts.yaml'
+  /api/v2/files/cached:
+    $ref: './resources/files-cached.yaml'
+
+  # Cluster
+  /api/v2/cluster/nodes:
+    $ref: './resources/cluster-nodes.yaml'
