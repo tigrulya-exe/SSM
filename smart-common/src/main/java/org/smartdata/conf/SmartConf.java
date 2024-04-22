@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -88,12 +89,17 @@ public class SmartConf extends Configuration {
         .map(String::new);
   }
 
-  public Map<String, String> asMap() {
+  public Map<String, String> asMap(Predicate<String> keyFilter) {
     return StreamSupport.stream(spliterator(), false)
+        .filter(entry -> keyFilter.test(entry.getKey()))
         .collect(Collectors.toMap(
             Map.Entry::getKey,
             Map.Entry::getValue
         ));
+  }
+
+  public Map<String, String> asMap() {
+    return asMap(key -> true);
   }
 
   private void parseHostsFiles() {
