@@ -1,0 +1,11 @@
+echo "Start pre-commit hook";
+
+cd smart-frontend/app
+
+echo "Start lint check";
+
+yarn lint;
+
+echo "Start TS check";
+
+yarn tsc;

@@ -9,7 +9,8 @@
     "lint": "eslint src --config ./.eslintrc.full.json --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "prepare": "[ -z \"`git --version`\" ] && echo \"git dont install\" || (frontSubDir=$(pwd) && cd $(git rev-parse --show-toplevel) && husky \"$frontSubDir/.husky\")"
   },
   "dependencies": {
     "classnames": "2.5.1",
@@ -43,6 +44,7 @@
     "eslint-plugin-spellcheck": "0.0.20",
     "eslint-plugin-storybook": "0.8.0",
     "fast-glob": "^3.3.2",
+    "husky": "9.0.11",
     "prettier": "3.2.5",
     "sass": "1.75.0",
     "storybook": "^8.0.8",
