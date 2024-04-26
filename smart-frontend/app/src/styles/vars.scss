@@ -1,0 +1,84 @@
+:root {
+  --color-ADCM: #73858F;
+
+  --color-ADH: #05A5FF;
+  --color-ADHNew: #0F1117;
+
+  --color-ADQMBlack: #030406;
+
+  --color-black01: #010101;
+  --color-black12: #121212;
+  --color-black16: #161616;
+
+  --color-blue: #1997E8;
+
+  --color-colourful: #E5E8F6;
+  --color-colourful25: #F6F7FC;
+  --color-colourful50: #F1F3F9;
+
+  --color-dark1: #353E47;
+  --color-darkDisabled: #3A3C3F;
+
+  --color-grayDarker: #707179;
+  --color-grayDisabled: #64656D;
+  --color-grayError: #7C798D;
+  --color-grayLighter: #C4C4C4;
+  --color-grayReadingOnly: #545E68;
+  --color-grayUsual: #989AA8;
+
+  --color-greenDark: #0D604E;
+  --color-greenLighter: #00C787;
+  --color-greenLogo: #00A872;
+  --color-greenLogoLighter: #01B489;
+  --color-greenSaturated: #00D2A0;
+  --color-greenSaturated-15: color-mix(in srgb, var(--color-greenSaturated) 15%, transparent);
+
+  --color-lightStroke: #BDC1E3;
+  --color-lightStrokeDark: #9EA4D4;
+  --color-lightStrokeLighter: #D9DEF3;
+
+  --color-mint: #66E4C6;
+  --color-mintLight: #CCEBED;
+
+  --color-newDark: #27262B;
+  --color-newDark50: #232323;
+  --color-newDark-30: color-mix(in srgb, var(--color-newDark) 30%, transparent);
+  --color-newDark-50: color-mix(in srgb, var(--color-newDark) 50%, transparent);
+
+  --color-newLight: #2F3136;
+
+  --color-offWhite: #FCFCFD;
+  --color-offWhiteDark: #EDEEF0;
+
+  --color-plate: #7F8285;
+  --color-plate-10: color-mix(in srgb, var(--color-plate) 10%, transparent);
+  --color-plate-20: color-mix(in srgb, var(--color-plate) 20%, transparent);
+  --color-plateLight: #E3EAEE;
+  --color-plateLight-50: color-mix(in srgb, var(--color-plateLight) 50%, transparent);
+
+  --color-plateLight50: #EEF2F5;
+  --color-popupLightDarker: #A2AEB4;
+
+  --color-red: #F26161;
+  --color-red-15: color-mix(in srgb, var(--color-red) 15%, transparent);
+  --color-red-80: color-mix(in srgb, var(--color-red) 80%, transparent);
+  --color-redCold: #C64A6F;
+  --color-redCold-15: color-mix(in srgb, var(--color-redCold) 15%, transparent);
+  --color-redDarker: #F64646;
+
+  --color-silver: #C3C4CF;
+
+  --color-whitePure: #FFFFFF;
+
+  --color-yellow: #F0B542;
+
+  /** SIZES */
+  --size-block-margin: 24px;
+  --size-formField-margin: 28px;
+}
+
+
+/**
+ *  --%prefix%-%name%-%advanced%
+ *  --color-red-80  ( prefix = 'color', name = 'red', 80 - 80% of alpha)
+ */
