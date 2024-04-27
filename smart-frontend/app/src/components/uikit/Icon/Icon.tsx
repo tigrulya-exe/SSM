@@ -11,11 +11,9 @@ const Icon = React.forwardRef<SVGSVGElement, IconProps>(({ name, size = 12, clas
   const classString = cn('icon', className);
 
   return (
-    <>
-      <svg className={classString} width={size} height={size} {...props} ref={ref}>
-        <use xlinkHref={`#${name}`} />
-      </svg>
-    </>
+    <svg className={classString} width={size} height={size} {...props} ref={ref}>
+      <use xlinkHref={`#${name}`} />
+    </svg>
   );
 });
 
