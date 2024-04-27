@@ -1,0 +1,147 @@
+:global {
+  body.theme-dark {
+    --field-placeholder: var(--color-grayUsual);
+
+    --field-border-color: var(--color-dark1);
+    --field-background: transparent;
+    --field-color: var(--color-grayLighter);
+
+    // hover
+    --field-background-hover: var(--color-plate-20);
+
+    // focus
+    --field-border-color-focus: var(--color-offWhite);
+    --field-background-focus: var(--color-plate-20);
+    --field-color-focus: var(--color-offWhite);
+
+    // error
+    --field-border-color-error: var(--color-red);
+    --field-background-error-focus: var(--color-red-15);
+
+    // disabled
+    --field-border-color-disabled: transparent;
+    --field-background-disabled: var(--color-plate-10);
+    --field-color-disabled: var(--color-grayError);
+    --field-placeholder-disabled: var(--color-grayError);
+  }
+
+  body.theme-light {
+    --field-placeholder: var(--color-ADCM);
+
+    --field-border-color: var(--color-lightStroke);
+    --field-background: transparent;
+    --field-color: var(--color-grayReadingOnly);
+
+    // hover
+    --field-background-hover: var(--color-lightStroke);
+
+    // focus
+    --field-border-color-focus: var(--color-dark1);
+    --field-background-focus: var(--color-plateLight-50);
+    --field-color-focus: var(--color-dark1);
+
+    // error
+    --field-border-color-error: var(--color-red);
+    --field-background-error-focus: var(--color-red-15);
+
+    // disabled
+    --field-border-color-disabled: transparent;
+    --field-background-disabled: var(--color-plate-20);
+    --field-color-disabled: var(--color-popupLightDarker);
+    --field-placeholder-disabled: var(--color-popupLightDarker);
+  }
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  border: 2px solid;
+  border-color: var(--field-border-color);
+  background: var(--field-background);
+  color: var(--field-color);
+  border-radius: 100px;
+  box-sizing: border-box;
+  transition: background-color 250ms, border-color 250ms, color 250ms;
+
+  input,
+  textarea {
+    &:-webkit-autofill,
+    &:-webkit-autofill:focus {
+      transition: background-color 600000s 0s, color 600000s 0s;
+    }
+
+    &:autofill {
+      background: transparent;
+    }
+  }
+
+  &__mainContent {
+    border: none;
+    border-radius: 0;
+    background: none;
+    outline: none;
+    color: inherit;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 18px;
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+    cursor: inherit;
+
+    &::placeholder {
+      // https://developer.mozilla.org/en-US/docs/Web/CSS/::placeholder#opaque_text
+      opacity: 1;
+      color: var(--field-placeholder);
+    }
+
+    // if input are empty then colors of icons should be equal to placeholder
+    &:placeholder-shown ~ * {
+      color: var(--field-placeholder);
+    }
+  }
+
+  &_medium {
+    padding: 7px 14px;
+    gap: 8px;
+  }
+
+  &_small {
+    padding: 3px 10px;
+  }
+
+  &:hover {
+    --field-background: var(--field-background-hover);
+  }
+
+  &:focus-within,
+  &:global(.is-active) {
+    --field-border-color: var(--field-border-color-focus);
+    --field-backgroun: var(--field-background-focus);
+  }
+
+  &.field_error {
+    --field-border-color: var(--field-border-color-error);
+    &:focus-within {
+      --field-background: var(--field-background-error-focus);
+    }
+  }
+
+  &.field_disabled {
+    cursor: not-allowed !important;
+    --field-border-color: var(--field-border-color-disabled);
+    --field-background: var(--field-background-disabled);
+    --field-color: var(--field-color-disabled);
+    --field-placeholder: var(--field-placeholder-disabled);
+  }
+
+  // all inject icons
+  button:has(svg) {
+    color: var(--field-placeholder);
+    transition: color 250ms;
+
+    &:hover {
+      color: var(--field-color);
+    }
+  }
+}

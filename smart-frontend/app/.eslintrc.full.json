@@ -1,0 +1,58 @@
+{
+  "settings": {
+    "import/resolver": {
+      "alias": {
+        "map": [
+          ["@api", "./src/api/"],
+          ["@constants", "./src/constants"],
+          ["@hooks", "./src/hooks/"],
+          ["@models", "./src/models/"],
+          ["@store", "./src/store/"],
+          ["@uikit", "./src/components/uikit/"],
+          ["@utils", "./src/utils/"]
+        ],
+        "extensions": [".ts", ".tsx", ".json"]
+      }
+    }
+  },
+  "plugins": ["import"],
+  "extends": [
+    "./.eslintrc.json",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:import/typescript"
+  ],
+  "rules": {
+    "import/no-cycle": [
+      "error",
+      {
+        "maxDepth": 10,
+        "ignoreExternal": true
+      }
+    ],
+    "no-restricted-imports": "off",
+    "@typescript-eslint/no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "react-redux",
+            "importNames": ["useSelector", "useDispatch"],
+            "message": "Use typed `useStore` and `useDispatch` from '@hooks' instead."
+          },
+          {
+            "name": "@reduxjs/toolkit",
+            "importNames": ["createAsyncThunk"],
+            "message": "Use typed `createAsyncThunk` from '@store/redux' instead."
+          }
+        ]
+      }
+    ],
+    "no-console": [
+      "error",
+      {
+        "allow": ["info", "warn", "error"]
+      }
+    ]
+  }
+}

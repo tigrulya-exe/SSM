@@ -1,0 +1,20 @@
+//:global {
+//  body.theme-dark {
+//    --icon-button-color: var(--color-grayUsual);
+//    --icon-button-color-hover: var(--color-offWhite);
+//    --icon-button-color-active: var(--color-greenSaturated);
+//
+//  }
+//  body.theme-light {
+//    --icon-button-color: var(--color-ADCM);
+//    --icon-button-color-hover: var(--color-dark1);
+//    --icon-button-color-active: var(--color-greenLogo);
+//  }
+//}
+
+.iconButton {
+  &_secondary {
+    color: inherit;
+    transition: color 250ms;
+  }
+}
