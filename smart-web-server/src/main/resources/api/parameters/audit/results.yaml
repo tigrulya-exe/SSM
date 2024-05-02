@@ -1,0 +1,8 @@
+name: results
+in: query
+required: false
+description: List of audit event results
+schema:
+  type: array
+  items:
+    $ref: "../../schemas/audit/AuditEventResult.yaml"

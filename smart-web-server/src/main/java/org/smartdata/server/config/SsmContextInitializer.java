@@ -43,5 +43,6 @@ public class SsmContextInitializer implements
       beanFactory.registerSingleton("statesManager", smartEngine.getStatesManager());
       beanFactory.registerSingleton("cmdletManager", smartEngine.getCmdletManager());
       beanFactory.registerSingleton("ruleManager", smartEngine.getRuleManager());
+      beanFactory.registerSingleton("auditService", smartEngine.getAuditService());
     }
 }

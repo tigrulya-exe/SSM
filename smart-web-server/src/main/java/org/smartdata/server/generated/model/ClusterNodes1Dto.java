@@ -11,30 +11,30 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 /**
- * CachedFilesDto
+ * ClusterNodes1Dto
  */
 
-@JsonTypeName("CachedFiles")
+@JsonTypeName("ClusterNodes_1")
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
-public class CachedFilesDto {
+public class ClusterNodes1Dto {
 
-  private Long total;
+  private Integer total;
 
   @Valid
-  private List<@Valid CachedFileInfoDto> items;
+  private List<@Valid AuditEventDto> items;
 
-  public CachedFilesDto() {
+  public ClusterNodes1Dto() {
     super();
   }
 
   /**
    * Constructor with only required parameters
    */
-  public CachedFilesDto(Long total) {
+  public ClusterNodes1Dto(Integer total) {
     this.total = total;
   }
 
-  public CachedFilesDto total(Long total) {
+  public ClusterNodes1Dto total(Integer total) {
     this.total = total;
     return this;
   }
@@ -46,20 +46,20 @@ public class CachedFilesDto {
   @NotNull 
   @Schema(name = "total", description = "Total number of objects", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("total")
-  public Long getTotal() {
+  public Integer getTotal() {
     return total;
   }
 
-  public void setTotal(Long total) {
+  public void setTotal(Integer total) {
     this.total = total;
   }
 
-  public CachedFilesDto items(List<@Valid CachedFileInfoDto> items) {
+  public ClusterNodes1Dto items(List<@Valid AuditEventDto> items) {
     this.items = items;
     return this;
   }
 
-  public CachedFilesDto addItemsItem(CachedFileInfoDto itemsItem) {
+  public ClusterNodes1Dto addItemsItem(AuditEventDto itemsItem) {
     if (this.items == null) {
       this.items = new ArrayList<>();
     }
@@ -68,17 +68,17 @@ public class CachedFilesDto {
   }
 
   /**
-   * List of files
+   * List of audit events
    * @return items
   */
   @Valid 
-  @Schema(name = "items", description = "List of files", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @Schema(name = "items", description = "List of audit events", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("items")
-  public List<@Valid CachedFileInfoDto> getItems() {
+  public List<@Valid AuditEventDto> getItems() {
     return items;
   }
 
-  public void setItems(List<@Valid CachedFileInfoDto> items) {
+  public void setItems(List<@Valid AuditEventDto> items) {
     this.items = items;
   }
 
@@ -90,9 +90,9 @@ public class CachedFilesDto {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    CachedFilesDto cachedFiles = (CachedFilesDto) o;
-    return Objects.equals(this.total, cachedFiles.total) &&
-        Objects.equals(this.items, cachedFiles.items);
+    ClusterNodes1Dto clusterNodes1 = (ClusterNodes1Dto) o;
+    return Objects.equals(this.total, clusterNodes1.total) &&
+        Objects.equals(this.items, clusterNodes1.items);
   }
 
   @Override
@@ -103,7 +103,7 @@ public class CachedFilesDto {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class CachedFilesDto {\n");
+    sb.append("class ClusterNodes1Dto {\n");
     sb.append("    total: ").append(toIndentedString(total)).append("\n");
     sb.append("    items: ").append(toIndentedString(items)).append("\n");
     sb.append("}");

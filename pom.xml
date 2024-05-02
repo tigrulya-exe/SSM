@@ -78,6 +78,7 @@
     <spring.boot.version>2.7.18</spring.boot.version>
     <openapi.generator.version>6.6.0</openapi.generator.version>
     <commons.lang3.version>3.12.0</commons.lang3.version>
+    <mapstruct.version>1.5.5.Final</mapstruct.version>
   </properties>
 
   <profiles>

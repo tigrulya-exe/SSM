@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 public class ClusterNodesDto {
 
-  private Integer total;
+  private Long total;
 
   @Valid
   private List<@Valid ClusterNodeDto> items;
@@ -30,11 +30,11 @@ public class ClusterNodesDto {
   /**
    * Constructor with only required parameters
    */
-  public ClusterNodesDto(Integer total) {
+  public ClusterNodesDto(Long total) {
     this.total = total;
   }
 
-  public ClusterNodesDto total(Integer total) {
+  public ClusterNodesDto total(Long total) {
     this.total = total;
     return this;
   }
@@ -46,11 +46,11 @@ public class ClusterNodesDto {
   @NotNull 
   @Schema(name = "total", description = "Total number of objects", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("total")
-  public Integer getTotal() {
+  public Long getTotal() {
     return total;
   }
 
-  public void setTotal(Integer total) {
+  public void setTotal(Long total) {
     this.total = total;
   }
 

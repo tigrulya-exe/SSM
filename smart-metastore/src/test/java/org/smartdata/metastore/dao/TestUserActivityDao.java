@@ -68,10 +68,32 @@ public class TestUserActivityDao extends TestDaoBase {
   }
 
   @Test
+  public void testFetchAllColumns() {
+    AuditSearchRequest searchRequest = AuditSearchRequest.builder()
+        .objectIds(Collections.singletonList(1L))
+        .build();
+
+    UserActivityEvent expectedEvent = UserActivityEvent.newBuilder()
+        .id(3)
+        .userName("anonymous")
+        .timestamp(THIRD_EVENT_TIMESTAMP)
+        .objectId(1L)
+        .objectType(CMDLET)
+        .operation(CREATE)
+        .result(SUCCESS)
+        .build();
+
+    List<UserActivityEvent> events = userActivityDao.search(searchRequest);
+
+    assertEquals(1, events.size());
+    assertEquals(expectedEvent, events.get(0));
+  }
+
+  @Test
   public void testEmptyFiltersSearchWithPagination() {
     PageRequest pageRequest = PageRequest.builder()
         .offset(0L)
-        .limit(2L)
+        .limit(2)
         .sortByAsc("object_id")
         .sortByDesc("timestamp")
         .build();
@@ -182,7 +204,6 @@ public class TestUserActivityDao extends TestDaoBase {
     testSearch(searchRequest);
   }
 
-  // TODO add placeholders name merge logic to the MetastoreQuery
   @Test
   public void testSearchByTimestamp() {
     AuditSearchRequest searchRequest = AuditSearchRequest.builder()
@@ -214,7 +235,7 @@ public class TestUserActivityDao extends TestDaoBase {
   private void testSearch(AuditSearchRequest searchRequest, Instant... expectedEventInstances) {
     PageRequest pageRequest = PageRequest.builder()
         .offset(0L)
-        .limit((long) expectedEventInstances.length)
+        .limit(expectedEventInstances.length)
         .sortByAsc("timestamp")
         .build();
 

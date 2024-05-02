@@ -11,30 +11,30 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 /**
- * CachedFilesDto
+ * AuditEventsDto
  */
 
-@JsonTypeName("CachedFiles")
+@JsonTypeName("AuditEvents")
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
-public class CachedFilesDto {
+public class AuditEventsDto {
 
   private Long total;
 
   @Valid
-  private List<@Valid CachedFileInfoDto> items;
+  private List<@Valid AuditEventDto> items;
 
-  public CachedFilesDto() {
+  public AuditEventsDto() {
     super();
   }
 
   /**
    * Constructor with only required parameters
    */
-  public CachedFilesDto(Long total) {
+  public AuditEventsDto(Long total) {
     this.total = total;
   }
 
-  public CachedFilesDto total(Long total) {
+  public AuditEventsDto total(Long total) {
     this.total = total;
     return this;
   }
@@ -54,12 +54,12 @@ public class CachedFilesDto {
     this.total = total;
   }
 
-  public CachedFilesDto items(List<@Valid CachedFileInfoDto> items) {
+  public AuditEventsDto items(List<@Valid AuditEventDto> items) {
     this.items = items;
     return this;
   }
 
-  public CachedFilesDto addItemsItem(CachedFileInfoDto itemsItem) {
+  public AuditEventsDto addItemsItem(AuditEventDto itemsItem) {
     if (this.items == null) {
       this.items = new ArrayList<>();
     }
@@ -68,17 +68,17 @@ public class CachedFilesDto {
   }
 
   /**
-   * List of files
+   * List of audit events
    * @return items
   */
   @Valid 
-  @Schema(name = "items", description = "List of files", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @Schema(name = "items", description = "List of audit events", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("items")
-  public List<@Valid CachedFileInfoDto> getItems() {
+  public List<@Valid AuditEventDto> getItems() {
     return items;
   }
 
-  public void setItems(List<@Valid CachedFileInfoDto> items) {
+  public void setItems(List<@Valid AuditEventDto> items) {
     this.items = items;
   }
 
@@ -90,9 +90,9 @@ public class CachedFilesDto {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    CachedFilesDto cachedFiles = (CachedFilesDto) o;
-    return Objects.equals(this.total, cachedFiles.total) &&
-        Objects.equals(this.items, cachedFiles.items);
+    AuditEventsDto auditEvents = (AuditEventsDto) o;
+    return Objects.equals(this.total, auditEvents.total) &&
+        Objects.equals(this.items, auditEvents.items);
   }
 
   @Override
@@ -103,7 +103,7 @@ public class CachedFilesDto {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class CachedFilesDto {\n");
+    sb.append("class AuditEventsDto {\n");
     sb.append("    total: ").append(toIndentedString(total)).append("\n");
     sb.append("    items: ").append(toIndentedString(items)).append("\n");
     sb.append("}");

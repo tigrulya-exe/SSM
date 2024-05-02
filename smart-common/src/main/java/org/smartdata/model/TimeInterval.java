@@ -52,16 +52,6 @@ public class TimeInterval {
     private Instant from;
     private Instant to;
 
-    public Builder from(Instant from) {
-      this.from = from;
-      return this;
-    }
-
-    public Builder to(Instant to) {
-      this.to = to;
-      return this;
-    }
-
     public Builder fromMillis(long fromMillis) {
       this.from = Instant.ofEpochMilli(fromMillis);
       return this;

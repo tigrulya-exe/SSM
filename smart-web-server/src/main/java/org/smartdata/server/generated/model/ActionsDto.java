@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 public class ActionsDto {
 
-  private Integer total;
+  private Long total;
 
   @Valid
   private List<@Valid ActionInfoDto> items;
@@ -30,11 +30,11 @@ public class ActionsDto {
   /**
    * Constructor with only required parameters
    */
-  public ActionsDto(Integer total) {
+  public ActionsDto(Long total) {
     this.total = total;
   }
 
-  public ActionsDto total(Integer total) {
+  public ActionsDto total(Long total) {
     this.total = total;
     return this;
   }
@@ -46,11 +46,11 @@ public class ActionsDto {
   @NotNull 
   @Schema(name = "total", description = "Total number of objects", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("total")
-  public Integer getTotal() {
+  public Long getTotal() {
     return total;
   }
 
-  public void setTotal(Integer total) {
+  public void setTotal(Long total) {
     this.total = total;
   }
 
