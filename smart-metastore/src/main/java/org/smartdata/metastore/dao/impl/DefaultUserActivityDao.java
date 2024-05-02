@@ -22,8 +22,11 @@ import org.smartdata.metastore.dao.UserActivityDao;
 import org.smartdata.metastore.queries.MetastoreQuery;
 import org.smartdata.model.TimeInterval;
 import org.smartdata.model.UserActivityEvent;
+import org.smartdata.model.UserActivityEvent.ObjectType;
+import org.smartdata.model.UserActivityEvent.Operation;
 import org.smartdata.model.UserActivityResult;
 import org.smartdata.model.request.AuditSearchRequest;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
@@ -38,6 +41,7 @@ import java.util.Optional;
 import static org.smartdata.metastore.queries.MetastoreQuery.selectAll;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.greaterThanEqual;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.in;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.inStrings;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.lessThanEqual;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.like;
 
@@ -58,25 +62,33 @@ public class DefaultUserActivityDao
   }
 
   @Override
+  protected SimpleJdbcInsert simpleJdbcInsert() {
+    return super.simpleJdbcInsert()
+        .usingGeneratedKeyColumns("id");
+  }
+
+  @Override
   protected MetastoreQuery searchQuery(AuditSearchRequest searchRequest) {
-    Instant timestampFrom = Optional.ofNullable(searchRequest.getTimestampBetween())
+    Long timestampFrom = Optional.ofNullable(searchRequest.getTimestampBetween())
         .map(TimeInterval::getFrom)
+        .map(Instant::toEpochMilli)
         .orElse(null);
 
-    Instant timestampTo = Optional.ofNullable(searchRequest.getTimestampBetween())
+    Long timestampTo = Optional.ofNullable(searchRequest.getTimestampBetween())
         .map(TimeInterval::getTo)
+        .map(Instant::toEpochMilli)
         .orElse(null);
 
     return selectAll()
         .from(TABLE_NAME)
         .where(
-            like("user", searchRequest.getUserLike()),
+            like("username", searchRequest.getUserLike()),
             greaterThanEqual("timestamp", timestampFrom),
             lessThanEqual("timestamp", timestampTo),
-            in("object_type", searchRequest.getObjectTypes()),
+            inStrings("object_type", searchRequest.getObjectTypes()),
             in("object_id", searchRequest.getObjectIds()),
-            in("operation", searchRequest.getOperations()),
-            in("result", searchRequest.getResults())
+            inStrings("operation", searchRequest.getOperations()),
+            inStrings("result", searchRequest.getResults())
         );
   }
 
@@ -86,9 +98,9 @@ public class DefaultUserActivityDao
         .id(resultSet.getLong(1))
         .userName(resultSet.getString(2))
         .timestamp(Instant.ofEpochMilli(resultSet.getLong(3)))
-        .objectType(UserActivityEvent.ObjectType.valueOf(resultSet.getString(4)))
+        .objectType(ObjectType.valueOf(resultSet.getString(4)))
         .objectId(resultSet.getLong(5))
-        .operation(UserActivityEvent.Operation.valueOf(resultSet.getString(6)))
+        .operation(Operation.valueOf(resultSet.getString(6)))
         .result(UserActivityResult.valueOf(resultSet.getString(7)))
         .additionalInfo(resultSet.getString(8))
         .build();
@@ -96,7 +108,7 @@ public class DefaultUserActivityDao
 
   private Map<String, Object> toMap(UserActivityEvent event) {
     Map<String, Object> properties = new HashMap<>();
-    properties.put("user", event.getUserName());
+    properties.put("username", event.getUserName());
     properties.put("timestamp", event.getTimestamp().toEpochMilli());
     properties.put("object_type", event.getObjectType());
     properties.put("object_id", event.getObjectId());

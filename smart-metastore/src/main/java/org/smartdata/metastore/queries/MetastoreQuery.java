@@ -130,10 +130,12 @@ public class MetastoreQuery {
   }
 
   public String toSqlQuery() {
+    checkTableSet();
     return queryBuilder.toString();
   }
 
   public String toSqlCountQuery() {
+    checkTableSet();
     return select("COUNT(*)")
         .from(table)
         .where(filtersBuilder.toString(), parameters)
@@ -142,5 +144,11 @@ public class MetastoreQuery {
 
   public Map<String, Object> getParameters() {
     return parameters;
+  }
+
+  private void checkTableSet() {
+    if (table == null) {
+      throw new IllegalStateException("Table not provided");
+    }
   }
 }

@@ -22,7 +22,7 @@ import java.util.Map;
 
 public class MetastoreQueryPlaceholder<T> implements MetastoreQueryExpression {
 
-  private final String column;
+  private String column;
   private final T value;
 
   public MetastoreQueryPlaceholder(String column, T value) {
@@ -30,6 +30,7 @@ public class MetastoreQueryPlaceholder<T> implements MetastoreQueryExpression {
     this.value = value;
   }
 
+  @Override
   public String build() {
     return "(:" + column + ")";
   }
@@ -37,5 +38,12 @@ public class MetastoreQueryPlaceholder<T> implements MetastoreQueryExpression {
   @Override
   public Map<String, Object> getParameters() {
     return Collections.singletonMap(column, value);
+  }
+
+  @Override
+  public void renameParameter(String oldName, String newName) {
+    if (column.equals(oldName)) {
+      column = newName;
+    }
   }
 }

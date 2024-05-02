@@ -23,6 +23,10 @@ import java.util.Map;
 public interface MetastoreQueryExpression {
   String build();
 
+  default void renameParameter(String oldName, String newName) {
+    // no-op
+  }
+
   default Map<String, Object> getParameters() {
      return Collections.emptyMap();
    }
