@@ -13,6 +13,7 @@
     "postinstall": "[ -z \"`git --version`\" ] && echo \"git dont install\" || (frontSubDir=$(pwd) && cd $(git rev-parse --show-toplevel) && husky \"$frontSubDir/.husky\")"
   },
   "dependencies": {
+    "@floating-ui/react": "0.26.13",
     "classnames": "2.5.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",

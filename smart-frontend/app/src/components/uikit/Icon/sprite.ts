@@ -1,6 +1,7 @@
 export const allowIconsNames = [
   //
   'chevron',
+  'close',
   'eye',
   'eye-closed',
   'logout',
