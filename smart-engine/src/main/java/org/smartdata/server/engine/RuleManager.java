@@ -165,7 +165,6 @@ public class RuleManager extends AbstractService {
 
     RuleInfoRepo infoRepo = new RuleInfoRepo(ruleInfo, metaStore, serverContext.getConf());
     mapRules.put(ruleInfo.getId(), infoRepo);
-
     submitRuleToScheduler(infoRepo.launchExecutor(this));
 
     RulePluginManager.onNewRuleAdded(ruleInfo, tr);

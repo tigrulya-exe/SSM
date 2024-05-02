@@ -41,9 +41,8 @@ public class AbstractDao {
   }
 
   protected SimpleJdbcInsert simpleJdbcInsert() {
-    SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(dataSource);
-    simpleJdbcInsert.setTableName(tableName);
-    return simpleJdbcInsert;
+    return new SimpleJdbcInsert(dataSource)
+        .withTableName(tableName);
   }
 
   protected <T> void insert(T entity, EntityToMapConverter<T> converter) {

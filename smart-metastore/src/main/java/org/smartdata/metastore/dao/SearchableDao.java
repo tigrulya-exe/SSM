@@ -24,5 +24,6 @@ import java.util.List;
 
 public interface SearchableDao<RequestT, EntityT> {
   SearchResult<EntityT> search(RequestT searchRequest, PageRequest pageRequest);
+
   List<EntityT> search(RequestT searchRequest);
 }

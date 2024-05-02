@@ -63,6 +63,18 @@ public class MetastoreQueryDsl {
     return binaryOpWithPlaceholder("IN", column, values);
   }
 
+  public static <T> MetastoreQueryExpression inStrings(String column, List<T> values) {
+    if (values == null) {
+      return EMPTY_EXPRESSION;
+    }
+
+    List<String> strValues = values.stream()
+        .map(Object::toString)
+        .collect(Collectors.toList());
+
+    return in(column, strValues);
+  }
+
   public static <T> MetastoreQueryExpression like(String column, T value) {
     return Optional.ofNullable(value)
         .map(val -> binaryOpWithPlaceholder("LIKE", column, "%" + val + "%"))

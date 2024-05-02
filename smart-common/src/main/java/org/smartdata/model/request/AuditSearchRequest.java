@@ -18,7 +18,8 @@
 package org.smartdata.model.request;
 
 import org.smartdata.model.TimeInterval;
-import org.smartdata.model.UserActivityEvent;
+import org.smartdata.model.UserActivityEvent.ObjectType;
+import org.smartdata.model.UserActivityEvent.Operation;
 import org.smartdata.model.UserActivityResult;
 
 import java.time.Instant;
@@ -27,17 +28,17 @@ import java.util.List;
 public class AuditSearchRequest {
   private final String userLike;
   private final TimeInterval timestampBetween;
-  private final List<UserActivityEvent.ObjectType> objectTypes;
+  private final List<ObjectType> objectTypes;
   private final List<Long> objectIds;
-  private final List<UserActivityEvent.Operation> operations;
+  private final List<Operation> operations;
   private final List<UserActivityResult> results;
 
   public AuditSearchRequest(
       String userLike,
       TimeInterval timestampBetween,
-      List<UserActivityEvent.ObjectType> objectTypes,
+      List<ObjectType> objectTypes,
       List<Long> objectIds,
-      List<UserActivityEvent.Operation> operations,
+      List<Operation> operations,
       List<UserActivityResult> results) {
     this.userLike = userLike;
     this.timestampBetween = timestampBetween;
@@ -55,7 +56,7 @@ public class AuditSearchRequest {
     return timestampBetween;
   }
 
-  public List<UserActivityEvent.ObjectType> getObjectTypes() {
+  public List<ObjectType> getObjectTypes() {
     return objectTypes;
   }
 
@@ -63,7 +64,7 @@ public class AuditSearchRequest {
     return objectIds;
   }
 
-  public List<UserActivityEvent.Operation> getOperations() {
+  public List<Operation> getOperations() {
     return operations;
   }
 
@@ -82,9 +83,9 @@ public class AuditSearchRequest {
   public static class AuditSearchRequestBuilder {
     private String userLike;
     private TimeInterval timestampBetween;
-    private List<UserActivityEvent.ObjectType> objectTypes;
+    private List<ObjectType> objectTypes;
     private List<Long> objectIds;
-    private List<UserActivityEvent.Operation> operations;
+    private List<Operation> operations;
     private List<UserActivityResult> results;
 
     public AuditSearchRequestBuilder userLike(String userLike) {
@@ -102,7 +103,7 @@ public class AuditSearchRequest {
       return this;
     }
 
-    public AuditSearchRequestBuilder objectTypes(List<UserActivityEvent.ObjectType> objectTypes) {
+    public AuditSearchRequestBuilder objectTypes(List<ObjectType> objectTypes) {
       this.objectTypes = objectTypes;
       return this;
     }
@@ -112,7 +113,7 @@ public class AuditSearchRequest {
       return this;
     }
 
-    public AuditSearchRequestBuilder operations(List<UserActivityEvent.Operation> operations) {
+    public AuditSearchRequestBuilder operations(List<Operation> operations) {
       this.operations = operations;
       return this;
     }

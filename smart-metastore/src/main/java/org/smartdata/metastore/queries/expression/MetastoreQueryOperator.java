@@ -17,32 +17,70 @@
  */
 package org.smartdata.metastore.queries.expression;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MetastoreQueryOperator implements MetastoreQueryExpression {
-  private final StringJoiner builder;
-  private final Map<String, Object> parameters = new HashMap<>();
+  private final String operator;
+  private final List<MetastoreQueryExpression> args;
 
-  public MetastoreQueryOperator(String delimiter, List<MetastoreQueryExpression> operators) {
-    this.builder = new StringJoiner(" " + delimiter + " ", "(", ")");
-    operators.forEach(this::withArg);
-  }
+  private final Set<String> argParamNames;
+  private int paramNameCounter;
 
-  public void withArg(MetastoreQueryExpression operator) {
-    builder.add(operator.build());
-    parameters.putAll(operator.getParameters());
+  public MetastoreQueryOperator(String operator, List<MetastoreQueryExpression> args) {
+    this.operator = operator;
+    this.args = args;
+    this.argParamNames = new HashSet<>();
+    this.paramNameCounter = 0;
+
+    args.forEach(this::maybeUpdateArgParams);
   }
 
   @Override
   public String build() {
-    return builder.toString();
+    return args.stream()
+        .map(MetastoreQueryExpression::build)
+        .collect(Collectors.joining(" " + operator + " ", "(", ")"));
   }
 
   @Override
   public Map<String, Object> getParameters() {
-    return parameters;
+    return args.stream()
+        .map(arg -> arg.getParameters().entrySet())
+        .flatMap(Set::stream)
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            Map.Entry::getValue
+        ));
+  }
+
+  @Override
+  public void renameParameter(String oldName, String newName) {
+    args.forEach(expression -> expression.renameParameter(oldName, newName));
+  }
+
+  private void maybeUpdateArgParams(MetastoreQueryExpression expression) {
+    Set<String> expressionParams = expression.getParameters().keySet();
+    new HashSet<>(expressionParams)
+        .stream()
+        .filter(argParamNames::contains)
+        .forEach(param -> updateExpressionParam(expression, param));
+
+    argParamNames.addAll(expressionParams);
+  }
+
+  private void updateExpressionParam(MetastoreQueryExpression expression, String param) {
+    String newParamNamePrefix = "$_" + param;
+    String newParamName;
+
+    do {
+      ++paramNameCounter;
+      newParamName = newParamNamePrefix + paramNameCounter;
+    } while (argParamNames.contains(newParamName));
+
+    expression.renameParameter(param, newParamName);
   }
 }

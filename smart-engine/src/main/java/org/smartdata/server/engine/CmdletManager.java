@@ -569,7 +569,6 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     }
   }
 
-
   public void disableCmdlet(long cmdletId) throws IOException {
     try {
       disableCmdletInternal(cmdletId);
