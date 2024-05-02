@@ -1,0 +1,8 @@
+name: objectTypes
+in: query
+required: false
+description: List of audit object types
+schema:
+  type: array
+  items:
+    $ref: "../../schemas/audit/AuditObjectType.yaml"

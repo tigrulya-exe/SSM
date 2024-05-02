@@ -1,0 +1,9 @@
+name: objectIds
+in: query
+required: false
+description: Ids of the event objects
+schema:
+  type: array
+  items:
+    type: integer
+    format: int64

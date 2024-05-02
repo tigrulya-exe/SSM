@@ -9,6 +9,7 @@ properties:
     description: Maximum number of records in result set
   offset:
     type: integer
+    format: int64
     nullable: true
     default: 0
     minimum: 0

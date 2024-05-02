@@ -22,11 +22,11 @@ import java.util.List;
 
 public class PageRequest {
   private final Long offset;
-  private final Long limit;
+  private final Integer limit;
 
   private final List<Sorting> sortColumns;
 
-  public PageRequest(Long offset, Long limit, List<Sorting> sortColumns) {
+  public PageRequest(Long offset, Integer limit, List<Sorting> sortColumns) {
     this.offset = offset;
     this.limit = limit;
     this.sortColumns = sortColumns;
@@ -36,7 +36,7 @@ public class PageRequest {
     return offset;
   }
 
-  public Long getLimit() {
+  public Integer getLimit() {
     return limit;
   }
 
@@ -50,7 +50,7 @@ public class PageRequest {
 
   public static class Builder {
     private Long offset;
-    private Long limit;
+    private Integer limit;
     private List<Sorting> sortColumns;
 
     public Builder() {
@@ -62,7 +62,7 @@ public class PageRequest {
       return this;
     }
 
-    public Builder limit(Long limit) {
+    public Builder limit(Integer limit) {
       this.limit = limit;
       return this;
     }

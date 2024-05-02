@@ -20,7 +20,7 @@ public class PageRequestDto {
 
   private Integer limit = null;
 
-  private Integer offset = null;
+  private Long offset = null;
 
   @Valid
   private List<String> sort;
@@ -46,7 +46,7 @@ public class PageRequestDto {
     this.limit = limit;
   }
 
-  public PageRequestDto offset(Integer offset) {
+  public PageRequestDto offset(Long offset) {
     this.offset = offset;
     return this;
   }
@@ -56,14 +56,14 @@ public class PageRequestDto {
    * minimum: 0
    * @return offset
   */
-  @Min(0) 
+  @Min(0L) 
   @Schema(name = "offset", description = "Offset of the first record to search from", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("offset")
-  public Integer getOffset() {
+  public Long getOffset() {
     return offset;
   }
 
-  public void setOffset(Integer offset) {
+  public void setOffset(Long offset) {
     this.offset = offset;
   }
 

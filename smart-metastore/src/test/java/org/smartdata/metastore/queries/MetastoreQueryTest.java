@@ -52,7 +52,7 @@ public class MetastoreQueryTest {
   public void testAllOperators() throws IOException {
     PageRequest pageRequest = PageRequest.builder()
         .offset(0L)
-        .limit(10L)
+        .limit(10)
         .sortByAsc("id")
         .sortByAsc("ascColumn")
         .sortByDesc("descColumn")

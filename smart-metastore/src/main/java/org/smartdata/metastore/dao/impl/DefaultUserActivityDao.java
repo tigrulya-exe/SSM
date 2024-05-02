@@ -108,7 +108,7 @@ public class DefaultUserActivityDao
 
   private Map<String, Object> toMap(UserActivityEvent event) {
     Map<String, Object> properties = new HashMap<>();
-    properties.put("username", event.getUserName());
+    properties.put("username", event.getUsername());
     properties.put("timestamp", event.getTimestamp().toEpochMilli());
     properties.put("object_type", event.getObjectType());
     properties.put("object_id", event.getObjectId());

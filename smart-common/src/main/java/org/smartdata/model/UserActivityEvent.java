@@ -18,6 +18,7 @@
 package org.smartdata.model;
 
 import java.time.Instant;
+import java.util.Objects;
 
 public class UserActivityEvent {
   public enum ObjectType {
@@ -33,7 +34,7 @@ public class UserActivityEvent {
   }
 
   private final Long id;
-  private final String userName;
+  private final String username;
   private final Instant timestamp;
   private final Long objectId;
   private final ObjectType objectType;
@@ -43,7 +44,7 @@ public class UserActivityEvent {
 
   public UserActivityEvent(
       Long id,
-      String userName,
+      String username,
       Instant timestamp,
       Long objectId,
       ObjectType objectType,
@@ -51,7 +52,7 @@ public class UserActivityEvent {
       UserActivityResult result,
       String additionalInfo) {
     this.id = id;
-    this.userName = userName;
+    this.username = username;
     this.timestamp = timestamp;
     this.objectId = objectId;
     this.objectType = objectType;
@@ -64,8 +65,8 @@ public class UserActivityEvent {
     return id;
   }
 
-  public String getUserName() {
-    return userName;
+  public String getUsername() {
+    return username;
   }
 
   public Instant getTimestamp() {
@@ -90,6 +91,45 @@ public class UserActivityEvent {
 
   public String getAdditionalInfo() {
     return additionalInfo;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    UserActivityEvent event = (UserActivityEvent) o;
+    return Objects.equals(id, event.id)
+        && Objects.equals(username, event.username)
+        && Objects.equals(timestamp, event.timestamp)
+        && Objects.equals(objectId, event.objectId)
+        && objectType == event.objectType
+        && operation == event.operation
+        && result == event.result
+        && Objects.equals(additionalInfo, event.additionalInfo);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, username, timestamp, objectId,
+        objectType, operation, result, additionalInfo);
+  }
+
+  @Override
+  public String toString() {
+    return "UserActivityEvent{"
+        + "id=" + id
+        + ", username='" + username + '\''
+        + ", timestamp=" + timestamp
+        + ", objectId=" + objectId
+        + ", objectType=" + objectType
+        + ", operation=" + operation
+        + ", result=" + result
+        + ", additionalInfo='" + additionalInfo + '\''
+        + '}';
   }
 
   public static Builder newBuilder() {

@@ -1,0 +1,8 @@
+title: AuditOperation
+type: string
+description: Operation of the audit event
+enum:
+  - CREATE
+  - DELETE
+  - START
+  - STOP

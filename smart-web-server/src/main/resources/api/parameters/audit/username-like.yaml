@@ -1,0 +1,6 @@
+name: usernameLike
+in: query
+required: false
+description: Filter of the name of the user who performed the event
+schema:
+  type: string
