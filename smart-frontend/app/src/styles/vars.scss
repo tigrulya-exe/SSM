@@ -69,6 +69,7 @@
   --color-silver: #C3C4CF;
 
   --color-whitePure: #FFFFFF;
+  --color-whitePure-50: color-mix(in srgb, var(--color-whitePure) 50%, transparent);
 
   --color-yellow: #F0B542;
 
