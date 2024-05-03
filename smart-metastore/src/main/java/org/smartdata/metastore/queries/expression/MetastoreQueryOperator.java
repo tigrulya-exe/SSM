@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MetastoreQueryOperator implements MetastoreQueryExpression {
+  private static final String REPLACED_PARAM_PREFIX = "$_";
+
   private final String operator;
   private final List<MetastoreQueryExpression> args;
 
@@ -73,7 +75,7 @@ public class MetastoreQueryOperator implements MetastoreQueryExpression {
   }
 
   private void updateExpressionParam(MetastoreQueryExpression expression, String param) {
-    String newParamNamePrefix = "$_" + param;
+    String newParamNamePrefix = REPLACED_PARAM_PREFIX + param;
     String newParamName;
 
     do {

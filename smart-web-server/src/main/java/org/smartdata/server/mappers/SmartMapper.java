@@ -23,7 +23,7 @@ import java.util.Optional;
 public interface SmartMapper {
   default Long toEpoch(Instant timestamp) {
     return Optional.ofNullable(timestamp)
-        .map(this::toEpoch)
+        .map(Instant::toEpochMilli)
         .orElse(null);
   }
 }

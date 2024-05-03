@@ -45,7 +45,7 @@
                 in SQLite autoincrement is supported only for INTEGER pks.
                 Since it's used only in tests int will be sufficient.
             -->
-            <replace replace="BIGINT" with="INTEGER"/>
+            <replace replace="id BIGINT" with="id INTEGER"/>
         </modifySql>
     </changeSet>
 
