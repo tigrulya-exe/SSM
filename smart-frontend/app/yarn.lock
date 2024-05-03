@@ -1752,6 +1752,58 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@floating-ui/core@npm:^1.0.0":
+  version: 1.6.1
+  resolution: "@floating-ui/core@npm:1.6.1"
+  dependencies:
+    "@floating-ui/utils": "npm:^0.2.0"
+  checksum: 10c0/7d78b3788d438807d3c1a52477ee1693a29b8a4416dd6e13761427925d9fba1d45c849527752d8fd9776842182d919fddf7ecbc34f3bf2de3bafa1717619a56f
+  languageName: node
+  linkType: hard
+
+"@floating-ui/dom@npm:^1.0.0":
+  version: 1.6.4
+  resolution: "@floating-ui/dom@npm:1.6.4"
+  dependencies:
+    "@floating-ui/core": "npm:^1.0.0"
+    "@floating-ui/utils": "npm:^0.2.0"
+  checksum: 10c0/cee0b9e6efc1c6d978ec580c770078fdf416016fb03f3dd99630f7f32d0422722e608471fbc7578be86c783ad1c1e448c5fa5b9fdec889dfbf4b695f208730fd
+  languageName: node
+  linkType: hard
+
+"@floating-ui/react-dom@npm:^2.0.0":
+  version: 2.0.9
+  resolution: "@floating-ui/react-dom@npm:2.0.9"
+  dependencies:
+    "@floating-ui/dom": "npm:^1.0.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 10c0/d8cd1fb2b8a5012ca692d6f677a0af923ef81131f69accea8ce8b5413202ab4c3c79e6eda1446f4dad06a2dfd596ece748c562ba28c289678a856755db4f528f
+  languageName: node
+  linkType: hard
+
+"@floating-ui/react@npm:0.26.13":
+  version: 0.26.13
+  resolution: "@floating-ui/react@npm:0.26.13"
+  dependencies:
+    "@floating-ui/react-dom": "npm:^2.0.0"
+    "@floating-ui/utils": "npm:^0.2.0"
+    tabbable: "npm:^6.0.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 10c0/8a6004fc4ef11468bb26a8f5624d74f4cdb9389583c2c7716c61f3a6df2451ce76dfcc73f862320d51bc667b212a336acb303048d4c3906f4e97679ac1de478d
+  languageName: node
+  linkType: hard
+
+"@floating-ui/utils@npm:^0.2.0":
+  version: 0.2.2
+  resolution: "@floating-ui/utils@npm:0.2.2"
+  checksum: 10c0/b2becdcafdf395af1641348da0031ff1eaad2bc60c22e14bd3abad4acfe2c8401e03097173d89a2f646a99b75819a78ef21ebb2572cab0042a56dd654b0065cd
+  languageName: node
+  linkType: hard
+
 "@humanwhocodes/config-array@npm:^0.11.14":
   version: 0.11.14
   resolution: "@humanwhocodes/config-array@npm:0.11.14"
@@ -9697,6 +9749,7 @@ __metadata:
   resolution: "smart-frontend@workspace:."
   dependencies:
     "@chromatic-com/storybook": "npm:^1.3.3"
+    "@floating-ui/react": "npm:0.26.13"
     "@storybook/addon-essentials": "npm:^8.0.8"
     "@storybook/addon-interactions": "npm:^8.0.8"
     "@storybook/addon-links": "npm:^8.0.8"
@@ -10128,6 +10181,13 @@ __metadata:
     "@pkgr/core": "npm:^0.1.0"
     tslib: "npm:^2.6.2"
   checksum: 10c0/c3d3aa8e284f3f84f2f868b960c9f49239b364e35f6d20825a448449a3e9c8f49fe36cdd5196b30615682f007830d46f2ea354003954c7336723cb821e4b6519
+  languageName: node
+  linkType: hard
+
+"tabbable@npm:^6.0.0":
+  version: 6.2.0
+  resolution: "tabbable@npm:6.2.0"
+  checksum: 10c0/ced8b38f05f2de62cd46836d77c2646c42b8c9713f5bd265daf0e78ff5ac73d3ba48a7ca45f348bafeef29b23da7187c72250742d37627883ef89cbd7fa76898
   languageName: node
   linkType: hard
 

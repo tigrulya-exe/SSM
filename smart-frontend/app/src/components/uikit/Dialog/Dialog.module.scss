@@ -1,0 +1,49 @@
+:global {
+  body.theme-dark {
+    --dialog-background: linear-gradient(0deg, rgba(50, 50, 57, 0.15), rgba(50, 50, 57, 0.15)), #212121;
+  }
+  body.theme-light {
+    --dialog-background: var(--color-offWhite);
+  }
+}
+
+.dialog {
+  background: var(--dialog-background);
+  border-radius: 28px;
+  padding: 24px;
+  position: relative;
+  box-sizing: border-box;
+
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-default-color);
+
+  &__close {
+    position: absolute;
+    top: -18px;
+    right: -16px;
+  }
+
+  &__title {
+    color: var(--text-title-color);
+  }
+
+  &__title,
+  &__body,
+  &__defaultControls {
+    &:not(:last-child) {
+      margin-bottom: 24px;
+    }
+  }
+
+  &__defaultControls {
+    display: flex;
+    justify-content: right;
+    margin-left: auto;
+  }
+
+  &__controlsOnTop {
+    margin-bottom: 24px;
+  }
+}
