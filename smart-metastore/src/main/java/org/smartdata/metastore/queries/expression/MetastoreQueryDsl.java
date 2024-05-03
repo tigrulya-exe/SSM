@@ -17,6 +17,8 @@
  */
 package org.smartdata.metastore.queries.expression;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -60,11 +62,14 @@ public class MetastoreQueryDsl {
   }
 
   public static <T> MetastoreQueryExpression in(String column, List<T> values) {
+    if (CollectionUtils.isEmpty(values)) {
+      return EMPTY_EXPRESSION;
+    }
     return binaryOpWithPlaceholder("IN", column, values);
   }
 
   public static <T> MetastoreQueryExpression inStrings(String column, List<T> values) {
-    if (values == null) {
+    if (CollectionUtils.isEmpty(values)) {
       return EMPTY_EXPRESSION;
     }
 

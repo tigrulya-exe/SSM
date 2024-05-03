@@ -622,7 +622,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
 
   public void deleteCmdlet(long cmdletId) throws IOException {
     try {
-      disableCmdlet(cmdletId);
+      disableCmdletInternal(cmdletId);
       cmdletInfoHandler.deleteCmdlet(cmdletId);
 
       lifecycleListener.onCmdletDelete(cmdletId, SUCCESS);
