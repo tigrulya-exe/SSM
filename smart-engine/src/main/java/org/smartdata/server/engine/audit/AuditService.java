@@ -23,6 +23,8 @@ import org.smartdata.metastore.queries.PageRequest;
 import org.smartdata.model.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
 
+import java.util.List;
+
 public class AuditService {
   private final UserActivityDao userActivityDao;
 
@@ -37,5 +39,9 @@ public class AuditService {
   public SearchResult<UserActivityEvent> search(
       AuditSearchRequest searchRequest, PageRequest pageRequest) {
     return userActivityDao.search(searchRequest, pageRequest);
+  }
+
+  public List<UserActivityEvent> search(AuditSearchRequest searchRequest) {
+    return userActivityDao.search(searchRequest);
   }
 }
