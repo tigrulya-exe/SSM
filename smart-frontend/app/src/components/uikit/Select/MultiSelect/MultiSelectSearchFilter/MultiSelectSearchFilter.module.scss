@@ -1,0 +1,10 @@
+.multiSelectSearchFilter {
+  margin-bottom: 12px;
+  border-radius: 8px;
+  display: flex;
+  gap: 8px;
+
+  &__select {
+    width: 100%;
+  }
+}

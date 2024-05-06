@@ -4,6 +4,8 @@ body {
     --text-default-color: var(--color-grayUsual);
     --text-green-color: var(--color-greenSaturated);
     --text-title-color: var(--color-offWhite);
+    --scrollbar-thumb-color: var(--color-plate-20);
+    --scrollbar-track-color: transparent;
   }
 
   &.theme-light {
@@ -11,6 +13,8 @@ body {
     --text-default-color: var(--color-ADCM);
     --text-green-color: var(--color-greenLogo);
     --text-title-color: var(--color-dark1);
+    --scrollbar-thumb-color: var(--color-plate-20);
+    --scrollbar-track-color: transparent;
   }
 }
 
@@ -39,4 +43,22 @@ strong {
   &:hover {
     color: var(--text-green-color) !important;
   }
+}
+
+.scroll::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+  top: 20px;
+}
+
+.scroll::-webkit-scrollbar-corner {
+  display: none;
+}
+
+.scroll::-webkit-scrollbar-track {
+  background: none;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-color);
 }
