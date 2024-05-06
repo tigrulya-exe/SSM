@@ -4,7 +4,7 @@ body {
     --text-default-color: var(--color-grayUsual);
     --text-green-color: var(--color-greenSaturated);
     --text-title-color: var(--color-offWhite);
-    --scrollbar-thumb-color: rgba(127, 130, 133, 0.20);
+    --scrollbar-thumb-color: var(--color-plate-20);
     --scrollbar-track-color: transparent;
   }
 
@@ -13,7 +13,7 @@ body {
     --text-default-color: var(--color-ADCM);
     --text-green-color: var(--color-greenLogo);
     --text-title-color: var(--color-dark1);
-    --scrollbar-thumb-color: rgba(127, 130, 133, 0.20);
+    --scrollbar-thumb-color: var(--color-plate-20);
     --scrollbar-track-color: transparent;
   }
 }
