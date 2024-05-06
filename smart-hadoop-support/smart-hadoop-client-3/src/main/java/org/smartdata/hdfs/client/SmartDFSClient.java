@@ -65,55 +65,9 @@ public class SmartDFSClient extends DFSClient {
   private SmartClient smartClient = null;
   private boolean healthy = false;
 
-  public SmartDFSClient(InetSocketAddress nameNodeAddress, Configuration conf,
-      InetSocketAddress smartServerAddress) throws IOException {
-    super(nameNodeAddress, conf);
-    if (isSmartClientDisabled()) {
-      return;
-    }
-    try {
-      smartClient = new SmartClient(conf, smartServerAddress);
-      healthy = true;
-    } catch (IOException e) {
-      super.close();
-      throw e;
-    }
-  }
-
   public SmartDFSClient(final URI nameNodeUri, final Configuration conf,
       final InetSocketAddress smartServerAddress) throws IOException {
     super(nameNodeUri, conf);
-    if (isSmartClientDisabled()) {
-      return;
-    }
-    try {
-      smartClient = new SmartClient(conf, smartServerAddress);
-      healthy = true;
-    } catch (IOException e) {
-      super.close();
-      throw e;
-    }
-  }
-
-  public SmartDFSClient(URI nameNodeUri, Configuration conf,
-      FileSystem.Statistics stats, InetSocketAddress smartServerAddress)
-      throws IOException {
-    super(nameNodeUri, conf, stats);
-    if (isSmartClientDisabled()) {
-      return;
-    }
-    try {
-      smartClient = new SmartClient(conf, smartServerAddress);
-      healthy = true;
-    } catch (IOException e) {
-      super.close();
-      throw e;
-    }
-  }
-
-  public SmartDFSClient(Configuration conf,
-      InetSocketAddress[] smartServerAddress) throws IOException {
-    super(conf);
     if (isSmartClientDisabled()) {
       return;
     }

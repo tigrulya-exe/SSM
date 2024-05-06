@@ -289,4 +289,14 @@ public class SmartConfKeys {
   public static final String SMART_CLIENT_CONCURRENT_REPORT_ENABLED =
       "smart.client.concurrent.report.enabled";
   public static final boolean SMART_CLIENT_CONCURRENT_REPORT_ENABLED_DEFAULT = true;
+
+  public static final String SMART_CLIENT_REPORT_TASKS_TIMEOUT_MS_KEY =
+      "smart.client.report.tasks.timeout.ms";
+  public static final long SMART_CLIENT_REPORT_TASKS_TIMEOUT_MS_DEFAULT = 2000;
+
+  public static final String SMART_CLIENT_ACTIVE_SERVER_CACHE_PATH_KEY =
+      "smart.client.active.server.cache.path";
+  public static final String SMART_CLIENT_ACTIVE_SERVER_CACHE_PATH_DEFAULT =
+      "/tmp/active_smart_server";
+
 }
