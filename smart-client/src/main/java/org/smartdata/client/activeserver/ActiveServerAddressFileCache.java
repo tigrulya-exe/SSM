@@ -64,7 +64,7 @@ public class ActiveServerAddressFileCache implements ActiveServerAddressCache {
       HostAndPort hostAndPort = HostAndPort.fromString(
           new String(addressBytes, StandardCharsets.UTF_8));
       InetSocketAddress serverAddress =
-          new InetSocketAddress(hostAndPort.getHostText(), hostAndPort.getPort());
+          new InetSocketAddress(hostAndPort.getHost(), hostAndPort.getPort());
       return Optional.of(serverAddress);
     } catch (Exception exception) {
       // we log to debug to avoid messing up hdfs cli commands output

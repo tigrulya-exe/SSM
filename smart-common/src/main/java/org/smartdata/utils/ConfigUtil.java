@@ -57,7 +57,7 @@ public class ConfigUtil {
       return rawRpcAddresses.stream()
           .map(HostAndPort::fromString)
           .map(hostAndPort -> new InetSocketAddress(
-              hostAndPort.getHostText(), hostAndPort.getPort()))
+              hostAndPort.getHost(), hostAndPort.getPort()))
           .collect(Collectors.toList());
     } catch (Exception e) {
       throw new IOException("Incorrect SmartServer address. Please follow "
