@@ -1,0 +1,87 @@
+:global {
+  body.theme-dark {
+    --tab-inactive-color: var(--color-grayUsual);
+    --tab-inactive-color-bg: transparent;
+
+    --tab-inactive-hover-color: var(--color-offWhite);
+    --tab-inactive-hover-bg: transparent;
+
+    --tab-inactive-disabled-color: var(--color-grayReadingOnly);
+
+    --tab-active-color: var(--color-greenSaturated);
+    --tab-active-bg: var(--color-greenSaturated-15);
+
+    --tab-active-hover-color: var(--color-offWhite);
+    --tab-active-hover-bg: var(--color-greenSaturated-15);
+
+    --tabs-block-bg: var(--color-plate-10);
+  }
+
+  body.theme-light {
+    --tab-inactive-color: var(--color-ADCM);
+    --tab-inactive-color-bg: transparent;
+
+    --tab-inactive-hover-color: var(--color-dark1);
+    --tab-inactive-hover-bg: transparent;
+
+    --tab-inactive-disabled-color: var(--color-popupLightDarker);
+
+    --tab-active-color: var(--color-greenLogo);
+    --tab-active-bg: var(--color-greenSaturated-15);
+
+    --tab-active-hover-color: var(--color-dark1);
+    --tab-active-hover-bg: var(--color-greenSaturated-15);
+
+    --tabs-block-bg: var(--color-plate-10);
+  }
+}
+
+.tabsBlock {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: 8px;
+  background: var(--tabs-block-bg);
+
+  &_primary {
+    padding: 0 var(--page-padding-h);
+
+    --tab-color: var(--tab-inactive-color);
+    --tab-bg: var(--tab-inactive-bg);
+
+    .tab {
+      font-weight: 500;
+      font-size: 15px;
+      line-height: normal;
+      color: var(--tab-color);
+      background: var(--tab-bg);
+      transition: color 250ms;
+      padding: 4px 12px;
+      border: none;
+      cursor: pointer;
+
+      &:hover {
+        --tab-color: var(--tab-inactive-hover-color);
+        --tab-bg: var(--tab-inactive-hover-bg);
+      }
+
+      &:global(.active) {
+        --tab-color: var(--tab-active-color);
+        --tab-bg: var(--tab-active-bg);
+
+        &:hover {
+          --tab-color: var(--tab-active-hover-color);
+          --tab-bg: var(--tab-active-hover-bg);
+        }
+      }
+
+      &_disabled,
+      &_disabled:hover {
+        cursor: default;
+        --tab-color: var(--tab-inactive-disabled-color);
+      }
+
+      border-radius: 8px;
+    }
+  }
+}
