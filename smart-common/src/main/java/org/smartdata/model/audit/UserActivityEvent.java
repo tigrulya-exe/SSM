@@ -15,30 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model;
+package org.smartdata.model.audit;
 
 import java.time.Instant;
 import java.util.Objects;
 
 public class UserActivityEvent {
-  public enum ObjectType {
-    RULE,
-    CMDLET
-  }
-
-  public enum Operation {
-    CREATE,
-    DELETE,
-    START,
-    STOP
-  }
 
   private final Long id;
   private final String username;
   private final Instant timestamp;
   private final Long objectId;
-  private final ObjectType objectType;
-  private final Operation operation;
+  private final UserActivityObject objectType;
+  private final UserActivityOperation operation;
   private final UserActivityResult result;
   private final String additionalInfo;
 
@@ -47,8 +36,8 @@ public class UserActivityEvent {
       String username,
       Instant timestamp,
       Long objectId,
-      ObjectType objectType,
-      Operation operation,
+      UserActivityObject objectType,
+      UserActivityOperation operation,
       UserActivityResult result,
       String additionalInfo) {
     this.id = id;
@@ -77,11 +66,11 @@ public class UserActivityEvent {
     return objectId;
   }
 
-  public ObjectType getObjectType() {
+  public UserActivityObject getObjectType() {
     return objectType;
   }
 
-  public Operation getOperation() {
+  public UserActivityOperation getOperation() {
     return operation;
   }
 
@@ -141,8 +130,8 @@ public class UserActivityEvent {
     private String userName;
     private Instant timestamp;
     private Long objectId;
-    private ObjectType objectType;
-    private Operation operation;
+    private UserActivityObject objectType;
+    private UserActivityOperation operation;
     private UserActivityResult result;
     private String additionalInfo;
 
@@ -166,12 +155,12 @@ public class UserActivityEvent {
       return this;
     }
 
-    public Builder objectType(ObjectType objectType) {
+    public Builder objectType(UserActivityObject objectType) {
       this.objectType = objectType;
       return this;
     }
 
-    public Builder operation(Operation operation) {
+    public Builder operation(UserActivityOperation operation) {
       this.operation = operation;
       return this;
     }

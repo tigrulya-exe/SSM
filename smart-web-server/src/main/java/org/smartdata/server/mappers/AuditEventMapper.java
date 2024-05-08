@@ -22,7 +22,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.model.TimeInterval;
-import org.smartdata.model.UserActivityEvent;
+import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
 import org.smartdata.server.generated.model.AuditEventDto;
 import org.smartdata.server.generated.model.AuditEventResultDto;

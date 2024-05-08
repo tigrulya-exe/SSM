@@ -18,7 +18,7 @@
 package org.smartdata.server.controller;
 
 import org.smartdata.metastore.model.SearchResult;
-import org.smartdata.model.UserActivityEvent;
+import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
 import org.smartdata.server.engine.audit.AuditService;
 import org.smartdata.server.generated.api.AuditApiDelegate;

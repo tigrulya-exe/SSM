@@ -54,7 +54,11 @@ import org.smartdata.server.cluster.ActiveServerNodeCmdletMetrics;
 import org.smartdata.server.cluster.NodeCmdletMetrics;
 import org.smartdata.server.engine.action.ActionInfoHandler;
 import org.smartdata.server.engine.action.ActionStatusUpdateListener;
-import org.smartdata.server.engine.audit.UserCmdletLifecycleListener;
+import org.smartdata.server.engine.audit.AuditService;
+import org.smartdata.server.engine.audit.Auditable;
+import org.smartdata.server.engine.audit.aspect.Audit;
+import org.smartdata.server.engine.audit.aspect.AuditId;
+import org.smartdata.server.engine.audit.aspect.ReturnsAuditId;
 import org.smartdata.server.engine.cmdlet.CmdletDispatcher;
 import org.smartdata.server.engine.cmdlet.CmdletExecutorService;
 import org.smartdata.server.engine.cmdlet.CmdletInfoHandler;
@@ -82,10 +86,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import static org.smartdata.model.UserActivityResult.FAILURE;
-import static org.smartdata.model.UserActivityResult.SUCCESS;
 import static org.smartdata.model.action.ScheduleResult.RETRY;
 import static org.smartdata.model.action.ScheduleResult.isSuccessful;
+import static org.smartdata.model.audit.UserActivityObject.CMDLET;
+import static org.smartdata.model.audit.UserActivityOperation.DELETE;
+import static org.smartdata.model.audit.UserActivityOperation.START;
+import static org.smartdata.model.audit.UserActivityOperation.STOP;
+
 
 /**
  * When a Cmdlet is submitted, it's string descriptor will be stored into set submittedCmdlets
@@ -95,7 +102,8 @@ import static org.smartdata.model.action.ScheduleResult.isSuccessful;
  * <p>The map idToCmdlets stores all the recent CmdletInfos, including pending and running Cmdlets.
  * After the Cmdlet is finished or cancelled or failed, it's status will be flush to DB.
  */
-public class CmdletManager extends AbstractService implements ActionStatusUpdateListener {
+public class CmdletManager extends AbstractService
+    implements ActionStatusUpdateListener, Auditable {
   private static final Logger LOG = LoggerFactory.getLogger(CmdletManager.class);
 
   private final ScheduledExecutorService executorService;
@@ -116,14 +124,14 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
   private final CmdletInfoHandler cmdletInfoHandler;
   private final CmdletParser cmdletParser;
   private final ListMultimap<String, ActionScheduler> schedulers;
-  private final UserCmdletLifecycleListener lifecycleListener;
+  private final AuditService auditService;
   private final PathChecker pathChecker;
   private List<ActionSchedulerService> schedulerServices;
   private CmdletDispatcher dispatcher;
 
   public CmdletManager(
       ServerContext context,
-      UserCmdletLifecycleListener lifecycleListener) throws IOException {
+      AuditService auditService) throws IOException {
     super(context);
 
     this.metaStore = context.getMetaStore();
@@ -143,7 +151,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     this.maxNumPendingCmdlets = context.getConf()
         .getInt(SmartConfKeys.SMART_CMDLET_MAX_NUM_PENDING_KEY,
             SmartConfKeys.SMART_CMDLET_MAX_NUM_PENDING_DEFAULT);
-    this.lifecycleListener = lifecycleListener;
+    this.auditService = auditService;
 
     this.cmdletPurgeTask = new DeleteTerminatedCmdletsTask(getContext().getConf(), metaStore);
     this.inMemoryRegistry = new InMemoryRegistry(context, tracker, executorService);
@@ -168,6 +176,11 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
 
   public CmdletInfoHandler getCmdletInfoHandler() {
     return cmdletInfoHandler;
+  }
+
+  @Override
+  public AuditService getAuditService() {
+    return auditService;
   }
 
   @Override
@@ -295,7 +308,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     LOG.info("Stopping ...");
     dispatcher.stop();
 
-    for (ActionSchedulerService scheduler:  schedulerServices) {
+    for (ActionSchedulerService scheduler : schedulerServices) {
       try {
         scheduler.stop();
       } catch (Exception exception) {
@@ -317,18 +330,9 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     dispatcher.registerExecutorService(executorService);
   }
 
+  @ReturnsAuditId
+  @Audit(objectType = CMDLET, operation = START)
   public long submitCmdlet(String cmdlet) throws IOException {
-    try {
-      long cmdletId = submitCmdletInternal(cmdlet);
-      lifecycleListener.onCmdletAdded(cmdletId);
-      return cmdletId;
-    } catch (Exception exception) {
-      lifecycleListener.onCmdletAddFailure(cmdlet);
-      throw exception;
-    }
-  }
-
-  private long submitCmdletInternal(String cmdlet) throws IOException {
     LOG.debug("Received Cmdlet -> [ {} ]", cmdlet);
     try {
       if (StringUtils.isBlank(cmdlet)) {
@@ -569,14 +573,11 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     }
   }
 
-  public void disableCmdlet(long cmdletId) throws IOException {
-    try {
-      disableCmdletInternal(cmdletId);
-      lifecycleListener.onCmdletStop(cmdletId, SUCCESS);
-    } catch (Exception exception) {
-      lifecycleListener.onCmdletStop(cmdletId, FAILURE);
-      throw exception;
-    }
+  // It's wrapped intentionally in order to distinguish
+  // cmdlets disabling by user and disabling by SSM itself
+  @Audit(objectType = CMDLET, operation = STOP)
+  public void disableCmdlet(@AuditId long cmdletId) throws IOException {
+    disableCmdletInternal(cmdletId);
   }
 
   private void disableCmdletInternal(long cmdletId) throws IOException {
@@ -620,16 +621,10 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     cmdletInfoHandler.store(cmdletInfo);
   }
 
-  public void deleteCmdlet(long cmdletId) throws IOException {
-    try {
-      disableCmdletInternal(cmdletId);
-      cmdletInfoHandler.deleteCmdlet(cmdletId);
-
-      lifecycleListener.onCmdletDelete(cmdletId, SUCCESS);
-    } catch (Exception exception) {
-      lifecycleListener.onCmdletDelete(cmdletId, FAILURE);
-      throw exception;
-    }
+  @Audit(objectType = CMDLET, operation = DELETE)
+  public void deleteCmdlet(@AuditId long cmdletId) throws IOException {
+    disableCmdletInternal(cmdletId);
+    cmdletInfoHandler.deleteCmdlet(cmdletId);
   }
 
   private void disableCmdlets(List<Long> cmdletIds) throws IOException {

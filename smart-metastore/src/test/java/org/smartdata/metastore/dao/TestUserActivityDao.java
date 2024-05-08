@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.PageRequest;
-import org.smartdata.model.UserActivityEvent;
+import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
 
 import java.time.Instant;
@@ -34,14 +34,14 @@ import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.smartdata.model.UserActivityEvent.ObjectType.CMDLET;
-import static org.smartdata.model.UserActivityEvent.ObjectType.RULE;
-import static org.smartdata.model.UserActivityEvent.Operation.CREATE;
-import static org.smartdata.model.UserActivityEvent.Operation.DELETE;
-import static org.smartdata.model.UserActivityEvent.Operation.START;
-import static org.smartdata.model.UserActivityEvent.Operation.STOP;
-import static org.smartdata.model.UserActivityResult.FAILURE;
-import static org.smartdata.model.UserActivityResult.SUCCESS;
+import static org.smartdata.model.audit.UserActivityObject.CMDLET;
+import static org.smartdata.model.audit.UserActivityObject.RULE;
+import static org.smartdata.model.audit.UserActivityOperation.CREATE;
+import static org.smartdata.model.audit.UserActivityOperation.DELETE;
+import static org.smartdata.model.audit.UserActivityOperation.START;
+import static org.smartdata.model.audit.UserActivityOperation.STOP;
+import static org.smartdata.model.audit.UserActivityResult.FAILURE;
+import static org.smartdata.model.audit.UserActivityResult.SUCCESS;
 
 public class TestUserActivityDao extends TestDaoBase {
   private static final Instant FIRST_EVENT_TIMESTAMP =

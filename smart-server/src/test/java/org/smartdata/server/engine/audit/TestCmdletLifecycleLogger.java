@@ -24,8 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.metastore.SqliteTestDaoBase;
-import org.smartdata.model.UserActivityEvent;
-import org.smartdata.model.UserActivityResult;
+import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
 import org.smartdata.server.engine.CmdletManager;
 import org.smartdata.server.engine.ServerContext;
@@ -34,6 +33,13 @@ import org.smartdata.server.engine.cmdlet.CmdletDispatcherHelper;
 
 import java.util.Collections;
 import java.util.List;
+
+import static org.smartdata.model.audit.UserActivityObject.CMDLET;
+import static org.smartdata.model.audit.UserActivityOperation.DELETE;
+import static org.smartdata.model.audit.UserActivityOperation.START;
+import static org.smartdata.model.audit.UserActivityOperation.STOP;
+import static org.smartdata.model.audit.UserActivityResult.FAILURE;
+import static org.smartdata.model.audit.UserActivityResult.SUCCESS;
 
 public class TestCmdletLifecycleLogger extends SqliteTestDaoBase {
   private CmdletManager cmdletManager;
@@ -46,10 +52,9 @@ public class TestCmdletLifecycleLogger extends SqliteTestDaoBase {
     serverContext.setServiceMode(ServiceMode.HDFS);
 
     auditService = new AuditService(metaStore.userActivityDao());
-    CmdletLifecycleLogger lifecycleLogger = new CmdletLifecycleLogger(auditService);
 
     CmdletDispatcherHelper.init();
-    cmdletManager = new CmdletManager(serverContext, lifecycleLogger);
+    cmdletManager = new CmdletManager(serverContext, auditService);
     cmdletManager.init();
     cmdletManager.start();
   }
@@ -68,8 +73,8 @@ public class TestCmdletLifecycleLogger extends SqliteTestDaoBase {
     Assert.assertEquals(1, cmdletEvents.size());
 
     UserActivityEvent event = cmdletEvents.get(0);
-    Assert.assertEquals(UserActivityEvent.Operation.START, event.getOperation());
-    Assert.assertEquals(UserActivityResult.SUCCESS, event.getResult());
+    Assert.assertEquals(START, event.getOperation());
+    Assert.assertEquals(SUCCESS, event.getResult());
   }
 
   @Test
@@ -84,8 +89,8 @@ public class TestCmdletLifecycleLogger extends SqliteTestDaoBase {
     Assert.assertEquals(1, cmdletEvents.size());
 
     UserActivityEvent event = cmdletEvents.get(0);
-    Assert.assertEquals(UserActivityEvent.Operation.START, event.getOperation());
-    Assert.assertEquals(UserActivityResult.FAILURE, event.getResult());
+    Assert.assertEquals(START, event.getOperation());
+    Assert.assertEquals(FAILURE, event.getResult());
   }
 
   @Test
@@ -99,8 +104,8 @@ public class TestCmdletLifecycleLogger extends SqliteTestDaoBase {
     Assert.assertEquals(2, cmdletEvents.size());
 
     UserActivityEvent event = cmdletEvents.get(1);
-    Assert.assertEquals(UserActivityEvent.Operation.STOP, event.getOperation());
-    Assert.assertEquals(UserActivityResult.SUCCESS, event.getResult());
+    Assert.assertEquals(STOP, event.getOperation());
+    Assert.assertEquals(SUCCESS, event.getResult());
   }
 
   @Test
@@ -114,14 +119,14 @@ public class TestCmdletLifecycleLogger extends SqliteTestDaoBase {
     Assert.assertEquals(2, cmdletEvents.size());
 
     UserActivityEvent event = cmdletEvents.get(1);
-    Assert.assertEquals(UserActivityEvent.Operation.DELETE, event.getOperation());
-    Assert.assertEquals(UserActivityResult.SUCCESS, event.getResult());
+    Assert.assertEquals(DELETE, event.getOperation());
+    Assert.assertEquals(SUCCESS, event.getResult());
   }
 
   private List<UserActivityEvent> findCmdletEvents(long cmdletId) {
     AuditSearchRequest searchRequest = AuditSearchRequest.builder()
         .objectIds(Collections.singletonList(cmdletId))
-        .objectTypes(Collections.singletonList(UserActivityEvent.ObjectType.CMDLET))
+        .objectTypes(Collections.singletonList(CMDLET))
         .build();
 
     return auditService.search(searchRequest);

@@ -15,12 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.server.engine.audit.aspect;
 
-import org.smartdata.model.audit.UserActivityEvent;
-import org.smartdata.model.request.AuditSearchRequest;
+import org.smartdata.model.audit.UserActivityObject;
+import org.smartdata.model.audit.UserActivityOperation;
 
-public interface UserActivityDao
-    extends SearchableDao<AuditSearchRequest, UserActivityEvent> {
-  void insert(UserActivityEvent event);
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Audit {
+  UserActivityOperation operation();
+
+  UserActivityObject objectType();
 }

@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.smartdata.server.engine;
 
 import org.slf4j.Logger;
@@ -34,7 +35,11 @@ import org.smartdata.model.rule.RulePluginManager;
 import org.smartdata.model.rule.RuleTranslationResult;
 import org.smartdata.model.rule.TimeBasedScheduleInfo;
 import org.smartdata.rule.parser.SmartRuleStringParser;
-import org.smartdata.server.engine.audit.UserRuleLifecycleListener;
+import org.smartdata.server.engine.audit.AuditService;
+import org.smartdata.server.engine.audit.Auditable;
+import org.smartdata.server.engine.audit.aspect.Audit;
+import org.smartdata.server.engine.audit.aspect.AuditId;
+import org.smartdata.server.engine.audit.aspect.ReturnsAuditId;
 import org.smartdata.server.engine.rule.ErasureCodingPlugin;
 import org.smartdata.server.engine.rule.ExecutorScheduler;
 import org.smartdata.server.engine.rule.FileCopy2S3Plugin;
@@ -52,15 +57,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.smartdata.conf.SmartConfKeys.SMART_SYNC_SCHEDULE_STRATEGY_DEFAULT;
 import static org.smartdata.conf.SmartConfKeys.SMART_SYNC_SCHEDULE_STRATEGY_KEY;
-import static org.smartdata.model.UserActivityResult.FAILURE;
-import static org.smartdata.model.UserActivityResult.SUCCESS;
 import static org.smartdata.model.WhitelistHelper.validatePathsCovered;
-
+import static org.smartdata.model.audit.UserActivityObject.RULE;
+import static org.smartdata.model.audit.UserActivityOperation.CREATE;
+import static org.smartdata.model.audit.UserActivityOperation.DELETE;
+import static org.smartdata.model.audit.UserActivityOperation.START;
+import static org.smartdata.model.audit.UserActivityOperation.STOP;
 
 /**
  * Manage and execute rules. We can have 'cache' here to decrease the needs to execute a SQL query.
  */
-public class RuleManager extends AbstractService {
+public class RuleManager extends AbstractService implements Auditable {
   public static final Logger LOG = LoggerFactory.getLogger(RuleManager.class.getName());
 
   private final ServerContext serverContext;
@@ -69,7 +76,7 @@ public class RuleManager extends AbstractService {
   private final MetaStore metaStore;
   private final PathChecker pathChecker;
 
-  private final UserRuleLifecycleListener lifecycleListener;
+  private final AuditService auditService;
 
   private boolean isClosed = false;
 
@@ -81,7 +88,7 @@ public class RuleManager extends AbstractService {
       ServerContext context,
       StatesManager statesManager,
       CmdletManager cmdletManager,
-      UserRuleLifecycleListener lifecycleListener) {
+      AuditService auditService) {
     super(context);
 
     int numExecutors =
@@ -95,7 +102,7 @@ public class RuleManager extends AbstractService {
     this.statesManager = statesManager;
     this.cmdletManager = cmdletManager;
     this.serverContext = context;
-    this.lifecycleListener = lifecycleListener;
+    this.auditService = auditService;
     this.metaStore = context.getMetaStore();
     this.pathChecker = new PathChecker(context.getConf());
 
@@ -116,18 +123,9 @@ public class RuleManager extends AbstractService {
   /**
    * Submit a rule to RuleManger.
    */
+  @ReturnsAuditId
+  @Audit(objectType = RULE, operation = CREATE)
   public long submitRule(String rule, RuleState initState) throws IOException {
-    try {
-      long ruleId = submitRuleInternal(rule, initState);
-      lifecycleListener.onRuleAdded(ruleId);
-      return ruleId;
-    } catch (Exception exception) {
-      lifecycleListener.onRuleAddFailure(rule);
-      throw exception;
-    }
-  }
-
-  private long submitRuleInternal(String rule, RuleState initState) throws IOException {
     LOG.debug("Received Rule -> [" + rule + "]");
     if (initState != RuleState.ACTIVE
         && initState != RuleState.DISABLED
@@ -203,17 +201,8 @@ public class RuleManager extends AbstractService {
    *
    * @param dropPendingCmdlets pending cmdlets triggered by the rule will be discarded if true.
    */
-  public void deleteRule(long ruleId, boolean dropPendingCmdlets) throws IOException {
-    try {
-      deleteRuleInternal(ruleId, dropPendingCmdlets);
-      lifecycleListener.onRuleDelete(ruleId, SUCCESS);
-    } catch (Exception exception) {
-      lifecycleListener.onRuleDelete(ruleId, FAILURE);
-      throw exception;
-    }
-  }
-
-  private void deleteRuleInternal(long ruleId, boolean dropPendingCmdlets) throws IOException {
+  @Audit(objectType = RULE, operation = DELETE)
+  public void deleteRule(@AuditId long ruleId, boolean dropPendingCmdlets) throws IOException {
     RuleInfoRepo infoRepo = checkIfExists(ruleId);
     try {
       if (dropPendingCmdlets && getCmdletManager() != null) {
@@ -224,32 +213,19 @@ public class RuleManager extends AbstractService {
     }
   }
 
-  public void activateRule(long ruleId) throws IOException {
-    try {
-      RuleInfoRepo infoRepo = checkIfExists(ruleId);
-      boolean ruleSubmitted = submitRuleToScheduler(infoRepo.activate(this));
-      if (ruleSubmitted) {
-        lifecycleListener.onRuleStart(ruleId, SUCCESS);
-      }
-    } catch (Exception exception) {
-      lifecycleListener.onRuleStart(ruleId, FAILURE);
-      throw exception;
-    }
+  @Audit(objectType = RULE, operation = START)
+  public void activateRule(@AuditId long ruleId) throws IOException {
+    RuleInfoRepo infoRepo = checkIfExists(ruleId);
+    submitRuleToScheduler(infoRepo.activate(this));
   }
 
-  public void disableRule(long ruleId, boolean dropPendingCmdlets) throws IOException {
-    try {
-      RuleInfoRepo infoRepo = checkIfExists(ruleId);
-      infoRepo.disable();
-      if (dropPendingCmdlets && getCmdletManager() != null) {
-        getCmdletManager().deletePendingRuleCmdlets(ruleId);
-      }
-      lifecycleListener.onRuleStop(ruleId, SUCCESS);
-    } catch (Exception exception) {
-      lifecycleListener.onRuleStop(ruleId, FAILURE);
-      throw exception;
+  @Audit(objectType = RULE, operation = STOP)
+  public void disableRule(@AuditId long ruleId, boolean dropPendingCmdlets) throws IOException {
+    RuleInfoRepo infoRepo = checkIfExists(ruleId);
+    infoRepo.disable();
+    if (dropPendingCmdlets && getCmdletManager() != null) {
+      getCmdletManager().deletePendingRuleCmdlets(ruleId);
     }
-
   }
 
   private RuleInfoRepo checkIfExists(long ruleID) throws IOException {
@@ -379,5 +355,10 @@ public class RuleManager extends AbstractService {
       execScheduler.shutdown();
     }
     LOG.info("Stopped.");
+  }
+
+  @Override
+  public AuditService getAuditService() {
+    return auditService;
   }
 }

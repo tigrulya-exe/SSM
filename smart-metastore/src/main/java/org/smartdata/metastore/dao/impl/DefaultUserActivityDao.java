@@ -21,10 +21,10 @@ import org.smartdata.metastore.SearchableAbstractDao;
 import org.smartdata.metastore.dao.UserActivityDao;
 import org.smartdata.metastore.queries.MetastoreQuery;
 import org.smartdata.model.TimeInterval;
-import org.smartdata.model.UserActivityEvent;
-import org.smartdata.model.UserActivityEvent.ObjectType;
-import org.smartdata.model.UserActivityEvent.Operation;
-import org.smartdata.model.UserActivityResult;
+import org.smartdata.model.audit.UserActivityEvent;
+import org.smartdata.model.audit.UserActivityObject;
+import org.smartdata.model.audit.UserActivityOperation;
+import org.smartdata.model.audit.UserActivityResult;
 import org.smartdata.model.request.AuditSearchRequest;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -98,11 +98,15 @@ public class DefaultUserActivityDao
     return UserActivityEvent.newBuilder()
         .id(resultSet.getLong("id"))
         .userName(resultSet.getString("username"))
-        .timestamp(Instant.ofEpochMilli(resultSet.getLong("timestamp")))
-        .objectType(ObjectType.valueOf(resultSet.getString("object_type")))
+        .timestamp(Instant.ofEpochMilli(
+            resultSet.getLong("timestamp")))
+        .objectType(UserActivityObject.valueOf(
+            resultSet.getString("object_type")))
         .objectId(objectId)
-        .operation(Operation.valueOf(resultSet.getString("operation")))
-        .result(UserActivityResult.valueOf(resultSet.getString("result")))
+        .operation(UserActivityOperation.valueOf(
+            resultSet.getString("operation")))
+        .result(UserActivityResult.valueOf(
+            resultSet.getString("result")))
         .additionalInfo(resultSet.getString("additional_info"))
         .build();
   }
