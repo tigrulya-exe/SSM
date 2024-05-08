@@ -4,7 +4,7 @@ cd smart-frontend/app
 
 echo "Start lint check";
 
-yarn lint;
+yarn lint-staged;
 
 echo "Start TS check";
 
