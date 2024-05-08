@@ -26,8 +26,7 @@ import org.smartdata.conf.SmartConf;
 import org.smartdata.metastore.SqliteTestDaoBase;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
-import org.smartdata.model.UserActivityEvent;
-import org.smartdata.model.UserActivityResult;
+import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
 import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.engine.ServerContext;
@@ -35,6 +34,14 @@ import org.smartdata.server.engine.ServiceMode;
 
 import java.util.Collections;
 import java.util.List;
+
+import static org.smartdata.model.audit.UserActivityObject.RULE;
+import static org.smartdata.model.audit.UserActivityOperation.CREATE;
+import static org.smartdata.model.audit.UserActivityOperation.DELETE;
+import static org.smartdata.model.audit.UserActivityOperation.START;
+import static org.smartdata.model.audit.UserActivityOperation.STOP;
+import static org.smartdata.model.audit.UserActivityResult.FAILURE;
+import static org.smartdata.model.audit.UserActivityResult.SUCCESS;
 
 public class TestRuleLifecycleLogger extends SqliteTestDaoBase {
   private RuleManager ruleManager;
@@ -47,9 +54,8 @@ public class TestRuleLifecycleLogger extends SqliteTestDaoBase {
     serverContext.setServiceMode(ServiceMode.HDFS);
 
     auditService = new AuditService(metaStore.userActivityDao());
-    RuleLifecycleLogger lifecycleLogger = new RuleLifecycleLogger(auditService);
 
-    ruleManager = new RuleManager(serverContext, null, null, lifecycleLogger);
+    ruleManager = new RuleManager(serverContext, null, null, auditService);
     ruleManager.init();
     ruleManager.start();
   }
@@ -70,8 +76,8 @@ public class TestRuleLifecycleLogger extends SqliteTestDaoBase {
     Assert.assertEquals(1, ruleEvents.size());
 
     UserActivityEvent event = ruleEvents.get(0);
-    Assert.assertEquals(UserActivityEvent.Operation.CREATE, event.getOperation());
-    Assert.assertEquals(UserActivityResult.SUCCESS, event.getResult());
+    Assert.assertEquals(CREATE, event.getOperation());
+    Assert.assertEquals(SUCCESS, event.getResult());
   }
 
   @Test
@@ -86,8 +92,8 @@ public class TestRuleLifecycleLogger extends SqliteTestDaoBase {
     Assert.assertEquals(1, ruleEvents.size());
 
     UserActivityEvent event = ruleEvents.get(0);
-    Assert.assertEquals(UserActivityEvent.Operation.CREATE, event.getOperation());
-    Assert.assertEquals(UserActivityResult.FAILURE, event.getResult());
+    Assert.assertEquals(CREATE, event.getOperation());
+    Assert.assertEquals(FAILURE, event.getResult());
   }
 
   @Test
@@ -102,8 +108,8 @@ public class TestRuleLifecycleLogger extends SqliteTestDaoBase {
     Assert.assertEquals(1, ruleEvents.size());
 
     UserActivityEvent event = ruleEvents.get(0);
-    Assert.assertEquals(UserActivityEvent.Operation.START, event.getOperation());
-    Assert.assertEquals(UserActivityResult.FAILURE, event.getResult());
+    Assert.assertEquals(START, event.getOperation());
+    Assert.assertEquals(FAILURE, event.getResult());
   }
 
   @Test
@@ -117,8 +123,8 @@ public class TestRuleLifecycleLogger extends SqliteTestDaoBase {
     Assert.assertEquals(2, ruleEvents.size());
 
     UserActivityEvent event = ruleEvents.get(1);
-    Assert.assertEquals(UserActivityEvent.Operation.STOP, event.getOperation());
-    Assert.assertEquals(UserActivityResult.SUCCESS, event.getResult());
+    Assert.assertEquals(STOP, event.getOperation());
+    Assert.assertEquals(SUCCESS, event.getResult());
   }
 
   @Test
@@ -133,8 +139,8 @@ public class TestRuleLifecycleLogger extends SqliteTestDaoBase {
     Assert.assertEquals(1, ruleEvents.size());
 
     UserActivityEvent event = ruleEvents.get(0);
-    Assert.assertEquals(UserActivityEvent.Operation.STOP, event.getOperation());
-    Assert.assertEquals(UserActivityResult.FAILURE, event.getResult());
+    Assert.assertEquals(STOP, event.getOperation());
+    Assert.assertEquals(FAILURE, event.getResult());
   }
 
   @Test
@@ -148,8 +154,8 @@ public class TestRuleLifecycleLogger extends SqliteTestDaoBase {
     Assert.assertEquals(2, ruleEvents.size());
 
     UserActivityEvent event = ruleEvents.get(1);
-    Assert.assertEquals(UserActivityEvent.Operation.DELETE, event.getOperation());
-    Assert.assertEquals(UserActivityResult.SUCCESS, event.getResult());
+    Assert.assertEquals(DELETE, event.getOperation());
+    Assert.assertEquals(SUCCESS, event.getResult());
   }
 
   @Test
@@ -164,14 +170,14 @@ public class TestRuleLifecycleLogger extends SqliteTestDaoBase {
     Assert.assertEquals(1, ruleEvents.size());
 
     UserActivityEvent event = ruleEvents.get(0);
-    Assert.assertEquals(UserActivityEvent.Operation.DELETE, event.getOperation());
-    Assert.assertEquals(UserActivityResult.FAILURE, event.getResult());
+    Assert.assertEquals(DELETE, event.getOperation());
+    Assert.assertEquals(FAILURE, event.getResult());
   }
 
   private List<UserActivityEvent> findRuleEvents(long ruleId) {
     AuditSearchRequest searchRequest = AuditSearchRequest.builder()
         .objectIds(Collections.singletonList(ruleId))
-        .objectTypes(Collections.singletonList(UserActivityEvent.ObjectType.RULE))
+        .objectTypes(Collections.singletonList(RULE))
         .build();
 
     return auditService.search(searchRequest);

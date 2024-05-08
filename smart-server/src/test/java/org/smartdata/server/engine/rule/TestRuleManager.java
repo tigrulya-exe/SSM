@@ -23,16 +23,20 @@ import org.junit.Before;
 import org.junit.Test;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.metastore.TestDaoBase;
+import org.smartdata.metastore.model.SearchResult;
+import org.smartdata.metastore.queries.PageRequest;
 import org.smartdata.model.FileInfo;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
-import org.smartdata.model.UserActivityResult;
+import org.smartdata.model.audit.UserActivityEvent;
+import org.smartdata.model.request.AuditSearchRequest;
 import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.engine.ServerContext;
 import org.smartdata.server.engine.ServiceMode;
-import org.smartdata.server.engine.audit.UserRuleLifecycleListener;
+import org.smartdata.server.engine.audit.AuditService;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -48,7 +52,7 @@ public class TestRuleManager extends TestDaoBase {
     ServerContext serverContext = new ServerContext(smartConf, metaStore);
     serverContext.setServiceMode(ServiceMode.HDFS);
     ruleManager = new RuleManager(serverContext, null,
-        null, new NoOpRuleLifecycleListener());
+        null, new NoOpAuditService());
     ruleManager.init();
     ruleManager.start();
   }
@@ -364,26 +368,25 @@ public class TestRuleManager extends TestDaoBase {
     }
   }
 
-  private static class NoOpRuleLifecycleListener implements UserRuleLifecycleListener {
+  private static class NoOpAuditService extends AuditService {
 
-    @Override
-    public void onRuleAdded(long ruleId) {
+    public NoOpAuditService() {
+      super(null);
     }
 
     @Override
-    public void onRuleAddFailure(String ruleText) {
+    public void logEvent(UserActivityEvent event) {
     }
 
     @Override
-    public void onRuleStart(long ruleId, UserActivityResult result) {
+    public SearchResult<UserActivityEvent> search(
+        AuditSearchRequest searchRequest, PageRequest pageRequest) {
+      return SearchResult.emptyResult();
     }
 
     @Override
-    public void onRuleStop(long ruleId, UserActivityResult result) {
-    }
-
-    @Override
-    public void onRuleDelete(long ruleId, UserActivityResult result) {
+    public List<UserActivityEvent> search(AuditSearchRequest searchRequest) {
+      return Collections.emptyList();
     }
   }
 }

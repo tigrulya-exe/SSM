@@ -15,18 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.server.engine.audit;
+package org.smartdata.server.engine.audit.aspect;
 
-import org.smartdata.model.UserActivityResult;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface UserRuleLifecycleListener {
-  void onRuleAdded(long ruleId);
-
-  void onRuleAddFailure(String ruleText);
-
-  void onRuleStart(long ruleId, UserActivityResult result);
-
-  void onRuleStop(long ruleId, UserActivityResult result);
-
-  void onRuleDelete(long ruleId, UserActivityResult result);
+@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface AuditId {
 }

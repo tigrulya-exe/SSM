@@ -79,6 +79,7 @@
     <openapi.generator.version>6.6.0</openapi.generator.version>
     <commons.lang3.version>3.12.0</commons.lang3.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
+    <aspectj.version>1.9.22</aspectj.version>
   </properties>
 
   <profiles>
@@ -455,6 +456,12 @@
             <artifactId>slf4j-reload4j</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjrt</artifactId>
+        <version>${aspectj.version}</version>
       </dependency>
 
       <dependency>
