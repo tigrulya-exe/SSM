@@ -20,7 +20,7 @@ package org.smartdata.conf;
 import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smartdata.utils.PathUtil;
+import org.smartdata.utils.ConfigUtil;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -51,10 +51,7 @@ public class SmartConf extends Configuration {
   }
 
   public List<String> getCoverDirs() {
-    return getTrimmedStringCollection(SmartConfKeys.SMART_COVER_DIRS_KEY)
-        .stream()
-        .map(PathUtil::addPathSeparator)
-        .collect(Collectors.toList());
+    return ConfigUtil.getCoverDirs(this);
   }
 
   /**
