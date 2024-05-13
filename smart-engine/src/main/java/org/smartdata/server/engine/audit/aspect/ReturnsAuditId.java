@@ -17,12 +17,19 @@
  */
 package org.smartdata.server.engine.audit.aspect;
 
+import org.smartdata.server.engine.audit.Auditable;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.PARAMETER, ElementType.METHOD})
+/**
+ * Marker annotation for the methods of {@link Auditable} classes,
+ * returning ids of the objects for audit.
+ * The return type of such methods should be {@code long}.
+ */
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ReturnsAuditId {
 }

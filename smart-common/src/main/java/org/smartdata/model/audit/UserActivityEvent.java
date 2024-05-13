@@ -17,11 +17,18 @@
  */
 package org.smartdata.model.audit;
 
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
 import java.time.Instant;
-import java.util.Objects;
 
+@EqualsAndHashCode
+@ToString
+@Getter
+@Builder
 public class UserActivityEvent {
-
   private final Long id;
   private final String username;
   private final Instant timestamp;
@@ -48,144 +55,5 @@ public class UserActivityEvent {
     this.operation = operation;
     this.result = result;
     this.additionalInfo = additionalInfo;
-  }
-
-  public Long getId() {
-    return id;
-  }
-
-  public String getUsername() {
-    return username;
-  }
-
-  public Instant getTimestamp() {
-    return timestamp;
-  }
-
-  public Long getObjectId() {
-    return objectId;
-  }
-
-  public UserActivityObject getObjectType() {
-    return objectType;
-  }
-
-  public UserActivityOperation getOperation() {
-    return operation;
-  }
-
-  public UserActivityResult getResult() {
-    return result;
-  }
-
-  public String getAdditionalInfo() {
-    return additionalInfo;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    UserActivityEvent event = (UserActivityEvent) o;
-    return Objects.equals(id, event.id)
-        && Objects.equals(username, event.username)
-        && Objects.equals(timestamp, event.timestamp)
-        && Objects.equals(objectId, event.objectId)
-        && objectType == event.objectType
-        && operation == event.operation
-        && result == event.result
-        && Objects.equals(additionalInfo, event.additionalInfo);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, username, timestamp, objectId,
-        objectType, operation, result, additionalInfo);
-  }
-
-  @Override
-  public String toString() {
-    return "UserActivityEvent{"
-        + "id=" + id
-        + ", username='" + username + '\''
-        + ", timestamp=" + timestamp
-        + ", objectId=" + objectId
-        + ", objectType=" + objectType
-        + ", operation=" + operation
-        + ", result=" + result
-        + ", additionalInfo='" + additionalInfo + '\''
-        + '}';
-  }
-
-  public static Builder newBuilder() {
-    return new Builder();
-  }
-
-  public static class Builder {
-    private Long id;
-    private String userName;
-    private Instant timestamp;
-    private Long objectId;
-    private UserActivityObject objectType;
-    private UserActivityOperation operation;
-    private UserActivityResult result;
-    private String additionalInfo;
-
-    public Builder id(long id) {
-      this.id = id;
-      return this;
-    }
-
-    public Builder userName(String userName) {
-      this.userName = userName;
-      return this;
-    }
-
-    public Builder timestamp(Instant timestamp) {
-      this.timestamp = timestamp;
-      return this;
-    }
-
-    public Builder objectId(Long objectId) {
-      this.objectId = objectId;
-      return this;
-    }
-
-    public Builder objectType(UserActivityObject objectType) {
-      this.objectType = objectType;
-      return this;
-    }
-
-    public Builder operation(UserActivityOperation operation) {
-      this.operation = operation;
-      return this;
-    }
-
-    public Builder result(UserActivityResult result) {
-      this.result = result;
-      return this;
-    }
-
-    public Builder additionalInfo(String additionalInfo) {
-      this.additionalInfo = additionalInfo;
-      return this;
-    }
-
-    public UserActivityEvent build() {
-      return new UserActivityEvent(
-          id,
-          userName,
-          timestamp,
-          objectId,
-          objectType,
-          operation,
-          result,
-          additionalInfo
-      );
-    }
   }
 }
