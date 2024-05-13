@@ -293,7 +293,7 @@ paths:
       tags:
       - Cmdlets
     get:
-      operationId: submitCmdlet
+      operationId: getCmdlet
       parameters:
       - description: Id of the resource
         in: path

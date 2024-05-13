@@ -20,15 +20,26 @@ package org.smartdata.metastore.dao;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.CmdletState;
+import org.smartdata.model.TimeInterval;
+import org.smartdata.model.request.CmdletSearchRequest;
 import org.springframework.dao.EmptyResultDataAccessException;
 
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-public class TestCmdletDao extends TestDaoBase {
+import static org.junit.Assert.assertEquals;
+
+public class TestCmdletDao
+    extends TestSearchableDao<CmdletSearchRequest, CmdletInfo, Long> {
+
+  private static final long FIRST_CMDLET_ID = 0;
+  private static final long SECOND_CMDLET_ID = 1;
+  private static final long THIRD_CMDLET_ID = 2;
 
   private CmdletDao cmdletDao;
 
@@ -38,44 +49,27 @@ public class TestCmdletDao extends TestDaoBase {
   }
 
   @Test
-  public void testInsertGetCmdlet() throws Exception {
+  public void testInsertGetCmdlet() {
     CmdletInfo cmdlet1 = new CmdletInfo(0, 1,
         CmdletState.EXECUTING, "test", 123123333L, 232444444L);
     CmdletInfo cmdlet2 = new CmdletInfo(1, 78,
         CmdletState.PAUSED, "tt", 123178333L, 232444994L);
-    cmdletDao.insert(new CmdletInfo[]{cmdlet1, cmdlet2});
-    List<CmdletInfo> cmdlets = cmdletDao.getAll();
-    Assert.assertTrue(cmdlets.size() == 2);
+    cmdletDao.insert(cmdlet1, cmdlet2);
+    List<CmdletInfo> cmdlets = cmdletDao.search(CmdletSearchRequest.noFilters());
+    assertEquals(2, cmdlets.size());
   }
 
   @Test
-  public void testGetAPageOfAction() {
+  public void testUpdateCmdlet() {
     CmdletInfo cmdlet1 = new CmdletInfo(0, 1,
         CmdletState.EXECUTING, "test", 123123333L, 232444444L);
     CmdletInfo cmdlet2 = new CmdletInfo(1, 78,
         CmdletState.PAUSED, "tt", 123178333L, 232444994L);
-    cmdletDao.insert(new CmdletInfo[]{cmdlet1, cmdlet2});
-
-    List<String> order = new ArrayList<>();
-    order.add("cid");
-    List<Boolean> desc = new ArrayList<>();
-    desc.add(false);
-
-    Assert.assertTrue(cmdletDao.getAPageOfCmdlet(1, 1,
-        order, desc).get(0).equals(cmdlet2));
-  }
-
-  @Test
-  public void testUpdateCmdlet() throws Exception {
-    CmdletInfo cmdlet1 = new CmdletInfo(0, 1,
-        CmdletState.EXECUTING, "test", 123123333L, 232444444L);
-    CmdletInfo cmdlet2 = new CmdletInfo(1, 78,
-        CmdletState.PAUSED, "tt", 123178333L, 232444994L);
-    cmdletDao.insert(new CmdletInfo[]{cmdlet1, cmdlet2});
+    cmdletDao.insert(cmdlet1, cmdlet2);
     cmdlet1.setState(CmdletState.DONE);
     cmdletDao.update(cmdlet1);
     CmdletInfo dbcmdlet1 = cmdletDao.getById(cmdlet1.getCid());
-    Assert.assertTrue(dbcmdlet1.equals(cmdlet1));
+    assertEquals(dbcmdlet1, cmdlet1);
     try {
       cmdletDao.getById(2000L);
     } catch (EmptyResultDataAccessException e) {
@@ -84,45 +78,30 @@ public class TestCmdletDao extends TestDaoBase {
   }
 
   @Test
-  public void testGetByCondition() throws Exception {
-    CmdletInfo command1 = new CmdletInfo(0, 1,
-        CmdletState.EXECUTING, "test", 123123333L, 232444444L);
-    CmdletInfo command2 = new CmdletInfo(1, 78,
-        CmdletState.PAUSED, "tt", 123178333L, 232444994L);
-    cmdletDao.insert(new CmdletInfo[]{command1, command2});
-    List<CmdletInfo> commandInfos = cmdletDao
-        .getByCondition(null, null, null);
-    Assert.assertTrue(commandInfos.size() == 2);
-    commandInfos = cmdletDao
-        .getByCondition(null, null, CmdletState.PAUSED);
-    Assert.assertTrue(commandInfos.size() == 1);
-  }
-
-  @Test
-  public void testDeleteACmdlet() throws Exception {
+  public void testDeleteACmdlet() {
     CmdletInfo cmdlet1 = new CmdletInfo(0, 1,
         CmdletState.EXECUTING, "test", 123123333L, 232444444L);
     CmdletInfo cmdlet2 = new CmdletInfo(1, 78,
         CmdletState.PAUSED, "tt", 123178333L, 232444994L);
-    cmdletDao.insert(new CmdletInfo[]{cmdlet1, cmdlet2});
+    cmdletDao.insert(cmdlet1, cmdlet2);
     cmdletDao.delete(1);
-    List<CmdletInfo> cmdlets = cmdletDao.getAll();
-    Assert.assertTrue(cmdlets.size() == 1);
+    List<CmdletInfo> cmdlets = cmdletDao.search(CmdletSearchRequest.noFilters());
+    assertEquals(1, cmdlets.size());
   }
 
   @Test
-  public void testMaxId() throws Exception {
+  public void testMaxId() {
     CmdletInfo cmdlet1 = new CmdletInfo(0, 1,
         CmdletState.EXECUTING, "test", 123123333L, 232444444L);
     CmdletInfo cmdlet2 = new CmdletInfo(1, 78,
         CmdletState.PAUSED, "tt", 123178333L, 232444994L);
-    Assert.assertTrue(cmdletDao.getMaxId() == 0);
-    cmdletDao.insert(new CmdletInfo[]{cmdlet1, cmdlet2});
-    Assert.assertTrue(cmdletDao.getMaxId() == 2);
+    assertEquals(0, cmdletDao.getMaxId());
+    cmdletDao.insert(cmdlet1, cmdlet2);
+    assertEquals(2, cmdletDao.getMaxId());
   }
 
   @Test
-  public void testgetByRid() throws Exception {
+  public void testGetByRid() {
     CmdletInfo cmdlet1 = new CmdletInfo(0, 1,
         CmdletState.EXECUTING, "test", 123123333L, 232444444L);
     CmdletInfo cmdlet2 = new CmdletInfo(1, 1,
@@ -135,17 +114,200 @@ public class TestCmdletDao extends TestDaoBase {
         CmdletState.EXECUTING, "test", 123123333L, 232444444L);
     CmdletInfo cmdlet6 = new CmdletInfo(5, 1,
         CmdletState.PAUSED, "tt", 123178333L, 232444994L);
-    cmdletDao.insert(new CmdletInfo[]{cmdlet1, cmdlet2, cmdlet3, cmdlet4, cmdlet5, cmdlet6});
-    List<CmdletInfo> cmdlets = cmdletDao.getByRid(1, 1, 2);
+    cmdletDao.insert(cmdlet1, cmdlet2, cmdlet3, cmdlet4, cmdlet5, cmdlet6);
+    List<CmdletInfo> cmdlets = cmdletDao.getByRuleId(1, 1, 2);
     List<String> order = new ArrayList<>();
     order.add("cid");
     List<Boolean> desc = new ArrayList<>();
     desc.add(false);
-    Assert.assertTrue(cmdlets.size() == 2);
-    cmdlets = cmdletDao.getByRid(1, 1, 2, order, desc);
-    Assert.assertTrue(cmdlets.size() == 2);
-    Assert.assertTrue(cmdlets.get(0).equals(cmdlet2));
-    Assert.assertTrue(cmdletDao.getNumByRid(1) == 6);
+    assertEquals(2, cmdlets.size());
+    cmdlets = cmdletDao.getByRuleId(1, 1, 2, order, desc);
+    assertEquals(2, cmdlets.size());
+    assertEquals(cmdlets.get(0), cmdlet2);
+    assertEquals(6, cmdletDao.getNumByRuleId(1));
   }
 
+  @Test
+  public void testSearchAllCmdlets() {
+    insertCmdletsForSearch();
+
+    testSearch(CmdletSearchRequest.noFilters(),
+        FIRST_CMDLET_ID, SECOND_CMDLET_ID, THIRD_CMDLET_ID);
+  }
+
+  @Test
+  public void testSearchById() {
+    insertCmdletsForSearch();
+
+    CmdletSearchRequest searchRequest = CmdletSearchRequest.builder()
+        .id(FIRST_CMDLET_ID)
+        .id(SECOND_CMDLET_ID)
+        .build();
+    testSearch(searchRequest,
+        FIRST_CMDLET_ID, SECOND_CMDLET_ID);
+
+    searchRequest = CmdletSearchRequest
+        .builder()
+        .id(THIRD_CMDLET_ID)
+        .id(707L)
+        .build();
+    testSearch(searchRequest, THIRD_CMDLET_ID);
+
+    searchRequest = CmdletSearchRequest.builder().id(777L).build();
+    testSearch(searchRequest);
+  }
+
+  @Test
+  public void testSearchByCmdletText() {
+    insertCmdletsForSearch();
+
+    CmdletSearchRequest searchRequest =
+        CmdletSearchRequest.builder().textRepresentationLike("action").build();
+    testSearch(searchRequest, FIRST_CMDLET_ID, THIRD_CMDLET_ID);
+
+    searchRequest =
+        CmdletSearchRequest.builder().textRepresentationLike("writ").build();
+    testSearch(searchRequest, SECOND_CMDLET_ID);
+
+    searchRequest =
+        CmdletSearchRequest.builder().textRepresentationLike("unknown").build();
+    testSearch(searchRequest);
+  }
+
+  @Test
+  public void testSearchBySubmissionTime() {
+    insertCmdletsForSearch();
+
+    CmdletSearchRequest searchRequest = CmdletSearchRequest.builder()
+        .submissionTime(new TimeInterval(Instant.ofEpochMilli(1), Instant.now()))
+        .build();
+    testSearch(searchRequest, FIRST_CMDLET_ID, SECOND_CMDLET_ID, THIRD_CMDLET_ID);
+
+    searchRequest = CmdletSearchRequest.builder()
+        .submissionTime(
+            new TimeInterval(Instant.ofEpochMilli(2), Instant.ofEpochMilli(9)))
+        .build();
+    testSearch(searchRequest, SECOND_CMDLET_ID);
+
+    searchRequest = CmdletSearchRequest.builder()
+        .submissionTime(new TimeInterval(Instant.now(), Instant.now().plusSeconds(1)))
+        .build();
+    testSearch(searchRequest);
+  }
+
+  @Test
+  public void testSearchByRuleId() {
+    insertCmdletsForSearch();
+
+    CmdletSearchRequest searchRequest = CmdletSearchRequest.builder()
+        .ruleId(1L)
+        .ruleId(2L)
+        .build();
+    testSearch(searchRequest,
+        FIRST_CMDLET_ID, SECOND_CMDLET_ID, THIRD_CMDLET_ID);
+
+    searchRequest = CmdletSearchRequest.builder()
+        .ruleId(1L)
+        .ruleId(999L)
+        .build();
+    testSearch(searchRequest, FIRST_CMDLET_ID, THIRD_CMDLET_ID);
+
+    searchRequest = CmdletSearchRequest.builder().ruleId(777L).build();
+    testSearch(searchRequest);
+  }
+
+  @Test
+  public void testSearchByState() {
+    insertCmdletsForSearch();
+
+    CmdletSearchRequest searchRequest = CmdletSearchRequest.builder()
+            .state(CmdletState.DISABLED)
+            .state(CmdletState.PAUSED)
+            .state(CmdletState.EXECUTING)
+            .build();
+
+    testSearch(searchRequest,
+        FIRST_CMDLET_ID, SECOND_CMDLET_ID, THIRD_CMDLET_ID);
+
+    searchRequest = CmdletSearchRequest.builder()
+        .state(CmdletState.EXECUTING)
+        .state(CmdletState.CANCELLED)
+        .build();
+    testSearch(searchRequest, SECOND_CMDLET_ID);
+
+    searchRequest =  CmdletSearchRequest.builder()
+        .state(CmdletState.DONE)
+        .build();
+    testSearch(searchRequest);
+  }
+
+  @Test
+  public void testSearchByStateChangedTime() {
+    insertCmdletsForSearch();
+
+    CmdletSearchRequest searchRequest = CmdletSearchRequest.builder()
+        .stateChangedTime(new TimeInterval(Instant.ofEpochMilli(10), Instant.now()))
+        .build();
+    testSearch(searchRequest, FIRST_CMDLET_ID, SECOND_CMDLET_ID, THIRD_CMDLET_ID);
+
+    searchRequest = CmdletSearchRequest.builder()
+        .stateChangedTime(
+            new TimeInterval(Instant.ofEpochMilli(11), Instant.ofEpochMilli(12)))
+        .build();
+    testSearch(searchRequest, THIRD_CMDLET_ID);
+
+    searchRequest = CmdletSearchRequest.builder()
+        .stateChangedTime(new TimeInterval(Instant.now(), Instant.now().plusSeconds(1)))
+        .build();
+    testSearch(searchRequest);
+  }
+
+  @Override
+  protected Searchable<CmdletSearchRequest, CmdletInfo> searchable() {
+    return cmdletDao;
+  }
+
+  @Override
+  protected Long getIdentifier(CmdletInfo cmdletInfo) {
+    return cmdletInfo.getCid();
+  }
+
+  @Override
+  protected String defaultSortColumn() {
+    return "cid";
+  }
+
+  private void insertCmdletsForSearch() {
+    CmdletInfo cmdlet1 = CmdletInfo.newBuilder()
+        .setId(FIRST_CMDLET_ID)
+        .setRuleId(1)
+        .setActionIds(Arrays.asList(1L, 2L, 3L))
+        .setState(CmdletState.DISABLED)
+        .setParameters("action -key val1")
+        .setGenerateTime(1L)
+        .setStateChangedTime(10L)
+        .build();
+
+    CmdletInfo cmdlet2 = CmdletInfo.newBuilder()
+        .setId(SECOND_CMDLET_ID)
+        .setRuleId(2)
+        .setActionIds(Collections.singletonList(4L))
+        .setState(CmdletState.EXECUTING)
+        .setParameters("write -file test.txt")
+        .setGenerateTime(2L)
+        .setStateChangedTime(14L)
+        .build();
+
+    CmdletInfo cmdlet3 = CmdletInfo.newBuilder()
+        .setId(THIRD_CMDLET_ID)
+        .setRuleId(1)
+        .setActionIds(Collections.singletonList(5L))
+        .setState(CmdletState.DISABLED)
+        .setParameters("action -key another_val")
+        .setGenerateTime(10L)
+        .setStateChangedTime(11L)
+        .build();
+
+    cmdletDao.insert(cmdlet1, cmdlet2, cmdlet3);
+  }
 }

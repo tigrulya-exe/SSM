@@ -17,41 +17,16 @@
  */
 package org.smartdata.model;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
 import java.time.Instant;
 
-@Getter
-@ToString
-@EqualsAndHashCode
+@Data
+@Builder
 @RequiredArgsConstructor
 public class TimeInterval {
   private final Instant from;
   private final Instant to;
-
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  public static class Builder {
-    private Instant from;
-    private Instant to;
-
-    public Builder fromMillis(long fromMillis) {
-      this.from = Instant.ofEpochMilli(fromMillis);
-      return this;
-    }
-
-    public Builder toMillis(long toMillis) {
-      this.to = Instant.ofEpochMilli(toMillis);
-      return this;
-    }
-
-    public TimeInterval build() {
-      return new TimeInterval(from, to);
-    }
-  }
 }

@@ -19,13 +19,19 @@ package org.smartdata.server.engine.cmdlet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.smartdata.exception.NotFoundException;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
+import org.smartdata.metastore.dao.CmdletDao;
+import org.smartdata.metastore.dao.Searchable;
+import org.smartdata.metastore.model.SearchResult;
+import org.smartdata.metastore.queries.PageRequest;
 import org.smartdata.model.ActionInfo;
 import org.smartdata.model.CmdletDescriptor;
 import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.CmdletState;
 import org.smartdata.model.LaunchAction;
+import org.smartdata.model.request.CmdletSearchRequest;
 import org.smartdata.protocol.message.CmdletStatus;
 import org.smartdata.protocol.message.LaunchCmdlet;
 import org.smartdata.server.engine.ActiveServerInfo;
@@ -43,16 +49,18 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-public class CmdletInfoHandler {
+public class CmdletInfoHandler implements Searchable<CmdletSearchRequest, CmdletInfo> {
   private static final Logger LOG = LoggerFactory.getLogger(CmdletInfoHandler.class);
 
   private final MetaStore metaStore;
+  private final CmdletDao cmdletDao;
   private final ActionInfoHandler actionInfoHandler;
   private final InMemoryRegistry inMemoryRegistry;
   private AtomicLong maxCmdletId;
 
   public CmdletInfoHandler(CmdletManagerContext context, ActionInfoHandler actionInfoHandler) {
     this.metaStore = context.getMetaStore();
+    this.cmdletDao = metaStore.cmdletDao();
     this.inMemoryRegistry = context.getInMemoryRegistry();
     this.actionInfoHandler = actionInfoHandler;
   }
@@ -107,6 +115,11 @@ public class CmdletInfoHandler {
     }
   }
 
+  public CmdletInfo getCmdletInfoOrThrow(long cid) throws IOException {
+    return Optional.ofNullable(getCmdletInfo(cid))
+        .orElseThrow(() -> NotFoundException.forCmdlet(cid));
+  }
+
   public CmdletGroup listCmdletsInfo(
       long rid, long pageIndex, long numPerPage,
       List<String> orderBy, List<Boolean> isDesc) throws MetaStoreException {
@@ -130,18 +143,22 @@ public class CmdletInfoHandler {
     return inMemoryRegistry.getUnfinishedCmdlet(cmdletId);
   }
 
-  public List<CmdletInfo> listCmdletsInfo(long rid, CmdletState cmdletState) throws IOException {
+  public List<CmdletInfo> listCmdletsInfo(long ruleId, CmdletState cmdletState) throws IOException {
     Map<Long, CmdletInfo> result = new HashMap<>();
     try {
-      String ridCondition = rid == -1 ? null : String.format("= %d", rid);
-      List<CmdletInfo> cmdlets = metaStore.getCmdlets(null, ridCondition, cmdletState);
+      CmdletSearchRequest searchRequest = CmdletSearchRequest.builder()
+          .ruleId(ruleId)
+          .state(cmdletState)
+          .build();
+
+      List<CmdletInfo> cmdlets = cmdletDao.search(searchRequest);
       cmdlets.forEach(cmdlet -> result.put(cmdlet.getCid(), cmdlet));
-    } catch (MetaStoreException e) {
-      LOG.error("RuleId -> [ {} ], List CmdletInfo from DB error", rid, e);
+    } catch (Exception e) {
+      LOG.error("RuleId -> [ {} ], List CmdletInfo from DB error", ruleId, e);
       throw new IOException(e);
     }
     for (CmdletInfo info : inMemoryRegistry.getUnfinishedCmdlets().values()) {
-      if (info.getRid() == rid && info.getState().equals(cmdletState)) {
+      if (info.getRid() == ruleId && info.getState().equals(cmdletState)) {
         result.put(info.getCid(), info);
       }
     }
@@ -166,10 +183,11 @@ public class CmdletInfoHandler {
     }
   }
 
-  public void deleteCmdlet(long cmdletId) throws IOException {
+  public boolean deleteCmdlet(long cmdletId) throws IOException {
     try {
-      metaStore.deleteCmdlet(cmdletId);
+      boolean cmdletDeleted = metaStore.deleteCmdlet(cmdletId);
       metaStore.deleteCmdletActions(cmdletId);
+      return cmdletDeleted;
     } catch (MetaStoreException e) {
       LOG.error("CmdletId -> [ {} ], delete from DB error", cmdletId, e);
       throw new IOException(e);
@@ -217,6 +235,17 @@ public class CmdletInfoHandler {
 
   public CmdletInfo updateCmdletStatus(long cmdletId, CmdletStatus status) {
     return inMemoryRegistry.updateCmdlet(cmdletId, cmdlet -> updateCmdletStatus(cmdlet, status));
+  }
+
+  @Override
+  public SearchResult<CmdletInfo> search(
+      CmdletSearchRequest searchRequest, PageRequest pageRequest) {
+    return cmdletDao.search(searchRequest, pageRequest);
+  }
+
+  @Override
+  public List<CmdletInfo> search(CmdletSearchRequest searchRequest) {
+    return cmdletDao.search(searchRequest);
   }
 
   private void updateCmdletStatus(CmdletInfo cmdletInfo, CmdletStatus status) {

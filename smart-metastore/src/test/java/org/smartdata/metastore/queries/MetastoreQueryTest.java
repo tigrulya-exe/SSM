@@ -34,6 +34,8 @@ import static org.junit.Assert.assertEquals;
 import static org.smartdata.metastore.queries.MetastoreQuery.select;
 import static org.smartdata.metastore.queries.MetastoreQuery.selectAll;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.and;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.between;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.betweenInclusive;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.equal;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.greaterThan;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.greaterThanEqual;
@@ -67,11 +69,13 @@ public class MetastoreQueryTest {
                         greaterThan("gtColumn", 1),
                         lessThan("ltColumn", 2L),
                         greaterThanEqual("gteColumn", 3.0),
-                        lessThanEqual("lteColumn", 4.0F)
+                        lessThanEqual("lteColumn", 4.0F),
+                        betweenInclusive("betweenInclusiveColumn", 2, 3)
                     ),
                     equal("anotherColumn", "str_val"),
                     in("listMember", Arrays.asList(1, 2)),
-                    like("strColumn", "pattern")
+                    like("strColumn", "pattern"),
+                    between("betweenColumn", 0, 1)
                 )
             ).withPagination(pageRequest);
 
@@ -83,6 +87,10 @@ public class MetastoreQueryTest {
         .put("anotherColumn", "str_val")
         .put("listMember", Arrays.asList(1, 2))
         .put("strColumn", "%pattern%")
+        .put("betweenInclusiveColumn", 2)
+        .put("$_betweenInclusiveColumn1", 3)
+        .put("betweenColumn", 0)
+        .put("$_betweenColumn1", 1)
         .build();
 
     assertQuery("allOperators", query, expectedParams);

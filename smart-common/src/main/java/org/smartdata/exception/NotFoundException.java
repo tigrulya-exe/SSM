@@ -15,15 +15,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.exception;
 
-import org.smartdata.metastore.model.SearchResult;
-import org.smartdata.metastore.queries.PageRequest;
+import java.io.IOException;
 
-import java.util.List;
+public class NotFoundException extends IOException {
+  public NotFoundException() {
+    super();
+  }
 
-public interface SearchableDao<RequestT, EntityT> {
-  SearchResult<EntityT> search(RequestT searchRequest, PageRequest pageRequest);
+  public NotFoundException(String message) {
+    super(message);
+  }
 
-  List<EntityT> search(RequestT searchRequest);
+  public NotFoundException(String message, Exception cause) {
+    super(message, cause);
+  }
+
+  public NotFoundException(Exception cause) {
+    super(cause);
+  }
+
+  public static NotFoundException forCmdlet(long id) {
+    return forIdentifiableEntity("Cmdlet", id);
+  }
+
+  public static <T> NotFoundException forIdentifiableEntity(String name, T id) {
+    return new NotFoundException(name + " with following id not found: " + id);
+  }
 }

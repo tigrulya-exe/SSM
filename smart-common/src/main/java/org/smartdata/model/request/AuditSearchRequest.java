@@ -18,10 +18,7 @@
 package org.smartdata.model.request;
 
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.Data;
 import org.smartdata.model.TimeInterval;
 import org.smartdata.model.audit.UserActivityObject;
 import org.smartdata.model.audit.UserActivityOperation;
@@ -29,11 +26,8 @@ import org.smartdata.model.audit.UserActivityResult;
 
 import java.util.List;
 
-@Getter
-@ToString
-@EqualsAndHashCode
+@Data
 @Builder
-@RequiredArgsConstructor
 public class AuditSearchRequest {
   private final String userLike;
   private final TimeInterval timestampBetween;

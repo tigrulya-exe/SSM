@@ -15,22 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model.audit;
+package org.smartdata.metastore.dao;
 
-import lombok.Builder;
-import lombok.Data;
+import org.smartdata.metastore.model.SearchResult;
+import org.smartdata.metastore.queries.PageRequest;
 
-import java.time.Instant;
+import java.util.List;
 
-@Data
-@Builder
-public class UserActivityEvent {
-  private final Long id;
-  private final String username;
-  private final Instant timestamp;
-  private final Long objectId;
-  private final UserActivityObject objectType;
-  private final UserActivityOperation operation;
-  private final UserActivityResult result;
-  private final String additionalInfo;
+public interface Searchable<RequestT, EntityT> {
+  SearchResult<EntityT> search(RequestT searchRequest, PageRequest pageRequest);
+
+  List<EntityT> search(RequestT searchRequest);
 }

@@ -30,15 +30,14 @@ public enum CmdletState {
   DISPATCHED(3),
   EXECUTING(4), // Still running
   PAUSED(5),
-  DRYRUN(6),   // TODO Don't Run, but keep status
   CANCELLED(7),
   DISABLED(8), // Disable this Cmdlet, kill all executing actions
   FAILED(9),   // Running cmdlet failed
   DONE(10); // Execution successful
 
-  private int value;
+  private final int value;
 
-  private CmdletState(int value) {
+  CmdletState(int value) {
     this.value = value;
   }
 

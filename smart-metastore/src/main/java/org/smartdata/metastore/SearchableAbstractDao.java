@@ -18,7 +18,7 @@
 package org.smartdata.metastore;
 
 import org.smartdata.metastore.dao.AbstractDao;
-import org.smartdata.metastore.dao.SearchableDao;
+import org.smartdata.metastore.dao.Searchable;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.MetastoreQuery;
 import org.smartdata.metastore.queries.MetastoreQueryExecutor;
@@ -30,10 +30,11 @@ import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class SearchableAbstractDao<RequestT, EntityT>
     extends AbstractDao
-    implements SearchableDao<RequestT, EntityT> {
+    implements Searchable<RequestT, EntityT> {
   protected final MetastoreQueryExecutor queryExecutor;
 
   public SearchableAbstractDao(
@@ -54,6 +55,16 @@ public abstract class SearchableAbstractDao<RequestT, EntityT>
   @Override
   public List<EntityT> search(RequestT searchRequest) {
     return queryExecutor.execute(searchQuery(searchRequest), this::mapRow);
+  }
+
+  public Optional<EntityT> searchSingle(RequestT searchRequest) {
+    return Optional.ofNullable(search(searchRequest))
+        .filter(entities -> !entities.isEmpty())
+        .map(entities -> entities.get(0));
+  }
+
+  public long count(RequestT searchRequest) {
+    return queryExecutor.executeCount(searchQuery(searchRequest));
   }
 
   protected abstract MetastoreQuery searchQuery(RequestT searchRequest);

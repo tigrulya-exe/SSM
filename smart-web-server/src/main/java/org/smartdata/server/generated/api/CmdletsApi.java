@@ -123,6 +123,38 @@ public interface CmdletsApi {
 
 
     /**
+     * GET /api/v2/cmdlets/{id} : Get cmdlet by id
+     *
+     * @param id Id of the resource (required)
+     * @return OK (status code 200)
+     *         or Cmdlet with specified id not found (status code 404)
+     */
+    @Operation(
+        operationId = "getCmdlet",
+        summary = "Get cmdlet by id",
+        tags = { "Cmdlets" },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "OK", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = CmdletDto.class))
+            }),
+            @ApiResponse(responseCode = "404", description = "Cmdlet with specified id not found")
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.GET,
+        value = "/api/v2/cmdlets/{id}",
+        produces = { "application/json" }
+    )
+    @ResponseStatus(HttpStatus.OK)
+    
+    default CmdletDto getCmdlet(
+        @Parameter(name = "id", description = "Id of the resource", required = true, in = ParameterIn.PATH) @PathVariable("id") Long id
+    ) throws Exception {
+        return getDelegate().getCmdlet(id);
+    }
+
+
+    /**
      * GET /api/v2/cmdlets : List all cmdlets
      *
      * @param pageRequest  (optional)
@@ -192,38 +224,6 @@ public interface CmdletsApi {
         @Parameter(name = "id", description = "Id of the resource", required = true, in = ParameterIn.PATH) @PathVariable("id") Long id
     ) throws Exception {
         getDelegate().stopCmdlet(id);
-    }
-
-
-    /**
-     * GET /api/v2/cmdlets/{id} : Get cmdlet by id
-     *
-     * @param id Id of the resource (required)
-     * @return OK (status code 200)
-     *         or Cmdlet with specified id not found (status code 404)
-     */
-    @Operation(
-        operationId = "submitCmdlet",
-        summary = "Get cmdlet by id",
-        tags = { "Cmdlets" },
-        responses = {
-            @ApiResponse(responseCode = "200", description = "OK", content = {
-                @Content(mediaType = "application/json", schema = @Schema(implementation = CmdletDto.class))
-            }),
-            @ApiResponse(responseCode = "404", description = "Cmdlet with specified id not found")
-        }
-    )
-    @RequestMapping(
-        method = RequestMethod.GET,
-        value = "/api/v2/cmdlets/{id}",
-        produces = { "application/json" }
-    )
-    @ResponseStatus(HttpStatus.OK)
-    
-    default CmdletDto submitCmdlet(
-        @Parameter(name = "id", description = "Id of the resource", required = true, in = ParameterIn.PATH) @PathVariable("id") Long id
-    ) throws Exception {
-        return getDelegate().submitCmdlet(id);
     }
 
 }

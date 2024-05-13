@@ -22,6 +22,7 @@ import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.junit.Assert;
 import org.junit.Test;
+import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.CmdletState;
 import org.smartdata.server.MiniSmartClusterHarness;
 import org.smartdata.server.engine.CmdletManager;
@@ -40,13 +41,14 @@ public class TestMoverScheduler extends MiniSmartClusterHarness {
     fs.setStoragePolicy(filePath, "ALL_SSD");
 
     CmdletManager cmdletManager = ssm.getCmdletManager();
-    long cmdId = cmdletManager.submitCmdlet("allssd -file /testfile");
+    CmdletInfo cmdletInfo = cmdletManager.submitCmdlet("allssd -file /testfile");
 
     while (true) {
       Thread.sleep(1000);
       CmdletState state = cmdletManager
           .getCmdletInfoHandler()
-          .getCmdletInfo(cmdId).getState();
+          .getCmdletInfo(cmdletInfo.getCid())
+          .getState();
       if (state == CmdletState.DONE) {
         return;
       } else if (state == CmdletState.FAILED) {

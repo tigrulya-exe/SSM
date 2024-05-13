@@ -20,6 +20,7 @@ package org.smartdata.server.error;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.smartdata.exception.NotFoundException;
 import org.smartdata.metastore.MetaStoreException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
@@ -59,6 +60,17 @@ public class SmartExceptionHandler extends ResponseEntityExceptionHandler {
         request,
         "VALIDATION_ERROR",
         HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(value = {NotFoundException.class})
+  protected ResponseEntity<Object> handleNotFoundException(
+      Exception exception, WebRequest request) {
+    return handleExceptionInternal(
+        exception,
+        null,
+        new HttpHeaders(),
+        HttpStatus.NOT_FOUND,
+        request);
   }
 
   @Override

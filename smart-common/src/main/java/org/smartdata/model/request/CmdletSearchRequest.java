@@ -15,22 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model.audit;
+package org.smartdata.model.request;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Singular;
+import org.smartdata.model.CmdletState;
+import org.smartdata.model.TimeInterval;
 
-import java.time.Instant;
+import java.util.List;
 
 @Data
 @Builder
-public class UserActivityEvent {
-  private final Long id;
-  private final String username;
-  private final Instant timestamp;
-  private final Long objectId;
-  private final UserActivityObject objectType;
-  private final UserActivityOperation operation;
-  private final UserActivityResult result;
-  private final String additionalInfo;
+public class CmdletSearchRequest {
+  @Singular
+  private final List<Long> ids;
+  private final String textRepresentationLike;
+  private final TimeInterval submissionTime;
+  @Singular
+  private final List<Long> ruleIds;
+  @Singular
+  private final List<CmdletState> states;
+  private final TimeInterval stateChangedTime;
+
+  public static CmdletSearchRequest noFilters() {
+    return builder().build();
+  }
 }

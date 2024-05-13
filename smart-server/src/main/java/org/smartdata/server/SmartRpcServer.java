@@ -259,7 +259,8 @@ public class SmartRpcServer implements SmartServerProtocols {
   @Override
   public long submitCmdlet(String cmd) throws IOException {
     checkIfActive();
-    return ssm.getCmdletManager().submitCmdlet(cmd);
+    CmdletInfo cmdletInfo = ssm.getCmdletManager().submitCmdlet(cmd);
+    return cmdletInfo.getCid();
   }
 
   @Override

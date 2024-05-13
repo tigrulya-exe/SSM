@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -100,7 +101,7 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
     dfs.mkdirs(dir3);
 
     Assert.assertFalse(ActionRegistry.supportedActions().isEmpty());
-    long cmdId = cmdletManager.submitCmdlet(
+    CmdletInfo cmdletInfo = cmdletManager.submitCmdlet(
         "allssd -file /testMoveFile/file1 ; cache -file /testCacheFile ; "
             + "write -file /test -length 1024");
     Thread.sleep(1200);
@@ -108,7 +109,7 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
     Assert.assertFalse(actionInfos.isEmpty());
 
     while (true) {
-      CmdletState state = cmdletInfoHandler.getCmdletInfo(cmdId).getState();
+      CmdletState state = cmdletInfoHandler.getCmdletInfo(cmdletInfo.getCid()).getState();
       if (state == CmdletState.DONE) {
         break;
       }
@@ -116,7 +117,7 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
       System.out.printf("Cmdlet still running.\n");
       Thread.sleep(1000);
     }
-    List<CmdletInfo> com = ssm.getMetaStore().getCmdlets(null, null, CmdletState.DONE);
+    List<CmdletInfo> com = ssm.getMetaStore().getCmdlets(CmdletState.DONE);
     Assert.assertFalse(com.isEmpty());
     List<ActionInfo> result = ssm.getMetaStore().getActions(null, null);
     Assert.assertEquals(3, result.size());
@@ -153,8 +154,7 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
             cmdletDescriptor.getCmdletString(),
             123178333L,
             232444994L);
-    CmdletInfo[] cmdlets = {cmdletInfo};
-    metaStore.insertCmdlets(cmdlets);
+    metaStore.upsertCmdlets(Collections.singletonList(cmdletInfo));
 
     Assert.assertEquals(1, cmdletInfoHandler.listCmdletsInfo(1, null).size());
     Assert.assertNotNull(cmdletInfoHandler.getCmdletInfo(0));
@@ -184,7 +184,7 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
     cmdletManager.start();
     cmdletManager.submitCmdlet("echo");
     Thread.sleep(500);
-    verify(metaStore, times(1)).insertCmdlets(any(CmdletInfo[].class));
+    verify(metaStore, times(1)).upsertCmdlets(anyListOf(CmdletInfo.class));
     verify(metaStore, times(1)).insertActions(any(ActionInfo[].class));
     Thread.sleep(500);
 
@@ -220,7 +220,7 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
         new CmdletStatusUpdate(cmdletId, System.currentTimeMillis(), CmdletState.DONE));
     Assert.assertEquals(info.getState(), CmdletState.DONE);
     Thread.sleep(500);
-    verify(metaStore, times(2)).insertCmdlets(any(CmdletInfo[].class));
+    verify(metaStore, times(2)).upsertCmdlets(anyListOf(CmdletInfo.class));
     verify(metaStore, times(2)).insertActions(any(ActionInfo[].class));
 
     cmdletManager.stop();

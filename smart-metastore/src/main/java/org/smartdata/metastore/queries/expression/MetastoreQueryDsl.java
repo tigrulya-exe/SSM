@@ -65,6 +65,11 @@ public class MetastoreQueryDsl {
     if (CollectionUtils.isEmpty(values)) {
       return EMPTY_EXPRESSION;
     }
+
+    if (values.size() == 1) {
+      return equal(column, values.get(0));
+    }
+
     return binaryOpWithPlaceholder("IN", column, values);
   }
 
@@ -78,6 +83,20 @@ public class MetastoreQueryDsl {
         .collect(Collectors.toList());
 
     return in(column, strValues);
+  }
+
+  public static <T> MetastoreQueryExpression between(String column, T from, T to) {
+    return and(
+        greaterThan(column, from),
+        lessThan(column, to)
+    );
+  }
+
+  public static <T> MetastoreQueryExpression betweenInclusive(String column, T from, T to) {
+    return and(
+        greaterThanEqual(column, from),
+        lessThanEqual(column, to)
+    );
   }
 
   public static <T> MetastoreQueryExpression like(String column, T value) {

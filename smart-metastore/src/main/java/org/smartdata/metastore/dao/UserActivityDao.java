@@ -21,6 +21,6 @@ import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
 
 public interface UserActivityDao
-    extends SearchableDao<AuditSearchRequest, UserActivityEvent> {
+    extends Searchable<AuditSearchRequest, UserActivityEvent> {
   void insert(UserActivityEvent event);
 }
