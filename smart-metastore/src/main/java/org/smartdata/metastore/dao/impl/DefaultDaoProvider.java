@@ -66,7 +66,7 @@ public class DefaultDaoProvider implements DaoProvider {
 
   @Override
   public CmdletDao cmdletDao() {
-    return new DefaultCmdletDao(dataSource);
+    return new DefaultCmdletDao(dataSource, transactionManager);
   }
 
   @Override

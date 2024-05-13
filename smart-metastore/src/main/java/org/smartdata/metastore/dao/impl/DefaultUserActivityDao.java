@@ -37,15 +37,14 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
 
 import static org.smartdata.metastore.queries.MetastoreQuery.selectAll;
-import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.greaterThanEqual;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.betweenInclusive;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.in;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.inStrings;
-import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.lessThanEqual;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.like;
+import static org.smartdata.utils.DateTimeUtils.intervalEndToEpoch;
+import static org.smartdata.utils.DateTimeUtils.intervalStartToEpoch;
 
 public class DefaultUserActivityDao
     extends SearchableAbstractDao<AuditSearchRequest, UserActivityEvent, AuditSortField>
@@ -122,13 +121,5 @@ public class DefaultUserActivityDao
     properties.put("result", event.getResult());
     properties.put("additional_info", event.getAdditionalInfo());
     return properties;
-  }
-
-  private Long getIntervalTimestampEpoch(
-      AuditSearchRequest searchRequest, Function<TimeInterval, Instant> instantGetter) {
-    return Optional.ofNullable(searchRequest.getTimestampBetween())
-        .map(instantGetter)
-        .map(Instant::toEpochMilli)
-        .orElse(null);
   }
 }

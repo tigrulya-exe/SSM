@@ -23,6 +23,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.CmdletState;
 import org.smartdata.server.MiniSmartClusterHarness;
 import org.smartdata.server.engine.CmdletManager;
@@ -67,14 +68,14 @@ public class TestSmallFileScheduler extends MiniSmartClusterHarness {
 
     Thread.sleep(2000);
     CmdletManager cmdletManager = ssm.getCmdletManager();
-    long cmdId = cmdletManager.submitCmdlet("compact -file "
+    CmdletInfo cmdletInfo = cmdletManager.submitCmdlet("compact -file "
         + "['/test/small_files/file_0','/test/small_files/file_1'] "
         + "-containerFile /test/small_files/container_file_2");
 
     while (true) {
       Thread.sleep(3000);
       CmdletState state = cmdletManager.getCmdletInfoHandler()
-          .getCmdletInfo(cmdId)
+          .getCmdletInfo(cmdletInfo.getCid())
           .getState();
       if (state == CmdletState.DONE) {
         long containerFileLen = dfsClient.getFileInfo(

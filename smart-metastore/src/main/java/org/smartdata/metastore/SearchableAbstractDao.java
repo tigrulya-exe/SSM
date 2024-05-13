@@ -15,11 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.smartdata.metastore;
 
 import org.smartdata.metastore.dao.AbstractDao;
-import org.smartdata.metastore.dao.SearchableDao;
+import org.smartdata.metastore.dao.Searchable;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.MetastoreQuery;
 import org.smartdata.metastore.queries.MetastoreQueryExecutor;
@@ -39,7 +38,7 @@ import java.util.stream.Stream;
 
 public abstract class SearchableAbstractDao<RequestT, EntityT, ColumnT extends SortField>
     extends AbstractDao
-    implements SearchableDao<RequestT, EntityT, ColumnT> {
+    implements Searchable<RequestT, EntityT, ColumnT> {
   protected final MetastoreQueryExecutor queryExecutor;
 
   public SearchableAbstractDao(
@@ -61,6 +60,16 @@ public abstract class SearchableAbstractDao<RequestT, EntityT, ColumnT extends S
   @Override
   public List<EntityT> search(RequestT searchRequest) {
     return queryExecutor.execute(searchQuery(searchRequest), this::mapRow);
+  }
+
+  public Optional<EntityT> searchSingle(RequestT searchRequest) {
+    return Optional.ofNullable(search(searchRequest))
+        .filter(entities -> !entities.isEmpty())
+        .map(entities -> entities.get(0));
+  }
+
+  public long count(RequestT searchRequest) {
+    return queryExecutor.executeCount(searchQuery(searchRequest));
   }
 
   private PageRequest<String> toRawPageRequest(PageRequest<ColumnT> pageRequest) {

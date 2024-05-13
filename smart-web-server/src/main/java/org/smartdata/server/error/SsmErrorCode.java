@@ -15,22 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model.audit;
+package org.smartdata.server.error;
 
-import lombok.Builder;
-import lombok.Data;
-
-import java.time.Instant;
-
-@Data
-@Builder
-public class UserActivityEvent {
-  private final Long id;
-  private final String username;
-  private final Instant timestamp;
-  private final Long objectId;
-  private final UserActivityObject objectType;
-  private final UserActivityOperation operation;
-  private final UserActivityResult result;
-  private final String additionalInfo;
+public enum SsmErrorCode {
+  VALIDATION_ERROR,
+  SSM_INTERNAL_ERROR
 }

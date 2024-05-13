@@ -23,8 +23,10 @@ import javax.sql.DataSource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PostgresUpsertSupport {
   private final NamedParameterJdbcTemplate namedJdbcTemplate;
@@ -40,17 +42,32 @@ public class PostgresUpsertSupport {
     namedJdbcTemplate.update(sqlTemplate, namedParameters);
   }
 
+  public <T> int[] batchUpsert(
+      Collection<T> entities,
+      EntityToMapConverter<T> entityMapper,
+      String primaryKeyField) {
+    return batchUpsert(entities.stream(), entityMapper, primaryKeyField);
+  }
+
+  public <T> int[] batchUpsert(
+      T[] entities,
+      EntityToMapConverter<T> entityMapper,
+      String primaryKeyField) {
+    return batchUpsert(Arrays.stream(entities), entityMapper, primaryKeyField);
+  }
+
   @SuppressWarnings("unchecked")
-  public <T> int[] batchUpsert(T[] entities,
-                               EntityToMapConverter<T> entityMapper,
-                               String primaryKeyField) {
-    Map<String, Object>[] namedParameters = Arrays.stream(entities)
+  private  <T> int[] batchUpsert(
+      Stream<T> entitiesStream,
+      EntityToMapConverter<T> entityMapper,
+      String primaryKeyField) {
+    Map<String, Object>[] namedParameters = entitiesStream
         .map(entityMapper::toMap)
         .toArray(Map[]::new);
     return batchUpsert(namedParameters, primaryKeyField);
   }
 
-  public int[] batchUpsert(Map<String, Object>[] namedParameters, String primaryKeyField) {
+  private int[] batchUpsert(Map<String, Object>[] namedParameters, String primaryKeyField) {
     if (namedParameters.length == 0) {
       return new int[0];
     }

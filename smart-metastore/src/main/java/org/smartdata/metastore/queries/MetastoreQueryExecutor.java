@@ -50,11 +50,17 @@ public class MetastoreQueryExecutor {
         query.toSqlQuery(), query.getParameters(), rowMapper);
   }
 
+  public long executeCount(MetastoreQuery query) {
+    Long rowsCount = namedJdbcTemplate.queryForObject(
+        query.toSqlCountQuery(), query.getParameters(), Long.class);
+    return Optional.ofNullable(rowsCount).orElse(0L);
+  }
+
   private <T> SearchResult<T> executePagedTransaction(
       MetastoreQuery query, RowMapper<T> rowMapper) {
-    List<T> items = execute(query, rowMapper);
-    Long total = namedJdbcTemplate.queryForObject(
-        query.toSqlCountQuery(), query.getParameters(), Long.class);
-    return SearchResult.of(items, Optional.ofNullable(total).orElse(0L));
+    return SearchResult.of(
+        execute(query, rowMapper),
+        executeCount(query)
+    );
   }
 }

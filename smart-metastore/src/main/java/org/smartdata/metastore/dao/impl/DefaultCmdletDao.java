@@ -17,13 +17,17 @@
  */
 package org.smartdata.metastore.dao.impl;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.smartdata.metastore.dao.AbstractDao;
+import org.smartdata.metastore.SearchableAbstractDao;
 import org.smartdata.metastore.dao.CmdletDao;
+import org.smartdata.metastore.queries.MetastoreQuery;
 import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.CmdletState;
+import org.smartdata.model.request.CmdletSearchRequest;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
@@ -31,103 +35,69 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-public class DefaultCmdletDao extends AbstractDao implements CmdletDao {
+import static org.smartdata.metastore.queries.MetastoreQuery.selectAll;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.betweenInclusive;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.in;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.like;
+import static org.smartdata.utils.DateTimeUtils.intervalEndToEpoch;
+import static org.smartdata.utils.DateTimeUtils.intervalStartToEpoch;
+
+public class DefaultCmdletDao
+    extends SearchableAbstractDao<CmdletSearchRequest, CmdletInfo>
+    implements CmdletDao {
   private static final String TABLE_NAME = "cmdlet";
   private final String terminatedStates;
 
-  public DefaultCmdletDao(DataSource dataSource) {
-    super(dataSource, TABLE_NAME);
+  public DefaultCmdletDao(
+      DataSource dataSource, PlatformTransactionManager transactionManager) {
+    super(dataSource, transactionManager, TABLE_NAME);
     terminatedStates = getTerminatedStatesString();
   }
 
   @Override
-  public List<CmdletInfo> getAll() {
-    return jdbcTemplate.query("SELECT * FROM " + TABLE_NAME, new CmdletRowMapper());
+  public CmdletInfo getById(long id) {
+    CmdletSearchRequest searchRequest =
+        CmdletSearchRequest.builder().id(id).build();
+    return searchSingle(searchRequest)
+        .orElseThrow(() -> new EmptyResultDataAccessException(
+            "Cmdlet not found for id" + id, 1));
   }
 
   @Override
-  public List<CmdletInfo> getAPageOfCmdlet(long start, long offset,
-                                           List<String> orderBy, List<Boolean> isDesc) {
-    boolean ifHasAid = false;
-    StringBuilder sql =
-        new StringBuilder("SELECT * FROM " + TABLE_NAME + " ORDER BY ");
-    for (int i = 0; i < orderBy.size(); i++) {
-      if (orderBy.get(i).equals("cid")) {
-        ifHasAid = true;
-      }
-      sql.append(orderBy.get(i));
-      if (isDesc.size() > i) {
-        if (isDesc.get(i)) {
-          sql.append(" desc ");
-        }
-        sql.append(",");
-      }
-    }
-    if (!ifHasAid) {
-      sql.append("cid,");
-    }
-    //delete the last char
-    sql = new StringBuilder(sql.substring(0, sql.length() - 1));
-    //add limit
-    sql.append(" LIMIT ").append(offset).append(" OFFSET ").append(start).append(";");
-    return jdbcTemplate.query(sql.toString(), new CmdletRowMapper());
+  public List<CmdletInfo> getByRuleId(long ruleId) {
+    CmdletSearchRequest searchRequest =
+        CmdletSearchRequest.builder().ruleId(ruleId).build();
+    return search(searchRequest);
   }
 
   @Override
-  public List<CmdletInfo> getAPageOfCmdlet(long start, long offset) {
-    String sql = "SELECT * FROM " + TABLE_NAME + " LIMIT " + start + " OFFSET " + offset + ";";
-    return jdbcTemplate.query(sql, new CmdletRowMapper());
-  }
-
-  @Override
-  public List<CmdletInfo> getByIds(List<Long> aids) {
-    return jdbcTemplate.query(
-        "SELECT * FROM " + TABLE_NAME + " WHERE aid IN (?)",
-        new Object[]{StringUtils.join(aids, ",")},
-        new CmdletRowMapper());
-  }
-
-  @Override
-  public CmdletInfo getById(long cid) {
-    return jdbcTemplate.queryForObject(
-        "SELECT * FROM " + TABLE_NAME + " WHERE cid = ?",
-        new Object[]{cid},
-        new CmdletRowMapper());
-  }
-
-  @Override
-  public List<CmdletInfo> getByRid(long rid) {
-    return jdbcTemplate.query(
-        "SELECT * FROM " + TABLE_NAME + " WHERE rid = ?",
-        new Object[]{rid},
-        new CmdletRowMapper());
-  }
-
-  @Override
-  public long getNumByRid(long rid) {
+  public long getNumByRuleId(long ruleId) {
     return jdbcTemplate.queryForObject(
         "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE rid = ?",
-        new Object[]{rid},
+        new Object[]{ruleId},
         Long.class);
   }
 
   @Override
-  public List<CmdletInfo> getByRid(long rid, long start, long offset) {
-    String sql = "SELECT * FROM " + TABLE_NAME + " WHERE rid = " + rid
+  public List<CmdletInfo> getByRuleId(long ruleId, long start, long offset) {
+    String sql = "SELECT * FROM " + TABLE_NAME + " WHERE rid = " + ruleId
         + " LIMIT " + offset + " OFFSET " + start + ";";
-    return jdbcTemplate.query(sql, new CmdletRowMapper());
+    return jdbcTemplate.query(sql, this::mapRow);
   }
 
   @Override
-  public List<CmdletInfo> getByRid(long rid, long start, long offset,
-                                   List<String> orderBy, List<Boolean> isDesc) {
+  public List<CmdletInfo> getByRuleId(long ruleId, long start, long offset,
+                                      List<String> orderBy, List<Boolean> isDesc) {
     boolean ifHasAid = false;
     StringBuilder sql =
-        new StringBuilder("SELECT * FROM " + TABLE_NAME + " WHERE rid = " + rid
+        new StringBuilder("SELECT * FROM " + TABLE_NAME + " WHERE rid = " + ruleId
             + " ORDER BY ");
     for (int i = 0; i < orderBy.size(); i++) {
       if (orderBy.get(i).equals("cid")) {
@@ -149,15 +119,13 @@ public class DefaultCmdletDao extends AbstractDao implements CmdletDao {
     sql = new StringBuilder(sql.substring(0, sql.length() - 1));
     //add limit
     sql.append(" LIMIT ").append(offset).append(" OFFSET ").append(start).append(";");
-    return jdbcTemplate.query(sql.toString(), new CmdletRowMapper());
+    return jdbcTemplate.query(sql.toString(), this::mapRow);
   }
 
   @Override
   public List<CmdletInfo> getByState(CmdletState state) {
-    return jdbcTemplate.query(
-        "SELECT * FROM " + TABLE_NAME + " WHERE state = ?",
-        new Object[]{state.getValue()},
-        new CmdletRowMapper());
+    CmdletSearchRequest searchRequest = CmdletSearchRequest.builder().state(state).build();
+    return search(searchRequest);
   }
 
   @Override
@@ -168,40 +136,23 @@ public class DefaultCmdletDao extends AbstractDao implements CmdletDao {
   }
 
   @Override
-  public List<CmdletInfo> getByCondition(
-      String cidCondition, String ridCondition, CmdletState state) {
-    String sqlPrefix = "SELECT * FROM " + TABLE_NAME + " WHERE ";
-    String sqlCid = (cidCondition == null) ? "" : "AND cid " + cidCondition;
-    String sqlRid = (ridCondition == null) ? "" : "AND rid " + ridCondition;
-    String sqlState = (state == null) ? "" : "AND state = " + state.getValue();
-    String sqlFinal = "";
-    if (cidCondition != null || ridCondition != null || state != null) {
-      sqlFinal = sqlPrefix + sqlCid + sqlRid + sqlState;
-      sqlFinal = sqlFinal.replaceFirst("AND ", "");
-    } else {
-      sqlFinal = sqlPrefix.replaceFirst("WHERE ", "");
-    }
-    return jdbcTemplate.query(sqlFinal, new CmdletRowMapper());
+  public boolean delete(long id) {
+    final String sql = "DELETE FROM " + TABLE_NAME + " WHERE cid = ?";
+    return jdbcTemplate.update(sql, id) != 0;
   }
 
   @Override
-  public void delete(long cid) {
+  public void batchDelete(final List<Long> ids) {
     final String sql = "DELETE FROM " + TABLE_NAME + " WHERE cid = ?";
-    jdbcTemplate.update(sql, cid);
-  }
-
-  @Override
-  public int[] batchDelete(final List<Long> cids) {
-    final String sql = "DELETE FROM " + TABLE_NAME + " WHERE cid = ?";
-    return jdbcTemplate.batchUpdate(
+    jdbcTemplate.batchUpdate(
         sql,
         new BatchPreparedStatementSetter() {
           public void setValues(PreparedStatement ps, int i) throws SQLException {
-            ps.setLong(1, cids.get(i));
+            ps.setLong(1, ids.get(i));
           }
 
           public int getBatchSize() {
-            return cids.size();
+            return ids.size();
           }
         });
   }
@@ -242,23 +193,17 @@ public class DefaultCmdletDao extends AbstractDao implements CmdletDao {
   }
 
   @Override
-  public void deleteAll() {
-    final String sql = "DELETE FROM " + TABLE_NAME;
-    jdbcTemplate.execute(sql);
-  }
-
-  @Override
   public void insert(CmdletInfo cmdletInfo) {
     insert(cmdletInfo, this::toMap);
   }
 
   @Override
-  public void insert(CmdletInfo[] cmdletInfos) {
+  public void insert(CmdletInfo... cmdletInfos) {
     insert(cmdletInfos, this::toMap);
   }
 
   @Override
-  public int[] replace(final CmdletInfo[] cmdletInfos) {
+  public void upsert(final List<CmdletInfo> cmdletInfos) {
     String sql = "REPLACE INTO " + TABLE_NAME
         + "(cid, "
         + "rid, "
@@ -269,39 +214,40 @@ public class DefaultCmdletDao extends AbstractDao implements CmdletDao {
         + "state_changed_time)"
         + " VALUES(?, ?, ?, ?, ?, ?, ?)";
 
-    return jdbcTemplate.batchUpdate(
+    jdbcTemplate.batchUpdate(
         sql,
         new BatchPreparedStatementSetter() {
           public void setValues(PreparedStatement ps, int i) throws SQLException {
-            ps.setLong(1, cmdletInfos[i].getCid());
-            ps.setLong(2, cmdletInfos[i].getRid());
-            ps.setString(3, StringUtils.join(cmdletInfos[i].getAidsString(), ","));
-            ps.setLong(4, cmdletInfos[i].getState().getValue());
-            ps.setString(5, cmdletInfos[i].getParameters());
-            ps.setLong(6, cmdletInfos[i].getGenerateTime());
-            ps.setLong(7, cmdletInfos[i].getStateChangedTime());
+            CmdletInfo cmdletInfo = cmdletInfos.get(i);
+            ps.setLong(1, cmdletInfo.getCid());
+            ps.setLong(2, cmdletInfo.getRid());
+            ps.setString(3, StringUtils.join(cmdletInfo.getAidsString(), ","));
+            ps.setLong(4, cmdletInfo.getState().getValue());
+            ps.setString(5, cmdletInfo.getParameters());
+            ps.setLong(6, cmdletInfo.getGenerateTime());
+            ps.setLong(7, cmdletInfo.getStateChangedTime());
           }
 
           public int getBatchSize() {
-            return cmdletInfos.length;
+            return cmdletInfos.size();
           }
         });
   }
 
   @Override
-  public int update(long cid, int state) {
+  public int update(long id, int state) {
     String sql =
         "UPDATE " + TABLE_NAME + " SET state = ?, state_changed_time = ? WHERE cid = ?";
-    return jdbcTemplate.update(sql, state, System.currentTimeMillis(), cid);
+    return jdbcTemplate.update(sql, state, System.currentTimeMillis(), id);
   }
 
   @Override
-  public int update(long cid, String parameters, int state) {
+  public int update(long id, String parameters, int state) {
     String sql =
         "UPDATE "
             + TABLE_NAME
             + " SET parameters = ?, state = ?, state_changed_time = ? WHERE cid = ?";
-    return jdbcTemplate.update(sql, parameters, state, System.currentTimeMillis(), cid);
+    return jdbcTemplate.update(sql, parameters, state, System.currentTimeMillis(), id);
   }
 
   @Override
@@ -359,32 +305,53 @@ public class DefaultCmdletDao extends AbstractDao implements CmdletDao {
     return finishedState.substring(0, finishedState.length() - 1);
   }
 
-  private static class CmdletRowMapper implements RowMapper<CmdletInfo> {
+  @Override
+  protected MetastoreQuery searchQuery(CmdletSearchRequest searchRequest) {
+    Long submissionFrom =
+        intervalStartToEpoch(searchRequest.getSubmissionTime());
+    Long submissionTo =
+        intervalEndToEpoch(searchRequest.getSubmissionTime());
 
-    @Override
-    public CmdletInfo mapRow(ResultSet resultSet, int i) throws SQLException {
-      CmdletInfo.Builder builder = CmdletInfo.newBuilder();
-      builder.setId(resultSet.getLong("cid"));
-      builder.setRuleId(resultSet.getLong("rid"));
-      builder.setActionIds(convertStringListToLong(resultSet.getString("aids").split(",")));
-      builder.setState(CmdletState.fromValue((int) resultSet.getByte("state")));
-      builder.setParameters(resultSet.getString("parameters"));
-      builder.setGenerateTime(resultSet.getLong("generate_time"));
-      builder.setStateChangedTime(resultSet.getLong("state_changed_time"));
-      return builder.build();
-    }
+    Long stateChangeFrom =
+        intervalStartToEpoch(searchRequest.getStateChangedTime());
+    Long stateChangeTo =
+        intervalEndToEpoch(searchRequest.getStateChangedTime());
 
-    private List<Long> convertStringListToLong(String[] strings) {
-      List<Long> ret = new ArrayList<>();
-      try {
-        for (String s : strings) {
-          ret.add(Long.valueOf(s));
-        }
-      } catch (NumberFormatException e) {
-        // Return empty
-        ret.clear();
-      }
-      return ret;
-    }
+    List<Integer> stateValues = CollectionUtils.emptyIfNull(searchRequest.getStates())
+        .stream()
+        .map(CmdletState::getValue)
+        .collect(Collectors.toList());
+
+    return selectAll()
+        .from(TABLE_NAME)
+        .where(
+            in("cid", searchRequest.getIds()),
+            like("parameters", searchRequest.getTextRepresentationLike()),
+            betweenInclusive("generate_time", submissionFrom, submissionTo),
+            in("rid", searchRequest.getRuleIds()),
+            in("state", stateValues),
+            betweenInclusive("state_changed_time", stateChangeFrom, stateChangeTo)
+        );
+  }
+
+  @Override
+  protected CmdletInfo mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+    return CmdletInfo.newBuilder()
+        .setId(resultSet.getLong("cid"))
+        .setRuleId(resultSet.getLong("rid"))
+        .setActionIds(parseRawIds(resultSet.getString("aids")))
+        .setState(CmdletState.fromValue(resultSet.getByte("state")))
+        .setParameters(resultSet.getString("parameters"))
+        .setGenerateTime(resultSet.getLong("generate_time"))
+        .setStateChangedTime(resultSet.getLong("state_changed_time"))
+        .build();
+  }
+
+  private List<Long> parseRawIds(String rawIds) {
+    return StringUtils.isBlank(rawIds)
+        ? Collections.emptyList()
+        : Arrays.stream(rawIds.split(","))
+        .map(Long::valueOf)
+        .collect(Collectors.toList());
   }
 }

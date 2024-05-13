@@ -26,4 +26,10 @@ public interface SmartMapper {
         .map(Instant::toEpochMilli)
         .orElse(null);
   }
+
+  default Instant fromEpoch(Long epoch) {
+    return Optional.ofNullable(epoch)
+        .map(Instant::ofEpochMilli)
+        .orElse(null);
+  }
 }

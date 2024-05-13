@@ -20,6 +20,7 @@ package org.smartdata.server.rest;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.smartdata.model.CmdletInfo;
 import org.smartdata.server.SmartEngine;
 import org.smartdata.server.engine.CmdletManager;
 import org.smartdata.server.rest.message.JsonResponse;
@@ -81,8 +82,9 @@ public class CmdletRestApi {
   @Path("/submit")
   public Response submitCmdlet(String args) {
     try {
+      CmdletInfo cmdletInfo = cmdletManager.submitCmdlet(args);
       return new JsonResponse<>(Response.Status.CREATED,
-          cmdletManager.submitCmdlet(args)).build();
+          cmdletInfo.getCid()).build();
     } catch (Exception e) {
       logger.error("Exception in ActionRestApi while adding cmdlet: " + e.getLocalizedMessage());
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
