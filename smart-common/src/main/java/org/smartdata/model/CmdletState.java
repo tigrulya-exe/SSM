@@ -17,12 +17,17 @@
  */
 package org.smartdata.model;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 import java.util.Arrays;
 import java.util.List;
 
 /**
  * The possible state that a cmdlet can be in.
  */
+@RequiredArgsConstructor
+@Getter
 public enum CmdletState {
   NOTINITED(0),
   PENDING(1), // Ready for schedule
@@ -30,17 +35,12 @@ public enum CmdletState {
   DISPATCHED(3),
   EXECUTING(4), // Still running
   PAUSED(5),
-  DRYRUN(6),   // TODO Don't Run, but keep status
   CANCELLED(7),
   DISABLED(8), // Disable this Cmdlet, kill all executing actions
   FAILED(9),   // Running cmdlet failed
   DONE(10); // Execution successful
 
-  private int value;
-
-  private CmdletState(int value) {
-    this.value = value;
-  }
+  private final int value;
 
   public static CmdletState fromValue(int value) {
     for (CmdletState r : values()) {
@@ -49,10 +49,6 @@ public enum CmdletState {
       }
     }
     return null;
-  }
-
-  public int getValue() {
-    return value;
   }
 
   public static boolean isTerminalState(CmdletState state) {

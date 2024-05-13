@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hdfs.protocol.CachePoolEntry;
 import org.junit.Test;
 import org.smartdata.hdfs.scheduler.CacheScheduler;
+import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.CmdletState;
 import org.smartdata.model.action.ActionScheduler;
 import org.smartdata.server.MiniSmartClusterHarness;
@@ -44,10 +45,10 @@ public class TestCacheScheduler extends MiniSmartClusterHarness {
     out.close();
 
     CmdletManager cmdletManager = ssm.getCmdletManager();
-    long cid = cmdletManager.submitCmdlet("cache -file " + filePath);
+    CmdletInfo cmdletInfo = cmdletManager.submitCmdlet("cache -file " + filePath);
     while (true) {
       if (cmdletManager.getCmdletInfoHandler()
-          .getCmdletInfo(cid)
+          .getCmdletInfo(cmdletInfo.getCid())
           .getState()
           .equals(CmdletState.DONE)) {
         break;
@@ -68,10 +69,10 @@ public class TestCacheScheduler extends MiniSmartClusterHarness {
     // There is no file locked after the action is finished.
     assertTrue(fileLock.isEmpty());
 
-    long cid1 = cmdletManager.submitCmdlet("uncache -file " + filePath);
+    CmdletInfo uncacheCmdlet = cmdletManager.submitCmdlet("uncache -file " + filePath);
     while (true) {
       if (cmdletManager.getCmdletInfoHandler()
-          .getCmdletInfo(cid1)
+          .getCmdletInfo(uncacheCmdlet.getCid())
           .getState()
           .equals(CmdletState.DONE)) {
         break;

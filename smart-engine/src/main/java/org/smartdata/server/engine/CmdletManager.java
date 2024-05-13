@@ -29,6 +29,7 @@ import org.smartdata.action.ActionException;
 import org.smartdata.cmdlet.parser.CmdletParser;
 import org.smartdata.cmdlet.parser.ParsedCmdlet;
 import org.smartdata.conf.SmartConfKeys;
+import org.smartdata.exception.NotFoundException;
 import org.smartdata.exception.QueueFullException;
 import org.smartdata.hdfs.scheduler.ActionSchedulerService;
 import org.smartdata.metastore.MetaStore;
@@ -329,9 +330,15 @@ public class CmdletManager extends AbstractService
     dispatcher.registerExecutorService(executorService);
   }
 
+  public CmdletInfo submitCmdlet(String cmdlet) throws IOException, ParseException {
+    long cmdletId = submitCmdletInternal(cmdlet);
+    // it will fetch cmdlet info from memory cache
+    return cmdletInfoHandler.getCmdletInfo(cmdletId);
+  }
+
   @ReturnsAuditId
   @Audit(objectType = CMDLET, operation = START)
-  public long submitCmdlet(String cmdlet) throws IOException {
+  private long submitCmdletInternal(String cmdlet) throws IOException, ParseException {
     LOG.debug("Received Cmdlet -> [ {} ]", cmdlet);
     try {
       if (StringUtils.isBlank(cmdlet)) {
@@ -339,9 +346,11 @@ public class CmdletManager extends AbstractService
       }
       CmdletDescriptor cmdletDescriptor = buildCmdletDescriptor(cmdlet);
       return submitCmdlet(cmdletDescriptor);
-    } catch (ParseException e) {
-      LOG.error("Wrong format for cmdlet '{}'", cmdlet, e);
-      throw new IOException(e);
+    } catch (ParseException parseException) {
+      LOG.error("Wrong format for cmdlet '{}'", cmdlet, parseException);
+      throw new ParseException(
+          "Error parsing cmdlet: " + cmdlet + ". " + parseException.getMessage(),
+          parseException.getErrorOffset());
     }
   }
 
@@ -576,29 +585,35 @@ public class CmdletManager extends AbstractService
   // cmdlets disabling by user and disabling by SSM itself
   @Audit(objectType = CMDLET, operation = STOP)
   public void disableCmdlet(@AuditId long cmdletId) throws IOException {
-    disableCmdletInternal(cmdletId);
+    boolean cmdletFound = disableCmdletInternal(cmdletId);
+    if (!cmdletFound) {
+      throw NotFoundException.forCmdlet(cmdletId);
+    }
   }
 
-  private void disableCmdletInternal(long cmdletId) throws IOException {
+  private boolean disableCmdletInternal(long cmdletId) throws IOException {
     CmdletInfo info = cmdletInfoHandler.getUnfinishedCmdlet(cmdletId);
     if (info == null) {
-      return;
+      return false;
     }
     onCmdletStatusUpdate(
         new CmdletStatus(info.getCid(), System.currentTimeMillis(), CmdletState.DISABLED));
 
+    boolean cmdletDeleted = false;
+
     synchronized (pendingCmdlets) {
-      pendingCmdlets.remove(cmdletId);
+      cmdletDeleted |= pendingCmdlets.remove(cmdletId);
     }
 
-    schedulingCmdlets.remove(cmdletId);
+    cmdletDeleted |= schedulingCmdlets.remove(cmdletId);
 
-    scheduledCmdlets.remove(cmdletId);
+    cmdletDeleted |= scheduledCmdlets.remove(cmdletId);
 
     // Wait status update from status reporter, so need to update to MetaStore
     if (runningCmdlets.contains(cmdletId)) {
       dispatcher.stopCmdlet(cmdletId);
     }
+    return cmdletDeleted;
   }
 
   /**
@@ -622,8 +637,12 @@ public class CmdletManager extends AbstractService
 
   @Audit(objectType = CMDLET, operation = DELETE)
   public void deleteCmdlet(@AuditId long cmdletId) throws IOException {
-    disableCmdletInternal(cmdletId);
-    cmdletInfoHandler.deleteCmdlet(cmdletId);
+    boolean cmdletFound = disableCmdletInternal(cmdletId);
+    // we don't fail if it's not found in the cache, we anyway need to check the metastore
+    cmdletFound |= cmdletInfoHandler.deleteCmdlet(cmdletId);
+    if (!cmdletFound) {
+      throw NotFoundException.forCmdlet(cmdletId);
+    }
   }
 
   private void disableCmdlets(List<Long> cmdletIds) throws IOException {

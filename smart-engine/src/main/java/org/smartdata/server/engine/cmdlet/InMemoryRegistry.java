@@ -184,8 +184,7 @@ public class InMemoryRegistry implements SmartService {
       try {
         metaStore.insertActions(
             actionInfos.toArray(new ActionInfo[0]));
-        metaStore.insertCmdlets(
-            cmdletInfos.toArray(new CmdletInfo[0]));
+        metaStore.upsertCmdlets(cmdletInfos);
       } catch (MetaStoreException e) {
         LOG.error("CmdletIds -> [ {} ], submit to DB error", cmdletInfos, e);
       }

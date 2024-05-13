@@ -69,6 +69,19 @@ public interface CmdletsApiDelegate {
     }
 
     /**
+     * GET /api/v2/cmdlets/{id} : Get cmdlet by id
+     *
+     * @param id Id of the resource (required)
+     * @return OK (status code 200)
+     *         or Cmdlet with specified id not found (status code 404)
+     * @see CmdletsApi#getCmdlet
+     */
+    default CmdletDto getCmdlet(Long id) throws Exception {
+        throw new IllegalArgumentException("Not implemented");
+
+    }
+
+    /**
      * GET /api/v2/cmdlets : List all cmdlets
      *
      * @param pageRequest  (optional)
@@ -102,19 +115,6 @@ public interface CmdletsApiDelegate {
      * @see CmdletsApi#stopCmdlet
      */
     default void stopCmdlet(Long id) throws Exception {
-        throw new IllegalArgumentException("Not implemented");
-
-    }
-
-    /**
-     * GET /api/v2/cmdlets/{id} : Get cmdlet by id
-     *
-     * @param id Id of the resource (required)
-     * @return OK (status code 200)
-     *         or Cmdlet with specified id not found (status code 404)
-     * @see CmdletsApi#submitCmdlet
-     */
-    default CmdletDto submitCmdlet(Long id) throws Exception {
         throw new IllegalArgumentException("Not implemented");
 
     }

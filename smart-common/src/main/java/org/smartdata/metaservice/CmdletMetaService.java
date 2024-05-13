@@ -20,14 +20,9 @@ package org.smartdata.metaservice;
 import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.CmdletState;
 
-import java.util.List;
-
 public interface CmdletMetaService extends MetaService {
 
   CmdletInfo getCmdletById(long cid) throws MetaServiceException;
-
-  List<CmdletInfo> getCmdlets(String cidCondition,
-      String ridCondition, CmdletState state) throws MetaServiceException;
 
   boolean updateCmdlet(long cid, CmdletState state)
       throws MetaServiceException;
@@ -35,6 +30,6 @@ public interface CmdletMetaService extends MetaService {
   boolean updateCmdlet(long cid, String parameters, CmdletState state)
       throws MetaServiceException;
 
-  void deleteCmdlet(long cid) throws MetaServiceException;
+  boolean deleteCmdlet(long cid) throws MetaServiceException;
 
 }
