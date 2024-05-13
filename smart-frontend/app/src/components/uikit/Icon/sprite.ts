@@ -7,6 +7,10 @@ export const allowIconsNames = [
   'eye-closed',
   'logout',
   'search',
+  'status-error',
+  'status-info',
+  'status-ok',
+  'status-warning',
   'user',
 ] as const;
 
