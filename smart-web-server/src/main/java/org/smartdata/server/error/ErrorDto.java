@@ -17,6 +17,11 @@
  */
 package org.smartdata.server.error;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public class ErrorDto<T> {
   private final String code;
   private final String message;
@@ -26,21 +31,4 @@ public class ErrorDto<T> {
     this(code, message, null);
   }
 
-  public ErrorDto(String code, String message, T errorBody) {
-    this.code = code;
-    this.message = message;
-    this.errorBody = errorBody;
-  }
-
-  public String getCode() {
-    return code;
-  }
-
-  public String getMessage() {
-    return message;
-  }
-
-  public T getErrorBody() {
-    return errorBody;
-  }
 }

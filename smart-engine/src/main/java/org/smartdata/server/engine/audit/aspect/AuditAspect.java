@@ -37,44 +37,46 @@ public class AuditAspect {
       + "(@org.smartdata.server.engine.audit.aspect.AuditId (*), ..)) "
       + "&& args(objectId, ..) "
       + "&& @annotation(audit)")
-  public void methodWithIdArg(Audit audit, long objectId) {
+  public void auditableMethodWithIdArg(Audit audit, long objectId) {
   }
 
   @Pointcut("execution(@org.smartdata.server.engine.audit.aspect.ReturnsAuditId "
       + "long org.smartdata.server.engine.audit.Auditable+.* ((*), ..)) "
       + "&& @annotation(audit)")
-  public void methodReturningId(Audit audit) {
+  public void auditableMethodReturningId(Audit audit) {
   }
 
   @AfterReturning(
-      value = "methodWithIdArg(audit, objectId)",
+      value = "auditableMethodWithIdArg(audit, objectId)",
       argNames = "joinPoint,audit,objectId")
-  public void wrapMethodWithIdArg(JoinPoint joinPoint, Audit audit, long objectId) {
+  public void wrapAuditableMethodWithIdArg(
+      JoinPoint joinPoint, Audit audit, long objectId) {
     logSuccess(joinPoint, audit, objectId);
   }
 
   @AfterThrowing(
-      value = "methodWithIdArg(audit, objectId)",
+      value = "auditableMethodWithIdArg(audit, objectId)",
       throwing = "exception",
       argNames = "joinPoint,audit,objectId,exception")
-  public void wrapThrowingMethodWithIdArg(
+  public void onAuditableMethodWithIdArgError(
       JoinPoint joinPoint, Audit audit, long objectId, Exception exception) {
     logFailure(joinPoint, audit, objectId, exception);
   }
 
   @AfterReturning(
-      value = "methodReturningId(audit)",
+      value = "auditableMethodReturningId(audit)",
       returning = "objectId",
       argNames = "joinPoint,audit,objectId")
-  public void wrapMethodReturningId(JoinPoint joinPoint, Audit audit, long objectId) {
+  public void wrapAuditableMethodReturningId(
+      JoinPoint joinPoint, Audit audit, long objectId) {
     logSuccess(joinPoint, audit, objectId);
   }
 
   @AfterThrowing(
-      value = "methodReturningId(audit)",
+      value = "auditableMethodReturningId(audit)",
       throwing = "exception",
       argNames = "joinPoint,audit,exception")
-  public void wrapThrowingMethodReturningId(
+  public void onAuditableMethodReturningIdError(
       JoinPoint joinPoint, Audit audit, Exception exception) {
     logFailure(joinPoint, audit, null, exception);
   }
@@ -114,11 +116,11 @@ public class AuditAspect {
         .getCurrentPrincipalName()
         .orElse(null);
 
-    return UserActivityEvent.newBuilder()
+    return UserActivityEvent.builder()
         .objectId(objectId)
         .operation(audit.operation())
         .objectType(audit.objectType())
-        .userName(currentUserName)
+        .username(currentUserName)
         .timestamp(Instant.now());
   }
 }

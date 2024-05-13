@@ -95,9 +95,9 @@ public class DefaultUserActivityDao
       objectId = null;
     }
 
-    return UserActivityEvent.newBuilder()
+    return UserActivityEvent.builder()
         .id(resultSet.getLong("id"))
-        .userName(resultSet.getString("username"))
+        .username(resultSet.getString("username"))
         .timestamp(Instant.ofEpochMilli(
             resultSet.getLong("timestamp")))
         .objectType(UserActivityObject.valueOf(

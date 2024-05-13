@@ -17,14 +17,23 @@
  */
 package org.smartdata.model.request;
 
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.smartdata.model.TimeInterval;
 import org.smartdata.model.audit.UserActivityObject;
 import org.smartdata.model.audit.UserActivityOperation;
 import org.smartdata.model.audit.UserActivityResult;
 
-import java.time.Instant;
 import java.util.List;
 
+@Getter
+@ToString
+@EqualsAndHashCode
+@Builder
+@RequiredArgsConstructor
 public class AuditSearchRequest {
   private final String userLike;
   private final TimeInterval timestampBetween;
@@ -33,105 +42,7 @@ public class AuditSearchRequest {
   private final List<UserActivityOperation> operations;
   private final List<UserActivityResult> results;
 
-  public AuditSearchRequest(
-      String userLike,
-      TimeInterval timestampBetween,
-      List<UserActivityObject> objectTypes,
-      List<Long> objectIds,
-      List<UserActivityOperation> operations,
-      List<UserActivityResult> results) {
-    this.userLike = userLike;
-    this.timestampBetween = timestampBetween;
-    this.objectTypes = objectTypes;
-    this.objectIds = objectIds;
-    this.operations = operations;
-    this.results = results;
-  }
-
-  public String getUserLike() {
-    return userLike;
-  }
-
-  public TimeInterval getTimestampBetween() {
-    return timestampBetween;
-  }
-
-  public List<UserActivityObject> getObjectTypes() {
-    return objectTypes;
-  }
-
-  public List<Long> getObjectIds() {
-    return objectIds;
-  }
-
-  public List<UserActivityOperation> getOperations() {
-    return operations;
-  }
-
-  public List<UserActivityResult> getResults() {
-    return results;
-  }
-
-  public static AuditSearchRequestBuilder builder() {
-    return new AuditSearchRequestBuilder();
-  }
-
   public static AuditSearchRequest empty() {
-    return new AuditSearchRequestBuilder().build();
+    return builder().build();
   }
-
-  public static class AuditSearchRequestBuilder {
-    private String userLike;
-    private TimeInterval timestampBetween;
-    private List<UserActivityObject> objectTypes;
-    private List<Long> objectIds;
-    private List<UserActivityOperation> operations;
-    private List<UserActivityResult> results;
-
-    public AuditSearchRequestBuilder userLike(String userLike) {
-      this.userLike = userLike;
-      return this;
-    }
-
-    public AuditSearchRequestBuilder timestampBetween(Instant from, Instant to) {
-      this.timestampBetween = new TimeInterval(from, to);
-      return this;
-    }
-
-    public AuditSearchRequestBuilder timestampBetween(TimeInterval timestampBetween) {
-      this.timestampBetween = timestampBetween;
-      return this;
-    }
-
-    public AuditSearchRequestBuilder objectTypes(List<UserActivityObject> objectTypes) {
-      this.objectTypes = objectTypes;
-      return this;
-    }
-
-    public AuditSearchRequestBuilder objectIds(List<Long> objectIds) {
-      this.objectIds = objectIds;
-      return this;
-    }
-
-    public AuditSearchRequestBuilder operations(List<UserActivityOperation> operations) {
-      this.operations = operations;
-      return this;
-    }
-
-    public AuditSearchRequestBuilder results(List<UserActivityResult> results) {
-      this.results = results;
-      return this;
-    }
-
-    public AuditSearchRequest build() {
-      return new AuditSearchRequest(
-          userLike,
-          timestampBetween,
-          objectTypes,
-          objectIds,
-          operations,
-          results);
-    }
-  }
-
 }

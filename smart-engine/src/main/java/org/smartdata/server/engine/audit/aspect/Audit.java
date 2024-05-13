@@ -19,12 +19,24 @@ package org.smartdata.server.engine.audit.aspect;
 
 import org.smartdata.model.audit.UserActivityObject;
 import org.smartdata.model.audit.UserActivityOperation;
+import org.smartdata.model.audit.UserActivityResult;
+import org.smartdata.server.engine.audit.AuditService;
+import org.smartdata.server.engine.audit.Auditable;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Results of the execution of the {@link Auditable auditable} class methods,
+ * marked with this annotation will be logged in the {@link AuditService} with
+ * {@link UserActivityResult} set depending on successful/exceptional method execution.
+ * <br>
+ * Besides {@link UserActivityOperation} and {@link UserActivityObject}, user should
+ * provide id of the audit object by using {@link AuditId @AuditId} or
+ * {@link ReturnsAuditId @ReturnsAuditId} annotations.
+ */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Audit {

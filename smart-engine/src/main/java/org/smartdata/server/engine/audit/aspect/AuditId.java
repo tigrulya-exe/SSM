@@ -17,11 +17,18 @@
  */
 package org.smartdata.server.engine.audit.aspect;
 
+import org.smartdata.server.engine.audit.Auditable;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Marks an argument of the {@link Auditable} class method as id of the object for audit.
+ * The id argument should be the first in the method's argument list
+ * and should have a type {@code long}.
+ */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AuditId {

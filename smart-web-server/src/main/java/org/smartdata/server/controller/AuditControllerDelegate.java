@@ -17,6 +17,7 @@
  */
 package org.smartdata.server.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
@@ -37,21 +38,12 @@ import javax.validation.Valid;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class AuditControllerDelegate implements AuditApiDelegate {
 
   private final AuditService auditService;
-
   private final AuditEventMapper auditEventMapper;
   private final PageRequestMapper pageRequestMapper;
-
-  public AuditControllerDelegate(
-      AuditService auditService,
-      AuditEventMapper auditEventMapper,
-      PageRequestMapper pageRequestMapper) {
-    this.auditService = auditService;
-    this.auditEventMapper = auditEventMapper;
-    this.pageRequestMapper = pageRequestMapper;
-  }
 
   @Override
   public AuditEventsDto getAuditEvents(

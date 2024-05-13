@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.PageRequest;
+import org.smartdata.model.TimeInterval;
 import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
 
@@ -73,9 +74,9 @@ public class TestUserActivityDao extends TestDaoBase {
         .objectIds(Collections.singletonList(1L))
         .build();
 
-    UserActivityEvent expectedEvent = UserActivityEvent.newBuilder()
-        .id(3)
-        .userName("anonymous")
+    UserActivityEvent expectedEvent = UserActivityEvent.builder()
+        .id(3L)
+        .username("anonymous")
         .timestamp(THIRD_EVENT_TIMESTAMP)
         .objectId(1L)
         .objectType(CMDLET)
@@ -207,26 +208,29 @@ public class TestUserActivityDao extends TestDaoBase {
   @Test
   public void testSearchByTimestamp() {
     AuditSearchRequest searchRequest = AuditSearchRequest.builder()
-        .timestampBetween(Instant.EPOCH, Instant.now())
+        .timestampBetween(new TimeInterval(Instant.EPOCH, Instant.now()))
         .build();
 
     testSearch(searchRequest,
         FIRST_EVENT_TIMESTAMP, SECOND_EVENT_TIMESTAMP, THIRD_EVENT_TIMESTAMP);
 
     searchRequest = AuditSearchRequest.builder()
-        .timestampBetween(SECOND_EVENT_TIMESTAMP, THIRD_EVENT_TIMESTAMP)
+        .timestampBetween(
+            new TimeInterval(SECOND_EVENT_TIMESTAMP, THIRD_EVENT_TIMESTAMP))
         .build();
 
     testSearch(searchRequest, SECOND_EVENT_TIMESTAMP, THIRD_EVENT_TIMESTAMP);
 
     searchRequest = AuditSearchRequest.builder()
-        .timestampBetween(SECOND_EVENT_TIMESTAMP.plusSeconds(1), null)
+        .timestampBetween(
+            new TimeInterval(SECOND_EVENT_TIMESTAMP.plusSeconds(1), null))
         .build();
 
     testSearch(searchRequest, THIRD_EVENT_TIMESTAMP);
 
     searchRequest = AuditSearchRequest.builder()
-        .timestampBetween(null, FIRST_EVENT_TIMESTAMP.minusSeconds(1))
+        .timestampBetween(
+            new TimeInterval(null, FIRST_EVENT_TIMESTAMP.minusSeconds(1)))
         .build();
 
     testSearch(searchRequest);
@@ -254,8 +258,8 @@ public class TestUserActivityDao extends TestDaoBase {
   }
 
   private void insertTestEvents() {
-    UserActivityEvent ruleStartEvent = UserActivityEvent.newBuilder()
-        .userName("user")
+    UserActivityEvent ruleStartEvent = UserActivityEvent.builder()
+        .username("user")
         .timestamp(FIRST_EVENT_TIMESTAMP)
         .objectId(32L)
         .objectType(RULE)
@@ -265,8 +269,8 @@ public class TestUserActivityDao extends TestDaoBase {
 
     userActivityDao.insert(ruleStartEvent);
 
-    UserActivityEvent ruleStopEvent = UserActivityEvent.newBuilder()
-        .userName("user")
+    UserActivityEvent ruleStopEvent = UserActivityEvent.builder()
+        .username("user")
         .timestamp(SECOND_EVENT_TIMESTAMP)
         .objectId(32L)
         .objectType(RULE)
@@ -277,8 +281,8 @@ public class TestUserActivityDao extends TestDaoBase {
 
     userActivityDao.insert(ruleStopEvent);
 
-    UserActivityEvent cmdletSubmitEvent = UserActivityEvent.newBuilder()
-        .userName("anonymous")
+    UserActivityEvent cmdletSubmitEvent = UserActivityEvent.builder()
+        .username("anonymous")
         .timestamp(THIRD_EVENT_TIMESTAMP)
         .objectId(1L)
         .objectType(CMDLET)
