@@ -1,0 +1,8 @@
+name: operations
+in: query
+required: false
+description: List of audit operations
+schema:
+  type: array
+  items:
+    $ref: "../../schemas/audit/AuditOperation.yaml"

@@ -45,11 +45,14 @@ import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.or;
 
 public class MetastoreQueryTest {
 
+  private static final String COUNT_QUERY_POSTFIX = ".count";
+  private static final String QUERY_EXTENSION = ".sql";
+
   @Test
   public void testAllOperators() throws IOException {
     PageRequest pageRequest = PageRequest.builder()
         .offset(0L)
-        .limit(10L)
+        .limit(10)
         .sortByAsc("id")
         .sortByAsc("ascColumn")
         .sortByDesc("descColumn")
@@ -128,18 +131,56 @@ public class MetastoreQueryTest {
     assertQuery("collapsedQuery", query, Collections.emptyMap());
   }
 
+  @Test
+  public void testSeveralFiltersOnSameColumn() throws IOException {
+    MetastoreQuery query =
+        select("equalColumn", "another", "originalColumn")
+            .from("tableName")
+            .where(
+                or(
+                    and(
+                        greaterThan("equalColumn", 1),
+                        lessThan("equalColumn", 2),
+                        greaterThanEqual("another", 3.0),
+                        equal("originalColumn", "test")
+                    ),
+                    lessThanEqual("another", 11.1),
+                    in("list", Arrays.asList(1, 2)),
+                    equal("anotherOriginalColumn", "test2")
+                ),
+                like("another", "pattern")
+            )
+            .limit(777);
+
+    Map<String, Object> expectedParams = ImmutableMap.<String, Object>builder()
+        .put("equalColumn", 1)
+        .put("$_equalColumn1", 2)
+        .put("another", 3.0)
+        .put("originalColumn", "test")
+        .put("$_another1", 11.1)
+        .put("list", Arrays.asList(1, 2))
+        .put("anotherOriginalColumn", "test2")
+        .put("$_another2", "%pattern%")
+        .build();
+
+    assertQuery("filtersOnSameColumn", query, expectedParams);
+  }
+
   private void assertQuery(
       String queryName, MetastoreQuery query, Map<String, Object> expectedParams)
       throws IOException {
     String expectedSqlQuery = getTestQuery(queryName);
-
     assertEquals(expectedSqlQuery, query.toSqlQuery());
+
+    String expectedSqlCountQuery = getTestQuery(queryName + COUNT_QUERY_POSTFIX);
+    assertEquals(expectedSqlCountQuery, query.toSqlCountQuery());
+
     assertEquals(expectedParams, query.getParameters());
   }
 
   private String getTestQuery(String name) throws IOException {
     Path queryPath = Optional.ofNullable(getClass().getClassLoader().getResource("queries"))
-        .map(confDir -> Paths.get(confDir.getPath(), name + ".sql"))
+        .map(confDir -> Paths.get(confDir.getPath(), name + QUERY_EXTENSION))
         .orElseThrow(() -> new RuntimeException("Resource not found"));
 
     return new String(Files.readAllBytes(queryPath), StandardCharsets.UTF_8);

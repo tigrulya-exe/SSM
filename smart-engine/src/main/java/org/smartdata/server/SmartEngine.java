@@ -1,19 +1,19 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
- *  or more contributor license agreements.  See the NOTICE file
- *  distributed with this work for additional information
- *  regarding copyright ownership.  The ASF licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.smartdata.server;
 
@@ -30,6 +30,7 @@ import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.engine.ServerContext;
 import org.smartdata.server.engine.StandbyServerInfo;
 import org.smartdata.server.engine.StatesManager;
+import org.smartdata.server.engine.audit.AuditService;
 import org.smartdata.server.engine.cmdlet.HazelcastExecutorService;
 import org.smartdata.server.engine.cmdlet.agent.AgentExecutorService;
 import org.smartdata.server.engine.cmdlet.agent.AgentInfo;
@@ -51,6 +52,7 @@ public class SmartEngine extends AbstractService {
   private CmdletManager cmdletManager;
   private AgentExecutorService agentService;
   private HazelcastExecutorService hazelcastService;
+  private AuditService auditService;
   private final List<AbstractService> services;
 
   public SmartEngine(ServerContext context) {
@@ -64,13 +66,15 @@ public class SmartEngine extends AbstractService {
   public void init() throws IOException {
     statesMgr = new StatesManager(serverContext);
     services.add(statesMgr);
-    cmdletManager = new CmdletManager(serverContext);
+    auditService = new AuditService(serverContext.getMetaStore().userActivityDao());
+    cmdletManager = new CmdletManager(serverContext, auditService);
     services.add(cmdletManager);
     agentService = new AgentExecutorService(conf, cmdletManager);
     hazelcastService = new HazelcastExecutorService(cmdletManager);
     cmdletManager.registerExecutorService(agentService);
     cmdletManager.registerExecutorService(hazelcastService);
-    ruleMgr = new RuleManager(serverContext, statesMgr, cmdletManager);
+    ruleMgr = new RuleManager(
+        serverContext, statesMgr, cmdletManager, auditService);
     services.add(ruleMgr);
 
     for (AbstractService s : services) {
@@ -142,6 +146,10 @@ public class SmartEngine extends AbstractService {
 
   public RuleManager getRuleManager() {
     return ruleMgr;
+  }
+
+  public AuditService getAuditService() {
+    return auditService;
   }
 
   public CmdletManager getCmdletManager() {

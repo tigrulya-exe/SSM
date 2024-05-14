@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.smartdata.server.engine;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -54,6 +53,11 @@ import org.smartdata.server.cluster.ActiveServerNodeCmdletMetrics;
 import org.smartdata.server.cluster.NodeCmdletMetrics;
 import org.smartdata.server.engine.action.ActionInfoHandler;
 import org.smartdata.server.engine.action.ActionStatusUpdateListener;
+import org.smartdata.server.engine.audit.AuditService;
+import org.smartdata.server.engine.audit.Auditable;
+import org.smartdata.server.engine.audit.aspect.Audit;
+import org.smartdata.server.engine.audit.aspect.AuditId;
+import org.smartdata.server.engine.audit.aspect.ReturnsAuditId;
 import org.smartdata.server.engine.cmdlet.CmdletDispatcher;
 import org.smartdata.server.engine.cmdlet.CmdletExecutorService;
 import org.smartdata.server.engine.cmdlet.CmdletInfoHandler;
@@ -83,6 +87,11 @@ import java.util.function.Consumer;
 
 import static org.smartdata.model.action.ScheduleResult.RETRY;
 import static org.smartdata.model.action.ScheduleResult.isSuccessful;
+import static org.smartdata.model.audit.UserActivityObject.CMDLET;
+import static org.smartdata.model.audit.UserActivityOperation.DELETE;
+import static org.smartdata.model.audit.UserActivityOperation.START;
+import static org.smartdata.model.audit.UserActivityOperation.STOP;
+
 
 /**
  * When a Cmdlet is submitted, it's string descriptor will be stored into set submittedCmdlets
@@ -92,7 +101,8 @@ import static org.smartdata.model.action.ScheduleResult.isSuccessful;
  * <p>The map idToCmdlets stores all the recent CmdletInfos, including pending and running Cmdlets.
  * After the Cmdlet is finished or cancelled or failed, it's status will be flush to DB.
  */
-public class CmdletManager extends AbstractService implements ActionStatusUpdateListener {
+public class CmdletManager extends AbstractService
+    implements ActionStatusUpdateListener, Auditable {
   private static final Logger LOG = LoggerFactory.getLogger(CmdletManager.class);
 
   private final ScheduledExecutorService executorService;
@@ -113,16 +123,18 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
   private final CmdletInfoHandler cmdletInfoHandler;
   private final CmdletParser cmdletParser;
   private final ListMultimap<String, ActionScheduler> schedulers;
+  private final AuditService auditService;
   private final PathChecker pathChecker;
   private List<ActionSchedulerService> schedulerServices;
   private CmdletDispatcher dispatcher;
 
-  public CmdletManager(ServerContext context) throws IOException {
+  public CmdletManager(
+      ServerContext context,
+      AuditService auditService) throws IOException {
     super(context);
 
     this.metaStore = context.getMetaStore();
     this.executorService = Executors.newScheduledThreadPool(4);
-
     this.runningCmdlets = new ArrayList<>();
     this.pendingCmdlets = new LinkedList<>();
     this.schedulingCmdlets = new LinkedList<>();
@@ -138,6 +150,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     this.maxNumPendingCmdlets = context.getConf()
         .getInt(SmartConfKeys.SMART_CMDLET_MAX_NUM_PENDING_KEY,
             SmartConfKeys.SMART_CMDLET_MAX_NUM_PENDING_DEFAULT);
+    this.auditService = auditService;
 
     this.cmdletPurgeTask = new DeleteTerminatedCmdletsTask(getContext().getConf(), metaStore);
     this.inMemoryRegistry = new InMemoryRegistry(context, tracker, executorService);
@@ -162,6 +175,11 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
 
   public CmdletInfoHandler getCmdletInfoHandler() {
     return cmdletInfoHandler;
+  }
+
+  @Override
+  public AuditService getAuditService() {
+    return auditService;
   }
 
   @Override
@@ -289,7 +307,7 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     LOG.info("Stopping ...");
     dispatcher.stop();
 
-    for (ActionSchedulerService scheduler:  schedulerServices) {
+    for (ActionSchedulerService scheduler : schedulerServices) {
       try {
         scheduler.stop();
       } catch (Exception exception) {
@@ -311,6 +329,8 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     dispatcher.registerExecutorService(executorService);
   }
 
+  @ReturnsAuditId
+  @Audit(objectType = CMDLET, operation = START)
   public long submitCmdlet(String cmdlet) throws IOException {
     LOG.debug("Received Cmdlet -> [ {} ]", cmdlet);
     try {
@@ -552,8 +572,15 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     }
   }
 
-  public void disableCmdlet(long cid) throws IOException {
-    CmdletInfo info = cmdletInfoHandler.getUnfinishedCmdlet(cid);
+  // It's wrapped intentionally in order to distinguish
+  // cmdlets disabling by user and disabling by SSM itself
+  @Audit(objectType = CMDLET, operation = STOP)
+  public void disableCmdlet(@AuditId long cmdletId) throws IOException {
+    disableCmdletInternal(cmdletId);
+  }
+
+  private void disableCmdletInternal(long cmdletId) throws IOException {
+    CmdletInfo info = cmdletInfoHandler.getUnfinishedCmdlet(cmdletId);
     if (info == null) {
       return;
     }
@@ -561,16 +588,16 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
         new CmdletStatus(info.getCid(), System.currentTimeMillis(), CmdletState.DISABLED));
 
     synchronized (pendingCmdlets) {
-      pendingCmdlets.remove(cid);
+      pendingCmdlets.remove(cmdletId);
     }
 
-    schedulingCmdlets.remove(cid);
+    schedulingCmdlets.remove(cmdletId);
 
-    scheduledCmdlets.remove(cid);
+    scheduledCmdlets.remove(cmdletId);
 
     // Wait status update from status reporter, so need to update to MetaStore
-    if (runningCmdlets.contains(cid)) {
-      dispatcher.stopCmdlet(cid);
+    if (runningCmdlets.contains(cmdletId)) {
+      dispatcher.stopCmdlet(cmdletId);
     }
   }
 
@@ -593,14 +620,15 @@ public class CmdletManager extends AbstractService implements ActionStatusUpdate
     cmdletInfoHandler.store(cmdletInfo);
   }
 
-  public void deleteCmdlet(long cid) throws IOException {
-    disableCmdlet(cid);
-    cmdletInfoHandler.deleteCmdlet(cid);
+  @Audit(objectType = CMDLET, operation = DELETE)
+  public void deleteCmdlet(@AuditId long cmdletId) throws IOException {
+    disableCmdletInternal(cmdletId);
+    cmdletInfoHandler.deleteCmdlet(cmdletId);
   }
 
   private void disableCmdlets(List<Long> cmdletIds) throws IOException {
     for (long cmdletId : cmdletIds) {
-      disableCmdlet(cmdletId);
+      disableCmdletInternal(cmdletId);
     }
   }
 

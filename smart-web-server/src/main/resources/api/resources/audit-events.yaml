@@ -1,0 +1,35 @@
+get:
+  tags:
+    - Audit
+  summary: List all audit events
+  operationId: getAuditEvents
+  parameters:
+    - $ref: '../parameters/common/page-request.yaml'
+    - $ref: '../parameters/audit/username-like.yaml'
+    - $ref: '../parameters/audit/event-time.yaml'
+    - $ref: '../parameters/audit/object-types.yaml'
+    - $ref: '../parameters/audit/object-ids.yaml'
+    - $ref: '../parameters/audit/operations.yaml'
+    - $ref: '../parameters/audit/results.yaml'
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            title: AuditEvents
+            allOf:
+              - $ref: '../schemas/common/PageResponse.yaml'
+              - type: object
+                properties:
+                  items:
+                    type: array
+                    description: List of audit events
+                    items:
+                      $ref: '../schemas/audit/AuditEvent.yaml'
+    '400':
+      description: Data is filled incorrectly
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/common/ErrorResponse.yaml'

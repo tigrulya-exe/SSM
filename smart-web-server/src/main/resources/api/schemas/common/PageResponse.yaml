@@ -3,10 +3,7 @@ type: object
 properties:
   total:
     type: integer
+    format: int64
     description: Total number of objects
-  items:
-    type: array
-    items:
-      $dynamicRef: pageItem
 required:
   - total

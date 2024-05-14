@@ -21,6 +21,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.metastore.MetaStoreException;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +51,7 @@ public class SmartExceptionHandler extends ResponseEntityExceptionHandler {
         HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  @ExceptionHandler(value = ConstraintViolationException.class)
+  @ExceptionHandler(value = {ConstraintViolationException.class})
   protected ResponseEntity<Object> handleValidationExceptions(
       Exception exception, WebRequest request) {
     return handleExceptionInternal(
@@ -63,6 +64,14 @@ public class SmartExceptionHandler extends ResponseEntityExceptionHandler {
   @Override
   protected ResponseEntity<Object> handleMethodArgumentNotValid(
       MethodArgumentNotValidException exception,
+      HttpHeaders headers,
+      HttpStatus status,
+      WebRequest request) {
+    return handleValidationExceptions(exception, request);
+  }
+
+  protected ResponseEntity<Object> handleTypeMismatch(
+      TypeMismatchException exception,
       HttpHeaders headers,
       HttpStatus status,
       WebRequest request) {

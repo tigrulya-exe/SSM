@@ -34,6 +34,11 @@ import org.smartdata.model.rule.RulePluginManager;
 import org.smartdata.model.rule.RuleTranslationResult;
 import org.smartdata.model.rule.TimeBasedScheduleInfo;
 import org.smartdata.rule.parser.SmartRuleStringParser;
+import org.smartdata.server.engine.audit.AuditService;
+import org.smartdata.server.engine.audit.Auditable;
+import org.smartdata.server.engine.audit.aspect.Audit;
+import org.smartdata.server.engine.audit.aspect.AuditId;
+import org.smartdata.server.engine.audit.aspect.ReturnsAuditId;
 import org.smartdata.server.engine.rule.ErasureCodingPlugin;
 import org.smartdata.server.engine.rule.ExecutorScheduler;
 import org.smartdata.server.engine.rule.FileCopy2S3Plugin;
@@ -52,11 +57,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.smartdata.conf.SmartConfKeys.SMART_SYNC_SCHEDULE_STRATEGY_DEFAULT;
 import static org.smartdata.conf.SmartConfKeys.SMART_SYNC_SCHEDULE_STRATEGY_KEY;
 import static org.smartdata.model.WhitelistHelper.validatePathsCovered;
+import static org.smartdata.model.audit.UserActivityObject.RULE;
+import static org.smartdata.model.audit.UserActivityOperation.CREATE;
+import static org.smartdata.model.audit.UserActivityOperation.DELETE;
+import static org.smartdata.model.audit.UserActivityOperation.START;
+import static org.smartdata.model.audit.UserActivityOperation.STOP;
 
 /**
  * Manage and execute rules. We can have 'cache' here to decrease the needs to execute a SQL query.
  */
-public class RuleManager extends AbstractService {
+public class RuleManager extends AbstractService implements Auditable {
   public static final Logger LOG = LoggerFactory.getLogger(RuleManager.class.getName());
 
   private final ServerContext serverContext;
@@ -65,6 +75,8 @@ public class RuleManager extends AbstractService {
   private final MetaStore metaStore;
   private final PathChecker pathChecker;
 
+  private final AuditService auditService;
+
   private boolean isClosed = false;
 
   private final ConcurrentHashMap<Long, RuleInfoRepo> mapRules;
@@ -72,7 +84,10 @@ public class RuleManager extends AbstractService {
   public ExecutorScheduler execScheduler;
 
   public RuleManager(
-      ServerContext context, StatesManager statesManager, CmdletManager cmdletManager) {
+      ServerContext context,
+      StatesManager statesManager,
+      CmdletManager cmdletManager,
+      AuditService auditService) {
     super(context);
 
     int numExecutors =
@@ -86,6 +101,7 @@ public class RuleManager extends AbstractService {
     this.statesManager = statesManager;
     this.cmdletManager = cmdletManager;
     this.serverContext = context;
+    this.auditService = auditService;
     this.metaStore = context.getMetaStore();
     this.pathChecker = new PathChecker(context.getConf());
 
@@ -106,6 +122,8 @@ public class RuleManager extends AbstractService {
   /**
    * Submit a rule to RuleManger.
    */
+  @ReturnsAuditId
+  @Audit(objectType = RULE, operation = CREATE)
   public long submitRule(String rule, RuleState initState) throws IOException {
     LOG.debug("Received Rule -> [" + rule + "]");
     if (initState != RuleState.ACTIVE
@@ -182,27 +200,30 @@ public class RuleManager extends AbstractService {
    *
    * @param dropPendingCmdlets pending cmdlets triggered by the rule will be discarded if true.
    */
-  public void deleteRule(long ruleID, boolean dropPendingCmdlets) throws IOException {
-    RuleInfoRepo infoRepo = checkIfExists(ruleID);
+  @Audit(objectType = RULE, operation = DELETE)
+  public void deleteRule(@AuditId long ruleId, boolean dropPendingCmdlets) throws IOException {
+    RuleInfoRepo infoRepo = checkIfExists(ruleId);
     try {
       if (dropPendingCmdlets && getCmdletManager() != null) {
-        getCmdletManager().deleteCmdletByRule(ruleID);
+        getCmdletManager().deleteCmdletByRule(ruleId);
       }
     } finally {
       infoRepo.delete();
     }
   }
 
-  public void activateRule(long ruleID) throws IOException {
-    RuleInfoRepo infoRepo = checkIfExists(ruleID);
+  @Audit(objectType = RULE, operation = START)
+  public void activateRule(@AuditId long ruleId) throws IOException {
+    RuleInfoRepo infoRepo = checkIfExists(ruleId);
     submitRuleToScheduler(infoRepo.activate(this));
   }
 
-  public void disableRule(long ruleID, boolean dropPendingCmdlets) throws IOException {
-    RuleInfoRepo infoRepo = checkIfExists(ruleID);
+  @Audit(objectType = RULE, operation = STOP)
+  public void disableRule(@AuditId long ruleId, boolean dropPendingCmdlets) throws IOException {
+    RuleInfoRepo infoRepo = checkIfExists(ruleId);
     infoRepo.disable();
     if (dropPendingCmdlets && getCmdletManager() != null) {
-      getCmdletManager().deletePendingRuleCmdlets(ruleID);
+      getCmdletManager().deletePendingRuleCmdlets(ruleId);
     }
   }
 
@@ -333,5 +354,10 @@ public class RuleManager extends AbstractService {
       execScheduler.shutdown();
     }
     LOG.info("Stopped.");
+  }
+
+  @Override
+  public AuditService getAuditService() {
+    return auditService;
   }
 }

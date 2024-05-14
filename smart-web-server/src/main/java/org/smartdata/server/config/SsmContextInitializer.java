@@ -17,23 +17,20 @@
  */
 package org.smartdata.server.config;
 
+import lombok.RequiredArgsConstructor;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.server.SmartEngine;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 
+@RequiredArgsConstructor
 public class SsmContextInitializer implements
     ApplicationContextInitializer<ConfigurableApplicationContext> {
 
     private final SmartEngine smartEngine;
 
     private final SmartConf conf;
-
-    public SsmContextInitializer(SmartEngine smartEngine, SmartConf conf) {
-      this.smartEngine = smartEngine;
-      this.conf = conf;
-    }
 
     @Override
     public void initialize(ConfigurableApplicationContext applicationContext) {
@@ -43,5 +40,6 @@ public class SsmContextInitializer implements
       beanFactory.registerSingleton("statesManager", smartEngine.getStatesManager());
       beanFactory.registerSingleton("cmdletManager", smartEngine.getCmdletManager());
       beanFactory.registerSingleton("ruleManager", smartEngine.getRuleManager());
+      beanFactory.registerSingleton("auditService", smartEngine.getAuditService());
     }
 }

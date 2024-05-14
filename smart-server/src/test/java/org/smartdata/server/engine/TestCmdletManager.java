@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.smartdata.server.engine;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -38,6 +37,7 @@ import org.smartdata.protocol.message.CmdletStatusUpdate;
 import org.smartdata.protocol.message.StatusReport;
 import org.smartdata.server.MiniSmartClusterHarness;
 import org.smartdata.server.engine.action.ActionInfoHandler;
+import org.smartdata.server.engine.audit.AuditService;
 import org.smartdata.server.engine.cmdlet.CmdletDispatcher;
 import org.smartdata.server.engine.cmdlet.CmdletInfoHandler;
 
@@ -167,6 +167,8 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
     long cmdletId = 10;
     long actionId = 101;
     MetaStore metaStore = mock(MetaStore.class);
+    AuditService auditService = mock(AuditService.class);
+
     Assert.assertNotNull(metaStore);
     when(metaStore.getMaxCmdletId()).thenReturn(cmdletId);
     when(metaStore.getMaxActionId()).thenReturn(actionId);
@@ -175,7 +177,7 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
     when(dispatcher.canDispatchMore()).thenReturn(true);
     ServerContext serverContext = new ServerContext(new SmartConf(), metaStore);
     serverContext.setServiceMode(ServiceMode.HDFS);
-    CmdletManager cmdletManager = new CmdletManager(serverContext);
+    CmdletManager cmdletManager = new CmdletManager(serverContext, auditService);
     cmdletManager.init();
     cmdletManager.setDispatcher(dispatcher);
 

@@ -1,0 +1,32 @@
+title: AuditEvent
+type: object
+properties:
+  id:
+    type: integer
+    format: int64
+    description: Event id
+  username:
+    type: string
+    description: Name of the user that perform the action
+  timestamp:
+    type: integer
+    format: int64
+    description: UNIX timestamp (UTC) of the event
+  objectType:
+    $ref: "./AuditObjectType.yaml"
+  objectId:
+    type: integer
+    format: int64
+    description: Id of the corresponding object (rule or cmdlet)
+  operation:
+    $ref: "./AuditOperation.yaml"
+  result:
+    $ref: "./AuditEventResult.yaml"
+required:
+  - id
+  - username
+  - timestamp
+  - objectType
+  - objectId
+  - operation
+  - result
