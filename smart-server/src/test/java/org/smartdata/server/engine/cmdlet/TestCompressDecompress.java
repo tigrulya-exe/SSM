@@ -439,7 +439,7 @@ public class TestCompressDecompress extends MiniSmartClusterHarness {
     }
   }
 
-  private long submitCmdlet(String cmdlet) throws IOException {
+  private long submitCmdlet(String cmdlet) throws Exception {
     CmdletInfo cmdletInfo = cmdletManager.submitCmdlet(cmdlet);
     return cmdletInfo.getCid();
   }

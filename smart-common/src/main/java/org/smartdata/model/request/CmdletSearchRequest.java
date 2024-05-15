@@ -28,13 +28,13 @@ import java.util.List;
 @Data
 @Builder
 public class CmdletSearchRequest {
-  @Singular
+  @Singular(ignoreNullCollections = true)
   private final List<Long> ids;
   private final String textRepresentationLike;
   private final TimeInterval submissionTime;
-  @Singular
+  @Singular(ignoreNullCollections = true)
   private final List<Long> ruleIds;
-  @Singular
+  @Singular(ignoreNullCollections = true)
   private final List<CmdletState> states;
   private final TimeInterval stateChangedTime;
 

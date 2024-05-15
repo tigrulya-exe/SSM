@@ -330,7 +330,7 @@ public class CmdletManager extends AbstractService
     dispatcher.registerExecutorService(executorService);
   }
 
-  public CmdletInfo submitCmdlet(String cmdlet) throws IOException {
+  public CmdletInfo submitCmdlet(String cmdlet) throws IOException, ParseException {
     long cmdletId = submitCmdletInternal(cmdlet);
     // it will fetch cmdlet info from memory cache
     return cmdletInfoHandler.getCmdletInfo(cmdletId);
@@ -338,7 +338,7 @@ public class CmdletManager extends AbstractService
 
   @ReturnsAuditId
   @Audit(objectType = CMDLET, operation = START)
-  private long submitCmdletInternal(String cmdlet) throws IOException {
+  private long submitCmdletInternal(String cmdlet) throws IOException, ParseException {
     LOG.debug("Received Cmdlet -> [ {} ]", cmdlet);
     try {
       if (StringUtils.isBlank(cmdlet)) {
@@ -346,9 +346,11 @@ public class CmdletManager extends AbstractService
       }
       CmdletDescriptor cmdletDescriptor = buildCmdletDescriptor(cmdlet);
       return submitCmdlet(cmdletDescriptor);
-    } catch (ParseException e) {
-      LOG.error("Wrong format for cmdlet '{}'", cmdlet, e);
-      throw new IOException(e);
+    } catch (ParseException parseException) {
+      LOG.error("Wrong format for cmdlet '{}'", cmdlet, parseException);
+      throw new ParseException(
+          "Error parsing cmdlet: " + cmdlet + ". " + parseException.getMessage(),
+          parseException.getErrorOffset());
     }
   }
 

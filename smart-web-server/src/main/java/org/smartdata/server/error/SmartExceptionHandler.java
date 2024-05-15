@@ -36,6 +36,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import javax.validation.ConstraintViolationException;
 
 import java.io.IOException;
+import java.text.ParseException;
 
 @ControllerAdvice
 public class SmartExceptionHandler extends ResponseEntityExceptionHandler {
@@ -52,7 +53,8 @@ public class SmartExceptionHandler extends ResponseEntityExceptionHandler {
         HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  @ExceptionHandler(value = {ConstraintViolationException.class})
+  @ExceptionHandler(value =
+      {ConstraintViolationException.class, ParseException.class})
   protected ResponseEntity<Object> handleValidationExceptions(
       Exception exception, WebRequest request) {
     return handleExceptionInternal(

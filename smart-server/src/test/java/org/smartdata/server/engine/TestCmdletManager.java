@@ -27,7 +27,6 @@ import org.smartdata.action.ActionRegistry;
 import org.smartdata.cmdlet.parser.CmdletParser;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.metastore.MetaStore;
-import org.smartdata.metastore.MetaStoreException;
 import org.smartdata.model.ActionInfo;
 import org.smartdata.model.CmdletDescriptor;
 import org.smartdata.model.CmdletInfo;
@@ -163,7 +162,7 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
   }
 
   @Test
-  public void testWithoutCluster() throws MetaStoreException, IOException, InterruptedException {
+  public void testWithoutCluster() throws Exception {
     long cmdletId = 10;
     long actionId = 101;
     MetaStore metaStore = mock(MetaStore.class);
