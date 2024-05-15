@@ -16,8 +16,7 @@
  * limitations under the License.
  */
 import type React from 'react';
-import type { OffsetOptions } from '@floating-ui/react';
-import type { Placement } from '@floating-ui/dom';
+import type { OffsetOptions, Placement } from '@floating-ui/react';
 
 export type PopoverPanelProps = React.HTMLAttributes<HTMLDivElement>;
 

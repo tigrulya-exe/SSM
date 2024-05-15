@@ -1,0 +1,46 @@
+:global {
+  body.theme-dark {
+    --footer-dialog-background: var(--color-ADHdark);
+  }
+  body.theme-light {
+    --footer-dialog-background: var(--color-offWhite);
+  }
+}
+
+.dialog {
+  background: var(--footer-dialog-background);
+  border-radius: 40px 0px 0px 40px;
+  padding: 36px 40px 40px 40px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  transform: translateY(100%);
+  transition: 1s;
+  box-sizing: border-box;
+  color: var(--text-default-color);
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &__title {
+    color: var(--text-title-color);
+    font-size: 31px;
+  }
+
+  &__controls {
+    margin-bottom: 24px;
+    background-color: transparent !important;
+
+    button {
+      width: 108px;
+    }
+  }
+
+  &__shown {
+    transform: translateY(0);
+    transition: 1s;
+  }
+}
