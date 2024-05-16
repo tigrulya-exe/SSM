@@ -1,0 +1,29 @@
+:global {
+  body.theme-dark {
+    --assistance-background: var(--color-newLight);
+    --assistance-do-not-show-border: var(--color-dark1);
+  }
+
+  body.theme-light {
+    --assistance-background: var(--color-lightStrokeLighter);
+    --assistance-do-not-show-border: var(--color-lightStroke);
+  }
+}
+
+.assistance {
+  background: var(--assistance-background);
+  box-sizing: border-box;
+  border-radius: 12px;
+  padding: 9px 16px;
+}
+
+.assistanceSection {
+  &:not(:last-child) {
+    margin-bottom: 12px;
+  }
+}
+
+.doNotShow {
+  border-top: 1px solid var(--assistance-do-not-show-border);
+  padding-top: 12px;
+}
