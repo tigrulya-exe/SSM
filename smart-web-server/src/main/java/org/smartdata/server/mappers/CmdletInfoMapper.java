@@ -17,8 +17,10 @@
  */
 package org.smartdata.server.mappers;
 
+import org.mapstruct.Condition;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.ValueMapping;
 import org.smartdata.metastore.model.SearchResult;
@@ -37,7 +39,7 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface CmdletInfoMapper extends SmartMapper {
   @Mapping(source = "cid", target = "id")
-  @Mapping(source = "rid", target = "ruleId")
+  @Mapping(source = "rid", target = "ruleId", conditionQualifiedByName = "isValidRuleId")
   @Mapping(source = "parameters", target = "textRepresentation")
   @Mapping(source = "generateTime", target = "submissionTime")
   @Mapping(source = "aids", target = "actionIds")
@@ -70,4 +72,12 @@ public interface CmdletInfoMapper extends SmartMapper {
   @Mapping(source = "stateChangedTimeFrom", target = "from")
   @Mapping(source = "stateChangedTimeTo", target = "to")
   TimeInterval toTimeInterval(StateChangeTimeIntervalDto intervalDto);
+
+  // rule ids sequence always starts from 1, but in the future consider to
+  // todo refactor cmdlets related logic to make ruleId (rid) nullable
+  @Condition
+  @Named("isValidRuleId")
+  static boolean isValidRuleId(long ruleId) {
+    return ruleId > 0;
+  }
 }
