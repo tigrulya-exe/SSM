@@ -19,6 +19,7 @@ package org.smartdata.metastore.model;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class SearchResult<T> {
   private final List<T> items;
@@ -35,6 +36,35 @@ public class SearchResult<T> {
 
   public long getTotal() {
     return total;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    SearchResult<?> that = (SearchResult<?>) o;
+    return total == that.total && Objects.equals(items, that.items);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(items, total);
+  }
+
+  @Override
+  public String toString() {
+    return "SearchResult{"
+        + "items=" + items
+        + ", total=" + total
+        + '}';
+  }
+
+  public static <T> SearchResult<T> of(List<T> items, long total) {
+    return new SearchResult<>(items, total);
   }
 
   public static <T> SearchResult<T> emptyResult() {

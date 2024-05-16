@@ -1,0 +1,6 @@
+title: AuditEventResult
+type: string
+description: Result of the audit event
+enum:
+  - SUCCESS
+  - FAILURE

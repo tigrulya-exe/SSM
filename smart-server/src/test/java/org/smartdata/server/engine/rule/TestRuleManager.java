@@ -23,14 +23,20 @@ import org.junit.Before;
 import org.junit.Test;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.metastore.TestDaoBase;
+import org.smartdata.metastore.model.SearchResult;
+import org.smartdata.metastore.queries.PageRequest;
 import org.smartdata.model.FileInfo;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
+import org.smartdata.model.audit.UserActivityEvent;
+import org.smartdata.model.request.AuditSearchRequest;
 import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.engine.ServerContext;
 import org.smartdata.server.engine.ServiceMode;
+import org.smartdata.server.engine.audit.AuditService;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -39,14 +45,14 @@ import java.util.Random;
  */
 public class TestRuleManager extends TestDaoBase {
   private RuleManager ruleManager;
-  private SmartConf smartConf;
 
   @Before
   public void init() throws Exception {
-    smartConf = new SmartConf();
+    SmartConf smartConf = new SmartConf();
     ServerContext serverContext = new ServerContext(smartConf, metaStore);
     serverContext.setServiceMode(ServiceMode.HDFS);
-    ruleManager = new RuleManager(serverContext, null, null);
+    ruleManager = new RuleManager(serverContext, null,
+        null, new NoOpAuditService());
     ruleManager.init();
     ruleManager.start();
   }
@@ -62,7 +68,7 @@ public class TestRuleManager extends TestDaoBase {
     String rule = "file: every 1s \n | accessCount(5s) > 3 | cache";
     long id = ruleManager.submitRule(rule, RuleState.ACTIVE);
     RuleInfo ruleInfo = ruleManager.getRuleInfo(id);
-    Assert.assertTrue(ruleInfo.getRuleText().equals(rule));
+    Assert.assertEquals(ruleInfo.getRuleText(), rule);
     RuleInfo info = ruleInfo;
     for (int i = 0; i < 5; i++) {
       Thread.sleep(1000);
@@ -75,10 +81,10 @@ public class TestRuleManager extends TestDaoBase {
   }
 
   @Test
-  public void testSubmitDeletedRule() throws Exception {
+  public void testSubmitDeletedRule() {
     String rule = "file: every 1s \n | length > 300 | cache";
     try {
-      long id = ruleManager.submitRule(rule, RuleState.DELETED);
+      ruleManager.submitRule(rule, RuleState.DELETED);
     } catch (IOException e) {
       Assert.assertTrue(e.getMessage().contains("Invalid initState"));
     }
@@ -89,7 +95,7 @@ public class TestRuleManager extends TestDaoBase {
     String rule = "file: every 1s \n | length > 300 | cache";
     long id = ruleManager.submitRule(rule, RuleState.DISABLED);
     RuleInfo ruleInfo = ruleManager.getRuleInfo(id);
-    Assert.assertTrue(ruleInfo.getRuleText().equals(rule));
+    Assert.assertEquals(ruleInfo.getRuleText(), rule);
     RuleInfo info = ruleInfo;
     for (int i = 0; i < 5; i++) {
       Thread.sleep(1000);
@@ -97,8 +103,8 @@ public class TestRuleManager extends TestDaoBase {
       System.out.println(info);
     }
 
-    Assert.assertTrue(info.getNumChecked()
-        - ruleInfo.getNumChecked() == 0);
+    Assert.assertEquals(0, info.getNumChecked()
+        - ruleInfo.getNumChecked());
   }
 
   @Test
@@ -108,7 +114,7 @@ public class TestRuleManager extends TestDaoBase {
 
     long id = ruleManager.submitRule(rule, RuleState.ACTIVE);
     RuleInfo ruleInfo = ruleManager.getRuleInfo(id);
-    Assert.assertTrue(ruleInfo.getRuleText().equals(rule));
+    Assert.assertEquals(ruleInfo.getRuleText(), rule);
     RuleInfo info = ruleInfo;
     for (int i = 0; i < 5; i++) {
       Thread.sleep(1000);
@@ -116,7 +122,7 @@ public class TestRuleManager extends TestDaoBase {
       System.out.println(info);
     }
 
-    Assert.assertTrue(info.getState() == RuleState.FINISHED);
+    Assert.assertSame(info.getState(), RuleState.FINISHED);
     Assert.assertTrue(info.getNumChecked()
         - ruleInfo.getNumChecked() <= 3);
   }
@@ -128,7 +134,7 @@ public class TestRuleManager extends TestDaoBase {
 
     long id = ruleManager.submitRule(rule, RuleState.ACTIVE);
     RuleInfo ruleInfo = ruleManager.getRuleInfo(id);
-    Assert.assertTrue(ruleInfo.getRuleText().equals(rule));
+    Assert.assertEquals(ruleInfo.getRuleText(), rule);
     RuleInfo info = ruleInfo;
     for (int i = 0; i < 2; i++) {
       Thread.sleep(1000);
@@ -142,7 +148,7 @@ public class TestRuleManager extends TestDaoBase {
     RuleInfo endInfo = ruleManager.getRuleInfo(info.getId());
     System.out.println(endInfo);
 
-    Assert.assertTrue(endInfo.getState() == RuleState.DELETED);
+    Assert.assertSame(endInfo.getState(), RuleState.DELETED);
     Assert.assertTrue(endInfo.getNumChecked()
         - info.getNumChecked() <= 1);
   }
@@ -154,7 +160,7 @@ public class TestRuleManager extends TestDaoBase {
 
     long id = ruleManager.submitRule(rule, RuleState.ACTIVE);
     RuleInfo ruleInfo = ruleManager.getRuleInfo(id);
-    Assert.assertTrue(ruleInfo.getRuleText().equals(rule));
+    Assert.assertEquals(ruleInfo.getRuleText(), rule);
     RuleInfo info = ruleInfo;
     for (int i = 0; i < 2; i++) {
       Thread.sleep(1000);
@@ -172,8 +178,7 @@ public class TestRuleManager extends TestDaoBase {
       info = ruleManager.getRuleInfo(id);
       System.out.println(info);
     }
-    Assert.assertTrue(info.getNumChecked()
-        == info2.getNumChecked());
+    Assert.assertEquals(info.getNumChecked(), info2.getNumChecked());
 
     RuleInfo info3 = info;
     ruleManager.activateRule(ruleInfo.getId());
@@ -197,14 +202,14 @@ public class TestRuleManager extends TestDaoBase {
       ids[i] = ruleManager.submitRule(rule, RuleState.DISABLED);
       System.out.println(ruleManager.getRuleInfo(ids[i]));
       if (i > 0) {
-        Assert.assertTrue(ids[i] - ids[i - 1] == 1);
+        Assert.assertEquals(1, ids[i] - ids[i - 1]);
       }
     }
 
     for (int i = 0; i < nRules; i++) {
       ruleManager.deleteRule(ids[i], true);
       RuleInfo info = ruleManager.getRuleInfo(ids[i]);
-      Assert.assertTrue(info.getState() == RuleState.DELETED);
+      Assert.assertSame(info.getState(), RuleState.DELETED);
     }
 
     long[] ids2 = new long[nRules];
@@ -212,7 +217,7 @@ public class TestRuleManager extends TestDaoBase {
       ids2[i] = ruleManager.submitRule(rule, RuleState.DISABLED);
       System.out.println(ruleManager.getRuleInfo(ids2[i]));
       if (i > 0) {
-        Assert.assertTrue(ids2[i] - ids2[i - 1] == 1);
+        Assert.assertEquals(1, ids2[i] - ids2[i - 1]);
       }
       Assert.assertTrue(ids2[i] > ids[nRules - 1]);
     }
@@ -220,7 +225,7 @@ public class TestRuleManager extends TestDaoBase {
     System.out.println("\nFinal state:");
     List<RuleInfo> allRules = ruleManager.listRulesInfo();
     // Deleted rules are not included in the list
-    Assert.assertTrue(allRules.size() == nRules);
+    Assert.assertEquals(allRules.size(), nRules);
     for (RuleInfo info : allRules) {
       System.out.println(info);
     }
@@ -259,11 +264,11 @@ public class TestRuleManager extends TestDaoBase {
   }
 
   private class RuleInfoUpdater implements Runnable {
-    private long ruleid;
-    private int index;
+    private final long ruleId;
+    private final int index;
 
-    public RuleInfoUpdater(long ruleid, int index) {
-      this.ruleid = ruleid;
+    public RuleInfoUpdater(long ruleId, int index) {
+      this.ruleId = ruleId;
       this.index = index;
     }
 
@@ -274,14 +279,12 @@ public class TestRuleManager extends TestDaoBase {
       int cmdletsGen;
       try {
         for (int i = 0; i < 200; i++) {
-          RuleInfo info = ruleManager.getRuleInfo(ruleid);
+          RuleInfo info = ruleManager.getRuleInfo(ruleId);
           lastCheckTime = System.currentTimeMillis();
           checkedCount = info.getNumChecked();
           cmdletsGen = (int) info.getNumCmdsGen();
-          //System.out.println("" + index + ": " + lastCheckTime + " "
-          // + checkedCount + " " + cmdletsGen);
-          Assert.assertTrue(checkedCount == cmdletsGen);
-          ruleManager.updateRuleInfo(ruleid, null,
+          Assert.assertEquals(checkedCount, cmdletsGen);
+          ruleManager.updateRuleInfo(ruleId, null,
               lastCheckTime, index, index);
         }
       } catch (Exception e) {
@@ -332,12 +335,12 @@ public class TestRuleManager extends TestDaoBase {
     if (res.getState() == RuleState.ACTIVE) {
       Assert.assertTrue(after.getNumCmdsGen() - res.getNumCmdsGen() <= 6);
     } else {
-      Assert.assertTrue(after.getNumCmdsGen() == res.getNumCmdsGen());
+      Assert.assertEquals(after.getNumCmdsGen(), res.getNumCmdsGen());
     }
   }
 
   private class StateChangeWorker implements Runnable {
-    private long ruleId;
+    private final long ruleId;
 
     public StateChangeWorker(long ruleId) {
       this.ruleId = ruleId;
@@ -362,6 +365,28 @@ public class TestRuleManager extends TestDaoBase {
       } catch (Exception e) {
         Assert.fail("Should not happen!");
       }
+    }
+  }
+
+  private static class NoOpAuditService extends AuditService {
+
+    public NoOpAuditService() {
+      super(null);
+    }
+
+    @Override
+    public void logEvent(UserActivityEvent event) {
+    }
+
+    @Override
+    public SearchResult<UserActivityEvent> search(
+        AuditSearchRequest searchRequest, PageRequest pageRequest) {
+      return SearchResult.emptyResult();
+    }
+
+    @Override
+    public List<UserActivityEvent> search(AuditSearchRequest searchRequest) {
+      return Collections.emptyList();
     }
   }
 }

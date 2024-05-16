@@ -51,6 +51,12 @@ server host name with your local computer's host name .
 
   `ssh -L 8008:{REMOTE_SERVER}:8008 {USER}@{PROXY_HOST} -N`
 
+## **License header update**
+
+After adding new source code files to the project, call the following command
+in the project root directory to inject license headers to the files:
+
+`mvn com.mycila:license-maven-plugin:format -DskipTests`
 
 ## **Third-party Lib's Doc Link**
 

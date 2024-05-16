@@ -17,7 +17,16 @@
  */
 package org.smartdata.utils;
 
+import com.google.common.net.HostAndPort;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.smartdata.conf.SmartConfKeys;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.smartdata.SmartConstants.DISTRIBUTED_FILE_SYSTEM;
 import static org.smartdata.SmartConstants.FS_HDFS_IMPL;
@@ -31,5 +40,34 @@ public class ConfigUtil {
     }
 
     return remoteConfig;
+  }
+
+  public static List<InetSocketAddress> getSsmRpcAddresses(
+      Configuration configuration) throws IOException {
+    Collection<String> rawRpcAddresses = configuration
+        .getTrimmedStringCollection(SmartConfKeys.SMART_SERVER_RPC_ADDRESS_KEY);
+
+    if (CollectionUtils.isEmpty(rawRpcAddresses)) {
+      throw new IOException("SmartServer address not found. Please configure "
+          + "it through " + SmartConfKeys.SMART_SERVER_RPC_ADDRESS_KEY);
+    }
+
+    try {
+      return rawRpcAddresses.stream()
+          .map(HostAndPort::fromString)
+          .map(hostAndPort -> new InetSocketAddress(
+              hostAndPort.getHost(), hostAndPort.getPort()))
+          .collect(Collectors.toList());
+    } catch (Exception e) {
+      throw new IOException("Incorrect SmartServer address. Please follow "
+          + "IP/Hostname:Port format");
+    }
+  }
+
+  public static List<String> getCoverDirs(Configuration configuration) {
+    return configuration.getTrimmedStringCollection(SmartConfKeys.SMART_COVER_DIRS_KEY)
+        .stream()
+        .map(PathUtil::addPathSeparator)
+        .collect(Collectors.toList());
   }
 }

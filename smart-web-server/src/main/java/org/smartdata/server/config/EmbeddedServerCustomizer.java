@@ -17,6 +17,7 @@
  */
 package org.smartdata.server.config;
 
+import lombok.RequiredArgsConstructor;
 import org.smartdata.conf.SmartConf;
 import org.springframework.boot.web.server.ConfigurableWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
@@ -26,14 +27,11 @@ import static org.smartdata.conf.SmartConfKeys.SMART_REST_SERVER_PORT_KEY;
 import static org.smartdata.conf.SmartConfKeys.SMART_REST_SERVER_PORT_KEY_DEFAULT;
 
 @Component
+@RequiredArgsConstructor
 public class EmbeddedServerCustomizer
     implements WebServerFactoryCustomizer<ConfigurableWebServerFactory> {
 
   private final SmartConf conf;
-
-  public EmbeddedServerCustomizer(SmartConf smartConf) {
-    this.conf = smartConf;
-  }
 
   @Override
   public void customize(ConfigurableWebServerFactory factory) {

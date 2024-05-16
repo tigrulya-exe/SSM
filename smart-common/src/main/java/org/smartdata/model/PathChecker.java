@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,8 +19,9 @@ package org.smartdata.model;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.smartdata.conf.SmartConf;
+import org.smartdata.SmartConstants;
 import org.smartdata.conf.SmartConfKeys;
+import org.smartdata.utils.ConfigUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,8 +44,8 @@ public class PathChecker {
   private final ThreadLocal<Matcher> patternMatcherThreadLocal;
   private final List<String> coverDirs;
 
-  public PathChecker(SmartConf configuration) {
-    this(getIgnorePatterns(configuration), configuration.getCoverDirs());
+  public PathChecker(Configuration configuration) {
+    this(getIgnorePatterns(configuration), ConfigUtil.getCoverDirs(configuration));
   }
 
   public PathChecker(List<String> ignoredPathPatterns, List<String> coverDirs) {
@@ -77,6 +78,9 @@ public class PathChecker {
     Set<String> ignoredPathTemplates = new HashSet<>(
         parseIgnoredPathOptions(configuration, SMART_IGNORED_PATH_TEMPLATES_KEY)
     );
+
+    // add system directory
+    ignoredPathTemplates.add(dirToPathTemplate(SmartConstants.SYSTEM_FOLDER));
 
     // add legacy ignored dirs
     parseIgnoredPathOptions(configuration, SMART_IGNORE_DIRS_KEY)

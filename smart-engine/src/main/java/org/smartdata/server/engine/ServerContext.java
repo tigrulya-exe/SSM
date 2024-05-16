@@ -19,7 +19,6 @@ package org.smartdata.server.engine;
 
 import org.smartdata.SmartContext;
 import org.smartdata.conf.SmartConf;
-import org.smartdata.metaservice.MetaService;
 import org.smartdata.metastore.MetaStore;
 
 public class ServerContext extends SmartContext {
@@ -38,10 +37,6 @@ public class ServerContext extends SmartContext {
   }
 
   public MetaStore getMetaStore() {
-    return metaStore;
-  }
-
-  public MetaService getMetaService() {
     return metaStore;
   }
 

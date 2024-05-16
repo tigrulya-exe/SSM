@@ -12,6 +12,7 @@ tags:
 - name: Actions
 - name: Files
 - name: Cluster
+- name: Audit
 paths:
   /api/v2/rules:
     get:
@@ -567,6 +568,77 @@ paths:
       summary: List all cluster nodes
       tags:
       - Cluster
+  /api/v2/audit/events:
+    get:
+      operationId: getAuditEvents
+      parameters:
+      - explode: true
+        in: query
+        name: pageRequest
+        required: false
+        schema:
+          $ref: '#/components/schemas/PageRequest'
+      - description: Filter of the name of the user who performed the event
+        in: query
+        name: usernameLike
+        required: false
+        schema:
+          type: string
+      - description: Time interval in which the event occurred
+        in: query
+        name: eventTime
+        required: false
+        schema:
+          $ref: '#/components/schemas/EventTimeInterval'
+      - description: List of audit object types
+        in: query
+        name: objectTypes
+        required: false
+        schema:
+          items:
+            $ref: '#/components/schemas/AuditObjectType'
+          type: array
+      - description: Ids of the event objects
+        in: query
+        name: objectIds
+        required: false
+        schema:
+          items:
+            format: int64
+            type: integer
+          type: array
+      - description: List of audit operations
+        in: query
+        name: operations
+        required: false
+        schema:
+          items:
+            $ref: '#/components/schemas/AuditOperation'
+          type: array
+      - description: List of audit event results
+        in: query
+        name: results
+        required: false
+        schema:
+          items:
+            $ref: '#/components/schemas/AuditEventResult'
+          type: array
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditEvents'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Data is filled incorrectly
+      summary: List all audit events
+      tags:
+      - Audit
 components:
   parameters:
     page-request:
@@ -696,6 +768,57 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/RegistrationTimeInterval'
+    username-like:
+      description: Filter of the name of the user who performed the event
+      in: query
+      name: usernameLike
+      required: false
+      schema:
+        type: string
+    event-time:
+      description: Time interval in which the event occurred
+      in: query
+      name: eventTime
+      required: false
+      schema:
+        $ref: '#/components/schemas/EventTimeInterval'
+    object-types:
+      description: List of audit object types
+      in: query
+      name: objectTypes
+      required: false
+      schema:
+        items:
+          $ref: '#/components/schemas/AuditObjectType'
+        type: array
+    object-ids:
+      description: Ids of the event objects
+      in: query
+      name: objectIds
+      required: false
+      schema:
+        items:
+          format: int64
+          type: integer
+        type: array
+    operations:
+      description: List of audit operations
+      in: query
+      name: operations
+      required: false
+      schema:
+        items:
+          $ref: '#/components/schemas/AuditOperation'
+        type: array
+    results:
+      description: List of audit event results
+      in: query
+      name: results
+      required: false
+      schema:
+        items:
+          $ref: '#/components/schemas/AuditEventResult'
+        type: array
   schemas:
     PageRequest:
       properties:
@@ -708,6 +831,7 @@ components:
         offset:
           default: 0
           description: Offset of the first record to search from
+          format: int64
           minimum: 0
           nullable: true
           type: integer
@@ -730,11 +854,8 @@ components:
       properties:
         total:
           description: Total number of objects
+          format: int64
           type: integer
-        items:
-          items:
-            type: object
-          type: array
       required:
       - total
       title: PageResponse
@@ -1090,6 +1211,70 @@ components:
       - registrationTime
       title: ClusterNode
       type: object
+    AuditObjectType:
+      description: Type of the audit object
+      enum:
+      - RULE
+      - CMDLET
+      title: AuditObjectType
+      type: string
+    AuditOperation:
+      description: Operation of the audit event
+      enum:
+      - CREATE
+      - DELETE
+      - START
+      - STOP
+      title: AuditOperation
+      type: string
+    AuditEventResult:
+      description: Result of the audit event
+      enum:
+      - SUCCESS
+      - FAILURE
+      title: AuditEventResult
+      type: string
+    AuditEvent:
+      example:
+        result: null
+        id: 6
+        operation: null
+        objectId: 5
+        username: username
+        timestamp: 1
+        objectType: null
+      properties:
+        id:
+          description: Event id
+          format: int64
+          type: integer
+        username:
+          description: Name of the user that perform the action
+          type: string
+        timestamp:
+          description: UNIX timestamp (UTC) of the event
+          format: int64
+          type: integer
+        objectType:
+          $ref: '#/components/schemas/AuditObjectType'
+        objectId:
+          description: Id of the corresponding object (rule or cmdlet)
+          format: int64
+          type: integer
+        operation:
+          $ref: '#/components/schemas/AuditOperation'
+        result:
+          $ref: '#/components/schemas/AuditEventResult'
+      required:
+      - id
+      - objectId
+      - objectType
+      - operation
+      - result
+      - timestamp
+      - username
+      title: AuditEvent
+      type: object
     ActionState:
       description: State of the action
       enum:
@@ -1382,3 +1567,47 @@ components:
           id: id
           executorsCount: 5
       title: ClusterNodes
+    EventTimeInterval:
+      properties:
+        timestampFrom:
+          description: UNIX timestamp (UTC) of the interval start
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+        timestampTo:
+          description: UNIX timestamp (UTC) of the interval end
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+      title: EventTimeInterval
+      type: object
+    AuditEvents:
+      allOf:
+      - $ref: '#/components/schemas/PageResponse'
+      - properties:
+          items:
+            description: List of audit events
+            items:
+              $ref: '#/components/schemas/AuditEvent'
+            type: array
+        type: object
+      example:
+        total: 0
+        items:
+        - result: null
+          id: 6
+          operation: null
+          objectId: 5
+          username: username
+          timestamp: 1
+          objectType: null
+        - result: null
+          id: 6
+          operation: null
+          objectId: 5
+          username: username
+          timestamp: 1
+          objectType: null
+      title: AuditEvents

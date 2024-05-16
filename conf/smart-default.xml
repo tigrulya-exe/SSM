@@ -517,4 +517,21 @@
     <value>8081</value>
     <description>SSM Rest Server port</description>
   </property>
+
+  <property>
+    <name>smart.client.report.tasks.timeout.ms</name>
+    <value>2000</value>
+    <description>
+      Timeout in milliseconds for the successful file access report.
+      Has an effect only if the 'smart.client.concurrent.report.enabled' option is set to true.
+    </description>
+  </property>
+
+  <property>
+    <name>smart.client.active.server.cache.path</name>
+    <value>/tmp/active_smart_server</value>
+    <description>
+      Local filesystem path of the active Smart Server address file-based cache.
+    </description>
+  </property>
 </configuration>

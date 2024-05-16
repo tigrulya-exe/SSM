@@ -9,6 +9,7 @@ tags:
   - name: Actions
   - name: Files
   - name: Cluster
+  - name: Audit
 
 servers:
   - url: http://localhost:8081
@@ -48,3 +49,7 @@ paths:
   # Cluster
   /api/v2/cluster/nodes:
     $ref: './resources/cluster-nodes.yaml'
+
+  # Audit
+  /api/v2/audit/events:
+    $ref: './resources/audit-events.yaml'
