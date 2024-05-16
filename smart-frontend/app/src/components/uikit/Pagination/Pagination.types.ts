@@ -16,14 +16,29 @@
  * limitations under the License.
  */
 import type React from 'react';
-import type { OffsetOptions, Placement } from '@floating-ui/react';
+import type { SelectOption } from '@uikit/Select/Select.types';
+import type { PaginationParams } from '@uikit/types/list.types';
 
-export type PopoverPanelProps = React.HTMLAttributes<HTMLDivElement>;
+export interface PaginationData {
+  pageNumber: number;
+  perPage: number;
+}
 
-export type PopoverWidth = 'min-parent' | 'max-parent' | 'parent';
+export interface PaginationProps {
+  pageData: PaginationParams;
+  totalItems?: number;
+  perPageItems?: SelectOption<number>[];
+  onChangeData: (paginationParams: PaginationParams) => void;
+  hidePerPage?: boolean;
+  frequencyComponent?: React.ReactNode;
+  isNextBtn?: false | true | null;
+  className?: string;
+  dataTest?: string;
+}
 
-export interface PopoverOptions {
-  placement?: Placement;
-  offset?: OffsetOptions;
-  dependencyWidth?: PopoverWidth;
+export interface PaginationDataItem {
+  key: string;
+  type: 'page' | 'decoration';
+  label: string;
+  pageNumber: number;
 }

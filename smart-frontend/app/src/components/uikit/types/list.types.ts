@@ -15,15 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type React from 'react';
-import type { OffsetOptions, Placement } from '@floating-ui/react';
+export type SortDirection = 'asc' | 'desc';
 
-export type PopoverPanelProps = React.HTMLAttributes<HTMLDivElement>;
+export interface SortParams {
+  sortBy: string;
+  sortDirection: SortDirection;
+}
 
-export type PopoverWidth = 'min-parent' | 'max-parent' | 'parent';
+export interface PaginationParams {
+  pageNumber: number;
+  perPage: number;
+}
 
-export interface PopoverOptions {
-  placement?: Placement;
-  offset?: OffsetOptions;
-  dependencyWidth?: PopoverWidth;
+export interface SortingProps {
+  sortParams: SortParams;
+  onSorting: (sortParams: SortParams) => void;
 }

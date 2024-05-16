@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import React, { useState } from 'react';
-import type { OffsetOptions } from '@floating-ui/react';
+import type { OffsetOptions, Placement } from '@floating-ui/react';
 import {
   autoUpdate,
   flip,
@@ -32,7 +32,6 @@ import {
   FloatingPortal,
   useDelayGroup,
 } from '@floating-ui/react';
-import type { Placement } from '@floating-ui/dom';
 import { useForwardRef } from '@hooks/useForwardRef';
 import type { ChildWithRef } from '@uikit/types/element.types';
 import cn from 'classnames';

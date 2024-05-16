@@ -15,15 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type React from 'react';
-import type { OffsetOptions, Placement } from '@floating-ui/react';
+import React from 'react';
+import cn from 'classnames';
+import s from './PaginationButtons.module.scss';
 
-export type PopoverPanelProps = React.HTMLAttributes<HTMLDivElement>;
-
-export type PopoverWidth = 'min-parent' | 'max-parent' | 'parent';
-
-export interface PopoverOptions {
-  placement?: Placement;
-  offset?: OffsetOptions;
-  dependencyWidth?: PopoverWidth;
+interface PaginationNumButtonProps extends React.PropsWithChildren {
+  onClick: () => void;
+  selected?: boolean;
 }
+
+const PaginationNumButton = ({ onClick, children, selected = false }: PaginationNumButtonProps) => {
+  const btnClasses = cn(s.paginationButton, {
+    [s.paginationButton_selected]: selected,
+  });
+
+  const handleClick = () => {
+    !selected && onClick();
+  };
+
+  return (
+    <button onClick={handleClick} className={btnClasses}>
+      {children}
+    </button>
+  );
+};
+
+export default PaginationNumButton;
