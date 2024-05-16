@@ -1,0 +1,22 @@
+:global {
+  body.theme-dark {
+    --field-error-panel-shadow: 0px 16px 20px 0px rgba(0, 0, 0, 0.25);
+    --field-error-panel-color: var(--color-red);
+    --field-error-panel-background: var(--color-blackRedLighter);
+  }
+  body.theme-light {
+    --field-error-panel-shadow: 0px 12px 20.6px 0px rgba(97, 107, 163, 0.15);
+    --field-error-panel-color: var(--color-red);
+    --field-error-panel-background: var(--color-whiteRed);
+  }
+}
+
+.formFieldErrorPanel {
+  border-radius: 12px;
+  padding: 9px 16px;
+  box-sizing: border-box;
+  word-break: break-word;
+  background: var(--field-error-panel-background);
+  color: var(--field-error-panel-color);
+  box-shadow: var(--field-error-panel-shadow);
+}
