@@ -390,13 +390,13 @@ paths:
           items:
             type: string
           type: array
-      - description: List of cmdlet states
+      - description: List of action states
         in: query
         name: states
         required: false
         schema:
           items:
-            $ref: '#/components/schemas/CmdletState'
+            $ref: '#/components/schemas/ActionState'
           type: array
       - description: List of action sources
         in: query
@@ -806,6 +806,15 @@ components:
         items:
           type: string
         type: array
+    action-states:
+      description: List of action states
+      in: query
+      name: states
+      required: false
+      schema:
+        items:
+          $ref: '#/components/schemas/ActionState'
+        type: array
     sources:
       description: List of action sources
       in: query
@@ -1163,12 +1172,22 @@ components:
       - createTime
       - finishTime
       - status
+      - source
       - -id
       - -execHost
       - -createTime
       - -finishTime
       - -status
+      - -source
       title: ActionSort
+      type: string
+    ActionState:
+      description: State of the action
+      enum:
+      - RUNNING
+      - SUCCESSFUL
+      - FAILED
+      title: ActionState
       type: string
     ActionSource:
       description: Source of the action creation
@@ -1493,14 +1512,6 @@ components:
       - username
       title: AuditEvent
       type: object
-    ActionState:
-      description: State of the action
-      enum:
-      - RUNNING
-      - SUCCESSFUL
-      - FAILED
-      title: ActionState
-      type: string
     ExecutorType:
       description: Type of the cmdlet executor
       enum:

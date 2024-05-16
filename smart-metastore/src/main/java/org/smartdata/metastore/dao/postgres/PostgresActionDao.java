@@ -19,21 +19,26 @@ package org.smartdata.metastore.dao.postgres;
 
 import org.smartdata.metastore.dao.impl.DefaultActionDao;
 import org.smartdata.model.ActionInfo;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+
+import java.util.List;
 
 public class PostgresActionDao extends DefaultActionDao {
   private static final String PRIMARY_KEY_FIELD = "aid";
 
   private final PostgresUpsertSupport upsertSupport;
 
-  public PostgresActionDao(DataSource dataSource) {
-    super(dataSource);
+  public PostgresActionDao(
+      DataSource dataSource,
+      PlatformTransactionManager transactionManager) {
+    super(dataSource, transactionManager);
     this.upsertSupport = new PostgresUpsertSupport(dataSource, tableName);
   }
 
   @Override
-  public int[] replace(ActionInfo[] actionInfos) {
-    return upsertSupport.batchUpsert(actionInfos, this::toMap, PRIMARY_KEY_FIELD);
+  public void upsert(List<ActionInfo> actionInfos) {
+    upsertSupport.batchUpsert(actionInfos, this::toMap, PRIMARY_KEY_FIELD);
   }
 }

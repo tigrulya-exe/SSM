@@ -20,6 +20,7 @@ package org.smartdata.metastore.dao;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.smartdata.metastore.queries.sort.CmdletSortField;
 import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.CmdletState;
 import org.smartdata.model.TimeInterval;
@@ -35,7 +36,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 public class TestCmdletDao
-    extends TestSearchableDao<CmdletSearchRequest, CmdletInfo, Long> {
+    extends TestSearchableDao<CmdletSearchRequest, CmdletInfo, CmdletSortField, Long> {
 
   private static final long FIRST_CMDLET_ID = 0;
   private static final long SECOND_CMDLET_ID = 1;
@@ -263,7 +264,7 @@ public class TestCmdletDao
   }
 
   @Override
-  protected Searchable<CmdletSearchRequest, CmdletInfo> searchable() {
+  protected Searchable<CmdletSearchRequest, CmdletInfo, CmdletSortField> searchable() {
     return cmdletDao;
   }
 
@@ -273,35 +274,35 @@ public class TestCmdletDao
   }
 
   @Override
-  protected String defaultSortColumn() {
-    return "cid";
+  protected CmdletSortField defaultSortField() {
+    return CmdletSortField.ID;
   }
 
   private void insertCmdletsForSearch() {
-    CmdletInfo cmdlet1 = CmdletInfo.newBuilder()
-        .setId(FIRST_CMDLET_ID)
-        .setRuleId(1)
-        .setActionIds(Arrays.asList(1L, 2L, 3L))
+    CmdletInfo cmdlet1 = CmdletInfo.builder()
+        .setCid(FIRST_CMDLET_ID)
+        .setRid(1)
+        .setAids(Arrays.asList(1L, 2L, 3L))
         .setState(CmdletState.DISABLED)
         .setParameters("action -key val1")
         .setGenerateTime(1L)
         .setStateChangedTime(10L)
         .build();
 
-    CmdletInfo cmdlet2 = CmdletInfo.newBuilder()
-        .setId(SECOND_CMDLET_ID)
-        .setRuleId(2)
-        .setActionIds(Collections.singletonList(4L))
+    CmdletInfo cmdlet2 = CmdletInfo.builder()
+        .setCid(SECOND_CMDLET_ID)
+        .setRid(2)
+        .setAids(Collections.singletonList(4L))
         .setState(CmdletState.EXECUTING)
         .setParameters("write -file test.txt")
         .setGenerateTime(2L)
         .setStateChangedTime(14L)
         .build();
 
-    CmdletInfo cmdlet3 = CmdletInfo.newBuilder()
-        .setId(THIRD_CMDLET_ID)
-        .setRuleId(1)
-        .setActionIds(Collections.singletonList(5L))
+    CmdletInfo cmdlet3 = CmdletInfo.builder()
+        .setCid(THIRD_CMDLET_ID)
+        .setRid(1)
+        .setAids(Collections.singletonList(5L))
         .setState(CmdletState.DISABLED)
         .setParameters("action -key another_val")
         .setGenerateTime(10L)

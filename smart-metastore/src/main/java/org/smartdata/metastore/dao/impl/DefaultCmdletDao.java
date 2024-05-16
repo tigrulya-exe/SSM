@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.smartdata.metastore.SearchableAbstractDao;
 import org.smartdata.metastore.dao.CmdletDao;
 import org.smartdata.metastore.queries.MetastoreQuery;
+import org.smartdata.metastore.queries.sort.CmdletSortField;
 import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.CmdletState;
 import org.smartdata.model.request.CmdletSearchRequest;
@@ -43,14 +44,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.smartdata.metastore.queries.MetastoreQuery.selectAll;
-import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.betweenInclusive;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.betweenEpochInclusive;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.in;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.like;
-import static org.smartdata.utils.DateTimeUtils.intervalEndToEpoch;
-import static org.smartdata.utils.DateTimeUtils.intervalStartToEpoch;
 
 public class DefaultCmdletDao
-    extends SearchableAbstractDao<CmdletSearchRequest, CmdletInfo>
+    extends SearchableAbstractDao<CmdletSearchRequest, CmdletInfo, CmdletSortField>
     implements CmdletDao {
   private static final String TABLE_NAME = "cmdlet";
   private final String terminatedStates;
@@ -307,16 +306,6 @@ public class DefaultCmdletDao
 
   @Override
   protected MetastoreQuery searchQuery(CmdletSearchRequest searchRequest) {
-    Long submissionFrom =
-        intervalStartToEpoch(searchRequest.getSubmissionTime());
-    Long submissionTo =
-        intervalEndToEpoch(searchRequest.getSubmissionTime());
-
-    Long stateChangeFrom =
-        intervalStartToEpoch(searchRequest.getStateChangedTime());
-    Long stateChangeTo =
-        intervalEndToEpoch(searchRequest.getStateChangedTime());
-
     List<Integer> stateValues = CollectionUtils.emptyIfNull(searchRequest.getStates())
         .stream()
         .map(CmdletState::getValue)
@@ -327,19 +316,21 @@ public class DefaultCmdletDao
         .where(
             in("cid", searchRequest.getIds()),
             like("parameters", searchRequest.getTextRepresentationLike()),
-            betweenInclusive("generate_time", submissionFrom, submissionTo),
+            betweenEpochInclusive("generate_time",
+                searchRequest.getSubmissionTime()),
             in("rid", searchRequest.getRuleIds()),
             in("state", stateValues),
-            betweenInclusive("state_changed_time", stateChangeFrom, stateChangeTo)
+            betweenEpochInclusive("state_changed_time",
+                searchRequest.getStateChangedTime())
         );
   }
 
   @Override
   protected CmdletInfo mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-    return CmdletInfo.newBuilder()
-        .setId(resultSet.getLong("cid"))
-        .setRuleId(resultSet.getLong("rid"))
-        .setActionIds(parseRawIds(resultSet.getString("aids")))
+    return CmdletInfo.builder()
+        .setCid(resultSet.getLong("cid"))
+        .setRid(resultSet.getLong("rid"))
+        .setAids(parseRawIds(resultSet.getString("aids")))
         .setState(CmdletState.fromValue(resultSet.getByte("state")))
         .setParameters(resultSet.getString("parameters"))
         .setGenerateTime(resultSet.getLong("generate_time"))

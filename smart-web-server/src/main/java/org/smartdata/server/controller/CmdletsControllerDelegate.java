@@ -25,6 +25,7 @@ import org.smartdata.server.engine.CmdletManager;
 import org.smartdata.server.engine.cmdlet.CmdletInfoHandler;
 import org.smartdata.server.generated.api.CmdletsApiDelegate;
 import org.smartdata.server.generated.model.CmdletDto;
+import org.smartdata.server.generated.model.CmdletSortDto;
 import org.smartdata.server.generated.model.CmdletStateDto;
 import org.smartdata.server.generated.model.CmdletsDto;
 import org.smartdata.server.generated.model.PageRequestDto;
@@ -32,7 +33,7 @@ import org.smartdata.server.generated.model.StateChangeTimeIntervalDto;
 import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
 import org.smartdata.server.generated.model.SubmitCmdletRequestDto;
 import org.smartdata.server.mappers.CmdletInfoMapper;
-import org.smartdata.server.mappers.PageRequestMapper;
+import org.smartdata.server.mappers.pagination.CmdletsPageRequestMapper;
 import org.springframework.stereotype.Component;
 
 import javax.validation.Valid;
@@ -41,13 +42,13 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class CmdletControllerDelegate implements CmdletsApiDelegate {
+public class CmdletsControllerDelegate implements CmdletsApiDelegate {
 
   private final CmdletInfoHandler cmdletInfoHandler;
   private final CmdletManager cmdletManager;
 
   private final CmdletInfoMapper cmdletInfoMapper;
-  private final PageRequestMapper pageRequestMapper;
+  private final CmdletsPageRequestMapper pageRequestMapper;
 
   @Override
   public CmdletDto addCmdlet(
@@ -65,16 +66,18 @@ public class CmdletControllerDelegate implements CmdletsApiDelegate {
   @Override
   public CmdletsDto getCmdlets(
       PageRequestDto pageRequestDto,
+      List<@Valid CmdletSortDto> sort,
       String textRepresentationLike,
       SubmissionTimeIntervalDto submissionTime,
       List<Long> ruleIds,
-      List<@Valid CmdletStateDto> states,
+      List<CmdletStateDto> states,
       StateChangeTimeIntervalDto stateChangedTime) {
 
     CmdletSearchRequest searchRequest = cmdletInfoMapper.toSearchRequest(
         textRepresentationLike, submissionTime, ruleIds, states, stateChangedTime);
 
-    PageRequest pageRequest = pageRequestMapper.toPageRequest(pageRequestDto);
+    PageRequest pageRequest =
+        pageRequestMapper.toPageRequest(pageRequestDto, sort);
 
     return cmdletInfoMapper.toCmdletsDto(
         cmdletInfoHandler.search(searchRequest, pageRequest));

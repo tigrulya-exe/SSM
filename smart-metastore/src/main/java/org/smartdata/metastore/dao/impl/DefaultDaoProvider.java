@@ -71,7 +71,7 @@ public class DefaultDaoProvider implements DaoProvider {
 
   @Override
   public ActionDao actionDao() {
-    return new DefaultActionDao(dataSource);
+    return new DefaultActionDao(dataSource, transactionManager);
   }
 
   @Override

@@ -89,14 +89,14 @@ public class ProtoBufferHelper {
   public static CmdletInfo convert(CmdletInfoProto proto) {
     // TODO replace actionType with aids
     List<Long> actionIds = proto.getAidsList();
-    return CmdletInfo.newBuilder()
-        .setId(proto.getCid())
-        .setRuleId(proto.getRid())
+    return CmdletInfo.builder()
+        .setCid(proto.getCid())
+        .setRid(proto.getRid())
         .setState(CmdletState.fromValue(proto.getState()))
         .setParameters(proto.getParameters())
         .setGenerateTime(proto.getGenerateTime())
         .setStateChangedTime(proto.getStateChangedTime())
-        .setActionIds(actionIds)
+        .setAids(actionIds)
         .build();
   }
 
@@ -138,7 +138,7 @@ public class ProtoBufferHelper {
   }
 
   public static ActionInfo convert(ActionInfoProto infoProto) {
-    ActionInfo.Builder builder = ActionInfo.newBuilder()
+    ActionInfo.Builder builder = ActionInfo.builder()
         .setActionName(infoProto.getActionName())
         .setResult(infoProto.getResult())
         .setLog(infoProto.getLog())

@@ -23,6 +23,7 @@ import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.MetastoreQuery;
 import org.smartdata.metastore.queries.MetastoreQueryExecutor;
 import org.smartdata.metastore.queries.PageRequest;
+import org.smartdata.metastore.queries.expression.MetastoreQueryExpression;
 import org.smartdata.metastore.queries.sort.SortField;
 import org.smartdata.metastore.queries.sort.Sorting;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -31,10 +32,15 @@ import javax.sql.DataSource;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.emptyExpression;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.or;
 
 public abstract class SearchableAbstractDao<RequestT, EntityT, ColumnT extends SortField>
     extends AbstractDao
@@ -59,13 +65,36 @@ public abstract class SearchableAbstractDao<RequestT, EntityT, ColumnT extends S
 
   @Override
   public List<EntityT> search(RequestT searchRequest) {
-    return queryExecutor.execute(searchQuery(searchRequest), this::mapRow);
+    return executeQuery(searchQuery(searchRequest));
   }
 
   public Optional<EntityT> searchSingle(RequestT searchRequest) {
-    return Optional.ofNullable(search(searchRequest))
+    return executeSingle(searchQuery(searchRequest));
+  }
+
+  protected List<EntityT> executeQuery(MetastoreQuery query) {
+    return queryExecutor.execute(query, this::mapRow);
+  }
+
+  protected Optional<EntityT> executeSingle(MetastoreQuery query) {
+    return Optional.ofNullable(executeQuery(query))
         .filter(entities -> !entities.isEmpty())
         .map(entities -> entities.get(0));
+  }
+
+  protected <T> MetastoreQueryExpression buildQueryOperator(
+      Collection<T> properties,
+      Function<T, MetastoreQueryExpression> propertyMapper) {
+
+    if (properties == null) {
+      return emptyExpression();
+    }
+
+    MetastoreQueryExpression[] expressions = properties
+        .stream()
+        .map(propertyMapper)
+        .toArray(MetastoreQueryExpression[]::new);
+    return or(expressions);
   }
 
   public long count(RequestT searchRequest) {

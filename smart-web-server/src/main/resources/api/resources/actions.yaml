@@ -9,7 +9,7 @@ get:
     - $ref: '../parameters/common/text-representation-like.yaml'
     - $ref: '../parameters/common/submission-time.yaml'
     - $ref: '../parameters/actions/hosts.yaml'
-    - $ref: '../parameters/actions/states.yaml'
+    - $ref: '../parameters/actions/action-states.yaml'
     - $ref: '../parameters/actions/sources.yaml'
     - $ref: '../parameters/actions/completion-time.yaml'
   responses:

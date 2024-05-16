@@ -21,7 +21,6 @@ import org.smartdata.metastore.SearchableAbstractDao;
 import org.smartdata.metastore.dao.UserActivityDao;
 import org.smartdata.metastore.queries.MetastoreQuery;
 import org.smartdata.metastore.queries.sort.AuditSortField;
-import org.smartdata.model.TimeInterval;
 import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.audit.UserActivityObject;
 import org.smartdata.model.audit.UserActivityOperation;
@@ -39,12 +38,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.smartdata.metastore.queries.MetastoreQuery.selectAll;
-import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.betweenInclusive;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.betweenEpochInclusive;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.in;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.inStrings;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.like;
-import static org.smartdata.utils.DateTimeUtils.intervalEndToEpoch;
-import static org.smartdata.utils.DateTimeUtils.intervalStartToEpoch;
 
 public class DefaultUserActivityDao
     extends SearchableAbstractDao<AuditSearchRequest, UserActivityEvent, AuditSortField>
@@ -70,17 +67,11 @@ public class DefaultUserActivityDao
 
   @Override
   protected MetastoreQuery searchQuery(AuditSearchRequest searchRequest) {
-    Long timestampFrom =
-        getIntervalTimestampEpoch(searchRequest, TimeInterval::getFrom);
-    Long timestampTo =
-        getIntervalTimestampEpoch(searchRequest, TimeInterval::getTo);
-
     return selectAll()
         .from(TABLE_NAME)
         .where(
             like("username", searchRequest.getUserLike()),
-            greaterThanEqual("timestamp", timestampFrom),
-            lessThanEqual("timestamp", timestampTo),
+            betweenEpochInclusive("timestamp", searchRequest.getTimestampBetween()),
             inStrings("object_type", searchRequest.getObjectTypes()),
             in("object_id", searchRequest.getObjectIds()),
             inStrings("operation", searchRequest.getOperations()),

@@ -20,6 +20,7 @@ package org.smartdata.metastore.dao;
 import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.PageRequest;
+import org.smartdata.metastore.queries.sort.SortField;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,19 +29,20 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
-public abstract class TestSearchableDao<RequestT, EntityT, IdT> extends TestDaoBase {
+public abstract class TestSearchableDao<
+    RequestT, EntityT, ColumnT extends SortField, IdT> extends TestDaoBase {
   // used to fail if query returns more results then expected
   private static final int ADDITIONAL_LIMIT = 5;
 
-  protected abstract Searchable<RequestT, EntityT> searchable();
+  protected abstract Searchable<RequestT, EntityT, ColumnT> searchable();
 
   protected abstract IdT getIdentifier(EntityT entityT);
 
-  protected abstract String defaultSortColumn();
+  protected abstract ColumnT defaultSortField();
 
   @SafeVarargs
   protected final void testSearch(RequestT searchRequest, IdT... expectedIds) {
-    PageRequest singleEntityRequest = pageRequest(0L, 1);
+    PageRequest<ColumnT> singleEntityRequest = pageRequest(0L, 1);
 
     List<IdT> expectedIdsList = expectedIds.length == 0
         ? Collections.emptyList()
@@ -51,7 +53,7 @@ public abstract class TestSearchableDao<RequestT, EntityT, IdT> extends TestDaoB
         expectedIds.length, expectedIdsList);
 
     if (expectedIds.length > 1) {
-      PageRequest remainingResultsRequest = pageRequest(1L,
+      PageRequest<ColumnT> remainingResultsRequest = pageRequest(1L,
           expectedIds.length - 1 + ADDITIONAL_LIMIT);
 
       expectedIdsList = Arrays.asList(expectedIds).subList(1, expectedIds.length);
@@ -62,9 +64,21 @@ public abstract class TestSearchableDao<RequestT, EntityT, IdT> extends TestDaoB
     }
   }
 
+  @SafeVarargs
+  protected final void testPagedSearch(
+      RequestT searchRequest,
+      PageRequest<ColumnT> pageRequest,
+      IdT... expectedIds) {
+    testPagedSearch(
+        searchRequest,
+        pageRequest,
+        expectedIds.length,
+        Arrays.asList(expectedIds));
+  }
+
   private void testPagedSearch(
       RequestT searchRequest,
-      PageRequest pageRequest,
+      PageRequest<ColumnT> pageRequest,
       long expectedTotal,
       List<IdT> expectedIds) {
     SearchResult<EntityT> searchResult =
@@ -81,11 +95,11 @@ public abstract class TestSearchableDao<RequestT, EntityT, IdT> extends TestDaoB
     assertEquals(expectedIds, actualEventTimestamps);
   }
 
-  private PageRequest pageRequest(long offset, int limit) {
-    return PageRequest.builder()
+  private PageRequest<ColumnT> pageRequest(long offset, int limit) {
+    return PageRequest.<ColumnT>builder()
         .offset(offset)
         .limit(limit)
-        .sortByAsc(defaultSortColumn())
+        .sortByAsc(defaultSortField())
         .build();
   }
 }

@@ -26,6 +26,7 @@ import org.smartdata.metastore.dao.CmdletDao;
 import org.smartdata.metastore.dao.Searchable;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.PageRequest;
+import org.smartdata.metastore.queries.sort.CmdletSortField;
 import org.smartdata.model.ActionInfo;
 import org.smartdata.model.CmdletDescriptor;
 import org.smartdata.model.CmdletInfo;
@@ -49,7 +50,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-public class CmdletInfoHandler implements Searchable<CmdletSearchRequest, CmdletInfo> {
+public class CmdletInfoHandler
+    implements Searchable<CmdletSearchRequest, CmdletInfo, CmdletSortField> {
   private static final Logger LOG = LoggerFactory.getLogger(CmdletInfoHandler.class);
 
   private final MetaStore metaStore;
@@ -78,9 +80,9 @@ public class CmdletInfoHandler implements Searchable<CmdletSearchRequest, Cmdlet
 
   public CmdletInfo createCmdletInfo(CmdletDescriptor cmdletDescriptor) {
     long submitTime = System.currentTimeMillis();
-    return CmdletInfo.newBuilder()
-        .setId(maxCmdletId.getAndIncrement())
-        .setRuleId(cmdletDescriptor.getRuleId())
+    return CmdletInfo.builder()
+        .setCid(maxCmdletId.getAndIncrement())
+        .setRid(cmdletDescriptor.getRuleId())
         .setState(CmdletState.PENDING)
         .setParameters(cmdletDescriptor.getCmdletString())
         .setGenerateTime(submitTime)
@@ -200,7 +202,7 @@ public class CmdletInfoHandler implements Searchable<CmdletSearchRequest, Cmdlet
         .orElseGet(Collections::emptyList);
 
     for (long id : actionIds) {
-      ActionInfo action = actionInfoHandler.getActionInfo(id);
+      ActionInfo action = actionInfoHandler.getActionInfoOrNull(id);
       if (action != null) {
         action.setExecHost(host);
       }
@@ -239,7 +241,7 @@ public class CmdletInfoHandler implements Searchable<CmdletSearchRequest, Cmdlet
 
   @Override
   public SearchResult<CmdletInfo> search(
-      CmdletSearchRequest searchRequest, PageRequest pageRequest) {
+      CmdletSearchRequest searchRequest, PageRequest<CmdletSortField> pageRequest) {
     return cmdletDao.search(searchRequest, pageRequest);
   }
 

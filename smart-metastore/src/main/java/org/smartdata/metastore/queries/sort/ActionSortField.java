@@ -17,28 +17,27 @@
  */
 package org.smartdata.metastore.queries.sort;
 
-import lombok.Data;
+public enum ActionSortField implements SortField {
+  ID("aid"),
+  EXEC_HOST("exec_host"),
+  CREATE_TIME("create_time"),
+  FINISH_TIME("finish_time"),
+  STATUS("status"),
+  SOURCE("source");
 
-@Data
-public class Sorting<T> {
-  public enum Order {
-    ASC,
-    DESC
+  private final String fieldName;
+
+  ActionSortField(String fieldName) {
+    this.fieldName = fieldName;
   }
 
-  private final T column;
-  private final Order order;
-
-  public static <T> Sorting<T> descending(T column) {
-    return new Sorting<>(column, Order.DESC);
-  }
-
-  public static <T> Sorting<T> ascending(T column) {
-    return new Sorting<>(column, Order.ASC);
+  @Override
+  public String getFieldName() {
+    return fieldName;
   }
 
   @Override
   public String toString() {
-    return column + " " + order;
+    return fieldName;
   }
 }

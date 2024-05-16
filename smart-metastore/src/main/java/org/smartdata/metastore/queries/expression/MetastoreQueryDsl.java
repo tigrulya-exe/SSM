@@ -18,11 +18,15 @@
 package org.smartdata.metastore.queries.expression;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.smartdata.model.TimeInterval;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.smartdata.utils.DateTimeUtils.intervalEndToEpoch;
+import static org.smartdata.utils.DateTimeUtils.intervalStartToEpoch;
 
 /**
  * DSL for convenient writing of SQL queries with multiple
@@ -32,6 +36,10 @@ import java.util.stream.Collectors;
 public class MetastoreQueryDsl {
 
   private static final MetastoreQueryExpression EMPTY_EXPRESSION = () -> "";
+
+  public static MetastoreQueryExpression emptyExpression() {
+    return EMPTY_EXPRESSION;
+  }
 
   public static MetastoreQueryExpression or(MetastoreQueryExpression... expressions) {
     return operator("OR", expressions);
@@ -63,7 +71,7 @@ public class MetastoreQueryDsl {
 
   public static <T> MetastoreQueryExpression in(String column, List<T> values) {
     if (CollectionUtils.isEmpty(values)) {
-      return EMPTY_EXPRESSION;
+      return emptyExpression();
     }
 
     if (values.size() == 1) {
@@ -75,7 +83,7 @@ public class MetastoreQueryDsl {
 
   public static <T> MetastoreQueryExpression inStrings(String column, List<T> values) {
     if (CollectionUtils.isEmpty(values)) {
-      return EMPTY_EXPRESSION;
+      return emptyExpression();
     }
 
     List<String> strValues = values.stream()
@@ -99,10 +107,35 @@ public class MetastoreQueryDsl {
     );
   }
 
+  public static MetastoreQueryExpression betweenEpoch(
+      String column, TimeInterval timeInterval) {
+    Long from = intervalStartToEpoch(timeInterval);
+    Long to = intervalEndToEpoch(timeInterval);
+
+    return between(column, from, to);
+  }
+
+  public static MetastoreQueryExpression betweenEpochInclusive(
+      String column, TimeInterval timeInterval) {
+    Long from = intervalStartToEpoch(timeInterval);
+    Long to = intervalEndToEpoch(timeInterval);
+
+    return betweenInclusive(column, from, to);
+  }
+
   public static <T> MetastoreQueryExpression like(String column, T value) {
+    return patternSearchOp("LIKE", column, value);
+  }
+
+  public static <T> MetastoreQueryExpression notLike(String column, T value) {
+    return patternSearchOp("NOT LIKE", column, value);
+  }
+
+  private static <T> MetastoreQueryExpression patternSearchOp(
+      String operator, String column, T value) {
     return Optional.ofNullable(value)
-        .map(val -> binaryOpWithPlaceholder("LIKE", column, "%" + val + "%"))
-        .orElse(EMPTY_EXPRESSION);
+        .map(val -> binaryOpWithPlaceholder(operator, column, "%" + val + "%"))
+        .orElseGet(MetastoreQueryDsl::emptyExpression);
   }
 
   private static MetastoreQueryExpression operator(
@@ -112,7 +145,7 @@ public class MetastoreQueryDsl {
         .collect(Collectors.toList());
 
     if (nonEmptyExpressions.isEmpty()) {
-      return EMPTY_EXPRESSION;
+      return emptyExpression();
     }
 
     return new MetastoreQueryOperator(operator, nonEmptyExpressions);
@@ -121,7 +154,7 @@ public class MetastoreQueryDsl {
   private static <T> MetastoreQueryExpression binaryOpWithPlaceholder(
       String operator, String column, T value) {
     if (value == null) {
-      return EMPTY_EXPRESSION;
+      return emptyExpression();
     }
 
     return new MetastoreQueryOperator(operator,

@@ -25,8 +25,8 @@ import org.smartdata.server.generated.model.ActionDto;
 import org.smartdata.server.generated.model.ActionInfoDto;
 import org.smartdata.server.generated.model.ActionSortDto;
 import org.smartdata.server.generated.model.ActionSourceDto;
+import org.smartdata.server.generated.model.ActionStateDto;
 import org.smartdata.server.generated.model.ActionsDto;
-import org.smartdata.server.generated.model.CmdletStateDto;
 import org.smartdata.server.generated.model.CompletionTimeIntervalDto;
 import org.smartdata.server.generated.model.PageRequestDto;
 import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
@@ -65,7 +65,7 @@ public interface ActionsApiDelegate {
      * @param textRepresentationLike The object&#39;s text representation filter.  May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param submissionTime Time interval in which the entity was submitted (optional)
      * @param hosts List of hosts on which the action is/was running (optional)
-     * @param states List of cmdlet states (optional)
+     * @param states List of action states (optional)
      * @param sources List of action sources (optional)
      * @param completionTime Time interval in which the action was finished (optional)
      * @return OK (status code 200)
@@ -77,7 +77,7 @@ public interface ActionsApiDelegate {
         String textRepresentationLike,
         SubmissionTimeIntervalDto submissionTime,
         List<String> hosts,
-        List<@Valid CmdletStateDto> states,
+        List<@Valid ActionStateDto> states,
         List<@Valid ActionSourceDto> sources,
         CompletionTimeIntervalDto completionTime) throws Exception {
         throw new IllegalArgumentException("Not implemented");

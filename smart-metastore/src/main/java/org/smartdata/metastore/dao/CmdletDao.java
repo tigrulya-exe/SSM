@@ -17,13 +17,14 @@
  */
 package org.smartdata.metastore.dao;
 
+import org.smartdata.metastore.queries.sort.CmdletSortField;
 import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.CmdletState;
 import org.smartdata.model.request.CmdletSearchRequest;
 
 import java.util.List;
 
-public interface CmdletDao extends Searchable<CmdletSearchRequest, CmdletInfo> {
+public interface CmdletDao extends Searchable<CmdletSearchRequest, CmdletInfo, CmdletSortField> {
   CmdletInfo getById(long id);
 
   List<CmdletInfo> getByRuleId(long ruleId);

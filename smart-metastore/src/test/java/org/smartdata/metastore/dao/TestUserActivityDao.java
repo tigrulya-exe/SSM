@@ -43,7 +43,7 @@ import static org.smartdata.model.audit.UserActivityResult.FAILURE;
 import static org.smartdata.model.audit.UserActivityResult.SUCCESS;
 
 public class TestUserActivityDao
-    extends TestSearchableDao<AuditSearchRequest, UserActivityEvent, Instant> {
+    extends TestSearchableDao<AuditSearchRequest, UserActivityEvent, AuditSortField, Instant> {
   private static final Instant FIRST_EVENT_TIMESTAMP =
       Instant.EPOCH.plus(10, ChronoUnit.MINUTES);
   private static final Instant SECOND_EVENT_TIMESTAMP =
@@ -236,7 +236,7 @@ public class TestUserActivityDao
   }
 
   @Override
-  protected Searchable<AuditSearchRequest, UserActivityEvent> searchable() {
+  protected Searchable<AuditSearchRequest, UserActivityEvent, AuditSortField> searchable() {
     return userActivityDao;
   }
 
@@ -246,8 +246,8 @@ public class TestUserActivityDao
   }
 
   @Override
-  protected String defaultSortColumn() {
-    return "timestamp";
+  protected AuditSortField defaultSortField() {
+    return AuditSortField.TIMESTAMP;
   }
 
   private void insertTestEvents() {

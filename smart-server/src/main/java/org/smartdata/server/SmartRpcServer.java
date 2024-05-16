@@ -237,7 +237,7 @@ public class SmartRpcServer implements SmartServerProtocols {
     checkIfActive();
     return ssm.getCmdletManager()
         .getActionInfoHandler()
-        .getActionInfo(actionID);
+        .getActionInfoOrNull(actionID);
   }
 
   @Override
