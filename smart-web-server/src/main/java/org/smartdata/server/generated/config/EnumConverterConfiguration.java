@@ -17,13 +17,20 @@
  */
 package org.smartdata.server.generated.config;
 
+import org.smartdata.server.generated.model.ActionSortDto;
 import org.smartdata.server.generated.model.ActionSourceDto;
 import org.smartdata.server.generated.model.ActionStateDto;
 import org.smartdata.server.generated.model.AuditEventResultDto;
 import org.smartdata.server.generated.model.AuditObjectTypeDto;
 import org.smartdata.server.generated.model.AuditOperationDto;
+import org.smartdata.server.generated.model.AuditSortDto;
+import org.smartdata.server.generated.model.CachedFileSortDto;
+import org.smartdata.server.generated.model.ClusterSortDto;
+import org.smartdata.server.generated.model.CmdletSortDto;
 import org.smartdata.server.generated.model.CmdletStateDto;
 import org.smartdata.server.generated.model.ExecutorTypeDto;
+import org.smartdata.server.generated.model.HotFileSortDto;
+import org.smartdata.server.generated.model.RuleSortDto;
 import org.smartdata.server.generated.model.RuleStateDto;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +39,15 @@ import org.springframework.core.convert.converter.Converter;
 @Configuration
 public class EnumConverterConfiguration {
 
+    @Bean(name = "org.smartdata.server.generated.config.EnumConverterConfiguration.actionSortConverter")
+    Converter<String, ActionSortDto> actionSortConverter() {
+        return new Converter<String, ActionSortDto>() {
+            @Override
+            public ActionSortDto convert(String source) {
+                return ActionSortDto.fromValue(source);
+            }
+        };
+    }
     @Bean(name = "org.smartdata.server.generated.config.EnumConverterConfiguration.actionSourceConverter")
     Converter<String, ActionSourceDto> actionSourceConverter() {
         return new Converter<String, ActionSourceDto>() {
@@ -77,6 +93,42 @@ public class EnumConverterConfiguration {
             }
         };
     }
+    @Bean(name = "org.smartdata.server.generated.config.EnumConverterConfiguration.auditSortConverter")
+    Converter<String, AuditSortDto> auditSortConverter() {
+        return new Converter<String, AuditSortDto>() {
+            @Override
+            public AuditSortDto convert(String source) {
+                return AuditSortDto.fromValue(source);
+            }
+        };
+    }
+    @Bean(name = "org.smartdata.server.generated.config.EnumConverterConfiguration.cachedFileSortConverter")
+    Converter<String, CachedFileSortDto> cachedFileSortConverter() {
+        return new Converter<String, CachedFileSortDto>() {
+            @Override
+            public CachedFileSortDto convert(String source) {
+                return CachedFileSortDto.fromValue(source);
+            }
+        };
+    }
+    @Bean(name = "org.smartdata.server.generated.config.EnumConverterConfiguration.clusterSortConverter")
+    Converter<String, ClusterSortDto> clusterSortConverter() {
+        return new Converter<String, ClusterSortDto>() {
+            @Override
+            public ClusterSortDto convert(String source) {
+                return ClusterSortDto.fromValue(source);
+            }
+        };
+    }
+    @Bean(name = "org.smartdata.server.generated.config.EnumConverterConfiguration.cmdletSortConverter")
+    Converter<String, CmdletSortDto> cmdletSortConverter() {
+        return new Converter<String, CmdletSortDto>() {
+            @Override
+            public CmdletSortDto convert(String source) {
+                return CmdletSortDto.fromValue(source);
+            }
+        };
+    }
     @Bean(name = "org.smartdata.server.generated.config.EnumConverterConfiguration.cmdletStateConverter")
     Converter<String, CmdletStateDto> cmdletStateConverter() {
         return new Converter<String, CmdletStateDto>() {
@@ -92,6 +144,24 @@ public class EnumConverterConfiguration {
             @Override
             public ExecutorTypeDto convert(String source) {
                 return ExecutorTypeDto.fromValue(source);
+            }
+        };
+    }
+    @Bean(name = "org.smartdata.server.generated.config.EnumConverterConfiguration.hotFileSortConverter")
+    Converter<String, HotFileSortDto> hotFileSortConverter() {
+        return new Converter<String, HotFileSortDto>() {
+            @Override
+            public HotFileSortDto convert(String source) {
+                return HotFileSortDto.fromValue(source);
+            }
+        };
+    }
+    @Bean(name = "org.smartdata.server.generated.config.EnumConverterConfiguration.ruleSortConverter")
+    Converter<String, RuleSortDto> ruleSortConverter() {
+        return new Converter<String, RuleSortDto>() {
+            @Override
+            public RuleSortDto convert(String source) {
+                return RuleSortDto.fromValue(source);
             }
         };
     }

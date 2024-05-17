@@ -5,6 +5,7 @@ get:
   operationId: getCmdlets
   parameters:
     - $ref: '../parameters/common/page-request.yaml'
+    - $ref: '../parameters/cmdlets/cmdlets-sort.yaml'
     - $ref: '../parameters/common/text-representation-like.yaml'
     - $ref: '../parameters/common/submission-time.yaml'
     - $ref: '../parameters/cmdlets/rule-ids.yaml'

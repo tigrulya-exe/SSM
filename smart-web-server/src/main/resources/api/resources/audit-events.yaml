@@ -5,6 +5,7 @@ get:
   operationId: getAuditEvents
   parameters:
     - $ref: '../parameters/common/page-request.yaml'
+    - $ref: '../parameters/audit/audit-sort.yaml'
     - $ref: '../parameters/audit/username-like.yaml'
     - $ref: '../parameters/audit/event-time.yaml'
     - $ref: '../parameters/audit/object-types.yaml'

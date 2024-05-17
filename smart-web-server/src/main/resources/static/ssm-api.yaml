@@ -24,6 +24,14 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/PageRequest'
+      - description: Sort field names prefixed with '-' for descending order
+        in: query
+        name: sort
+        required: false
+        schema:
+          items:
+            $ref: '#/components/schemas/RuleSort'
+          type: array
       - description: "The object's text representation filter.  May contain special\
           \ characters like \"/\", \"'\", so should be encoded."
         in: query
@@ -196,6 +204,14 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/PageRequest'
+      - description: Sort field names prefixed with '-' for descending order
+        in: query
+        name: sort
+        required: false
+        schema:
+          items:
+            $ref: '#/components/schemas/CmdletSort'
+          type: array
       - description: "The object's text representation filter.  May contain special\
           \ characters like \"/\", \"'\", so should be encoded."
         in: query
@@ -345,6 +361,14 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/PageRequest'
+      - description: Sort field names prefixed with '-' for descending order
+        in: query
+        name: sort
+        required: false
+        schema:
+          items:
+            $ref: '#/components/schemas/ActionSort'
+          type: array
       - description: "The object's text representation filter.  May contain special\
           \ characters like \"/\", \"'\", so should be encoded."
         in: query
@@ -462,6 +486,14 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/PageRequest'
+      - description: Sort field names prefixed with '-' for descending order
+        in: query
+        name: sort
+        required: false
+        schema:
+          items:
+            $ref: '#/components/schemas/HotFileSort'
+          type: array
       - description: "The file path filter. May contain special characters like \"\
           /\", \"'\", so should be encoded."
         in: query
@@ -501,6 +533,14 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/PageRequest'
+      - description: Sort field names prefixed with '-' for descending order
+        in: query
+        name: sort
+        required: false
+        schema:
+          items:
+            $ref: '#/components/schemas/CachedFileSort'
+          type: array
       - description: "The file path filter. May contain special characters like \"\
           /\", \"'\", so should be encoded."
         in: query
@@ -546,6 +586,14 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/PageRequest'
+      - description: Sort field names prefixed with '-' for descending order
+        in: query
+        name: sort
+        required: false
+        schema:
+          items:
+            $ref: '#/components/schemas/ClusterSort'
+          type: array
       - description: Time interval in which node was registered in master
         in: query
         name: registrationTime
@@ -578,6 +626,14 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/PageRequest'
+      - description: Sort field names prefixed with '-' for descending order
+        in: query
+        name: sort
+        required: false
+        schema:
+          items:
+            $ref: '#/components/schemas/AuditSort'
+          type: array
       - description: Filter of the name of the user who performed the event
         in: query
         name: usernameLike
@@ -648,6 +704,15 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/PageRequest'
+    rules-sort:
+      description: Sort field names prefixed with '-' for descending order
+      in: query
+      name: sort
+      required: false
+      schema:
+        items:
+          $ref: '#/components/schemas/RuleSort'
+        type: array
     text-representation-like:
       description: "The object's text representation filter.  May contain special\
         \ characters like \"/\", \"'\", so should be encoded."
@@ -688,6 +753,15 @@ components:
         description: Reference to 'id' field
         format: int64
         type: integer
+    cmdlets-sort:
+      description: Sort field names prefixed with '-' for descending order
+      in: query
+      name: sort
+      required: false
+      schema:
+        items:
+          $ref: '#/components/schemas/CmdletSort'
+        type: array
     rule-ids:
       description: Ids of the rules that cmdlets belong to
       in: query
@@ -714,6 +788,15 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/StateChangeTimeInterval'
+    action-sort:
+      description: Sort field names prefixed with '-' for descending order
+      in: query
+      name: sort
+      required: false
+      schema:
+        items:
+          $ref: '#/components/schemas/ActionSort'
+        type: array
     hosts:
       description: List of hosts on which the action is/was running
       in: query
@@ -739,6 +822,15 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/CompletionTimeInterval'
+    hot-files-sort:
+      description: Sort field names prefixed with '-' for descending order
+      in: query
+      name: sort
+      required: false
+      schema:
+        items:
+          $ref: '#/components/schemas/HotFileSort'
+        type: array
     path-like:
       description: "The file path filter. May contain special characters like \"/\"\
         , \"'\", so should be encoded."
@@ -754,6 +846,15 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/LastAccessedTimeInterval'
+    cached-files-sort:
+      description: Sort field names prefixed with '-' for descending order
+      in: query
+      name: sort
+      required: false
+      schema:
+        items:
+          $ref: '#/components/schemas/CachedFileSort'
+        type: array
     cached-time:
       description: Time interval in which the file was cached
       in: query
@@ -761,6 +862,15 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/CachedTimeInterval'
+    cluster-sort:
+      description: Sort field names prefixed with '-' for descending order
+      in: query
+      name: sort
+      required: false
+      schema:
+        items:
+          $ref: '#/components/schemas/ClusterSort'
+        type: array
     registration-time:
       description: Time interval in which node was registered in master
       in: query
@@ -768,6 +878,15 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/RegistrationTimeInterval'
+    audit-sort:
+      description: Sort field names prefixed with '-' for descending order
+      in: query
+      name: sort
+      required: false
+      schema:
+        items:
+          $ref: '#/components/schemas/AuditSort'
+        type: array
     username-like:
       description: Filter of the name of the user who performed the event
       in: query
@@ -835,14 +954,25 @@ components:
           minimum: 0
           nullable: true
           type: integer
-        sort:
-          description: Sort field names prefixed with '-' for descending order
-          items:
-            type: string
-          nullable: true
-          type: array
       title: PageRequest
       type: object
+    RuleSort:
+      description: Sort field names prefixed with '-' for descending order
+      enum:
+      - id
+      - submit_time
+      - last_check_time
+      - checked_count
+      - generated_cmdlets
+      - status
+      - -id
+      - -submit_time
+      - -last_check_time
+      - -checked_count
+      - -generated_cmdlets
+      - -status
+      title: RuleSort
+      type: string
     RuleState:
       description: Current state of the rule
       enum:
@@ -936,6 +1066,21 @@ components:
       - rule
       title: SubmitRuleRequest
       type: object
+    CmdletSort:
+      description: Sort field names prefixed with '-' for descending order
+      enum:
+      - id
+      - ruleId
+      - state
+      - generate_time
+      - state_changed_time
+      - -id
+      - -ruleId
+      - -state
+      - -generate_time
+      - -state_changed_time
+      title: CmdletSort
+      type: string
     CmdletState:
       description: Current state of the cmdlet
       enum:
@@ -1010,6 +1155,21 @@ components:
       - cmdlet
       title: SubmitCmdletRequest
       type: object
+    ActionSort:
+      description: Sort field names prefixed with '-' for descending order
+      enum:
+      - id
+      - exec_host
+      - create_time
+      - finish_time
+      - status
+      - -id
+      - -exec_host
+      - -create_time
+      - -finish_time
+      - -status
+      title: ActionSort
+      type: string
     ActionSource:
       description: Source of the action creation
       enum:
@@ -1103,6 +1263,17 @@ components:
       - textRepresentation
       title: Action
       type: object
+    HotFileSort:
+      description: Sort field names prefixed with '-' for descending order
+      enum:
+      - fid
+      - path
+      - access_count
+      - -fid
+      - -path
+      - -access_count
+      title: HotFilesSort
+      type: string
     FileAccessInfo:
       example:
         path: path
@@ -1132,6 +1303,21 @@ components:
       - path
       title: FileAccessInfo
       type: object
+    CachedFileSort:
+      description: Sort field names prefixed with '-' for descending order
+      enum:
+      - fid
+      - path
+      - access_count
+      - cached_time
+      - last_access_time
+      - -fid
+      - -path
+      - -access_count
+      - -cached_time
+      - -last_access_time
+      title: FilesSort
+      type: string
     CachedFileInfo:
       example:
         path: path
@@ -1167,6 +1353,19 @@ components:
       - path
       title: CachedFileInfo
       type: object
+    ClusterSort:
+      description: Sort field names prefixed with '-' for descending order
+      enum:
+      - id
+      - registration_time
+      - executors
+      - status
+      - -id
+      - -registration_time
+      - -executors
+      - -status
+      title: ClusterSort
+      type: string
     ClusterNode:
       example:
         registrationTime: 1
@@ -1211,6 +1410,25 @@ components:
       - registrationTime
       title: ClusterNode
       type: object
+    AuditSort:
+      description: Sort field names prefixed with '-' for descending order
+      enum:
+      - id
+      - username
+      - timestamp
+      - object_type
+      - object_id
+      - operation
+      - result
+      - -id
+      - -username
+      - -timestamp
+      - -object_type
+      - -object_id
+      - -operation
+      - -result
+      title: AuditSort
+      type: string
     AuditObjectType:
       description: Type of the audit object
       enum:

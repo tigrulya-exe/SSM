@@ -36,6 +36,7 @@ import org.smartdata.server.generated.model.ErrorResponseDto;
 import org.smartdata.server.generated.model.LastActivationTimeIntervalDto;
 import org.smartdata.server.generated.model.PageRequestDto;
 import org.smartdata.server.generated.model.RuleDto;
+import org.smartdata.server.generated.model.RuleSortDto;
 import org.smartdata.server.generated.model.RuleStateDto;
 import org.smartdata.server.generated.model.RulesDto;
 import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
@@ -158,6 +159,7 @@ public interface RulesApi {
      * GET /api/v2/rules : List all rules
      *
      * @param pageRequest  (optional)
+     * @param sort Sort field names prefixed with &#39;-&#39; for descending order (optional)
      * @param textRepresentationLike The object&#39;s text representation filter.  May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param submissionTime Time interval in which the entity was submitted (optional)
      * @param ruleStates List of rule states (optional)
@@ -187,12 +189,13 @@ public interface RulesApi {
     
     default RulesDto getRules(
         @Parameter(name = "pageRequest", description = "", in = ParameterIn.QUERY) @Valid PageRequestDto pageRequest,
+        @Parameter(name = "sort", description = "Sort field names prefixed with '-' for descending order", in = ParameterIn.QUERY) @Valid @RequestParam(value = "sort", required = false) List<@Valid RuleSortDto> sort,
         @Parameter(name = "textRepresentationLike", description = "The object's text representation filter.  May contain special characters like \"/\", \"'\", so should be encoded.", in = ParameterIn.QUERY) @Valid @RequestParam(value = "textRepresentationLike", required = false) String textRepresentationLike,
         @Parameter(name = "submissionTime", description = "Time interval in which the entity was submitted", in = ParameterIn.QUERY) @Valid SubmissionTimeIntervalDto submissionTime,
         @Parameter(name = "ruleStates", description = "List of rule states", in = ParameterIn.QUERY) @Valid @RequestParam(value = "ruleStates", required = false) List<@Valid RuleStateDto> ruleStates,
         @Parameter(name = "lastActivationTime", description = "Time interval in which the rule was activated", in = ParameterIn.QUERY) @Valid LastActivationTimeIntervalDto lastActivationTime
     ) throws Exception {
-        return getDelegate().getRules(pageRequest, textRepresentationLike, submissionTime, ruleStates, lastActivationTime);
+        return getDelegate().getRules(pageRequest, sort, textRepresentationLike, submissionTime, ruleStates, lastActivationTime);
     }
 
 

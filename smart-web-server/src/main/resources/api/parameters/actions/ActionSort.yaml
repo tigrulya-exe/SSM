@@ -1,0 +1,14 @@
+title: ActionSort
+type: string
+description: Sort field names prefixed with '-' for descending order
+enum:
+  - id
+  - exec_host
+  - create_time
+  - finish_time
+  - status
+  - -id
+  - -exec_host
+  - -create_time
+  - -finish_time
+  - -status

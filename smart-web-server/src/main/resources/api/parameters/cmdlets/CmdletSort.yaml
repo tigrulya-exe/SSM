@@ -1,0 +1,14 @@
+title: CmdletSort
+type: string
+description: Sort field names prefixed with '-' for descending order
+enum:
+  - id
+  - ruleId
+  - state
+  - generate_time
+  - state_changed_time
+  - -id
+  - -ruleId
+  - -state
+  - -generate_time
+  - -state_changed_time

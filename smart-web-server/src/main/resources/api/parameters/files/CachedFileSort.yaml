@@ -1,0 +1,14 @@
+title: FilesSort
+type: string
+description: Sort field names prefixed with '-' for descending order
+enum:
+  - fid
+  - path
+  - access_count
+  - cached_time
+  - last_access_time
+  - -fid
+  - -path
+  - -access_count
+  - -cached_time
+  - -last_access_time
