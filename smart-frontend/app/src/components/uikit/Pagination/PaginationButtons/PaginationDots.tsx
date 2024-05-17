@@ -15,21 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const allowIconsNames = [
-  //
-  'chevron-double',
-  'chevron',
-  'close',
-  'check',
-  'eye',
-  'eye-closed',
-  'logout',
-  'search',
-  'status-error',
-  'status-info',
-  'status-ok',
-  'status-warning',
-  'user',
-] as const;
+import s from './PaginationButtons.module.scss';
+import cn from 'classnames';
 
-export type IconsNames = (typeof allowIconsNames)[number];
+interface PaginationDotsProps {
+  children: string;
+  dotsHandler: () => void;
+}
+
+const PaginationDots = ({ children, dotsHandler }: PaginationDotsProps) => {
+  return (
+    <button className={cn(s.paginationButton, s.paginationButton_dots)} onClick={dotsHandler}>
+      {children}
+    </button>
+  );
+};
+
+export default PaginationDots;

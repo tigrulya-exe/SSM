@@ -15,21 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const allowIconsNames = [
-  //
-  'chevron-double',
-  'chevron',
-  'close',
-  'check',
-  'eye',
-  'eye-closed',
-  'logout',
-  'search',
-  'status-error',
-  'status-info',
-  'status-ok',
-  'status-warning',
-  'user',
-] as const;
+import React from 'react';
+import cn from 'classnames';
+import s from './PaginationButtons.module.scss';
 
-export type IconsNames = (typeof allowIconsNames)[number];
+interface PaginationNumButtonProps extends React.PropsWithChildren {
+  onClick: () => void;
+  selected?: boolean;
+}
+
+const PaginationNumButton = ({ onClick, children, selected = false }: PaginationNumButtonProps) => {
+  const btnClasses = cn(s.paginationButton, {
+    [s.paginationButton_selected]: selected,
+  });
+
+  const handleClick = () => {
+    !selected && onClick();
+  };
+
+  return (
+    <button onClick={handleClick} className={btnClasses}>
+      {children}
+    </button>
+  );
+};
+
+export default PaginationNumButton;

@@ -15,21 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const allowIconsNames = [
-  //
-  'chevron-double',
-  'chevron',
-  'close',
-  'check',
-  'eye',
-  'eye-closed',
-  'logout',
-  'search',
-  'status-error',
-  'status-info',
-  'status-ok',
-  'status-warning',
-  'user',
-] as const;
+import type React from 'react';
+import type { SelectOption } from '@uikit/Select/Select.types';
+import type { PaginationParams } from '@uikit/types/list.types';
 
-export type IconsNames = (typeof allowIconsNames)[number];
+export interface PaginationData {
+  pageNumber: number;
+  perPage: number;
+}
+
+export interface PaginationProps {
+  pageData: PaginationParams;
+  totalItems?: number;
+  perPageItems?: SelectOption<number>[];
+  onChangeData: (paginationParams: PaginationParams) => void;
+  hidePerPage?: boolean;
+  frequencyComponent?: React.ReactNode;
+  isNextBtn?: false | true | null;
+  className?: string;
+  dataTest?: string;
+}
+
+export interface PaginationDataItem {
+  key: string;
+  type: 'page' | 'decoration';
+  label: string;
+  pageNumber: number;
+}

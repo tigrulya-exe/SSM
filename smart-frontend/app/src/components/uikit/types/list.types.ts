@@ -15,21 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const allowIconsNames = [
-  //
-  'chevron-double',
-  'chevron',
-  'close',
-  'check',
-  'eye',
-  'eye-closed',
-  'logout',
-  'search',
-  'status-error',
-  'status-info',
-  'status-ok',
-  'status-warning',
-  'user',
-] as const;
+export type SortDirection = 'asc' | 'desc';
 
-export type IconsNames = (typeof allowIconsNames)[number];
+export interface SortParams {
+  sortBy: string;
+  sortDirection: SortDirection;
+}
+
+export interface PaginationParams {
+  pageNumber: number;
+  perPage: number;
+}
+
+export interface SortingProps {
+  sortParams: SortParams;
+  onSorting: (sortParams: SortParams) => void;
+}
