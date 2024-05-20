@@ -15,32 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.queries;
+package org.smartdata.metastore.queries.sort;
 
-public class Sorting {
-  public enum Order {
-    ASC,
-    DESC
-  }
-
-  private final String column;
-  private final Order order;
-
-  public Sorting(String column, Order order) {
-    this.column = column;
-    this.order = order;
-  }
-
-  @Override
-  public String toString() {
-    return column + " " + order;
-  }
-
-  public String getColumn() {
-    return column;
-  }
-
-  public Order getOrder() {
-    return order;
-  }
+public interface SortField {
+  String getFieldName();
 }

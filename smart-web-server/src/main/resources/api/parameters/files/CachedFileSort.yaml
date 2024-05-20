@@ -4,11 +4,11 @@ description: Sort field names prefixed with '-' for descending order
 enum:
   - fid
   - path
-  - access_count
-  - cached_time
-  - last_access_time
+  - accessCount
+  - cachedTime
+  - lastAccessTime
   - -fid
   - -path
-  - -access_count
-  - -cached_time
-  - -last_access_time
+  - -accessCount
+  - -cachedTime
+  - -lastAccessTime

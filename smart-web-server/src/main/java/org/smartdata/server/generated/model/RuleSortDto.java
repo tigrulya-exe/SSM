@@ -30,25 +30,25 @@ public enum RuleSortDto {
   
   ID("id"),
   
-  SUBMIT_TIME("submit_time"),
+  SUBMITTIME("submitTime"),
   
-  LAST_CHECK_TIME("last_check_time"),
+  LASTCHECKTIME("lastCheckTime"),
   
-  CHECKED_COUNT("checked_count"),
+  CHECKEDCOUNT("checkedCount"),
   
-  GENERATED_CMDLETS("generated_cmdlets"),
+  GENERATEDCMDLETS("generatedCmdlets"),
   
   STATUS("status"),
   
   _ID("-id"),
   
-  _SUBMIT_TIME("-submit_time"),
+  _SUBMITTIME("-submitTime"),
   
-  _LAST_CHECK_TIME("-last_check_time"),
+  _LASTCHECKTIME("-lastCheckTime"),
   
-  _CHECKED_COUNT("-checked_count"),
+  _CHECKEDCOUNT("-checkedCount"),
   
-  _GENERATED_CMDLETS("-generated_cmdlets"),
+  _GENERATEDCMDLETS("-generatedCmdlets"),
   
   _STATUS("-status");
 

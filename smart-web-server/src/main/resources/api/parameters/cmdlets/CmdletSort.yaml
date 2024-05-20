@@ -5,10 +5,10 @@ enum:
   - id
   - ruleId
   - state
-  - generate_time
-  - state_changed_time
+  - generateTime
+  - stateChangedTime
   - -id
   - -ruleId
   - -state
-  - -generate_time
-  - -state_changed_time
+  - -generateTime
+  - -stateChangedTime

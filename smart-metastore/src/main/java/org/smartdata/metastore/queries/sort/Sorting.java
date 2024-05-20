@@ -15,13 +15,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.metastore.queries.sort;
 
-import org.smartdata.metastore.queries.sort.AuditSortField;
-import org.smartdata.model.audit.UserActivityEvent;
-import org.smartdata.model.request.AuditSearchRequest;
+public class Sorting<T> {
+  public enum Order {
+    ASC,
+    DESC
+  }
 
-public interface UserActivityDao
-    extends SearchableDao<AuditSearchRequest, UserActivityEvent, AuditSortField> {
-  void insert(UserActivityEvent event);
+  private final T column;
+  private final Order order;
+
+  public Sorting(T column, Order order) {
+    this.column = column;
+    this.order = order;
+  }
+
+  @Override
+  public String toString() {
+    return column + " " + order;
+  }
+
+  public T getColumn() {
+    return column;
+  }
+
+  public Order getOrder() {
+    return order;
+  }
 }

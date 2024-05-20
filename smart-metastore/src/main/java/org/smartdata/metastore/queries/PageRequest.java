@@ -17,16 +17,18 @@
  */
 package org.smartdata.metastore.queries;
 
+import org.smartdata.metastore.queries.sort.Sorting;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class PageRequest {
+public class PageRequest<T> {
   private final Long offset;
   private final Integer limit;
 
-  private final List<Sorting> sortColumns;
+  private final List<Sorting<T>> sortColumns;
 
-  public PageRequest(Long offset, Integer limit, List<Sorting> sortColumns) {
+  public PageRequest(Long offset, Integer limit, List<Sorting<T>> sortColumns) {
     this.offset = offset;
     this.limit = limit;
     this.sortColumns = sortColumns;
@@ -40,53 +42,53 @@ public class PageRequest {
     return limit;
   }
 
-  public List<Sorting> getSortColumns() {
+  public List<Sorting<T>> getSortColumns() {
     return sortColumns;
   }
 
-  public static Builder builder() {
-    return new Builder();
+  public static <T> Builder<T> builder() {
+    return new Builder<>();
   }
 
-  public static class Builder {
+  public static class Builder<T> {
     private Long offset;
     private Integer limit;
-    private List<Sorting> sortColumns;
+    private List<Sorting<T>> sortColumns;
 
     public Builder() {
       this.sortColumns = new ArrayList<>();
     }
 
-    public Builder offset(Long offset) {
+    public Builder<T> offset(Long offset) {
       this.offset = offset;
       return this;
     }
 
-    public Builder limit(Integer limit) {
+    public Builder<T> limit(Integer limit) {
       this.limit = limit;
       return this;
     }
 
-    public Builder sortByAsc(String column) {
+    public Builder<T> sortByAsc(T column) {
       return addSorting(column, Sorting.Order.ASC);
     }
 
-    public Builder sortByDesc(String column) {
+    public Builder<T> sortByDesc(T column) {
       return addSorting(column, Sorting.Order.DESC);
     }
 
-    public Builder sortColumns(List<Sorting> sortColumns) {
+    public Builder<T> sortColumns(List<Sorting<T>> sortColumns) {
       this.sortColumns = sortColumns;
       return this;
     }
 
-    public Builder addSorting(String column, Sorting.Order order) {
-      this.sortColumns.add(new Sorting(column, order));
+    public Builder<T> addSorting(T column, Sorting.Order order) {
+      this.sortColumns.add(new Sorting<>(column, order));
       return this;
     }
 
-    public PageRequest build() {
-      return new PageRequest(offset, limit, sortColumns);
+    public PageRequest<T> build() {
+      return new PageRequest<>(offset, limit, sortColumns);
     }
   }
 }

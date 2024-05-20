@@ -34,9 +34,9 @@ public enum AuditSortDto {
   
   TIMESTAMP("timestamp"),
   
-  OBJECT_TYPE("object_type"),
+  OBJECTTYPE("objectType"),
   
-  OBJECT_ID("object_id"),
+  OBJECTID("objectId"),
   
   OPERATION("operation"),
   
@@ -48,9 +48,9 @@ public enum AuditSortDto {
   
   _TIMESTAMP("-timestamp"),
   
-  _OBJECT_TYPE("-object_type"),
+  _OBJECTTYPE("-objectType"),
   
-  _OBJECT_ID("-object_id"),
+  _OBJECTID("-objectId"),
   
   _OPERATION("-operation"),
   

@@ -32,21 +32,21 @@ public enum CachedFileSortDto {
   
   PATH("path"),
   
-  ACCESS_COUNT("access_count"),
+  ACCESSCOUNT("accessCount"),
   
-  CACHED_TIME("cached_time"),
+  CACHEDTIME("cachedTime"),
   
-  LAST_ACCESS_TIME("last_access_time"),
+  LASTACCESSTIME("lastAccessTime"),
   
   _FID("-fid"),
   
   _PATH("-path"),
   
-  _ACCESS_COUNT("-access_count"),
+  _ACCESSCOUNT("-accessCount"),
   
-  _CACHED_TIME("-cached_time"),
+  _CACHEDTIME("-cachedTime"),
   
-  _LAST_ACCESS_TIME("-last_access_time");
+  _LASTACCESSTIME("-lastAccessTime");
 
   private String value;
 

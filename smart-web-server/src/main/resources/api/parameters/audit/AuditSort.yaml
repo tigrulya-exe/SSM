@@ -5,14 +5,14 @@ enum:
   - id
   - username
   - timestamp
-  - object_type
-  - object_id
+  - objectType
+  - objectId
   - operation
   - result
   - -id
   - -username
   - -timestamp
-  - -object_type
-  - -object_id
+  - -objectType
+  - -objectId
   - -operation
   - -result

@@ -30,21 +30,21 @@ public enum ActionSortDto {
   
   ID("id"),
   
-  EXEC_HOST("exec_host"),
+  EXECHOST("execHost"),
   
-  CREATE_TIME("create_time"),
+  CREATETIME("createTime"),
   
-  FINISH_TIME("finish_time"),
+  FINISHTIME("finishTime"),
   
   STATUS("status"),
   
   _ID("-id"),
   
-  _EXEC_HOST("-exec_host"),
+  _EXECHOST("-execHost"),
   
-  _CREATE_TIME("-create_time"),
+  _CREATETIME("-createTime"),
   
-  _FINISH_TIME("-finish_time"),
+  _FINISHTIME("-finishTime"),
   
   _STATUS("-status");
 

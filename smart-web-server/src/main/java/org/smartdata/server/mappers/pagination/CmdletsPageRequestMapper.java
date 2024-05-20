@@ -19,22 +19,20 @@ package org.smartdata.server.mappers.pagination;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
+import org.mapstruct.ValueMapping;
+import org.smartdata.metastore.queries.sort.CmdletSortField;
 import org.smartdata.server.generated.model.CmdletSortDto;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
-public interface CmdletsPageRequestMapper extends BasePageRequestMapper<CmdletSortDto> {
-
-  @Override
-  default String sortColumnToEntityProperty(CmdletSortDto sortColumn) {
-    switch (sortColumn) {
-      case ID:
-      case _ID:
-        return "cid";
-      case RULEID:
-      case _RULEID:
-        return "rid";
-      default:
-        return BasePageRequestMapper.super.sortColumnToEntityProperty(sortColumn);
-    }
-  }
+public interface CmdletsPageRequestMapper
+    extends BasePageRequestMapper<CmdletSortDto, CmdletSortField> {
+  @ValueMapping(source = "RULEID", target = "RULE_ID")
+  @ValueMapping(source = "GENERATETIME", target = "GENERATE_TIME")
+  @ValueMapping(source = "STATECHANGEDTIME", target = "STATE_CHANGED_TIME")
+  @ValueMapping(source = "_ID", target = "ID")
+  @ValueMapping(source = "_RULEID", target = "RULE_ID")
+  @ValueMapping(source = "_STATE", target = "STATE")
+  @ValueMapping(source = "_GENERATETIME", target = "GENERATE_TIME")
+  @ValueMapping(source = "_STATECHANGEDTIME", target = "STATE_CHANGED_TIME")
+  CmdletSortField toPageRequest(CmdletSortDto sortColumn);
 }

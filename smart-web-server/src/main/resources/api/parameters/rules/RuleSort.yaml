@@ -3,14 +3,14 @@ type: string
 description: Sort field names prefixed with '-' for descending order
 enum:
   - id
-  - submit_time
-  - last_check_time
-  - checked_count
-  - generated_cmdlets
+  - submitTime
+  - lastCheckTime
+  - checkedCount
+  - generatedCmdlets
   - status
   - -id
-  - -submit_time
-  - -last_check_time
-  - -checked_count
-  - -generated_cmdlets
+  - -submitTime
+  - -lastCheckTime
+  - -checkedCount
+  - -generatedCmdlets
   - -status

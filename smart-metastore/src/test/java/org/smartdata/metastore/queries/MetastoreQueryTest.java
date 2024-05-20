@@ -50,7 +50,7 @@ public class MetastoreQueryTest {
 
   @Test
   public void testAllOperators() throws IOException {
-    PageRequest pageRequest = PageRequest.builder()
+    PageRequest<String> pageRequest = PageRequest.<String>builder()
         .offset(0L)
         .limit(10)
         .sortByAsc("id")

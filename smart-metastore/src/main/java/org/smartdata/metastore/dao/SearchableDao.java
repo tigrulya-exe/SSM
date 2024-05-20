@@ -19,11 +19,12 @@ package org.smartdata.metastore.dao;
 
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.PageRequest;
+import org.smartdata.metastore.queries.sort.SortField;
 
 import java.util.List;
 
-public interface SearchableDao<RequestT, EntityT> {
-  SearchResult<EntityT> search(RequestT searchRequest, PageRequest pageRequest);
+public interface SearchableDao<RequestT, EntityT, ColumnT extends SortField> {
+  SearchResult<EntityT> search(RequestT searchRequest, PageRequest<ColumnT> pageRequest);
 
   List<EntityT> search(RequestT searchRequest);
 }

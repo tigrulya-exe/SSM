@@ -30,7 +30,7 @@ public enum ClusterSortDto {
   
   ID("id"),
   
-  REGISTRATION_TIME("registration_time"),
+  REGISTRATIONTIME("registrationTime"),
   
   EXECUTORS("executors"),
   
@@ -38,7 +38,7 @@ public enum ClusterSortDto {
   
   _ID("-id"),
   
-  _REGISTRATION_TIME("-registration_time"),
+  _REGISTRATIONTIME("-registrationTime"),
   
   _EXECUTORS("-executors"),
   

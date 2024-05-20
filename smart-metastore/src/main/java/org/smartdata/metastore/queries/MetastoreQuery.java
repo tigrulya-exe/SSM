@@ -20,6 +20,7 @@ package org.smartdata.metastore.queries;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.smartdata.metastore.queries.expression.MetastoreQueryExpression;
+import org.smartdata.metastore.queries.sort.Sorting;
 
 import java.util.HashMap;
 import java.util.List;
@@ -86,7 +87,7 @@ public class MetastoreQuery {
     return where(and(operators));
   }
 
-  public MetastoreQuery withPagination(PageRequest pageRequest) {
+  public <T> MetastoreQuery withPagination(PageRequest<T> pageRequest) {
     if (pageRequest == null) {
       return this;
     }
@@ -114,7 +115,7 @@ public class MetastoreQuery {
     return this;
   }
 
-  public MetastoreQuery orderBy(List<Sorting> sortColumns) {
+  public <T> MetastoreQuery orderBy(List<Sorting<T>> sortColumns) {
     if (CollectionUtils.isEmpty(sortColumns)) {
       return this;
     }

@@ -19,8 +19,23 @@ package org.smartdata.server.mappers.pagination;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
+import org.mapstruct.ValueMapping;
+import org.smartdata.metastore.queries.sort.AuditSortField;
 import org.smartdata.server.generated.model.AuditSortDto;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
-public interface AuditPageRequestMapper extends BasePageRequestMapper<AuditSortDto> {
+public interface AuditPageRequestMapper
+    extends BasePageRequestMapper<AuditSortDto, AuditSortField> {
+
+  @ValueMapping(source = "OBJECTTYPE", target = "OBJECT_TYPE")
+  @ValueMapping(source = "OBJECTID", target = "OBJECT_ID")
+  @ValueMapping(source = "_ID", target = "ID")
+  @ValueMapping(source = "_USERNAME", target = "USERNAME")
+  @ValueMapping(source = "_TIMESTAMP", target = "TIMESTAMP")
+  @ValueMapping(source = "_OBJECTTYPE", target = "OBJECT_TYPE")
+  @ValueMapping(source = "_OBJECTID", target = "OBJECT_ID")
+  @ValueMapping(source = "_OPERATION", target = "OPERATION")
+  @ValueMapping(source = "_RESULT", target = "RESULT")
+  AuditSortField toPageRequest(AuditSortDto sortColumn);
+
 }

@@ -34,9 +34,9 @@ public enum CmdletSortDto {
   
   STATE("state"),
   
-  GENERATE_TIME("generate_time"),
+  GENERATETIME("generateTime"),
   
-  STATE_CHANGED_TIME("state_changed_time"),
+  STATECHANGEDTIME("stateChangedTime"),
   
   _ID("-id"),
   
@@ -44,9 +44,9 @@ public enum CmdletSortDto {
   
   _STATE("-state"),
   
-  _GENERATE_TIME("-generate_time"),
+  _GENERATETIME("-generateTime"),
   
-  _STATE_CHANGED_TIME("-state_changed_time");
+  _STATECHANGEDTIME("-stateChangedTime");
 
   private String value;
 

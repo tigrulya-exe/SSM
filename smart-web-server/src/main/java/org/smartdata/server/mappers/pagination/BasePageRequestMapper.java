@@ -19,47 +19,27 @@ package org.smartdata.server.mappers.pagination;
 
 import org.mapstruct.Mapping;
 import org.smartdata.metastore.queries.PageRequest;
-import org.smartdata.metastore.queries.Sorting;
+import org.smartdata.metastore.queries.sort.SortField;
+import org.smartdata.metastore.queries.sort.Sorting;
 import org.smartdata.server.generated.model.PageRequestDto;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-public interface BasePageRequestMapper<T extends Enum<T>> {
+public interface BasePageRequestMapper<
+    SourceT extends Enum<SourceT>,
+    TargetT extends SortField> {
 
   String DESC_SORT_COLUMN_PREFIX = "-";
 
-  @Mapping(target = "sortByAsc", ignore = true)
-  @Mapping(target = "sortByDesc", ignore = true)
-  PageRequest toPageRequest(PageRequestDto dto, List<T> sortColumns);
+  PageRequest<TargetT> toPageRequest(PageRequestDto dto, List<SourceT> sortColumns);
 
-  default List<Sorting> toSortings(List<T> sortColumns) {
-    return sortColumns == null
-        ? Collections.emptyList()
-        : sortColumns
-        .stream()
-        .flatMap(this::toSortings)
-        .collect(Collectors.toList());
-  }
+  @Mapping(source = ".", target = "order")
+  @Mapping(source = ".", target = "column")
+  Sorting<TargetT> toSorting(SourceT sortColumn);
 
-  // returns stream in order to let child mappers
-  // create several db sortings from one logical
-  default Stream<Sorting> toSortings(T sortColumnEnum) {
-    String rawSortColumn = sortColumnEnum.toString();
-    String entityProperty = sortColumnToEntityProperty(sortColumnEnum);
-    Sorting sorting = rawSortColumn.startsWith(DESC_SORT_COLUMN_PREFIX)
-        ? new Sorting(entityProperty, Sorting.Order.DESC)
-        : new Sorting(entityProperty, Sorting.Order.ASC);
-
-    return Stream.of(sorting);
-  }
-
-  default String sortColumnToEntityProperty(T sortColumn) {
-    String rawColumnName = sortColumn.toString();
-    return rawColumnName.startsWith(DESC_SORT_COLUMN_PREFIX)
-        ? rawColumnName.substring(1)
-        : rawColumnName;
+  default Sorting.Order toOrder(SourceT sortColumn) {
+    return sortColumn.toString().startsWith(DESC_SORT_COLUMN_PREFIX)
+        ? Sorting.Order.DESC
+        : Sorting.Order.ASC;
   }
 }

@@ -15,13 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.metastore.queries.sort;
 
-import org.smartdata.metastore.queries.sort.AuditSortField;
-import org.smartdata.model.audit.UserActivityEvent;
-import org.smartdata.model.request.AuditSearchRequest;
+public enum AuditSortField implements SortField {
+  ID("id"),
+  USERNAME("username"),
+  TIMESTAMP("timestamp"),
+  OBJECT_TYPE("object_type"),
+  OBJECT_ID("object_id"),
+  OPERATION("operation"),
+  RESULT("result");
 
-public interface UserActivityDao
-    extends SearchableDao<AuditSearchRequest, UserActivityEvent, AuditSortField> {
-  void insert(UserActivityEvent event);
+  private final String fieldName;
+
+  AuditSortField(String fieldName) {
+    this.fieldName = fieldName;
+  }
+
+  @Override
+  public String getFieldName() {
+    return fieldName;
+  }
 }

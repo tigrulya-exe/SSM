@@ -960,16 +960,16 @@ components:
       description: Sort field names prefixed with '-' for descending order
       enum:
       - id
-      - submit_time
-      - last_check_time
-      - checked_count
-      - generated_cmdlets
+      - submitTime
+      - lastCheckTime
+      - checkedCount
+      - generatedCmdlets
       - status
       - -id
-      - -submit_time
-      - -last_check_time
-      - -checked_count
-      - -generated_cmdlets
+      - -submitTime
+      - -lastCheckTime
+      - -checkedCount
+      - -generatedCmdlets
       - -status
       title: RuleSort
       type: string
@@ -1072,13 +1072,13 @@ components:
       - id
       - ruleId
       - state
-      - generate_time
-      - state_changed_time
+      - generateTime
+      - stateChangedTime
       - -id
       - -ruleId
       - -state
-      - -generate_time
-      - -state_changed_time
+      - -generateTime
+      - -stateChangedTime
       title: CmdletSort
       type: string
     CmdletState:
@@ -1159,14 +1159,14 @@ components:
       description: Sort field names prefixed with '-' for descending order
       enum:
       - id
-      - exec_host
-      - create_time
-      - finish_time
+      - execHost
+      - createTime
+      - finishTime
       - status
       - -id
-      - -exec_host
-      - -create_time
-      - -finish_time
+      - -execHost
+      - -createTime
+      - -finishTime
       - -status
       title: ActionSort
       type: string
@@ -1308,14 +1308,14 @@ components:
       enum:
       - fid
       - path
-      - access_count
-      - cached_time
-      - last_access_time
+      - accessCount
+      - cachedTime
+      - lastAccessTime
       - -fid
       - -path
-      - -access_count
-      - -cached_time
-      - -last_access_time
+      - -accessCount
+      - -cachedTime
+      - -lastAccessTime
       title: FilesSort
       type: string
     CachedFileInfo:
@@ -1357,11 +1357,11 @@ components:
       description: Sort field names prefixed with '-' for descending order
       enum:
       - id
-      - registration_time
+      - registrationTime
       - executors
       - status
       - -id
-      - -registration_time
+      - -registrationTime
       - -executors
       - -status
       title: ClusterSort
@@ -1416,15 +1416,15 @@ components:
       - id
       - username
       - timestamp
-      - object_type
-      - object_id
+      - objectType
+      - objectId
       - operation
       - result
       - -id
       - -username
       - -timestamp
-      - -object_type
-      - -object_id
+      - -objectType
+      - -objectId
       - -operation
       - -result
       title: AuditSort
