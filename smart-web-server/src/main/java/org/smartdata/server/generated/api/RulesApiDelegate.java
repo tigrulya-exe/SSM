@@ -24,6 +24,7 @@ import javax.validation.Valid;
 import org.smartdata.server.generated.model.LastActivationTimeIntervalDto;
 import org.smartdata.server.generated.model.PageRequestDto;
 import org.smartdata.server.generated.model.RuleDto;
+import org.smartdata.server.generated.model.RuleSortDto;
 import org.smartdata.server.generated.model.RuleStateDto;
 import org.smartdata.server.generated.model.RulesDto;
 import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
@@ -84,6 +85,7 @@ public interface RulesApiDelegate {
      * GET /api/v2/rules : List all rules
      *
      * @param pageRequest  (optional)
+     * @param sort Sort field names prefixed with &#39;-&#39; for descending order (optional)
      * @param textRepresentationLike The object&#39;s text representation filter.  May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param submissionTime Time interval in which the entity was submitted (optional)
      * @param ruleStates List of rule states (optional)
@@ -93,6 +95,7 @@ public interface RulesApiDelegate {
      * @see RulesApi#getRules
      */
     default RulesDto getRules(PageRequestDto pageRequest,
+        List<@Valid RuleSortDto> sort,
         String textRepresentationLike,
         SubmissionTimeIntervalDto submissionTime,
         List<@Valid RuleStateDto> ruleStates,

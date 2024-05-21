@@ -15,28 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.server.mappers;
+package org.smartdata.server.mappers.pagination;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
-import org.smartdata.metastore.queries.PageRequest;
-import org.smartdata.metastore.queries.Sorting;
-import org.smartdata.server.generated.model.PageRequestDto;
+import org.mapstruct.ValueMapping;
+import org.smartdata.metastore.queries.sort.AuditSortField;
+import org.smartdata.server.generated.model.AuditSortDto;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
-public interface PageRequestMapper {
+public interface AuditPageRequestMapper
+    extends BasePageRequestMapper<AuditSortDto, AuditSortField> {
 
-  String DESC_SORT_COLUMN_PREFIX = "-";
+  @ValueMapping(source = "OBJECTTYPE", target = "OBJECT_TYPE")
+  @ValueMapping(source = "OBJECTID", target = "OBJECT_ID")
+  @ValueMapping(source = "_ID", target = "ID")
+  @ValueMapping(source = "_USERNAME", target = "USERNAME")
+  @ValueMapping(source = "_TIMESTAMP", target = "TIMESTAMP")
+  @ValueMapping(source = "_OBJECTTYPE", target = "OBJECT_TYPE")
+  @ValueMapping(source = "_OBJECTID", target = "OBJECT_ID")
+  @ValueMapping(source = "_OPERATION", target = "OPERATION")
+  @ValueMapping(source = "_RESULT", target = "RESULT")
+  AuditSortField toPageRequest(AuditSortDto sortColumn);
 
-  @Mapping(source = "sort", target = "sortColumns")
-  @Mapping(target = "sortByAsc", ignore = true)
-  @Mapping(target = "sortByDesc", ignore = true)
-  PageRequest toPageRequest(PageRequestDto dto);
-
-  default Sorting toSorting(String sortColumn) {
-    return sortColumn.startsWith(DESC_SORT_COLUMN_PREFIX)
-        ? new Sorting(sortColumn.substring(1), Sorting.Order.DESC)
-        : new Sorting(sortColumn, Sorting.Order.ASC);
-  }
 }

@@ -25,6 +25,7 @@ import org.smartdata.conf.SmartConf;
 import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.PageRequest;
+import org.smartdata.metastore.queries.sort.AuditSortField;
 import org.smartdata.model.FileInfo;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
@@ -380,7 +381,7 @@ public class TestRuleManager extends TestDaoBase {
 
     @Override
     public SearchResult<UserActivityEvent> search(
-        AuditSearchRequest searchRequest, PageRequest pageRequest) {
+        AuditSearchRequest searchRequest, PageRequest<AuditSortField> pageRequest) {
       return SearchResult.emptyResult();
     }
 

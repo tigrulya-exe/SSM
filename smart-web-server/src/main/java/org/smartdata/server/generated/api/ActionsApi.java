@@ -34,6 +34,7 @@ import javax.annotation.Generated;
 import javax.validation.Valid;
 import org.smartdata.server.generated.model.ActionDto;
 import org.smartdata.server.generated.model.ActionInfoDto;
+import org.smartdata.server.generated.model.ActionSortDto;
 import org.smartdata.server.generated.model.ActionSourceDto;
 import org.smartdata.server.generated.model.ActionsDto;
 import org.smartdata.server.generated.model.CmdletStateDto;
@@ -96,6 +97,7 @@ public interface ActionsApi {
      * GET /api/v2/actions : List all actions
      *
      * @param pageRequest  (optional)
+     * @param sort Sort field names prefixed with &#39;-&#39; for descending order (optional)
      * @param textRepresentationLike The object&#39;s text representation filter.  May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param submissionTime Time interval in which the entity was submitted (optional)
      * @param hosts List of hosts on which the action is/was running (optional)
@@ -127,6 +129,7 @@ public interface ActionsApi {
     
     default ActionsDto getActions(
         @Parameter(name = "pageRequest", description = "", in = ParameterIn.QUERY) @Valid PageRequestDto pageRequest,
+        @Parameter(name = "sort", description = "Sort field names prefixed with '-' for descending order", in = ParameterIn.QUERY) @Valid @RequestParam(value = "sort", required = false) List<@Valid ActionSortDto> sort,
         @Parameter(name = "textRepresentationLike", description = "The object's text representation filter.  May contain special characters like \"/\", \"'\", so should be encoded.", in = ParameterIn.QUERY) @Valid @RequestParam(value = "textRepresentationLike", required = false) String textRepresentationLike,
         @Parameter(name = "submissionTime", description = "Time interval in which the entity was submitted", in = ParameterIn.QUERY) @Valid SubmissionTimeIntervalDto submissionTime,
         @Parameter(name = "hosts", description = "List of hosts on which the action is/was running", in = ParameterIn.QUERY) @Valid @RequestParam(value = "hosts", required = false) List<String> hosts,
@@ -134,7 +137,7 @@ public interface ActionsApi {
         @Parameter(name = "sources", description = "List of action sources", in = ParameterIn.QUERY) @Valid @RequestParam(value = "sources", required = false) List<@Valid ActionSourceDto> sources,
         @Parameter(name = "completionTime", description = "Time interval in which the action was finished", in = ParameterIn.QUERY) @Valid CompletionTimeIntervalDto completionTime
     ) throws Exception {
-        return getDelegate().getActions(pageRequest, textRepresentationLike, submissionTime, hosts, states, sources, completionTime);
+        return getDelegate().getActions(pageRequest, sort, textRepresentationLike, submissionTime, hosts, states, sources, completionTime);
     }
 
 

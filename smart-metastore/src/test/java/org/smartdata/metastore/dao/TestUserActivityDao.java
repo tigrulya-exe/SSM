@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.PageRequest;
+import org.smartdata.metastore.queries.sort.AuditSortField;
 import org.smartdata.model.TimeInterval;
 import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
@@ -91,11 +92,11 @@ public class TestUserActivityDao extends TestDaoBase {
 
   @Test
   public void testEmptyFiltersSearchWithPagination() {
-    PageRequest pageRequest = PageRequest.builder()
+    PageRequest<AuditSortField> pageRequest = PageRequest.<AuditSortField>builder()
         .offset(0L)
         .limit(2)
-        .sortByAsc("object_id")
-        .sortByDesc("timestamp")
+        .sortByAsc(AuditSortField.OBJECT_ID)
+        .sortByDesc(AuditSortField.TIMESTAMP)
         .build();
 
     SearchResult<UserActivityEvent> searchResult =
@@ -236,10 +237,10 @@ public class TestUserActivityDao extends TestDaoBase {
   }
 
   private void testSearch(AuditSearchRequest searchRequest, Instant... expectedEventInstances) {
-    PageRequest pageRequest = PageRequest.builder()
+    PageRequest<AuditSortField> pageRequest = PageRequest.<AuditSortField>builder()
         .offset(0L)
         .limit(expectedEventInstances.length)
-        .sortByAsc("timestamp")
+        .sortByAsc(AuditSortField.TIMESTAMP)
         .build();
 
     SearchResult<UserActivityEvent> searchResult =

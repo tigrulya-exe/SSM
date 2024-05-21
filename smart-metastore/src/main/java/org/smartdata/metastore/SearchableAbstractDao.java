@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.smartdata.metastore;
 
 import org.smartdata.metastore.dao.AbstractDao;
@@ -23,6 +24,8 @@ import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.MetastoreQuery;
 import org.smartdata.metastore.queries.MetastoreQueryExecutor;
 import org.smartdata.metastore.queries.PageRequest;
+import org.smartdata.metastore.queries.sort.SortField;
+import org.smartdata.metastore.queries.sort.Sorting;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
@@ -30,10 +33,13 @@ import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public abstract class SearchableAbstractDao<RequestT, EntityT>
+public abstract class SearchableAbstractDao<RequestT, EntityT, ColumnT extends SortField>
     extends AbstractDao
-    implements SearchableDao<RequestT, EntityT> {
+    implements SearchableDao<RequestT, EntityT, ColumnT> {
   protected final MetastoreQueryExecutor queryExecutor;
 
   public SearchableAbstractDao(
@@ -46,14 +52,53 @@ public abstract class SearchableAbstractDao<RequestT, EntityT>
   }
 
   @Override
-  public SearchResult<EntityT> search(RequestT searchRequest, PageRequest pageRequest) {
-    MetastoreQuery query = searchQuery(searchRequest).withPagination(pageRequest);
+  public SearchResult<EntityT> search(RequestT searchRequest, PageRequest<ColumnT> pageRequest) {
+    MetastoreQuery query = searchQuery(searchRequest)
+        .withPagination(toRawPageRequest(pageRequest));
     return queryExecutor.executePaged(query, this::mapRow);
   }
 
   @Override
   public List<EntityT> search(RequestT searchRequest) {
     return queryExecutor.execute(searchQuery(searchRequest), this::mapRow);
+  }
+
+  private PageRequest<String> toRawPageRequest(PageRequest<ColumnT> pageRequest) {
+    if (pageRequest == null) {
+      return null;
+    }
+
+    List<Sorting<String>> rawSortings =
+        Optional.ofNullable(pageRequest.getSortColumns())
+            .map(this::toRawSortings)
+            .orElse(null);
+
+    return new PageRequest<>(
+        pageRequest.getOffset(),
+        pageRequest.getLimit(),
+        rawSortings);
+  }
+
+  private List<Sorting<String>> toRawSortings(
+      List<Sorting<ColumnT>> sortColumns) {
+    return sortColumns == null
+        ? null
+        : sortColumns.stream()
+        .flatMap(sorting -> toDbColumnSortings(
+            sorting.getColumn(), sorting.getOrder()))
+        .collect(Collectors.toList());
+  }
+
+  // returns Stream in order to allow daos to
+  // map one logical sorting field to several physical ones
+  protected Stream<Sorting<String>> toDbColumnSortings(
+      ColumnT column, Sorting.Order order) {
+    return Stream.of(toDbColumnSorting(column, order));
+  }
+
+  protected Sorting<String> toDbColumnSorting(
+      ColumnT column, Sorting.Order order) {
+    return new Sorting<>(column.getFieldName(), order);
   }
 
   protected abstract MetastoreQuery searchQuery(RequestT searchRequest);

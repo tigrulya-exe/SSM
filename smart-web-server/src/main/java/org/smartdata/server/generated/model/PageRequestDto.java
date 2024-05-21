@@ -20,11 +20,8 @@ package org.smartdata.server.generated.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import javax.annotation.Generated;
-import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
 /**
@@ -38,9 +35,6 @@ public class PageRequestDto {
   private Integer limit = null;
 
   private Long offset = null;
-
-  @Valid
-  private List<String> sort;
 
   public PageRequestDto limit(Integer limit) {
     this.limit = limit;
@@ -84,34 +78,6 @@ public class PageRequestDto {
     this.offset = offset;
   }
 
-  public PageRequestDto sort(List<String> sort) {
-    this.sort = sort;
-    return this;
-  }
-
-  public PageRequestDto addSortItem(String sortItem) {
-    if (this.sort == null) {
-      this.sort = new ArrayList<>();
-    }
-    this.sort.add(sortItem);
-    return this;
-  }
-
-  /**
-   * Sort field names prefixed with '-' for descending order
-   * @return sort
-  */
-  
-  @Schema(name = "sort", description = "Sort field names prefixed with '-' for descending order", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("sort")
-  public List<String> getSort() {
-    return sort;
-  }
-
-  public void setSort(List<String> sort) {
-    this.sort = sort;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -122,13 +88,12 @@ public class PageRequestDto {
     }
     PageRequestDto pageRequest = (PageRequestDto) o;
     return Objects.equals(this.limit, pageRequest.limit) &&
-        Objects.equals(this.offset, pageRequest.offset) &&
-        Objects.equals(this.sort, pageRequest.sort);
+        Objects.equals(this.offset, pageRequest.offset);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(limit, offset, sort);
+    return Objects.hash(limit, offset);
   }
 
   @Override
@@ -137,7 +102,6 @@ public class PageRequestDto {
     sb.append("class PageRequestDto {\n");
     sb.append("    limit: ").append(toIndentedString(limit)).append("\n");
     sb.append("    offset: ").append(toIndentedString(offset)).append("\n");
-    sb.append("    sort: ").append(toIndentedString(sort)).append("\n");
     sb.append("}");
     return sb.toString();
   }

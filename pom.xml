@@ -711,6 +711,7 @@
               <excludes>
                 <exclude>**/bower_components/**</exclude>
                 <exclude>**/dist/**/*.js</exclude>
+                <exclude>**/local-repo/**/*.js</exclude>
                 <exclude>**/.tmp/**</exclude>
               </excludes>
             </licenseSet>

@@ -20,6 +20,7 @@ package org.smartdata.server.engine.audit;
 import org.smartdata.metastore.dao.UserActivityDao;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.PageRequest;
+import org.smartdata.metastore.queries.sort.AuditSortField;
 import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
 
@@ -37,7 +38,7 @@ public class AuditService {
   }
 
   public SearchResult<UserActivityEvent> search(
-      AuditSearchRequest searchRequest, PageRequest pageRequest) {
+      AuditSearchRequest searchRequest, PageRequest<AuditSortField> pageRequest) {
     return userActivityDao.search(searchRequest, pageRequest);
   }
 

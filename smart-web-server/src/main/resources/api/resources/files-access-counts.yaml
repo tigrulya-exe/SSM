@@ -5,6 +5,7 @@ get:
   operationId: getAccessCounts
   parameters:
     - $ref: '../parameters/common/page-request.yaml'
+    - $ref: '../parameters/files/hot-files-sort.yaml'
     - $ref: '../parameters/files/path-like.yaml'
     - $ref: '../parameters/files/last-accessed-time.yaml'
   responses:

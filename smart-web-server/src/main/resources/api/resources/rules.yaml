@@ -5,6 +5,7 @@ get:
   operationId: getRules
   parameters:
     - $ref: '../parameters/common/page-request.yaml'
+    - $ref: '../parameters/rules/rules-sort.yaml'
     - $ref: '../parameters/common/text-representation-like.yaml'
     - $ref: '../parameters/common/submission-time.yaml'
     - $ref: '../parameters/rules/rule-states.yaml'

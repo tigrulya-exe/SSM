@@ -36,6 +36,7 @@ import org.smartdata.server.generated.model.AuditEventResultDto;
 import org.smartdata.server.generated.model.AuditEventsDto;
 import org.smartdata.server.generated.model.AuditObjectTypeDto;
 import org.smartdata.server.generated.model.AuditOperationDto;
+import org.smartdata.server.generated.model.AuditSortDto;
 import org.smartdata.server.generated.model.ErrorResponseDto;
 import org.smartdata.server.generated.model.EventTimeIntervalDto;
 import org.smartdata.server.generated.model.PageRequestDto;
@@ -59,6 +60,7 @@ public interface AuditApi {
      * GET /api/v2/audit/events : List all audit events
      *
      * @param pageRequest  (optional)
+     * @param sort Sort field names prefixed with &#39;-&#39; for descending order (optional)
      * @param usernameLike Filter of the name of the user who performed the event (optional)
      * @param eventTime Time interval in which the event occurred (optional)
      * @param objectTypes List of audit object types (optional)
@@ -90,6 +92,7 @@ public interface AuditApi {
     
     default AuditEventsDto getAuditEvents(
         @Parameter(name = "pageRequest", description = "", in = ParameterIn.QUERY) @Valid PageRequestDto pageRequest,
+        @Parameter(name = "sort", description = "Sort field names prefixed with '-' for descending order", in = ParameterIn.QUERY) @Valid @RequestParam(value = "sort", required = false) List<@Valid AuditSortDto> sort,
         @Parameter(name = "usernameLike", description = "Filter of the name of the user who performed the event", in = ParameterIn.QUERY) @Valid @RequestParam(value = "usernameLike", required = false) String usernameLike,
         @Parameter(name = "eventTime", description = "Time interval in which the event occurred", in = ParameterIn.QUERY) @Valid EventTimeIntervalDto eventTime,
         @Parameter(name = "objectTypes", description = "List of audit object types", in = ParameterIn.QUERY) @Valid @RequestParam(value = "objectTypes", required = false) List<@Valid AuditObjectTypeDto> objectTypes,
@@ -97,7 +100,7 @@ public interface AuditApi {
         @Parameter(name = "operations", description = "List of audit operations", in = ParameterIn.QUERY) @Valid @RequestParam(value = "operations", required = false) List<@Valid AuditOperationDto> operations,
         @Parameter(name = "results", description = "List of audit event results", in = ParameterIn.QUERY) @Valid @RequestParam(value = "results", required = false) List<@Valid AuditEventResultDto> results
     ) throws Exception {
-        return getDelegate().getAuditEvents(pageRequest, usernameLike, eventTime, objectTypes, objectIds, operations, results);
+        return getDelegate().getAuditEvents(pageRequest, sort, usernameLike, eventTime, objectTypes, objectIds, operations, results);
     }
 
 }

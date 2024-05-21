@@ -22,6 +22,7 @@ import java.util.Optional;
 import javax.annotation.Generated;
 import javax.validation.Valid;
 import org.smartdata.server.generated.model.CmdletDto;
+import org.smartdata.server.generated.model.CmdletSortDto;
 import org.smartdata.server.generated.model.CmdletStateDto;
 import org.smartdata.server.generated.model.CmdletsDto;
 import org.smartdata.server.generated.model.PageRequestDto;
@@ -71,6 +72,7 @@ public interface CmdletsApiDelegate {
      * GET /api/v2/cmdlets : List all cmdlets
      *
      * @param pageRequest  (optional)
+     * @param sort Sort field names prefixed with &#39;-&#39; for descending order (optional)
      * @param textRepresentationLike The object&#39;s text representation filter.  May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param submissionTime Time interval in which the entity was submitted (optional)
      * @param ruleIds Ids of the rules that cmdlets belong to (optional)
@@ -81,6 +83,7 @@ public interface CmdletsApiDelegate {
      * @see CmdletsApi#getCmdlets
      */
     default CmdletsDto getCmdlets(PageRequestDto pageRequest,
+        List<@Valid CmdletSortDto> sort,
         String textRepresentationLike,
         SubmissionTimeIntervalDto submissionTime,
         List<Long> ruleIds,

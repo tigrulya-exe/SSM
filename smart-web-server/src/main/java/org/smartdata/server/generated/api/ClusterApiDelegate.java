@@ -17,9 +17,12 @@
  */
 package org.smartdata.server.generated.api;
 
+import java.util.List;
 import java.util.Optional;
 import javax.annotation.Generated;
+import javax.validation.Valid;
 import org.smartdata.server.generated.model.ClusterNodesDto;
+import org.smartdata.server.generated.model.ClusterSortDto;
 import org.smartdata.server.generated.model.PageRequestDto;
 import org.smartdata.server.generated.model.RegistrationTimeIntervalDto;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -39,12 +42,14 @@ public interface ClusterApiDelegate {
      * GET /api/v2/cluster/nodes : List all cluster nodes
      *
      * @param pageRequest  (optional)
+     * @param sort Sort field names prefixed with &#39;-&#39; for descending order (optional)
      * @param registrationTime Time interval in which node was registered in master (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
      * @see ClusterApi#getClusterNodes
      */
     default ClusterNodesDto getClusterNodes(PageRequestDto pageRequest,
+        List<@Valid ClusterSortDto> sort,
         RegistrationTimeIntervalDto registrationTime) throws Exception {
         throw new IllegalArgumentException("Not implemented");
 

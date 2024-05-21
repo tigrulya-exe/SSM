@@ -25,6 +25,7 @@ import org.smartdata.server.generated.model.AuditEventResultDto;
 import org.smartdata.server.generated.model.AuditEventsDto;
 import org.smartdata.server.generated.model.AuditObjectTypeDto;
 import org.smartdata.server.generated.model.AuditOperationDto;
+import org.smartdata.server.generated.model.AuditSortDto;
 import org.smartdata.server.generated.model.EventTimeIntervalDto;
 import org.smartdata.server.generated.model.PageRequestDto;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -44,6 +45,7 @@ public interface AuditApiDelegate {
      * GET /api/v2/audit/events : List all audit events
      *
      * @param pageRequest  (optional)
+     * @param sort Sort field names prefixed with &#39;-&#39; for descending order (optional)
      * @param usernameLike Filter of the name of the user who performed the event (optional)
      * @param eventTime Time interval in which the event occurred (optional)
      * @param objectTypes List of audit object types (optional)
@@ -55,6 +57,7 @@ public interface AuditApiDelegate {
      * @see AuditApi#getAuditEvents
      */
     default AuditEventsDto getAuditEvents(PageRequestDto pageRequest,
+        List<@Valid AuditSortDto> sort,
         String usernameLike,
         EventTimeIntervalDto eventTime,
         List<@Valid AuditObjectTypeDto> objectTypes,

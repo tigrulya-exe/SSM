@@ -5,6 +5,7 @@ get:
   operationId: getActions
   parameters:
     - $ref: '../parameters/common/page-request.yaml'
+    - $ref: '../parameters/actions/action-sort.yaml'
     - $ref: '../parameters/common/text-representation-like.yaml'
     - $ref: '../parameters/common/submission-time.yaml'
     - $ref: '../parameters/actions/hosts.yaml'

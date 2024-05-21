@@ -17,10 +17,11 @@
  */
 package org.smartdata.metastore.dao;
 
+import org.smartdata.metastore.queries.sort.AuditSortField;
 import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
 
 public interface UserActivityDao
-    extends SearchableDao<AuditSearchRequest, UserActivityEvent> {
+    extends SearchableDao<AuditSearchRequest, UserActivityEvent, AuditSortField> {
   void insert(UserActivityEvent event);
 }

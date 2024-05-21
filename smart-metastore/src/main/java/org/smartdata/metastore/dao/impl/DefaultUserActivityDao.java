@@ -20,6 +20,7 @@ package org.smartdata.metastore.dao.impl;
 import org.smartdata.metastore.SearchableAbstractDao;
 import org.smartdata.metastore.dao.UserActivityDao;
 import org.smartdata.metastore.queries.MetastoreQuery;
+import org.smartdata.metastore.queries.sort.AuditSortField;
 import org.smartdata.model.TimeInterval;
 import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.audit.UserActivityObject;
@@ -47,7 +48,7 @@ import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.lessT
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.like;
 
 public class DefaultUserActivityDao
-    extends SearchableAbstractDao<AuditSearchRequest, UserActivityEvent>
+    extends SearchableAbstractDao<AuditSearchRequest, UserActivityEvent, AuditSortField>
     implements UserActivityDao {
   private static final String TABLE_NAME = "user_activity_event";
 

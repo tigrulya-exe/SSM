@@ -1,0 +1,18 @@
+title: AuditSort
+type: string
+description: Sort field names prefixed with '-' for descending order
+enum:
+  - id
+  - username
+  - timestamp
+  - objectType
+  - objectId
+  - operation
+  - result
+  - -id
+  - -username
+  - -timestamp
+  - -objectType
+  - -objectId
+  - -operation
+  - -result

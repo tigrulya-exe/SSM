@@ -1,0 +1,16 @@
+title: RuleSort
+type: string
+description: Sort field names prefixed with '-' for descending order
+enum:
+  - id
+  - submitTime
+  - lastCheckTime
+  - checkedCount
+  - generatedCmdlets
+  - status
+  - -id
+  - -submitTime
+  - -lastCheckTime
+  - -checkedCount
+  - -generatedCmdlets
+  - -status

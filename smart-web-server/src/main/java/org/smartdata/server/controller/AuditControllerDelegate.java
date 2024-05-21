@@ -27,10 +27,11 @@ import org.smartdata.server.generated.model.AuditEventResultDto;
 import org.smartdata.server.generated.model.AuditEventsDto;
 import org.smartdata.server.generated.model.AuditObjectTypeDto;
 import org.smartdata.server.generated.model.AuditOperationDto;
+import org.smartdata.server.generated.model.AuditSortDto;
 import org.smartdata.server.generated.model.EventTimeIntervalDto;
 import org.smartdata.server.generated.model.PageRequestDto;
 import org.smartdata.server.mappers.AuditEventMapper;
-import org.smartdata.server.mappers.PageRequestMapper;
+import org.smartdata.server.mappers.pagination.AuditPageRequestMapper;
 import org.springframework.stereotype.Component;
 
 import javax.validation.Valid;
@@ -42,12 +43,14 @@ import java.util.List;
 public class AuditControllerDelegate implements AuditApiDelegate {
 
   private final AuditService auditService;
+
   private final AuditEventMapper auditEventMapper;
-  private final PageRequestMapper pageRequestMapper;
+  private final AuditPageRequestMapper pageRequestMapper;
 
   @Override
   public AuditEventsDto getAuditEvents(
       PageRequestDto pageRequestDto,
+      List<@Valid AuditSortDto> sort,
       String usernameLike,
       EventTimeIntervalDto eventTime,
       List<@Valid AuditObjectTypeDto> objectTypes,
@@ -59,7 +62,7 @@ public class AuditControllerDelegate implements AuditApiDelegate {
         usernameLike, eventTime, objectTypes, objectIds, operations, results);
 
     SearchResult<UserActivityEvent> searchResult = auditService.search(
-        searchRequest, pageRequestMapper.toPageRequest(pageRequestDto));
+        searchRequest, pageRequestMapper.toPageRequest(pageRequestDto, sort));
 
     return auditEventMapper.toAuditEventsDto(searchResult);
   }

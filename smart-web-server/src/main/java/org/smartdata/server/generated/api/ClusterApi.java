@@ -29,9 +29,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import javax.annotation.Generated;
 import javax.validation.Valid;
 import org.smartdata.server.generated.model.ClusterNodesDto;
+import org.smartdata.server.generated.model.ClusterSortDto;
 import org.smartdata.server.generated.model.ErrorResponseDto;
 import org.smartdata.server.generated.model.PageRequestDto;
 import org.smartdata.server.generated.model.RegistrationTimeIntervalDto;
@@ -39,6 +41,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
@@ -54,6 +57,7 @@ public interface ClusterApi {
      * GET /api/v2/cluster/nodes : List all cluster nodes
      *
      * @param pageRequest  (optional)
+     * @param sort Sort field names prefixed with &#39;-&#39; for descending order (optional)
      * @param registrationTime Time interval in which node was registered in master (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
@@ -80,9 +84,10 @@ public interface ClusterApi {
     
     default ClusterNodesDto getClusterNodes(
         @Parameter(name = "pageRequest", description = "", in = ParameterIn.QUERY) @Valid PageRequestDto pageRequest,
+        @Parameter(name = "sort", description = "Sort field names prefixed with '-' for descending order", in = ParameterIn.QUERY) @Valid @RequestParam(value = "sort", required = false) List<@Valid ClusterSortDto> sort,
         @Parameter(name = "registrationTime", description = "Time interval in which node was registered in master", in = ParameterIn.QUERY) @Valid RegistrationTimeIntervalDto registrationTime
     ) throws Exception {
-        return getDelegate().getClusterNodes(pageRequest, registrationTime);
+        return getDelegate().getClusterNodes(pageRequest, sort, registrationTime);
     }
 
 }

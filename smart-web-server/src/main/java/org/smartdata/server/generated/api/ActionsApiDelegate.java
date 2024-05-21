@@ -23,6 +23,7 @@ import javax.annotation.Generated;
 import javax.validation.Valid;
 import org.smartdata.server.generated.model.ActionDto;
 import org.smartdata.server.generated.model.ActionInfoDto;
+import org.smartdata.server.generated.model.ActionSortDto;
 import org.smartdata.server.generated.model.ActionSourceDto;
 import org.smartdata.server.generated.model.ActionsDto;
 import org.smartdata.server.generated.model.CmdletStateDto;
@@ -60,6 +61,7 @@ public interface ActionsApiDelegate {
      * GET /api/v2/actions : List all actions
      *
      * @param pageRequest  (optional)
+     * @param sort Sort field names prefixed with &#39;-&#39; for descending order (optional)
      * @param textRepresentationLike The object&#39;s text representation filter.  May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param submissionTime Time interval in which the entity was submitted (optional)
      * @param hosts List of hosts on which the action is/was running (optional)
@@ -71,6 +73,7 @@ public interface ActionsApiDelegate {
      * @see ActionsApi#getActions
      */
     default ActionsDto getActions(PageRequestDto pageRequest,
+        List<@Valid ActionSortDto> sort,
         String textRepresentationLike,
         SubmissionTimeIntervalDto submissionTime,
         List<String> hosts,
