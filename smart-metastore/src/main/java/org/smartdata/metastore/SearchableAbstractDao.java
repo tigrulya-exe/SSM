@@ -83,8 +83,7 @@ public abstract class SearchableAbstractDao<RequestT, EntityT, ColumnT extends S
       List<Sorting<ColumnT>> sortColumns) {
     return sortColumns == null
         ? null
-        : sortColumns
-        .stream()
+        : sortColumns.stream()
         .flatMap(sorting -> toDbColumnSortings(
             sorting.getColumn(), sorting.getOrder()))
         .collect(Collectors.toList());

@@ -17,6 +17,9 @@
  */
 package org.smartdata.metastore.queries.sort;
 
+import lombok.Data;
+
+@Data
 public class Sorting<T> {
   public enum Order {
     ASC,
@@ -26,21 +29,8 @@ public class Sorting<T> {
   private final T column;
   private final Order order;
 
-  public Sorting(T column, Order order) {
-    this.column = column;
-    this.order = order;
-  }
-
   @Override
   public String toString() {
     return column + " " + order;
-  }
-
-  public T getColumn() {
-    return column;
-  }
-
-  public Order getOrder() {
-    return order;
   }
 }

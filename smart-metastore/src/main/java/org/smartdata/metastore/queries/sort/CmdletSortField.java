@@ -17,6 +17,11 @@
  */
 package org.smartdata.metastore.queries.sort;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum CmdletSortField implements SortField {
   ID("cid"),
   RULE_ID("rid"),
@@ -25,13 +30,4 @@ public enum CmdletSortField implements SortField {
   STATE_CHANGED_TIME("state_changed_time");
 
   private final String fieldName;
-
-  CmdletSortField(String fieldName) {
-    this.fieldName = fieldName;
-  }
-
-  @Override
-  public String getFieldName() {
-    return fieldName;
-  }
 }

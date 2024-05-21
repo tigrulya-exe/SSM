@@ -17,6 +17,11 @@
  */
 package org.smartdata.metastore.queries.sort;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum AuditSortField implements SortField {
   ID("id"),
   USERNAME("username"),
@@ -27,13 +32,4 @@ public enum AuditSortField implements SortField {
   RESULT("result");
 
   private final String fieldName;
-
-  AuditSortField(String fieldName) {
-    this.fieldName = fieldName;
-  }
-
-  @Override
-  public String getFieldName() {
-    return fieldName;
-  }
 }

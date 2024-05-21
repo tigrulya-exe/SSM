@@ -17,57 +17,25 @@
  */
 package org.smartdata.metastore.queries;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import org.smartdata.metastore.queries.sort.Sorting;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
+@Builder
+@AllArgsConstructor
 public class PageRequest<T> {
   private final Long offset;
   private final Integer limit;
 
   private final List<Sorting<T>> sortColumns;
 
-  public PageRequest(Long offset, Integer limit, List<Sorting<T>> sortColumns) {
-    this.offset = offset;
-    this.limit = limit;
-    this.sortColumns = sortColumns;
-  }
-
-  public Long getOffset() {
-    return offset;
-  }
-
-  public Integer getLimit() {
-    return limit;
-  }
-
-  public List<Sorting<T>> getSortColumns() {
-    return sortColumns;
-  }
-
-  public static <T> Builder<T> builder() {
-    return new Builder<>();
-  }
-
   public static class Builder<T> {
-    private Long offset;
-    private Integer limit;
-    private List<Sorting<T>> sortColumns;
-
-    public Builder() {
-      this.sortColumns = new ArrayList<>();
-    }
-
-    public Builder<T> offset(Long offset) {
-      this.offset = offset;
-      return this;
-    }
-
-    public Builder<T> limit(Integer limit) {
-      this.limit = limit;
-      return this;
-    }
+    private List<Sorting<T>> sortColumns = new ArrayList<>();
 
     public Builder<T> sortByAsc(T column) {
       return addSorting(column, Sorting.Order.ASC);
@@ -77,18 +45,9 @@ public class PageRequest<T> {
       return addSorting(column, Sorting.Order.DESC);
     }
 
-    public Builder<T> sortColumns(List<Sorting<T>> sortColumns) {
-      this.sortColumns = sortColumns;
-      return this;
-    }
-
     public Builder<T> addSorting(T column, Sorting.Order order) {
       this.sortColumns.add(new Sorting<>(column, order));
       return this;
-    }
-
-    public PageRequest<T> build() {
-      return new PageRequest<>(offset, limit, sortColumns);
     }
   }
 }
