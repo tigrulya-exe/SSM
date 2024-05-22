@@ -36,8 +36,8 @@ public class CmdletInfo {
   private List<Long> aids = new ArrayList<>();
   private CmdletState state;
   private String parameters;
-  private long stateChangedTime;
   private final long generateTime;
+  private long stateChangedTime;
 
   public CmdletInfo(
       long cid,
