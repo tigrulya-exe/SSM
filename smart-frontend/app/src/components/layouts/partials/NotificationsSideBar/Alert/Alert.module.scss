@@ -1,0 +1,77 @@
+:global {
+  body.theme-dark {
+    // alert-error
+    --alert-border-error: var(--color-red);
+    --alert-background-error: var(--color-blackRedLighter);
+    --alert-color-error: var(--color-grayLighter);
+
+    // alert-info
+    --alert-border-info: var(--color-dark1);
+    --alert-background-info: var(--color-newLight);
+    --alert-color-info: var(--color-grayLighter);
+
+    // alert-success
+    --alert-border-success: var(--color-greenSaturated);
+    --alert-background-success: var(--color-newLight);
+    --alert-color-success: var(--color-grayLighter);
+  }
+
+  body.theme-light {
+    // alert-error
+    --alert-border-error: var(--color-red);
+    --alert-background-error: var(--color-whiteRed);
+    --alert-color-error: var(--color-ADCM);
+
+    // alert-info
+    --alert-border-info: var(--color-lightStroke);
+    --alert-background-info: var(--color-colourful);
+    --alert-color-info: var(--color-ADCM);
+
+    // alert-success
+    --alert-border-success: var(--color-greenLogo);
+    --alert-background-success: var(--color-colourful);
+    --alert-color-success: var(--color-ADCM);
+  }
+}
+
+.alert {
+  border-radius: 12px;
+  background: var(--alert-background);
+  border: 2px solid var(--alert-border);
+  color: var(--alert-color);
+  padding: 10px;
+
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+
+  font-size: 15px;
+  line-height: 18px;
+  font-weight: 400;
+
+  width: 335px;
+  word-break: break-word;
+
+  &__button {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  &_error {
+    --alert-border: var(--alert-border-error);
+    --alert-background: var(--alert-background-error);
+    --alert-color: var(--alert-color-error);
+  }
+
+  &_info {
+    --alert-border: var(--alert-border-info);
+    --alert-background: var(--alert-background-info);
+    --alert-color: var(--alert-color-info);
+  }
+
+  &_success {
+    --alert-border: var(--alert-border-success);
+    --alert-background: var(--alert-background-success);
+    --alert-color: var(--alert-color-success);
+  }
+}

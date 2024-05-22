@@ -19,6 +19,7 @@
 import Button from '@uikit/Button/Button';
 import Icon from '@uikit/Icon/Icon';
 import IconButton from '@uikit/IconButton/IconButton';
+import type { IconsNames } from '@uikit/Icon/sprite';
 import Input from '@uikit/Input/Input';
 import InputNumber from './InputNumber/InputNumber';
 import PasswordInput from './PasswordInput/PasswordInput';
@@ -39,6 +40,7 @@ export {
   Checkbox,
   Icon,
   IconButton,
+  IconsNames,
   Input,
   InputNumber,
   MultiSelect,

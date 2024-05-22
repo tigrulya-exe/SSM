@@ -20,5 +20,5 @@ const eslintCheck = (filenames) => `eslint ${filenames.join(' ')} --config ./.es
 export default {
   '*.(js|jsx|ts|tsx)': (filenames) =>
     // Run ESLint on entire repo if more than 10 staged files
-    filenames.length > 10 ? 'lint' : eslintCheck(filenames),
+    filenames.length > 10 ? 'yarn lint' : eslintCheck(filenames),
 }
