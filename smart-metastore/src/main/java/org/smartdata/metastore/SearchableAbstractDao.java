@@ -23,6 +23,7 @@ import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.MetastoreQuery;
 import org.smartdata.metastore.queries.MetastoreQueryExecutor;
 import org.smartdata.metastore.queries.PageRequest;
+import org.smartdata.metastore.queries.expression.MetastoreQueryExpression;
 import org.smartdata.metastore.queries.sort.SortField;
 import org.smartdata.metastore.queries.sort.Sorting;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -31,10 +32,15 @@ import javax.sql.DataSource;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.emptyExpression;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.or;
 
 public abstract class SearchableAbstractDao<RequestT, EntityT, ColumnT extends SortField>
     extends AbstractDao
@@ -77,6 +83,21 @@ public abstract class SearchableAbstractDao<RequestT, EntityT, ColumnT extends S
 
   public long count(RequestT searchRequest) {
     return queryExecutor.executeCount(searchQuery(searchRequest));
+  }
+
+  protected <T> MetastoreQueryExpression buildQueryOperator(
+      Collection<T> properties,
+      Function<T, MetastoreQueryExpression> propertyMapper) {
+
+    if (properties == null) {
+      return emptyExpression();
+    }
+
+    MetastoreQueryExpression[] expressions = properties
+        .stream()
+        .map(propertyMapper)
+        .toArray(MetastoreQueryExpression[]::new);
+    return or(expressions);
   }
 
   private PageRequest<String> toRawPageRequest(PageRequest<ColumnT> pageRequest) {

@@ -36,6 +36,7 @@ import org.smartdata.server.engine.data.ExecutionContext;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -468,9 +469,9 @@ public class RuleExecutor implements Runnable {
         }
       } catch (QueueFullException e) {
         break;
-      } catch (IOException e) {
+      } catch (ParseException | IOException e) {
         // it's common here, ignore this and continue submit
-        LOG.debug("Failed to submit cmdlet for file {} due to IOException", file, e);
+        LOG.debug("Failed to submit cmdlet for file {} due to Exception", file, e);
       }
     }
     return nSubmitted;

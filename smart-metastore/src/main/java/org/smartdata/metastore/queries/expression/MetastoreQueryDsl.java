@@ -37,6 +37,10 @@ public class MetastoreQueryDsl {
 
   private static final MetastoreQueryExpression EMPTY_EXPRESSION = () -> "";
 
+  public static MetastoreQueryExpression emptyExpression() {
+    return EMPTY_EXPRESSION;
+  }
+
   public static MetastoreQueryExpression or(MetastoreQueryExpression... expressions) {
     return operator("OR", expressions);
   }
@@ -67,7 +71,7 @@ public class MetastoreQueryDsl {
 
   public static <T> MetastoreQueryExpression in(String column, List<T> values) {
     if (CollectionUtils.isEmpty(values)) {
-      return EMPTY_EXPRESSION;
+      return emptyExpression();
     }
 
     if (values.size() == 1) {
@@ -79,7 +83,7 @@ public class MetastoreQueryDsl {
 
   public static <T> MetastoreQueryExpression inStrings(String column, List<T> values) {
     if (CollectionUtils.isEmpty(values)) {
-      return EMPTY_EXPRESSION;
+      return emptyExpression();
     }
 
     List<String> strValues = values.stream()
@@ -120,9 +124,18 @@ public class MetastoreQueryDsl {
   }
 
   public static <T> MetastoreQueryExpression like(String column, T value) {
+    return patternSearchOp("LIKE", column, value);
+  }
+
+  public static <T> MetastoreQueryExpression notLike(String column, T value) {
+    return patternSearchOp("NOT LIKE", column, value);
+  }
+
+  private static <T> MetastoreQueryExpression patternSearchOp(
+      String operator, String column, T value) {
     return Optional.ofNullable(value)
-        .map(val -> binaryOpWithPlaceholder("LIKE", column, "%" + val + "%"))
-        .orElse(EMPTY_EXPRESSION);
+        .map(val -> binaryOpWithPlaceholder(operator, column, "%" + val + "%"))
+        .orElseGet(MetastoreQueryDsl::emptyExpression);
   }
 
   private static MetastoreQueryExpression operator(
@@ -132,7 +145,7 @@ public class MetastoreQueryDsl {
         .collect(Collectors.toList());
 
     if (nonEmptyExpressions.isEmpty()) {
-      return EMPTY_EXPRESSION;
+      return emptyExpression();
     }
 
     return new MetastoreQueryOperator(operator, nonEmptyExpressions);
@@ -141,7 +154,7 @@ public class MetastoreQueryDsl {
   private static <T> MetastoreQueryExpression binaryOpWithPlaceholder(
       String operator, String column, T value) {
     if (value == null) {
-      return EMPTY_EXPRESSION;
+      return emptyExpression();
     }
 
     return new MetastoreQueryOperator(operator,

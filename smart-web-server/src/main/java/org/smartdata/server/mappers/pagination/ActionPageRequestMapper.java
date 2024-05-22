@@ -20,22 +20,21 @@ package org.smartdata.server.mappers.pagination;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.ValueMapping;
-import org.smartdata.metastore.queries.sort.AuditSortField;
-import org.smartdata.server.generated.model.AuditSortDto;
+import org.smartdata.metastore.queries.sort.ActionSortField;
+import org.smartdata.server.generated.model.ActionSortDto;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
-public interface AuditPageRequestMapper
-    extends BasePageRequestMapper<AuditSortDto, AuditSortField> {
+public interface ActionPageRequestMapper
+    extends BasePageRequestMapper<ActionSortDto, ActionSortField> {
 
-  @ValueMapping(source = "OBJECTTYPE", target = "OBJECT_TYPE")
-  @ValueMapping(source = "OBJECTID", target = "OBJECT_ID")
+  @ValueMapping(source = "EXECHOST", target = "EXEC_HOST")
+  @ValueMapping(source = "CREATETIME", target = "CREATE_TIME")
+  @ValueMapping(source = "FINISHTIME", target = "FINISH_TIME")
   @ValueMapping(source = "_ID", target = "ID")
-  @ValueMapping(source = "_USERNAME", target = "USERNAME")
-  @ValueMapping(source = "_TIMESTAMP", target = "TIMESTAMP")
-  @ValueMapping(source = "_OBJECTTYPE", target = "OBJECT_TYPE")
-  @ValueMapping(source = "_OBJECTID", target = "OBJECT_ID")
-  @ValueMapping(source = "_OPERATION", target = "OPERATION")
-  @ValueMapping(source = "_RESULT", target = "RESULT")
-  AuditSortField toSortField(AuditSortDto sortColumn);
-
+  @ValueMapping(source = "_EXECHOST", target = "EXEC_HOST")
+  @ValueMapping(source = "_CREATETIME", target = "CREATE_TIME")
+  @ValueMapping(source = "_FINISHTIME", target = "FINISH_TIME")
+  @ValueMapping(source = "_STATUS", target = "STATUS")
+  @ValueMapping(source = "_SOURCE", target = "SOURCE")
+  ActionSortField toSortField(ActionSortDto sortColumn);
 }

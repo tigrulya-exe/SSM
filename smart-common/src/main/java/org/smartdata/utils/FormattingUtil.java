@@ -15,30 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.queries.sort;
+package org.smartdata.utils;
 
-import lombok.Data;
+import java.util.Map;
+import java.util.StringJoiner;
 
-@Data
-public class Sorting<T> {
-  public enum Order {
-    ASC,
-    DESC
+public class FormattingUtil {
+  public static String actionToString(String action, Map<String, String> args) {
+    StringJoiner actionBuilder = new StringJoiner(" ");
+    actionBuilder.add(action);
+
+    if (args != null) {
+      args.forEach((key, value) ->
+          actionBuilder.add(formatArg(key)).add(formatArg(value)));
+    }
+
+    return actionBuilder.toString().trim();
   }
 
-  private final T column;
-  private final Order order;
-
-  public static <T> Sorting<T> descending(T column) {
-    return new Sorting<>(column, Order.DESC);
-  }
-
-  public static <T> Sorting<T> ascending(T column) {
-    return new Sorting<>(column, Order.ASC);
-  }
-
-  @Override
-  public String toString() {
-    return column + " " + order;
+  private static String formatArg(String arg) {
+    String formattedArg = arg.replace("\\", "\\\\")
+        .replace("\"", "\\\"");
+    return formattedArg.matches(".*\\s.*")
+        ? "\"" + formattedArg + "\""
+        : formattedArg;
   }
 }

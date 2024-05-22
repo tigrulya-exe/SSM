@@ -366,7 +366,7 @@ public class CmdletManager extends AbstractService
     }
   }
 
-  public long submitCmdlet(CmdletDescriptor cmdletDescriptor) throws IOException {
+  public long submitCmdlet(CmdletDescriptor cmdletDescriptor) throws IOException, ParseException {
     // To avoid repeatedly submitting task. If tracker contains one CmdletDescriptor
     // with the same rule id and cmdlet string, return -1.
     if (tracker.contains(cmdletDescriptor)) {

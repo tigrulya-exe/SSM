@@ -37,6 +37,8 @@ public interface BasePageRequestMapper<
   @Mapping(source = ".", target = "column")
   Sorting<TargetT> toSorting(SourceT sortColumn);
 
+  TargetT toSortField(SourceT sortColumn);
+
   default Sorting.Order toOrder(SourceT sortColumn) {
     return sortColumn.toString().startsWith(DESC_SORT_COLUMN_PREFIX)
         ? Sorting.Order.DESC

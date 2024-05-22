@@ -22,15 +22,21 @@ import org.slf4j.LoggerFactory;
 import org.smartdata.action.ActionException;
 import org.smartdata.action.ActionRegistry;
 import org.smartdata.action.SmartAction;
+import org.smartdata.exception.NotFoundException;
 import org.smartdata.hdfs.action.move.AbstractMoveFileAction;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
+import org.smartdata.metastore.dao.ActionDao;
+import org.smartdata.metastore.dao.Searchable;
 import org.smartdata.metastore.model.SearchResult;
+import org.smartdata.metastore.queries.PageRequest;
+import org.smartdata.metastore.queries.sort.ActionSortField;
 import org.smartdata.model.ActionInfo;
 import org.smartdata.model.CmdletDescriptor;
 import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.DetailedFileAction;
 import org.smartdata.model.LaunchAction;
+import org.smartdata.model.request.ActionSearchRequest;
 import org.smartdata.protocol.message.ActionStatus;
 import org.smartdata.server.engine.cmdlet.CmdletManagerContext;
 import org.smartdata.server.engine.cmdlet.InMemoryRegistry;
@@ -38,6 +44,7 @@ import org.smartdata.server.engine.model.ActionGroup;
 import org.smartdata.server.engine.model.DetailedFileActionGroup;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,16 +53,19 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ActionInfoHandler {
+public class ActionInfoHandler
+    implements Searchable<ActionSearchRequest, ActionInfo, ActionSortField> {
   private static final Logger LOG = LoggerFactory.getLogger(ActionInfoHandler.class);
 
   private final MetaStore metaStore;
+  private final ActionDao actionDao;
   private AtomicLong maxActionId;
 
   private final InMemoryRegistry inMemoryRegistry;
 
   public ActionInfoHandler(CmdletManagerContext context) {
     this.metaStore = context.getMetaStore();
+    this.actionDao = metaStore.actionDao();
     this.inMemoryRegistry = context.getInMemoryRegistry();
   }
 
@@ -82,6 +92,16 @@ public class ActionInfoHandler {
   }
 
   public ActionInfo getActionInfo(long actionId) throws IOException {
+    ActionInfo actionInfo = getActionInfoOrNull(actionId);
+
+    if (actionInfo == null) {
+      throw NotFoundException.forAction(actionId);
+    }
+
+    return actionInfo;
+  }
+
+  public ActionInfo getActionInfoOrNull(long actionId) throws IOException {
     ActionInfo actionInfo = getUnfinishedAction(actionId);
     try {
       return actionInfo == null
@@ -215,7 +235,7 @@ public class ActionInfoHandler {
   }
 
   public List<ActionInfo> createActionInfos(
-      CmdletDescriptor cmdletDescriptor, CmdletInfo cmdletInfo) throws IOException {
+      CmdletDescriptor cmdletDescriptor, CmdletInfo cmdletInfo) throws ParseException {
 
     validateActionNames(cmdletDescriptor);
 
@@ -223,6 +243,18 @@ public class ActionInfoHandler {
         .mapToObj(actionIdx ->
             createInitialActionInfo(cmdletDescriptor, cmdletInfo, actionIdx))
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public SearchResult<ActionInfo> search(
+      ActionSearchRequest searchRequest,
+      PageRequest<ActionSortField> pageRequest) {
+    return actionDao.search(searchRequest, pageRequest);
+  }
+
+  @Override
+  public List<ActionInfo> search(ActionSearchRequest searchRequest) {
+    return actionDao.search(searchRequest);
   }
 
   private void updateActionStatusInternal(ActionInfo actionInfo, ActionStatus status) {
@@ -278,7 +310,7 @@ public class ActionInfoHandler {
 
   private ActionInfo createInitialActionInfo(
       CmdletDescriptor cmdletDescriptor, CmdletInfo cmdletInfo, int actionIndex) {
-    return ActionInfo.newBuilder()
+    return ActionInfo.builder()
         .setActionId(maxActionId.getAndIncrement())
         .setCmdletId(cmdletInfo.getCid())
         .setCreateTime(cmdletInfo.getGenerateTime())
@@ -290,14 +322,14 @@ public class ActionInfoHandler {
   /**
    * Check if action names in cmdletDescriptor are correct.
    */
-  private void validateActionNames(CmdletDescriptor cmdletDescriptor) throws IOException {
+  private void validateActionNames(CmdletDescriptor cmdletDescriptor) throws ParseException {
     List<String> unknownActions = cmdletDescriptor.getActionNames()
         .stream()
         .filter(name -> !ActionRegistry.registeredAction(name))
         .collect(Collectors.toList());
 
     if (!unknownActions.isEmpty()) {
-      throw new IOException("Unknown actions used in cmdlet: " + unknownActions);
+      throw new ParseException("Unknown actions used in cmdlet: " + unknownActions, 0);
     }
   }
 }

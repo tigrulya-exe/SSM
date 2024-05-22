@@ -15,30 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.queries.sort;
+package org.smartdata.model;
 
-import lombok.Data;
-
-@Data
-public class Sorting<T> {
-  public enum Order {
-    ASC,
-    DESC
-  }
-
-  private final T column;
-  private final Order order;
-
-  public static <T> Sorting<T> descending(T column) {
-    return new Sorting<>(column, Order.DESC);
-  }
-
-  public static <T> Sorting<T> ascending(T column) {
-    return new Sorting<>(column, Order.ASC);
-  }
-
-  @Override
-  public String toString() {
-    return column + " " + order;
-  }
+public enum ActionSource {
+  USER,
+  RULE
 }

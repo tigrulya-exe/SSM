@@ -64,6 +64,18 @@ public abstract class TestSearchableDao<
     }
   }
 
+  @SafeVarargs
+  protected final void testPagedSearch(
+      RequestT searchRequest,
+      PageRequest<ColumnT> pageRequest,
+      IdT... expectedIds) {
+    testPagedSearch(
+        searchRequest,
+        pageRequest,
+        expectedIds.length,
+        Arrays.asList(expectedIds));
+  }
+
   private void testPagedSearch(
       RequestT searchRequest,
       PageRequest<ColumnT> pageRequest,

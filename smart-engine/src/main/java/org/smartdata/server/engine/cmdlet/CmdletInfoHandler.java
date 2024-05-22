@@ -17,6 +17,8 @@
  */
 package org.smartdata.server.engine.cmdlet;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.yarn.webapp.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.exception.NotFoundException;
@@ -121,6 +123,17 @@ public class CmdletInfoHandler
   public CmdletInfo getCmdletInfoOrThrow(long cid) throws IOException {
     return Optional.ofNullable(getCmdletInfo(cid))
         .orElseThrow(() -> NotFoundException.forCmdlet(cid));
+  }
+
+  public ActionInfo getSingleActionInfo(long cmdletId) throws IOException {
+    Long actionId = Optional.ofNullable(getCmdletInfo(cmdletId))
+        .map(CmdletInfo::getAids)
+        .filter(CollectionUtils::isNotEmpty)
+        .map(actionIds -> actionIds.get(0))
+        .orElseThrow(() -> new NotFoundException(
+            "Cmdlet doesn't generate actions: " + cmdletId));
+
+    return actionInfoHandler.getActionInfo(actionId);
   }
 
   public CmdletGroup listCmdletsInfo(

@@ -40,6 +40,10 @@ public class NotFoundException extends IOException {
     return forIdentifiableEntity("Cmdlet", id);
   }
 
+  public static NotFoundException forAction(long id) {
+    return forIdentifiableEntity("Action", id);
+  }
+
   public static <T> NotFoundException forIdentifiableEntity(String name, T id) {
     return new NotFoundException(name + " with following id not found: " + id);
   }

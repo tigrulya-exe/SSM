@@ -7,8 +7,10 @@ enum:
   - createTime
   - finishTime
   - status
+  - source
   - -id
   - -execHost
   - -createTime
   - -finishTime
   - -status
+  - -source

@@ -25,7 +25,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
+
+import static org.smartdata.utils.FormattingUtil.actionToString;
 
 /**
  * CmdletDescriptor describes a cmdlet by parsing out action names and their
@@ -115,20 +118,13 @@ public class CmdletDescriptor {
   }
 
   public String toCmdletString() {
-    if (getActionSize() == 0) {
-      return "";
+    StringJoiner cmdletBuilder = new StringJoiner(" ; ");
+
+    for (int i = 0; i < getActionSize(); i++) {
+      String action = actionToString(getActionName(i), getActionArgs(i));
+      cmdletBuilder.add(action);
     }
 
-    StringBuilder cmdletBuilder = new StringBuilder(getActionName(0))
-        .append(" ")
-        .append(formatActionArguments(getActionArgs(0)));
-
-    for (int i = 1; i < getActionSize(); i++) {
-      cmdletBuilder.append(" ; ")
-          .append(getActionName(i))
-          .append(" ")
-          .append(formatActionArguments(getActionArgs(i)));
-    }
     return cmdletBuilder.toString();
   }
 
@@ -201,27 +197,5 @@ public class CmdletDescriptor {
   private void addAction(ParsedAction parsedAction) {
     actionNames.add(parsedAction.getName());
     actionArgs.add(parsedAction.getArgs());
-  }
-
-  private String formatActionArguments(Map<String, String> args) {
-    if (args == null || args.isEmpty()) {
-      return "";
-    }
-
-    StringBuilder ret = new StringBuilder();
-    for (String key : args.keySet()) {
-      ret.append(" ").append(formatItems(key)).append(" ").append(formatItems(args.get(key)));
-    }
-    return ret.toString().trim();
-  }
-
-  private String formatItems(String arg) {
-    String rep = arg.replace("\\", "\\\\");
-    rep = rep.replace("\"", "\\\"");
-    if (rep.matches(".*\\s+.*")) {
-      return "\"" + rep + "\"";
-    } else {
-      return rep;
-    }
   }
 }

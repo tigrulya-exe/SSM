@@ -185,6 +185,10 @@ public class MetaStore implements CopyMetaService,
     return cmdletDao;
   }
 
+  public ActionDao actionDao() {
+    return actionDao;
+  }
+
   public Long queryForLong(String sql) throws MetaStoreException {
     try {
       return generalDao.queryForLong(sql);
@@ -774,6 +778,7 @@ public class MetaStore implements CopyMetaService,
     return detailedFileActions;
   }
 
+  // todo delete after zeppelin removal
   public List<DetailedFileAction> listFileActions(long rid, long start, long offset)
       throws MetaStoreException {
     if (mapStoragePolicyIdName == null) {
@@ -1114,10 +1119,10 @@ public class MetaStore implements CopyMetaService,
     }
   }
 
-  public void insertActions(ActionInfo[] actionInfos)
+  public void upsertActions(List<ActionInfo> actionInfos)
       throws MetaStoreException {
     try {
-      actionDao.replace(actionInfos);
+      actionDao.upsert(actionInfos);
     } catch (Exception e) {
       throw new MetaStoreException(e);
     }
@@ -1142,7 +1147,7 @@ public class MetaStore implements CopyMetaService,
       throws MetaStoreException {
     LOG.debug("List Action, start {}, offset {}", start, offset);
     try {
-      if (orderBy.size() == 0) {
+      if (orderBy.isEmpty()) {
         return actionDao.getAPageOfAction(start, offset);
       } else {
         return actionDao.getAPageOfAction(start, offset, orderBy, desc);
@@ -1175,14 +1180,6 @@ public class MetaStore implements CopyMetaService,
   public void batchDeleteCmdletActions(List<Long> cmdletIds) throws MetaStoreException {
     try {
       actionDao.batchDeleteCmdletActions(cmdletIds);
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
-  public void deleteAllActions() throws MetaStoreException {
-    try {
-      actionDao.deleteAll();
     } catch (Exception e) {
       throw new MetaStoreException(e);
     }
@@ -1262,58 +1259,12 @@ public class MetaStore implements CopyMetaService,
     }
   }
 
-  public List<ActionInfo> getNewCreatedActions(String actionName,
-                                               int size, boolean successful,
-                                               boolean finished) throws MetaStoreException {
-    if (size < 0) {
-      return new ArrayList<>();
-    }
-    try {
-      return actionDao.getLatestActions(actionName, size, successful, finished);
-    } catch (EmptyResultDataAccessException e) {
-      return new ArrayList<>();
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
-  public List<ActionInfo> getNewCreatedActions(String actionName,
-                                               int size,
-                                               boolean finished) throws MetaStoreException {
-    if (size < 0) {
-      return new ArrayList<>();
-    }
-    try {
-      return actionDao.getLatestActions(actionName, size, finished);
-    } catch (EmptyResultDataAccessException e) {
-      return new ArrayList<>();
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
-  public List<ActionInfo> getNewCreatedActions(String actionName,
-                                               boolean successful,
-                                               int size) throws MetaStoreException {
-    if (size < 0) {
-      return new ArrayList<>();
-    }
-    try {
-      return actionDao.getLatestActions(actionName, size, successful);
-    } catch (EmptyResultDataAccessException e) {
-      return new ArrayList<>();
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
-
   public List<ActionInfo> getActions(
       List<Long> aids) throws MetaStoreException {
-    if (aids == null || aids.size() == 0) {
+    if (aids == null || aids.isEmpty()) {
       return new ArrayList<>();
     }
-    LOG.debug("Get Action ID {}", aids.toString());
+    LOG.debug("Get Action ID {}", aids);
     try {
       return actionDao.getByIds(aids);
     } catch (EmptyResultDataAccessException e) {
@@ -1323,18 +1274,7 @@ public class MetaStore implements CopyMetaService,
     }
   }
 
-  public List<ActionInfo> getActions(String aidCondition,
-                                     String cidCondition) throws MetaStoreException {
-    LOG.debug("Get aid {} cid {}", aidCondition, cidCondition);
-    try {
-      return actionDao.getByCondition(aidCondition, cidCondition);
-    } catch (EmptyResultDataAccessException e) {
-      return new ArrayList<>();
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
+  // todo delete after zeppelin removal
   public List<ActionInfo> getActions(long rid, int size) throws MetaStoreException {
     if (size <= 0) {
       size = Integer.MAX_VALUE;

@@ -38,6 +38,8 @@ public enum ActionSortDto {
   
   STATUS("status"),
   
+  SOURCE("source"),
+
   _ID("-id"),
   
   _EXECHOST("-execHost"),
@@ -46,7 +48,9 @@ public enum ActionSortDto {
   
   _FINISHTIME("-finishTime"),
   
-  _STATUS("-status");
+  _STATUS("-status"),
+
+  _SOURCE("-source");
 
   private String value;
 
