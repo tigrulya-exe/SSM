@@ -15,10 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const eslintCheck = (filenames) => `eslint ${filenames.join(' ')} --config ./.eslintrc.full.json --ext ts,tsx --report-unused-disable-directives --max-warnings 0`;
-
-export default {
-  '*.(js|jsx|ts|tsx)': (filenames) =>
-    // Run ESLint on entire repo if more than 10 staged files
-    filenames.length > 10 ? 'yarn lint' : eslintCheck(filenames),
+export enum NotificationVariant {
+  Error = 'Error',
+  Info = 'Info',
+  Success = 'Success',
 }
+
+export interface BaseNotification<Model> {
+  id: string;
+  variant: NotificationVariant;
+  ttl?: number; // in milliseconds
+  isDisabledClose?: boolean;
+  model: Model;
+}
+
+export interface ErrorNotification extends BaseNotification<{ message: string }> {
+  variant: NotificationVariant.Error;
+}
+
+export interface InfoNotification extends BaseNotification<{ message: string }> {
+  variant: NotificationVariant.Info;
+}
+
+export interface SuccessNotification extends BaseNotification<{ message: string }> {
+  variant: NotificationVariant.Success;
+}
+
+export type Notification = ErrorNotification | InfoNotification | SuccessNotification;

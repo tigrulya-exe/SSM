@@ -15,10 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const eslintCheck = (filenames) => `eslint ${filenames.join(' ')} --config ./.eslintrc.full.json --ext ts,tsx --report-unused-disable-directives --max-warnings 0`;
+import type { AsyncThunkPayloadCreator } from '@reduxjs/toolkit';
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import { createAsyncThunk as createReduxAsyncThunk } from '@reduxjs/toolkit';
+import type { AppStore, AppDispatch } from '../store';
+export { createTableSlice } from '@store/redux/createTableSlice';
 
-export default {
-  '*.(js|jsx|ts|tsx)': (filenames) =>
-    // Run ESLint on entire repo if more than 10 staged files
-    filenames.length > 10 ? 'yarn lint' : eslintCheck(filenames),
+type ThunkApiConfig = { state: AppStore; dispatch: AppDispatch };
+
+export function createAsyncThunk<Returned, ThunkArg = void>(
+  typePrefix: string,
+  payloadCreator: AsyncThunkPayloadCreator<Returned, ThunkArg, ThunkApiConfig>,
+) {
+  return createReduxAsyncThunk<Returned, ThunkArg>(typePrefix, payloadCreator);
 }

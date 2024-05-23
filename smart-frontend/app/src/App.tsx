@@ -16,29 +16,43 @@
  * limitations under the License.
  */
 import React from 'react';
-import './styles/app.scss';
+import { Provider } from 'react-redux';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { store } from '@store';
 import { Button, IconButton, Input } from '@uikit';
+import './styles/app.scss';
 
 function App() {
   return (
-    <>
-      <div>
-        Button: <br /> <br />
-        <Button>Some label</Button>
-      </div>
-      <br />
-      <br />
-      <div>
-        IconButton: <br /> <br />
-        <IconButton icon="chevron" />
-      </div>
-      <br />
-      <br />
-      <div>
-        Input: <br /> <br />
-        <Input endAdornment={<IconButton icon="search" variant="secondary" size={16} />} />
-      </div>
-    </>
+    <BrowserRouter>
+      <Provider store={store}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <div>
+                  Button: <br /> <br />
+                  <Button>Some label</Button>
+                </div>
+                <br />
+                <br />
+                <div>
+                  IconButton: <br /> <br />
+                  <IconButton icon="chevron" />
+                </div>
+                <br />
+                <br />
+                <div>
+                  Input: <br /> <br />
+                  <Input endAdornment={<IconButton icon="search" variant="secondary" size={16} />} />
+                </div>
+              </>
+            }
+          />
+        </Routes>
+      </Provider>
+    </BrowserRouter>
   );
 }
 
