@@ -77,7 +77,8 @@ public class ProtoBufferHelper {
   }
 
   public static RuleInfo convert(RuleInfoProto proto) {
-    return RuleInfo.newBuilder().setId(proto.getId())
+    return RuleInfo.builder()
+        .setId(proto.getId())
         .setSubmitTime(proto.getSubmitTime())
         .setLastCheckTime(proto.getLastCheckTime())
         .setRuleText(proto.getRuleText())

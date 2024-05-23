@@ -18,11 +18,15 @@
 package org.smartdata.metastore.queries.expression;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.smartdata.model.TimeInterval;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.smartdata.utils.DateTimeUtils.intervalEndToEpoch;
+import static org.smartdata.utils.DateTimeUtils.intervalStartToEpoch;
 
 /**
  * DSL for convenient writing of SQL queries with multiple
@@ -78,6 +82,36 @@ public class MetastoreQueryDsl {
         .collect(Collectors.toList());
 
     return in(column, strValues);
+  }
+
+  public static <T> MetastoreQueryExpression between(String column, T from, T to) {
+    return and(
+        greaterThan(column, from),
+        lessThan(column, to)
+    );
+  }
+
+  public static <T> MetastoreQueryExpression betweenInclusive(String column, T from, T to) {
+    return and(
+        greaterThanEqual(column, from),
+        lessThanEqual(column, to)
+    );
+  }
+
+  public static MetastoreQueryExpression betweenEpoch(
+      String column, TimeInterval timeInterval) {
+    Long from = intervalStartToEpoch(timeInterval);
+    Long to = intervalEndToEpoch(timeInterval);
+
+    return between(column, from, to);
+  }
+
+  public static MetastoreQueryExpression betweenEpochInclusive(
+      String column, TimeInterval timeInterval) {
+    Long from = intervalStartToEpoch(timeInterval);
+    Long to = intervalEndToEpoch(timeInterval);
+
+    return betweenInclusive(column, from, to);
   }
 
   public static <T> MetastoreQueryExpression like(String column, T value) {

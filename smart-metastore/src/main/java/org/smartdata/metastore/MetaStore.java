@@ -181,6 +181,10 @@ public class MetaStore implements CopyMetaService,
     return userActivityDao;
   }
 
+  public RuleDao ruleDao() {
+    return ruleDao;
+  }
+
   public Long queryForLong(String sql) throws MetaStoreException {
     try {
       return generalDao.queryForLong(sql);
@@ -811,8 +815,9 @@ public class MetaStore implements CopyMetaService,
     return listFileActions(rid, 0).size();
   }
 
+  // todo remove after zeppelin removal
   public List<DetailedRuleInfo> listMoveRules() throws MetaStoreException {
-    List<RuleInfo> ruleInfos = getRuleInfo();
+    List<RuleInfo> ruleInfos = getRuleInfos();
     List<DetailedRuleInfo> detailedRuleInfos = new ArrayList<>();
     for (RuleInfo ruleInfo : ruleInfos) {
       int lastIndex = ruleInfo.getRuleText().lastIndexOf("|");
@@ -852,9 +857,9 @@ public class MetaStore implements CopyMetaService,
     return detailedRuleInfos;
   }
 
-
+  // todo remove after zeppelin removal
   public List<DetailedRuleInfo> listSyncRules() throws MetaStoreException {
-    List<RuleInfo> ruleInfos = getRuleInfo();
+    List<RuleInfo> ruleInfos = getRuleInfos();
     List<DetailedRuleInfo> detailedRuleInfos = new ArrayList<>();
     for (RuleInfo ruleInfo : ruleInfos) {
       if (ruleInfo.getState() == RuleState.DELETED) {
@@ -936,23 +941,7 @@ public class MetaStore implements CopyMetaService,
     }
   }
 
-  public List<RuleInfo> listPageRule(long start, long offset, List<String> orderBy,
-                                     List<Boolean> desc)
-      throws MetaStoreException {
-    LOG.debug("List Rule, start {}, offset {}", start, offset);
-    try {
-      if (orderBy.size() == 0) {
-        return ruleDao.getAPageOfRule(start, offset);
-      } else {
-        return ruleDao.getAPageOfRule(start, offset, orderBy, desc);
-      }
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
-
-  public List<RuleInfo> getRuleInfo() throws MetaStoreException {
+  public List<RuleInfo> getRuleInfos() throws MetaStoreException {
     try {
       return ruleDao.getAll();
     } catch (EmptyResultDataAccessException e) {
@@ -999,15 +988,6 @@ public class MetaStore implements CopyMetaService,
       throw new MetaStoreException(e);
     }
   }
-
-  public void deleteAllRules() throws MetaStoreException {
-    try {
-      ruleDao.deleteAll();
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
 
   public void insertCmdlets(CmdletInfo[] commands)
       throws MetaStoreException {

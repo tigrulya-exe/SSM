@@ -15,13 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.model.request;
 
-import org.smartdata.metastore.queries.sort.AuditSortField;
-import org.smartdata.model.audit.UserActivityEvent;
-import org.smartdata.model.request.AuditSearchRequest;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Singular;
+import org.smartdata.model.RuleState;
+import org.smartdata.model.TimeInterval;
 
-public interface UserActivityDao
-    extends Searchable<AuditSearchRequest, UserActivityEvent, AuditSortField> {
-  void insert(UserActivityEvent event);
+import java.util.List;
+
+@Data
+@Builder
+public class RuleSearchRequest {
+  @Singular(ignoreNullCollections = true)
+  private final List<Long> ids;
+  private final String textRepresentationLike;
+  private final TimeInterval submissionTime;
+  @Singular(ignoreNullCollections = true)
+  private final List<RuleState> states;
+  private final TimeInterval lastActivationTime;
+  private final boolean includeDeletedRules;
+
+  public static RuleSearchRequest noFilters() {
+    return builder().build();
+  }
 }

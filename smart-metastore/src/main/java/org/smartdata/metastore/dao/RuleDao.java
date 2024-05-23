@@ -17,20 +17,18 @@
  */
 package org.smartdata.metastore.dao;
 
+import org.smartdata.metastore.queries.sort.RuleSortField;
 import org.smartdata.model.RuleInfo;
+import org.smartdata.model.request.RuleSearchRequest;
 
 import java.util.List;
 
-public interface RuleDao {
+public interface RuleDao
+    extends Searchable<RuleSearchRequest, RuleInfo, RuleSortField> {
 
   List<RuleInfo> getAll();
 
   RuleInfo getById(long id);
-
-  List<RuleInfo> getAPageOfRule(long start, long offset, List<String> orderBy,
-                                List<Boolean> isDesc);
-
-  List<RuleInfo> getAPageOfRule(long start, long offset);
 
   long insert(RuleInfo ruleInfo);
 
@@ -41,6 +39,4 @@ public interface RuleDao {
   int update(long ruleId, int rs);
 
   void delete(long id);
-
-  void deleteAll();
 }

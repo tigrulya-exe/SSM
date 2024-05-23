@@ -53,9 +53,11 @@ public class RuleInfoRepo {
 
   public RuleInfo getRuleInfo() {
     lockRead();
-    RuleInfo ret = ruleInfo.newCopy();
-    unlockRead();
-    return ret;
+    try {
+      return ruleInfo.newCopy();
+    } finally {
+      unlockRead();
+    }
   }
 
   public RuleInfo getRuleInfoRef() {

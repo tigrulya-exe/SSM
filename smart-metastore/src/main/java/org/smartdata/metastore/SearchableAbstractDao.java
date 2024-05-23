@@ -19,7 +19,7 @@
 package org.smartdata.metastore;
 
 import org.smartdata.metastore.dao.AbstractDao;
-import org.smartdata.metastore.dao.SearchableDao;
+import org.smartdata.metastore.dao.Searchable;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.MetastoreQuery;
 import org.smartdata.metastore.queries.MetastoreQueryExecutor;
@@ -39,7 +39,7 @@ import java.util.stream.Stream;
 
 public abstract class SearchableAbstractDao<RequestT, EntityT, ColumnT extends SortField>
     extends AbstractDao
-    implements SearchableDao<RequestT, EntityT, ColumnT> {
+    implements Searchable<RequestT, EntityT, ColumnT> {
   protected final MetastoreQueryExecutor queryExecutor;
 
   public SearchableAbstractDao(
@@ -60,7 +60,21 @@ public abstract class SearchableAbstractDao<RequestT, EntityT, ColumnT extends S
 
   @Override
   public List<EntityT> search(RequestT searchRequest) {
-    return queryExecutor.execute(searchQuery(searchRequest), this::mapRow);
+    return executeQuery(searchQuery(searchRequest));
+  }
+
+  public Optional<EntityT> searchSingle(RequestT searchRequest) {
+    return executeSingle(searchQuery(searchRequest));
+  }
+
+  protected List<EntityT> executeQuery(MetastoreQuery query) {
+    return queryExecutor.execute(query, this::mapRow);
+  }
+
+  protected Optional<EntityT> executeSingle(MetastoreQuery query) {
+    return Optional.ofNullable(executeQuery(query))
+        .filter(entities -> !entities.isEmpty())
+        .map(entities -> entities.get(0));
   }
 
   private PageRequest<String> toRawPageRequest(PageRequest<ColumnT> pageRequest) {

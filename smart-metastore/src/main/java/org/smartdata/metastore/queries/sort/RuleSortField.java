@@ -15,16 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.metastore.queries.sort;
 
-import org.smartdata.metastore.model.SearchResult;
-import org.smartdata.metastore.queries.PageRequest;
-import org.smartdata.metastore.queries.sort.SortField;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-import java.util.List;
+@Getter
+@RequiredArgsConstructor
+public enum RuleSortField implements SortField {
+  ID("id"),
+  STATE("state"),
+  SUBMIT_TIME("submit_time"),
+  LAST_CHECK_TIME("last_check_time"),
+  CHECKED_COUNT("checked_count"),
+  GENERATED_CMDLETS("generated_cmdlets");
 
-public interface SearchableDao<RequestT, EntityT, ColumnT extends SortField> {
-  SearchResult<EntityT> search(RequestT searchRequest, PageRequest<ColumnT> pageRequest);
-
-  List<EntityT> search(RequestT searchRequest);
+  private final String fieldName;
 }

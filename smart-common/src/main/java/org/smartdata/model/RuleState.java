@@ -17,9 +17,14 @@
  */
 package org.smartdata.model;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * The possible state that a rule can be in.
  */
+@Getter
+@RequiredArgsConstructor
 public enum RuleState {
   ACTIVE(0),      // functioning
   NEW(1),      // without execute the rule cmdlets
@@ -27,11 +32,7 @@ public enum RuleState {
   FINISHED(3),    // for one-shot rule
   DELETED(4);
 
-  private int value;
-
-  private RuleState(int value) {
-    this.value = value;
-  }
+  private final int value;
 
   public static RuleState fromValue(int value) {
     for (RuleState r : values()) {
@@ -40,19 +41,6 @@ public enum RuleState {
       }
     }
     return null;
-  }
-
-  public static RuleState fromName(String name) {
-    for (RuleState r : values()) {
-      if (r.toString().equalsIgnoreCase(name)) {
-        return r;
-      }
-    }
-    return null;
-  }
-
-  public int getValue() {
-    return value;
   }
 
   @Override

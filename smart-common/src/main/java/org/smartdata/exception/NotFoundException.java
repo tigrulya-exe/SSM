@@ -15,13 +15,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.exception;
 
-import org.smartdata.metastore.queries.sort.AuditSortField;
-import org.smartdata.model.audit.UserActivityEvent;
-import org.smartdata.model.request.AuditSearchRequest;
+import java.io.IOException;
 
-public interface UserActivityDao
-    extends Searchable<AuditSearchRequest, UserActivityEvent, AuditSortField> {
-  void insert(UserActivityEvent event);
+public class NotFoundException extends IOException {
+  public NotFoundException() {
+    super();
+  }
+
+  public NotFoundException(String message) {
+    super(message);
+  }
+
+  public NotFoundException(String message, Exception cause) {
+    super(message, cause);
+  }
+
+  public NotFoundException(Exception cause) {
+    super(cause);
+  }
+
+  public static NotFoundException forCmdlet(long id) {
+    return forIdentifiableEntity("Cmdlet", id);
+  }
+
+  public static NotFoundException forAction(long id) {
+    return forIdentifiableEntity("Action", id);
+  }
+
+  public static <T> NotFoundException forIdentifiableEntity(String name, T id) {
+    return new NotFoundException(name + " with following id not found: " + id);
+  }
 }

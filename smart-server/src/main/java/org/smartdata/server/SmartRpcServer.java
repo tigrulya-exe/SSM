@@ -46,6 +46,7 @@ import org.smartdata.protocol.protobuffer.ServerProtocolsServerSideTranslator;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -156,7 +157,11 @@ public class SmartRpcServer implements SmartServerProtocols {
   @Override
   public long submitRule(String rule, RuleState initState) throws IOException {
     checkIfActive();
-    return ssm.getRuleManager().submitRule(rule, initState);
+    try {
+      return ssm.getRuleManager().submitRule(rule, initState);
+    } catch (ParseException exception) {
+      throw new IOException(exception);
+    }
   }
 
   @Override

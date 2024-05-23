@@ -17,11 +17,14 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.smartdata.metastore.queries.sort.AuditSortField;
-import org.smartdata.model.audit.UserActivityEvent;
-import org.smartdata.model.request.AuditSearchRequest;
+import org.smartdata.metastore.model.SearchResult;
+import org.smartdata.metastore.queries.PageRequest;
+import org.smartdata.metastore.queries.sort.SortField;
 
-public interface UserActivityDao
-    extends Searchable<AuditSearchRequest, UserActivityEvent, AuditSortField> {
-  void insert(UserActivityEvent event);
+import java.util.List;
+
+public interface Searchable<RequestT, EntityT, ColumnT extends SortField> {
+  SearchResult<EntityT> search(RequestT searchRequest, PageRequest<ColumnT> pageRequest);
+
+  List<EntityT> search(RequestT searchRequest);
 }

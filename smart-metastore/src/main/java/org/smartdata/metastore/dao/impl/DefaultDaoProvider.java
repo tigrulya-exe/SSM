@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.smartdata.metastore.dao.impl;
 
 import org.smartdata.metastore.DBPool;
@@ -61,7 +62,7 @@ public class DefaultDaoProvider implements DaoProvider {
 
   @Override
   public RuleDao ruleDao() {
-    return new DefaultRuleDao(dataSource);
+    return new DefaultRuleDao(dataSource, transactionManager);
   }
 
   @Override
