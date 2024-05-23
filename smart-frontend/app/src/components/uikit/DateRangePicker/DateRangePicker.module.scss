@@ -1,0 +1,15 @@
+.dateRangePicker {
+  &__input {
+    &:global(:not(.is-active)) button > svg {
+      transform: rotate(-90deg);
+    }
+  }
+
+  &:not(&_small) &__input {
+    min-width: 137px;
+  }
+
+  &__input_long {
+    min-width: 325px;
+  }
+}

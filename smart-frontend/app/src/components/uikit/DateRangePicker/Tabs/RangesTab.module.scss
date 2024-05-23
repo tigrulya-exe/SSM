@@ -1,0 +1,41 @@
+:global {
+  body.theme-dark {
+    --date-picker-ranges-tab-preset-color: var(--color-grayUsual);
+    --date-picker-ranges-tab-preset-selected-color: var(--color-greenSaturated);
+    --date-picker-ranges-tab-preset-hover-color: var(--color-offWhite);
+  }
+
+  body.theme-light {
+    --date-picker-ranges-tab-preset-color: var(--color-ADCM);
+    --date-picker-ranges-tab-preset-selected-color: var(--color-greenLogo);
+    --date-picker-ranges-tab-preset-hover-color: var(--color-dark1);
+  }
+}
+
+.rangesPreset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow-y: scroll;
+
+  &__buttons {
+    margin-bottom: 5px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    color: var(--date-picker-ranges-tab-preset-color);
+    font-size: 13px;
+    font-weight: 400;
+    text-align: left;
+    cursor: pointer;
+    transition: color 250ms;
+
+    &:hover {
+      color: var(--date-picker-ranges-tab-preset-hover-color);
+    }
+
+    &_selected {
+      color: var(--date-picker-ranges-tab-preset-selected-color);
+    }
+  }
+}

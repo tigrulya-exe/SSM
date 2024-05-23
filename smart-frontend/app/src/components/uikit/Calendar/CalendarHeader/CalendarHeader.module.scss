@@ -1,0 +1,85 @@
+:global {
+  body.theme-dark {
+    --calendar-header-current-month-color: var(--color-greenSaturated);
+
+    --calendar-header-month-button-color: var(--color-grayUsual);
+    --calendar-header-month-button-border-color: var(--color-dark1);
+    --calendar-header-month-button-bg-color: var(--color-ADHnew);
+
+    --calendar-header-month-button-color-hover: var(--color-offWhite);
+    --calendar-header-month-button-bg-hover: var(--color-plate-20);
+    --calendar-header-month-button-border-color-hover: var(--color-dark1);
+
+    --calendar-header-month-button-color-focus: var(--color-offWhite);
+    --calendar-header-month-button-bg-focus: var(--color-newDark);
+    --calendar-header-month-button-border-color-focus: var(--color-greenSaturated);
+  }
+
+  body.theme-light {
+    --calendar-header-current-month-color: var(--color-greenLogo);
+
+    --calendar-header-month-button-color: var(--color-ADCM);
+    --calendar-header-month-button-border-color: var(--color-lightStrokeDark);
+    --calendar-header-month-button-bg-color: var(--color-colourful25);
+
+    --calendar-header-month-button-color-hover: var(--color-dark1);
+    --calendar-header-month-button-bg-hover: var(--color-lightStroke);
+    --calendar-header-month-button-border-color-hover: var(--color-lightStrokeDark);
+
+    --calendar-header-month-button-color-focus: var(--color-dark1);
+    --calendar-header-month-button-bg-focus: var(--color-lightStroke);
+    --calendar-header-month-button-border-color-focus: var(--color-greenLogo);
+  }
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.monthButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 28px;
+  height: 28px;
+  font-weight: 300;
+  border: 2px solid var(--calendar-header-month-button-border-color);
+  border-radius: 200px;
+  background: var(--calendar-header-month-button-bg-color);
+  color: var(--calendar-header-month-button-color);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--calendar-header-month-button-color-hover);
+    background: var(--calendar-header-month-button-bg-hover);
+    border-color: var(--calendar-header-month-button-border-color-hover);
+  }
+
+  &:active {
+    color: var(--calendar-header-month-button-color-focus);
+    background: var(--calendar-header-month-button-bg-focus);
+    border-color: var(--calendar-header-month-button-border-color-focus);
+  }
+}
+
+.currentMonth {
+  grid-column-start: 2;
+  grid-column-end: 7;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 28px;
+  color: var(--calendar-header-current-month-color);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.prevMonth {
+  transform: rotate(90deg);
+}
+
+.nextMonth {
+  transform: rotate(-90deg);
+}

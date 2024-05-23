@@ -1,0 +1,68 @@
+:global {
+  body.theme-dark {
+    --input-date-bg: transparent;
+    --input-date-input-color: var(--color-grayUsual);
+    --input-date-input-focus-bg: var(--color-dark1);
+    --input-date-input-focus-color: var(--color-offWhite);
+  }
+  body.theme-light {
+    --input-date-bg: transparent;
+    --input-date-input-color: var(--color-grayDarker);
+    --input-date-input-focus-bg: var(--color-lightStroke);
+    --input-date-input-focus-color: var(--color-dark1);
+  }
+}
+
+.InputDate {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 8px;
+  background: var(--input-date-bg);
+  width: 200px;
+
+  &__inputs {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 3px 6px !important;
+    border-radius: 8px;
+    gap: 4px !important;
+  }
+
+  &__input {
+    padding: 0 2px;
+    box-sizing: border-box;
+    border: none;
+    background-color: transparent;
+    color: var(--input-date-input-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 18px;
+    outline: none;
+    text-align: center;
+
+    &:focus,
+    &::selection {
+      color: var(--input-date-input-focus-color);
+      background-color: var(--input-date-input-focus-bg);
+    }
+
+    &_day,
+    &_month,
+    &_hours,
+    &_minutes,
+    &_seconds {
+      width: 21px;
+    }
+
+    &_year {
+      width: 38px;
+    }
+  }
+
+  &__delimiter {
+    display: inline-block;
+    padding: 0 2px;
+  }
+}
