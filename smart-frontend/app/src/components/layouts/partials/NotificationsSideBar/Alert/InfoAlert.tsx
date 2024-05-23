@@ -15,10 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const eslintCheck = (filenames) => `eslint ${filenames.join(' ')} --config ./.eslintrc.full.json --ext ts,tsx --report-unused-disable-directives --max-warnings 0`;
+import React from 'react';
+import Alert from './Alert';
+import type { InfoNotification } from '@models/notification';
+import type { AlertOptions } from './Alert.types';
 
-export default {
-  '*.(js|jsx|ts|tsx)': (filenames) =>
-    // Run ESLint on entire repo if more than 10 staged files
-    filenames.length > 10 ? 'yarn lint' : eslintCheck(filenames),
-}
+import s from './Alert.module.scss';
+
+const InfoAlert: React.FC<InfoNotification & AlertOptions> = ({ model: { message }, isDisabledClose, onClose }) => {
+  return (
+    <Alert className={s.alert_info} onClose={onClose} isDisabledClose={isDisabledClose}>
+      {message}
+    </Alert>
+  );
+};
+
+export default InfoAlert;

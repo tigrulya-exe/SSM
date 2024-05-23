@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const eslintCheck = (filenames) => `eslint ${filenames.join(' ')} --config ./.eslintrc.full.json --ext ts,tsx --report-unused-disable-directives --max-warnings 0`;
+import type { TypedUseSelectorHook } from 'react-redux';
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import { useSelector as useReduxSelector } from 'react-redux';
+import type { AppStore } from '@store/store';
 
-export default {
-  '*.(js|jsx|ts|tsx)': (filenames) =>
-    // Run ESLint on entire repo if more than 10 staged files
-    filenames.length > 10 ? 'yarn lint' : eslintCheck(filenames),
-}
+// Use instead of `useSelector` from 'react-redux
+export const useStore: TypedUseSelectorHook<AppStore> = useReduxSelector;

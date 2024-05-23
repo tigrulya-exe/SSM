@@ -15,10 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const eslintCheck = (filenames) => `eslint ${filenames.join(' ')} --config ./.eslintrc.full.json --ext ts,tsx --report-unused-disable-directives --max-warnings 0`;
+import React from 'react';
+import cn from 'classnames';
+import { Button } from '@uikit';
 
-export default {
-  '*.(js|jsx|ts|tsx)': (filenames) =>
-    // Run ESLint on entire repo if more than 10 staged files
-    filenames.length > 10 ? 'yarn lint' : eslintCheck(filenames),
+import s from './Alert.module.scss';
+import type { AlertOptions } from './Alert.types';
+
+interface AlertProps extends AlertOptions {
+  isDisabledClose?: boolean;
 }
+
+const Alert: React.FC<AlertProps> = ({ children, className, onClose, isDisabledClose = false }) => {
+  return (
+    <div className={cn(className, s.alert)}>
+      <div>{children}</div>
+      <Button className={s.alert__button} size="small" variant="secondary" onClick={onClose} disabled={isDisabledClose}>
+        OK
+      </Button>
+    </div>
+  );
+};
+
+export default Alert;

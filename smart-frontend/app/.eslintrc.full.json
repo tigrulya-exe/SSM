@@ -6,6 +6,7 @@
           ["@api", "./src/api/"],
           ["@constants", "./src/constants"],
           ["@hooks", "./src/hooks/"],
+          ["@layouts", "./src/components/layouts"],
           ["@models", "./src/models/"],
           ["@store", "./src/store/"],
           ["@uikit", "./src/components/uikit/"],

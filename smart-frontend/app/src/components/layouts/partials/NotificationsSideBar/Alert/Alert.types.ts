@@ -15,10 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const eslintCheck = (filenames) => `eslint ${filenames.join(' ')} --config ./.eslintrc.full.json --ext ts,tsx --report-unused-disable-directives --max-warnings 0`;
+import type { HTMLAttributes } from 'react';
 
-export default {
-  '*.(js|jsx|ts|tsx)': (filenames) =>
-    // Run ESLint on entire repo if more than 10 staged files
-    filenames.length > 10 ? 'yarn lint' : eslintCheck(filenames),
+export interface AlertOptions extends HTMLAttributes<HTMLDivElement> {
+  onClose: () => void;
 }
