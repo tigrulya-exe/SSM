@@ -20,7 +20,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Alert from '@layouts/partials/NotificationsSideBar/Alert/Alert';
 import { store } from '@store';
 import { Provider } from 'react-redux';
-import Button from '@uikit/Button/Button';
+import { Button } from '@uikit';
 import { useDispatch } from '@hooks';
 import { showError, showInfo } from '@store/notificationsSlice';
 import NotificationsSideBar from '@layouts/partials/NotificationsSideBar/NotificationsSideBar';
