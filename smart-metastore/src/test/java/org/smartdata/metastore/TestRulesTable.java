@@ -52,7 +52,7 @@ public class TestRulesTable extends SqliteTestDaoBase {
     RuleInfo info21 = adapter.getRuleInfo(info2.getId());
     Assert.assertFalse(info11.equals(info21));
 
-    List<RuleInfo> infos = adapter.getRuleInfo();
+    List<RuleInfo> infos = adapter.getRuleInfos();
     assert (infos.size() == 2);
   }
 }

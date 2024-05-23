@@ -36,7 +36,6 @@ import org.smartdata.server.engine.ServerContext;
 import org.smartdata.server.engine.ServiceMode;
 import org.smartdata.server.engine.audit.AuditService;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -86,7 +85,7 @@ public class TestRuleManager extends TestDaoBase {
     String rule = "file: every 1s \n | length > 300 | cache";
     try {
       ruleManager.submitRule(rule, RuleState.DELETED);
-    } catch (IOException e) {
+    } catch (Exception e) {
       Assert.assertTrue(e.getMessage().contains("Invalid initState"));
     }
   }
@@ -243,7 +242,7 @@ public class TestRuleManager extends TestDaoBase {
 
     long start = System.currentTimeMillis();
 
-    Thread[] threads = new Thread[]{
+    Thread[] threads = new Thread[] {
         new Thread(new RuleInfoUpdater(rid, 3)),
 //        new Thread(new RuleInfoUpdater(rid, 7)),
 //        new Thread(new RuleInfoUpdater(rid, 11)),

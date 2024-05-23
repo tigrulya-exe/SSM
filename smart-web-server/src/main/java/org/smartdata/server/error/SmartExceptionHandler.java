@@ -21,6 +21,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.exception.NotFoundException;
+import org.smartdata.exception.SsmParseException;
 import org.smartdata.metastore.MetaStoreException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
@@ -36,7 +37,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import javax.validation.ConstraintViolationException;
 
 import java.io.IOException;
-import java.text.ParseException;
 
 @ControllerAdvice
 public class SmartExceptionHandler extends ResponseEntityExceptionHandler {
@@ -53,8 +53,8 @@ public class SmartExceptionHandler extends ResponseEntityExceptionHandler {
         HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  @ExceptionHandler(value =
-      {ConstraintViolationException.class, ParseException.class})
+  @ExceptionHandler(value = {
+      ConstraintViolationException.class, SsmParseException.class})
   protected ResponseEntity<Object> handleValidationExceptions(
       Exception exception, WebRequest request) {
     return handleExceptionInternal(

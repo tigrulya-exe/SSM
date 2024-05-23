@@ -26,6 +26,7 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.smartdata.SmartConstants;
 import org.smartdata.conf.SmartConf;
+import org.smartdata.exception.SsmParseException;
 import org.smartdata.model.CmdletDescriptor;
 import org.smartdata.model.rule.RuleTranslationResult;
 
@@ -130,14 +131,14 @@ public class SmartRuleStringParser {
     ParseTree tree = parser.ssmrule();
 
     if (!parseErrors.isEmpty()) {
-      throw new IOException(parserErrorMessage);
+      throw new SsmParseException(parserErrorMessage);
     }
 
     SmartRuleVisitTranslator visitor = new SmartRuleVisitTranslator(ctx);
     try {
       visitor.visit(tree);
     } catch (RuntimeException e) {
-      throw new IOException(e.getMessage());
+      throw new SsmParseException(e.getMessage());
     }
 
     return visitor.generateSql();

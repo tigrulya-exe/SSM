@@ -53,9 +53,11 @@ public class RuleInfoRepo {
 
   public RuleInfo getRuleInfo() {
     lockRead();
-    RuleInfo ret = ruleInfo.newCopy();
-    unlockRead();
-    return ret;
+    try {
+      return ruleInfo.newCopy();
+    } finally {
+      unlockRead();
+    }
   }
 
   public RuleInfo getRuleInfoRef() {
@@ -185,6 +187,11 @@ public class RuleInfoRepo {
           break;
 
         case DISABLED:
+          if (oldState == RuleState.NEW) {
+            // no need to save the new state to db
+            return true;
+          }
+
           if (oldState == RuleState.ACTIVE) {
             ruleInfo.setState(newState);
             markWorkExit();

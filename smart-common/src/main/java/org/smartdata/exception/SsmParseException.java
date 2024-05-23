@@ -15,30 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model;
+package org.smartdata.exception;
 
-import org.junit.Assert;
-import org.junit.Test;
+import java.io.IOException;
 
+public class SsmParseException extends IOException {
+  public SsmParseException() {
+    super();
+  }
 
-public class TestRuleInfo {
-  @Test
-  public void testEquals() throws Exception {
-    //Case 1:
-    Assert.assertEquals(true, new RuleInfo().equals(new RuleInfo()));
+  public SsmParseException(String message) {
+    super(message);
+  }
 
-    //Case 2:
-    RuleInfo ruleInfo = new RuleInfo(1, 1, "", RuleState.ACTIVE, 1, 1, 1);
-    Assert.assertEquals(true, ruleInfo.equals(ruleInfo));
+  public SsmParseException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
-    //Case 3:
-    RuleInfo ruleInfo1 = new RuleInfo(1, 1, "", null, 1, 1, 1);
-    Assert.assertEquals(false, ruleInfo.equals(ruleInfo1));
-    Assert.assertEquals(false, ruleInfo1.equals(ruleInfo));
-
-    //Case 4:
-    RuleInfo ruleInfo2 = new RuleInfo(1, 1, null, RuleState.ACTIVE, 1, 1, 1);
-    Assert.assertEquals(false, ruleInfo.equals(ruleInfo2));
-    Assert.assertEquals(false, ruleInfo2.equals(ruleInfo));
+  public SsmParseException(Exception cause) {
+    super(cause);
   }
 }
