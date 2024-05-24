@@ -32,6 +32,7 @@ import org.smartdata.server.generated.model.RuleStateDto;
 import org.smartdata.server.generated.model.RulesDto;
 import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -59,8 +60,9 @@ public interface RuleInfoMapper extends SmartMapper {
       LastActivationTimeIntervalDto lastActivationTime);
 
   default List<RuleState> toRuleStates(List<RuleStateDto> states) {
-    // todo insert non-deleted states
-    return states.stream()
+    return states == null
+        ? Collections.emptyList()
+        : states.stream()
         .flatMap(this::toRuleStates)
         .collect(Collectors.toList());
   }
