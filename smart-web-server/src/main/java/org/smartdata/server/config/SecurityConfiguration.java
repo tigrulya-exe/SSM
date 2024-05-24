@@ -36,7 +36,8 @@ public class SecurityConfiguration {
       havingValue = "false",
       matchIfMissing = true)
   public SecurityFilterChain disabledSecurityFilterChain(HttpSecurity http) throws Exception {
-    http.authorizeRequests()
+    withDisabledCsrf(http)
+        .authorizeRequests()
         .anyRequest()
         .permitAll();
     return http.build();
@@ -45,13 +46,20 @@ public class SecurityConfiguration {
   @Bean
   @ConditionalOnProperty(name = SmartConfKeys.SMART_SECURITY_ENABLE, havingValue = "true")
   public SecurityFilterChain kerberosSecurityFilterChain(HttpSecurity http) throws Exception {
-    http.addFilterBefore(
-        new SmartPrincipalInitializerFilter(), AnonymousAuthenticationFilter.class)
+    withDisabledCsrf(http)
+        .addFilterBefore(
+            new SmartPrincipalInitializerFilter(), AnonymousAuthenticationFilter.class)
         .authorizeRequests()
         .anyRequest()
         // todo ADH-4364: replace with SPNEGO filter registration
         .permitAll();
     return http.build();
   }
-}
 
+  private HttpSecurity withDisabledCsrf(HttpSecurity http) throws Exception {
+    return http.cors()
+        .disable()
+        .csrf()
+        .disable();
+  }
+}
