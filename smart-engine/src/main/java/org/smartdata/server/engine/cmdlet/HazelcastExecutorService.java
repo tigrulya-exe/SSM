@@ -52,10 +52,9 @@ public class HazelcastExecutorService extends CmdletExecutorService {
   public static final String WORKER_TOPIC_PREFIX = "worker_";
   public static final String STATUS_TOPIC = "status_topic";
   private final HazelcastInstance instance;
-  private Map<String, ITopic<Serializable>> masterToWorkers;
-  private Map<Long, String> executingCmdlets;
-  private Map<String, Member> members;
-  private ITopic<StatusMessage> statusTopic;
+  private final Map<String, ITopic<Serializable>> masterToWorkers;
+  private final Map<Long, String> executingCmdlets;
+  private final Map<String, Member> members;
 
   public HazelcastExecutorService(CmdletManager cmdletManager) {
     super(cmdletManager, ExecutorType.REMOTE_SSM);
@@ -63,8 +62,8 @@ public class HazelcastExecutorService extends CmdletExecutorService {
     this.masterToWorkers = new HashMap<>();
     this.members = new HashMap<>();
     this.instance = HazelcastInstanceProvider.getInstance();
-    this.statusTopic = instance.getTopic(STATUS_TOPIC);
-    this.statusTopic.addMessageListener(new StatusMessageListener());
+    ITopic<StatusMessage> statusTopic = instance.getTopic(STATUS_TOPIC);
+    statusTopic.addMessageListener(new StatusMessageListener());
     initChannels();
     instance.getCluster().addMembershipListener(new ClusterMembershipListener(instance));
   }
@@ -125,7 +124,7 @@ public class HazelcastExecutorService extends CmdletExecutorService {
       EngineEventBus.post(new RemoveNodeMessage(memberToNodeInfo(member)));
     } else {
       LOG.warn("It is supposed that the member was not added, "
-          + "maybe no need to remove it: id = ", id);
+          + "maybe no need to remove it: id = {}", id);
       // Todo: recover
     }
   }
@@ -144,12 +143,7 @@ public class HazelcastExecutorService extends CmdletExecutorService {
   }
 
   public List<NodeInfo> getNodesInfo() {
-    List<StandbyServerInfo> infos = getStandbyServers();
-    List<NodeInfo> ret = new ArrayList<>(infos.size());
-    for (StandbyServerInfo info : infos) {
-      ret.add(info);
-    }
-    return ret;
+    return new ArrayList<>(getStandbyServers());
   }
 
   private NodeInfo memberToNodeInfo(Member member) {

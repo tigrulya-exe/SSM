@@ -23,36 +23,28 @@ import org.smartdata.AbstractService;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.model.StorageCapacity;
 import org.smartdata.model.Utilization;
-import org.smartdata.server.cluster.NodeInfo;
-import org.smartdata.server.engine.ActiveServerInfo;
+import org.smartdata.server.cluster.ClusterNodesManager;
 import org.smartdata.server.engine.CmdletManager;
 import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.engine.ServerContext;
-import org.smartdata.server.engine.StandbyServerInfo;
 import org.smartdata.server.engine.StatesManager;
 import org.smartdata.server.engine.audit.AuditService;
-import org.smartdata.server.engine.cmdlet.HazelcastExecutorService;
-import org.smartdata.server.engine.cmdlet.agent.AgentExecutorService;
-import org.smartdata.server.engine.cmdlet.agent.AgentInfo;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 public class SmartEngine extends AbstractService {
   public static final Logger LOG = LoggerFactory.getLogger(SmartEngine.class);
 
   private final SmartConf conf;
   private final ServerContext serverContext;
-  private StatesManager statesMgr;
-  private RuleManager ruleMgr;
+  private StatesManager statesManager;
+  private RuleManager ruleManager;
   private CmdletManager cmdletManager;
-  private AgentExecutorService agentService;
-  private HazelcastExecutorService hazelcastService;
   private AuditService auditService;
+  private ClusterNodesManager clusterNodesManager;
   private final List<AbstractService> services;
 
   public SmartEngine(ServerContext context) {
@@ -64,18 +56,15 @@ public class SmartEngine extends AbstractService {
 
   @Override
   public void init() throws IOException {
-    statesMgr = new StatesManager(serverContext);
-    services.add(statesMgr);
+    statesManager = new StatesManager(serverContext);
+    services.add(statesManager);
     auditService = new AuditService(serverContext.getMetaStore().userActivityDao());
     cmdletManager = new CmdletManager(serverContext, auditService);
     services.add(cmdletManager);
-    agentService = new AgentExecutorService(conf, cmdletManager);
-    hazelcastService = new HazelcastExecutorService(cmdletManager);
-    cmdletManager.registerExecutorService(agentService);
-    cmdletManager.registerExecutorService(hazelcastService);
-    ruleMgr = new RuleManager(
-        serverContext, statesMgr, cmdletManager, auditService);
-    services.add(ruleMgr);
+    clusterNodesManager = new ClusterNodesManager(conf, cmdletManager);
+    ruleManager = new RuleManager(
+        serverContext, statesManager, cmdletManager, auditService);
+    services.add(ruleManager);
 
     for (AbstractService s : services) {
       s.init();
@@ -120,32 +109,16 @@ public class SmartEngine extends AbstractService {
     }
   }
 
-  public List<StandbyServerInfo> getStandbyServers() {
-    return hazelcastService.getStandbyServers();
-  }
-
-  public Set<String> getAgentHosts() {
-    return conf.getAgentHosts();
-  }
-
-  public Set<String> getServerHosts() {
-    return conf.getServerHosts();
-  }
-
-  public List<AgentInfo> getAgents() {
-    return agentService.getAgentInfos();
-  }
-
   public SmartConf getConf() {
     return serverContext.getConf();
   }
 
   public StatesManager getStatesManager() {
-    return statesMgr;
+    return statesManager;
   }
 
   public RuleManager getRuleManager() {
-    return ruleMgr;
+    return ruleManager;
   }
 
   public AuditService getAuditService() {
@@ -156,12 +129,16 @@ public class SmartEngine extends AbstractService {
     return cmdletManager;
   }
 
+  public ClusterNodesManager getClusterNodesManager() {
+    return clusterNodesManager;
+  }
+
   public Utilization getUtilization(String resourceName) throws IOException {
     return getStatesManager().getStorageUtilization(resourceName);
   }
 
   public List<Utilization> getHistUtilization(String resourceName, long granularity,
-      long begin, long end) throws IOException {
+                                              long begin, long end) throws IOException {
     long now = System.currentTimeMillis();
     if (begin == end && Math.abs(begin - now) <= 5) {
       return Collections.singletonList(getUtilization(resourceName));
@@ -174,13 +151,5 @@ public class SmartEngine extends AbstractService {
       us.add(new Utilization(c.getTimeStamp(), c.getCapacity(), c.getUsed()));
     }
     return us;
-  }
-
-  public List<NodeInfo> getSsmNodesInfo() {
-    List<NodeInfo> ret = new LinkedList<>();
-    ret.add(ActiveServerInfo.getInstance());
-    ret.addAll(getStandbyServers());
-    ret.addAll(getAgents());
-    return ret;
   }
 }

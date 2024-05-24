@@ -33,6 +33,7 @@ import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.hdfs.HadoopUtil;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.utils.MetaStoreUtils;
+import org.smartdata.server.cluster.ClusterNodesManager;
 import org.smartdata.server.engine.CmdletManager;
 import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.engine.ServerContext;
@@ -100,6 +101,11 @@ public class SmartServer {
   public CmdletManager getCmdletManager() {
     return engine.getCmdletManager();
   }
+
+  public ClusterNodesManager getClusterNodesManager() {
+    return engine.getClusterNodesManager();
+  }
+
 
   public MetaStore getMetaStore() {
     return this.context.getMetaStore();

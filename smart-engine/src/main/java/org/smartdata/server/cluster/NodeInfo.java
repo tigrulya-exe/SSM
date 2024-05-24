@@ -18,12 +18,21 @@
 package org.smartdata.server.cluster;
 
 
+import com.hazelcast.com.google.common.net.HostAndPort;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import org.smartdata.model.ExecutorType;
+
+import java.util.Optional;
 
 /**
  * Represent each nodes that SSM services (SmartServers and SmartAgents) running on.
  *
  */
+@Data
+@Builder
+@AllArgsConstructor
 public class NodeInfo {
   private String id;
   private String host;
@@ -33,52 +42,20 @@ public class NodeInfo {
   public NodeInfo(String id, String location, ExecutorType executorType) {
     this.id = id;
     this.executorType = executorType;
-    doSetLocation(location);
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
+    initLocation(location);
   }
 
   public String getLocation() {
     return host + ":" + port;
   }
 
-  public void setLocation(String location) {
-    doSetLocation(location);
-  }
-
-  private void doSetLocation(String location) {
-    host = null;
-    port = 0;
-    if (location != null) {
-      String[] its = location.split(":");
-      if (its.length > 1) {
-        port = Integer.valueOf(its[1]);
-      }
-      host = its[0];
-    }
-  }
-
-  public String getHost() {
-    return host;
-  }
-
-  public int getPort() {
-    return port;
-  }
-
-  public ExecutorType getExecutorType() {
-    return executorType;
-  }
-
-  @Override
-  public String toString() {
-    return String.format("{id=%s, location=%s, executorType=%s}", id, getLocation(), executorType);
+  private void initLocation(String location) {
+    Optional.ofNullable(location)
+        .map(HostAndPort::fromString)
+        .ifPresent(hostAndPort -> {
+          this.host = hostAndPort.getHost();
+          this.port = hostAndPort.getPortOrDefault(0);
+        });
   }
 }
 

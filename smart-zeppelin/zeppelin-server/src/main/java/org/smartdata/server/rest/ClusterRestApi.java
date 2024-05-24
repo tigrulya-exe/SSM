@@ -167,7 +167,9 @@ public class ClusterRestApi {
   @Path("/primary/ssmnodesinfo")
   public Response ssmNodesInfo() {
     try {
-      return new JsonResponse<>(Response.Status.OK, smartEngine.getSsmNodesInfo()).build();
+      return new JsonResponse<>(
+          Response.Status.OK,
+          smartEngine.getClusterNodesManager().getSsmNodesInfo()).build();
     } catch (Exception e) {
       logger.error("Exception in ClusterRestApi while listing SSM nodes", e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,
@@ -180,7 +182,7 @@ public class ClusterRestApi {
   public Response ssmNodesCmdletMetrics() {
     try {
       return new JsonResponse<>(Response.Status.OK,
-          smartEngine.getCmdletManager().getAllNodeCmdletMetrics()).build();
+          smartEngine.getCmdletManager().getNodeMetrics()).build();
     } catch (Exception e) {
       logger.error("Exception in ClusterRestApi while listing metrics related with cmdlets", e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,

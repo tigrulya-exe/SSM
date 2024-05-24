@@ -15,39 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.server.cluster;
+package org.smartdata.metastore.queries.sort;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-/**
- * Contains metrics for SSM nodes related with cmdlet execution.
- * These metrics are not persisted. So after cluster restarts,
- * they will be re-counted.
- */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class NodeCmdletMetrics {
-  private NodeInfo nodeInfo;
+@Getter
+@RequiredArgsConstructor
+public enum ClusterNodeSortField implements SortField {
+  ID("id"),
+  REGISTRATION_TIME("registrationTime"),
+  EXECUTORS("executors");
 
-  private long registTime;
-  private int numExecutors;
-
-  private long cmdletsExecuted;
-  private int cmdletsInExecution;
-
-  public synchronized void incCmdletsInExecution() {
-    cmdletsInExecution++;
-  }
-
-  public synchronized void finishCmdlet() {
-    cmdletsExecuted++;
-    if (cmdletsInExecution > 0) { // TODO: restore
-      cmdletsInExecution--;
-    }
-  }
+  private final String fieldName;
 }
