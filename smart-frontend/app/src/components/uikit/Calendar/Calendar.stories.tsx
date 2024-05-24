@@ -80,6 +80,16 @@ export const CalendarRangeStory: Story = {
     const [localRangeFrom, setLocalRangeFrom] = useState(rangeFrom);
     const [localRangeTo, setLocalRangeTo] = useState(rangeTo);
 
+    useEffect(() => {
+      if (localRangeFrom && localRangeTo) {
+        // swap dates when From > To
+        if (localRangeFrom > localRangeTo) {
+          setLocalRangeFrom(localRangeTo);
+          setLocalRangeTo(localRangeFrom);
+        }
+      }
+    }, [localRangeFrom, localRangeTo]);
+
     const handleDateClick = (date: Date) => {
       if (localRangeTo !== undefined) {
         setLocalRangeFrom(startOfDay(date));

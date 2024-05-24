@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Calendar from '@uikit/Calendar/Calendar';
 import { endOfDay, isBefore, startOfDay } from '@utils/date/calendarUtils';
 import TabActions from './TabActions';
@@ -34,6 +34,16 @@ const CalendarTab = ({ rangeFrom, rangeTo, onApply, onRevert }: CalendarTabProps
   const [localDate, setLocalDate] = useState<Date | undefined>(undefined);
   const [localRangeFrom, setLocalRangeFrom] = useState<Date | undefined>(rangeFrom);
   const [localRangeTo, setLocalRangeTo] = useState<Date | undefined>(rangeTo);
+
+  useEffect(() => {
+    if (localRangeFrom && localRangeTo) {
+      // swap dates when From > To
+      if (localRangeFrom > localRangeTo) {
+        setLocalRangeFrom(localRangeTo);
+        setLocalRangeTo(localRangeFrom);
+      }
+    }
+  }, [localRangeFrom, localRangeTo]);
 
   const handleDateClick = (date: Date) => {
     setLocalDate(date);
