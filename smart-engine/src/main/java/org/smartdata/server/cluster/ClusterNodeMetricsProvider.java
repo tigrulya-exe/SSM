@@ -17,37 +17,8 @@
  */
 package org.smartdata.server.cluster;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.util.Collection;
 
-/**
- * Contains metrics for SSM nodes related with cmdlet execution.
- * These metrics are not persisted. So after cluster restarts,
- * they will be re-counted.
- */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class NodeCmdletMetrics {
-  private NodeInfo nodeInfo;
-
-  private long registTime;
-  private int numExecutors;
-
-  private long cmdletsExecuted;
-  private int cmdletsInExecution;
-
-  public synchronized void incCmdletsInExecution() {
-    cmdletsInExecution++;
-  }
-
-  public synchronized void finishCmdlet() {
-    cmdletsExecuted++;
-    if (cmdletsInExecution > 0) { // TODO: restore
-      cmdletsInExecution--;
-    }
-  }
+public interface ClusterNodeMetricsProvider {
+  Collection<NodeCmdletMetrics> getNodeMetrics();
 }

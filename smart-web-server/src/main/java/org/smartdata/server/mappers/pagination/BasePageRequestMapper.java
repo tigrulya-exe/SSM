@@ -33,6 +33,8 @@ public interface BasePageRequestMapper<
 
   PageRequest<TargetT> toPageRequest(PageRequestDto dto, List<SourceT> sortColumns);
 
+  TargetT toSortField(SourceT sortColumn);
+
   @Mapping(source = ".", target = "order")
   @Mapping(source = ".", target = "column")
   Sorting<TargetT> toSorting(SourceT sortColumn);

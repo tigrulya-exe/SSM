@@ -31,6 +31,7 @@ import org.smartdata.protocol.message.ActionStatus;
 import org.smartdata.protocol.message.CmdletStatus;
 import org.smartdata.protocol.message.LaunchCmdlet;
 import org.smartdata.server.cluster.ActiveServerNodeCmdletMetrics;
+import org.smartdata.server.cluster.ClusterNodeMetricsProvider;
 import org.smartdata.server.cluster.NodeCmdletMetrics;
 import org.smartdata.server.engine.ActiveServerInfo;
 import org.smartdata.server.engine.CmdletManager;
@@ -42,6 +43,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -49,7 +51,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class CmdletDispatcher {
+public class CmdletDispatcher implements ClusterNodeMetricsProvider {
   private static final Logger LOG = LoggerFactory.getLogger(CmdletDispatcher.class);
   private final Queue<Long> pendingCmdlets;
   private final CmdletManager cmdletManager;
@@ -555,24 +557,10 @@ public class CmdletDispatcher {
     return cmdExecSrvTotalInsts * defaultSlots;
   }
 
-  public Collection<NodeCmdletMetrics> getNodeCmdletMetrics() {
-    ActiveServerNodeCmdletMetrics metrics = (ActiveServerNodeCmdletMetrics) regNodeInfos.get(
-        ActiveServerInfo.getInstance().getId());
-    if (metrics != null) {
-      metrics.setNumPendingDispatch(pendingCmdlets.size());
-      metrics.setMaxPendingDispatch(getTotalSlotsLeft() + (int) (getTotalSlots() * 0.2));
-      metrics.setMaxInExecution(getTotalSlots());
-      metrics.setNumInExecution(getTotalSlots() - getTotalSlotsLeft());
-      cmdletManager.updateNodeCmdletMetrics(metrics);
-    }
-    // TODO: temp implementation
-    List<NodeCmdletMetrics> ret = new ArrayList<>(regNodeInfos.values());
-    ret.sort((a, b) -> {
-      int tp = a.getNodeInfo().getExecutorType().ordinal()
-          - b.getNodeInfo().getExecutorType().ordinal();
-      return tp == 0 ? a.getNodeInfo().getId().compareToIgnoreCase(b.getNodeInfo().getId()) : tp;
-    });
-    return ret;
+  @Override
+  public Collection<NodeCmdletMetrics> getNodeMetrics() {
+    maybeUpdateActiveNodeMetrics();
+    return new ArrayList<>(regNodeInfos.values());
   }
 
   public void start() {
@@ -583,7 +571,7 @@ public class CmdletDispatcher {
     registerExecutorService(exe);
 
     CmdletDispatcherHelper.getInst().register(this);
-    int idx = 0;
+    long idx = 0;
     for (DispatchTask task : dispatchTasks) {
       schExecService.scheduleAtFixedRate(task, idx * 200 / dispatchTasks.length,
           100, TimeUnit.MILLISECONDS);
@@ -598,5 +586,20 @@ public class CmdletDispatcher {
   public void stop() {
     CmdletDispatcherHelper.getInst().unregister();
     schExecService.shutdownNow();
+  }
+
+  private void maybeUpdateActiveNodeMetrics() {
+    Optional.ofNullable(ActiveServerInfo.getInstance().getId())
+        .map(regNodeInfos::get)
+        .map(ActiveServerNodeCmdletMetrics.class::cast)
+        .ifPresent(this::updateActiveNodeMetrics);
+  }
+
+  private void updateActiveNodeMetrics(ActiveServerNodeCmdletMetrics metrics) {
+    metrics.setNumPendingDispatch(pendingCmdlets.size());
+    metrics.setMaxPendingDispatch(getTotalSlotsLeft() + (int) (getTotalSlots() * 0.2));
+    metrics.setMaxInExecution(getTotalSlots());
+    metrics.setNumInExecution(getTotalSlots() - getTotalSlotsLeft());
+    cmdletManager.updateNodeCmdletMetrics(metrics);
   }
 }

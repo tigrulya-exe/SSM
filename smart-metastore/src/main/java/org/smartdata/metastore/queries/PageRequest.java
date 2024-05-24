@@ -34,6 +34,10 @@ public class PageRequest<T> {
 
   private final List<Sorting<T>> sortColumns;
 
+  public static <T> PageRequest<T> empty() {
+    return PageRequest.<T>builder().build();
+  }
+
   public static class Builder<T> {
     private List<Sorting<T>> sortColumns = new ArrayList<>();
 

@@ -50,6 +50,7 @@ import org.smartdata.protocol.message.LaunchCmdlet;
 import org.smartdata.protocol.message.StatusMessage;
 import org.smartdata.protocol.message.StatusReport;
 import org.smartdata.server.cluster.ActiveServerNodeCmdletMetrics;
+import org.smartdata.server.cluster.ClusterNodeMetricsProvider;
 import org.smartdata.server.cluster.NodeCmdletMetrics;
 import org.smartdata.server.engine.action.ActionInfoHandler;
 import org.smartdata.server.engine.action.ActionStatusUpdateListener;
@@ -102,7 +103,7 @@ import static org.smartdata.model.audit.UserActivityOperation.STOP;
  * After the Cmdlet is finished or cancelled or failed, it's status will be flush to DB.
  */
 public class CmdletManager extends AbstractService
-    implements ActionStatusUpdateListener, Auditable {
+    implements ActionStatusUpdateListener, ClusterNodeMetricsProvider, Auditable {
   private static final Logger LOG = LoggerFactory.getLogger(CmdletManager.class);
 
   private final ScheduledExecutorService executorService;
@@ -419,8 +420,9 @@ public class CmdletManager extends AbstractService
     metrics.setNumPendingSchedule(getNumPendingScheduleCmdlets());
   }
 
-  public Collection<NodeCmdletMetrics> getAllNodeCmdletMetrics() {
-    return dispatcher.getNodeCmdletMetrics();
+  @Override
+  public Collection<NodeCmdletMetrics> getNodeMetrics() {
+    return dispatcher.getNodeMetrics();
   }
 
   private void scheduleCmdlets() {

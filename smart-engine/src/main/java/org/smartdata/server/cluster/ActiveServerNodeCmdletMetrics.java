@@ -17,10 +17,15 @@
  */
 package org.smartdata.server.cluster;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 /**
  * Contains metrics specific for active SSM server related with cmdlet execution.
  *
  */
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class ActiveServerNodeCmdletMetrics extends NodeCmdletMetrics {
   private int maxPendingSchedule;
   private int numPendingSchedule;
@@ -30,52 +35,4 @@ public class ActiveServerNodeCmdletMetrics extends NodeCmdletMetrics {
 
   private int numInExecution;
   private int maxInExecution;
-
-  public int getNumPendingSchedule() {
-    return numPendingSchedule;
-  }
-
-  public void setNumPendingSchedule(int numPendingSchedule) {
-    this.numPendingSchedule = numPendingSchedule;
-  }
-
-  public int getNumPendingDispatch() {
-    return numPendingDispatch;
-  }
-
-  public void setNumPendingDispatch(int numPendingDispatch) {
-    this.numPendingDispatch = numPendingDispatch;
-  }
-
-  public int getMaxPendingSchedule() {
-    return maxPendingSchedule;
-  }
-
-  public void setMaxPendingSchedule(int maxPendingSchedule) {
-    this.maxPendingSchedule = maxPendingSchedule;
-  }
-
-  public int getMaxPendingDispatch() {
-    return maxPendingDispatch;
-  }
-
-  public void setMaxPendingDispatch(int maxPendingDispatch) {
-    this.maxPendingDispatch = maxPendingDispatch;
-  }
-
-  public int getNumInExecution() {
-    return numInExecution;
-  }
-
-  public void setNumInExecution(int numInExecution) {
-    this.numInExecution = numInExecution;
-  }
-
-  public int getMaxInExecution() {
-    return maxInExecution;
-  }
-
-  public void setMaxInExecution(int maxInExecution) {
-    this.maxInExecution = maxInExecution;
-  }
 }

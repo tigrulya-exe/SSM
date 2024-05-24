@@ -36,6 +36,6 @@ public interface AuditPageRequestMapper
   @ValueMapping(source = "_OBJECTID", target = "OBJECT_ID")
   @ValueMapping(source = "_OPERATION", target = "OPERATION")
   @ValueMapping(source = "_RESULT", target = "RESULT")
-  AuditSortField toPageRequest(AuditSortDto sortColumn);
+  AuditSortField toSortField(AuditSortDto sortColumn);
 
 }

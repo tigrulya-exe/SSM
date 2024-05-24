@@ -15,39 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.server.cluster;
+package org.smartdata.utils;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.smartdata.model.TimeInterval;
 
-/**
- * Contains metrics for SSM nodes related with cmdlet execution.
- * These metrics are not persisted. So after cluster restarts,
- * they will be re-counted.
- */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class NodeCmdletMetrics {
-  private NodeInfo nodeInfo;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.function.Function;
 
-  private long registTime;
-  private int numExecutors;
-
-  private long cmdletsExecuted;
-  private int cmdletsInExecution;
-
-  public synchronized void incCmdletsInExecution() {
-    cmdletsInExecution++;
+public class DateTimeUtils {
+  public static Long intervalStartToEpoch(TimeInterval timeInterval) {
+    return intervalToEpoch(timeInterval, TimeInterval::getFrom);
   }
 
-  public synchronized void finishCmdlet() {
-    cmdletsExecuted++;
-    if (cmdletsInExecution > 0) { // TODO: restore
-      cmdletsInExecution--;
-    }
+  public static Long intervalEndToEpoch(TimeInterval timeInterval) {
+    return intervalToEpoch(timeInterval, TimeInterval::getTo);
+  }
+
+  private static Long intervalToEpoch(
+      TimeInterval timeInterval, Function<TimeInterval, Instant> instantGetter) {
+    return Optional.ofNullable(timeInterval)
+        .map(instantGetter)
+        .map(Instant::toEpochMilli)
+        .orElse(null);
   }
 }

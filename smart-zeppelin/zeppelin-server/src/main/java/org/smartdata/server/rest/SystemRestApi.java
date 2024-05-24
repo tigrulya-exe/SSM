@@ -51,25 +51,37 @@ public class SystemRestApi {
   @Path("/servers")
   public Response servers() {
     // return list of SmartServers and their states
-    return new JsonResponse<>(Response.Status.OK, smartEngine.getStandbyServers()).build();
+    return new JsonResponse<>(
+        Response.Status.OK,
+        smartEngine.getClusterNodesManager().getStandbyServers()
+    ).build();
   }
 
   @GET
   @Path("/agents")
   public Response agents() {
     // return list of agents and their states
-    return new JsonResponse<>(Response.Status.OK, smartEngine.getAgents()).build();
+    return new JsonResponse<>(
+        Response.Status.OK,
+        smartEngine.getClusterNodesManager().getAgents()
+    ).build();
   }
 
   @GET
   @Path("/allAgentHosts")
   public Response allAgentHosts() {
-    return new JsonResponse<>(Response.Status.OK, smartEngine.getAgentHosts()).build();
+    return new JsonResponse<>(
+        Response.Status.OK,
+        smartEngine.getClusterNodesManager().getAgentHosts()
+    ).build();
   }
 
   @GET
   @Path("/allServerHosts")
   public Response allMasterHosts() {
-    return new JsonResponse<>(Response.Status.OK, smartEngine.getServerHosts()).build();
+    return new JsonResponse<>(
+        Response.Status.OK,
+        smartEngine.getClusterNodesManager().getServerHosts()
+    ).build();
   }
 }

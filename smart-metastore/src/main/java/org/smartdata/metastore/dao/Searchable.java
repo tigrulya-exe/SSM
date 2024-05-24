@@ -15,39 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.server.cluster;
+package org.smartdata.metastore.dao;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.smartdata.metastore.model.SearchResult;
+import org.smartdata.metastore.queries.PageRequest;
+import org.smartdata.metastore.queries.sort.SortField;
 
-/**
- * Contains metrics for SSM nodes related with cmdlet execution.
- * These metrics are not persisted. So after cluster restarts,
- * they will be re-counted.
- */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class NodeCmdletMetrics {
-  private NodeInfo nodeInfo;
+import java.util.List;
 
-  private long registTime;
-  private int numExecutors;
+public interface Searchable<RequestT, EntityT, ColumnT extends SortField> {
+  SearchResult<EntityT> search(RequestT searchRequest, PageRequest<ColumnT> pageRequest);
 
-  private long cmdletsExecuted;
-  private int cmdletsInExecution;
-
-  public synchronized void incCmdletsInExecution() {
-    cmdletsInExecution++;
-  }
-
-  public synchronized void finishCmdlet() {
-    cmdletsExecuted++;
-    if (cmdletsInExecution > 0) { // TODO: restore
-      cmdletsInExecution--;
-    }
-  }
+  List<EntityT> search(RequestT searchRequest);
 }
