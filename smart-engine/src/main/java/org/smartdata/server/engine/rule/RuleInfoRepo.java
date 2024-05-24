@@ -187,6 +187,11 @@ public class RuleInfoRepo {
           break;
 
         case DISABLED:
+          if (oldState == RuleState.NEW) {
+            // no need to save the new state to db
+            return true;
+          }
+
           if (oldState == RuleState.ACTIVE) {
             ruleInfo.setState(newState);
             markWorkExit();

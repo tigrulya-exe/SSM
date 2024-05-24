@@ -23,6 +23,7 @@ import org.smartdata.AbstractService;
 import org.smartdata.action.ActionRegistry;
 import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.exception.NotFoundException;
+import org.smartdata.exception.SsmParseException;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
 import org.smartdata.metastore.dao.RuleDao;
@@ -56,7 +57,6 @@ import org.smartdata.server.engine.rule.copy.FileCopyDrPlugin;
 import org.smartdata.server.engine.rule.copy.FileCopyScheduleStrategy;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -132,7 +132,7 @@ public class RuleManager
     }
   }
 
-  public RuleInfo submitRule(String rule) throws IOException, ParseException {
+  public RuleInfo submitRule(String rule) throws IOException {
     long ruleId = submitRule(rule, RuleState.NEW);
     return mapRules.get(ruleId).getRuleInfo();
   }
@@ -142,8 +142,7 @@ public class RuleManager
    */
   @ReturnsAuditId
   @Audit(objectType = RULE, operation = CREATE)
-  public long submitRule(String rule, RuleState initState)
-      throws IOException, ParseException {
+  public long submitRule(String rule, RuleState initState) throws IOException {
     LOG.debug("Received Rule -> [" + rule + "]");
     if (initState != RuleState.ACTIVE
         && initState != RuleState.DISABLED
@@ -188,7 +187,7 @@ public class RuleManager
     return ruleInfo.getId();
   }
 
-  private void doCheckActions(CmdletDescriptor cd) throws ParseException {
+  private void doCheckActions(CmdletDescriptor cd) throws IOException {
     StringBuilder error = new StringBuilder();
     for (int i = 0; i < cd.getActionSize(); i++) {
       if (!ActionRegistry.registeredAction(cd.getActionName(i))) {
@@ -196,7 +195,7 @@ public class RuleManager
       }
     }
     if (error.length() > 0) {
-      throw new ParseException(error.toString(), 0);
+      throw new SsmParseException(error.toString());
     }
   }
 
