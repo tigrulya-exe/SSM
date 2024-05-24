@@ -15,10 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-export { useDispatch } from './useDispatch';
-export { useForwardRef } from './useForwardRef';
-export { useLocalStorage } from './useLocalStorage';
-export { useStore } from './useStore';
-export { useDebounce } from './useDebounce';
-export { useRequestTimer } from './useRequestTimer';
+export const monthsDictionary: Record<number, string> = {
+  0: 'January',
+  1: 'February',
+  2: 'March',
+  3: 'April',
+  4: 'May',
+  5: 'June',
+  6: 'July',
+  7: 'August',
+  8: 'September',
+  9: 'October',
+  10: 'November',
+  11: 'December',
+};

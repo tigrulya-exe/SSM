@@ -1,0 +1,42 @@
+:global {
+  body.theme-dark {
+    --date-picker-tab-border-color: var(--color-dark1);
+  }
+
+  body.theme-light {
+    --date-picker-tab-border-color: var(--color-lightStrokeDark);
+  }
+}
+
+.dateRangePickerTab {
+  height: 356px;
+  display: flex;
+  flex-direction: row;
+  border-top: 1px solid var(--date-picker-tab-border-color);
+
+  &__left {
+    width: 196px;
+    padding: 12px;
+    border-right: 1px solid var(--date-picker-tab-border-color);
+  }
+
+  &__right {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 200px;
+    padding: 12px;
+
+    &Inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    &FooterButtons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+  }
+}

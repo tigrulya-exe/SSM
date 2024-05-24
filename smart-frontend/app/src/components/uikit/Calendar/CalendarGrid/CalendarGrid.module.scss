@@ -1,0 +1,7 @@
+.calendarGrid {
+  --calendar-cell-size: 28px;
+
+  display: grid;
+  grid-template-columns: repeat(7, var(--calendar-cell-size));
+  grid-template-rows: repeat(6, var(--calendar-cell-size));
+}

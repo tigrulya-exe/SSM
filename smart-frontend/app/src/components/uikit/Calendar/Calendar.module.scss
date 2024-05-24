@@ -1,0 +1,10 @@
+.calendar {
+  box-sizing: border-box;
+  justify-content: center;
+
+  &__section {
+    &:not(:last-child) {
+      margin-bottom: 8px;
+    }
+  }
+}

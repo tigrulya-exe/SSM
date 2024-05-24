@@ -15,10 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import Button from '@uikit/Button/Button';
+import ts from './Tabs.module.scss';
 
-export { useDispatch } from './useDispatch';
-export { useForwardRef } from './useForwardRef';
-export { useLocalStorage } from './useLocalStorage';
-export { useStore } from './useStore';
-export { useDebounce } from './useDebounce';
-export { useRequestTimer } from './useRequestTimer';
+export interface TabActionsProps {
+  isApplyDisable?: boolean;
+  onApply: () => void;
+  onRevert: () => void;
+}
+
+const TabActions = ({ isApplyDisable = false, onApply, onRevert }: TabActionsProps) => (
+  <div className={ts.dateRangePickerTab__rightFooterButtons}>
+    <Button size="small" variant="secondary" onClick={onRevert}>
+      Revert
+    </Button>
+    <Button disabled={isApplyDisable} size="small" onClick={onApply}>
+      Apply
+    </Button>
+  </div>
+);
+
+export default TabActions;

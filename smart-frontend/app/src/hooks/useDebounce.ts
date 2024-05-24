@@ -15,10 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useEffect, useRef } from 'react';
 
-export { useDispatch } from './useDispatch';
-export { useForwardRef } from './useForwardRef';
-export { useLocalStorage } from './useLocalStorage';
-export { useStore } from './useStore';
-export { useDebounce } from './useDebounce';
-export { useRequestTimer } from './useRequestTimer';
+export type UnknownFunction = (...args: unknown[]) => unknown;
+
+export const useDebounce = (callback: UnknownFunction, delay: number) => {
+  const timeoutRef = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (timeoutRef.current) {
+        window.clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    },
+    [],
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (...args: any[]) => {
+    if (timeoutRef.current) {
+      window.clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = window.setTimeout(() => callback(...args), delay);
+  };
+};

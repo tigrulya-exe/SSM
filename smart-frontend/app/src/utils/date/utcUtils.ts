@@ -15,10 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+export const localDateToUtc = (localDate: Date) => {
+  const timestamp = localDate.getTime();
+  const offset = localDate.getTimezoneOffset() * 60 * 1000; // minutes * 60sec * 1000ms
 
-export { useDispatch } from './useDispatch';
-export { useForwardRef } from './useForwardRef';
-export { useLocalStorage } from './useLocalStorage';
-export { useStore } from './useStore';
-export { useDebounce } from './useDebounce';
-export { useRequestTimer } from './useRequestTimer';
+  return new Date(timestamp + offset);
+};
+
+export const utcDateToLocal = (utcDate: Date) => {
+  const timestamp = utcDate.getTime();
+  const offset = utcDate.getTimezoneOffset() * 60 * 1000; // minutes * 60sec * 1000ms
+
+  return new Date(timestamp - offset);
+};

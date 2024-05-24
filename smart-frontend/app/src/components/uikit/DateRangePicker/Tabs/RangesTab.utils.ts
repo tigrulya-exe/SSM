@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { getToday } from '@utils/date/calendarUtils';
 
-export { useDispatch } from './useDispatch';
-export { useForwardRef } from './useForwardRef';
-export { useLocalStorage } from './useLocalStorage';
-export { useStore } from './useStore';
-export { useDebounce } from './useDebounce';
-export { useRequestTimer } from './useRequestTimer';
+export const getRangeFromNow = (fromCb: (date: Date, value: number) => Date, value: number) => {
+  const now = getToday();
+  const from = fromCb(now, value);
+  return { from, to: now };
+};

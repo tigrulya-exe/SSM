@@ -15,10 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+type GetKeyCallback<T> = (item: T) => PropertyKey;
 
-export { useDispatch } from './useDispatch';
-export { useForwardRef } from './useForwardRef';
-export { useLocalStorage } from './useLocalStorage';
-export { useStore } from './useStore';
-export { useDebounce } from './useDebounce';
-export { useRequestTimer } from './useRequestTimer';
+export function arrayToHash<T>(items: T[], getKey: GetKeyCallback<T>): Record<PropertyKey, T> {
+  const hash = items.reduce((acc: Record<PropertyKey, T>, current: T) => {
+    const key = getKey(current);
+    acc[key] = current;
+    return acc;
+  }, {});
+
+  return hash;
+}
+
+export const findBy = <T>(list: T[], field: keyof T, value: unknown) => {
+  return list.find((item) => item[field] === value);
+};
