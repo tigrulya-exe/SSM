@@ -18,10 +18,10 @@
 package org.smartdata.metastore;
 
 import org.apache.hadoop.conf.Configuration;
-import org.smartdata.metastore.dao.AccessCountTable;
-import org.smartdata.metastore.dao.AccessCountTableDeque;
+import org.smartdata.metastore.dao.accesscount.AccessCountTableDeque;
 import org.smartdata.metastore.db.DBHandlersFactory;
 import org.smartdata.metastore.db.DbSchemaManager;
+import org.smartdata.metastore.model.AccessCountTable;
 
 import javax.sql.DataSource;
 

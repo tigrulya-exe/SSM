@@ -24,6 +24,8 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import javax.sql.DataSource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -50,18 +52,22 @@ public class AbstractDao {
     simpleJdbcInsert.execute(converter.toMap(entity));
   }
 
-  @SuppressWarnings("unchecked")
-  protected <T> void insert(List<T> entities, EntityToMapConverter<T> converter) {
-    insert((T[]) entities.toArray(), converter);
+  protected <T> void insert(T[] entities, EntityToMapConverter<T> converter) {
+    insert(Arrays.asList(entities), converter);
+  }
+
+  protected <T> void insert(Collection<T> entities, EntityToMapConverter<T> converter) {
+    insert(simpleJdbcInsert(), entities, converter);
   }
 
   @SuppressWarnings("unchecked")
-  protected <T> void insert(T[] entities, EntityToMapConverter<T> converter) {
-    SimpleJdbcInsert simpleJdbcInsert = simpleJdbcInsert();
-    Map<String, Object>[] maps = new Map[entities.length];
-    for (int i = 0; i < entities.length; i++) {
-      maps[i] = converter.toMap(entities[i]);
-    }
+  protected <T> void insert(
+      SimpleJdbcInsert simpleJdbcInsert,
+      Collection<T> entities,
+      EntityToMapConverter<T> converter) {
+    Map<String, Object>[] maps = entities.stream()
+        .map(converter::toMap)
+        .toArray(Map[]::new);
     simpleJdbcInsert.executeBatch(maps);
   }
 

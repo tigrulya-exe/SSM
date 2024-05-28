@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.metastore.dao.accesscount;
 
+import org.smartdata.metastore.model.AccessCountTable;
 import org.smartdata.metastore.utils.Constants;
 
 import java.util.concurrent.CompletableFuture;
@@ -28,22 +29,28 @@ public interface TableAddOpListener {
   CompletableFuture<AccessCountTable> tableAdded(
       AccessCountTableDeque fineGrainedTableDeque, AccessCountTable table);
 
-  static TableAddOpListener perDay(AccessCountTableDeque deque,
-      AccessCountTableAggregator aggregator, ExecutorService service) {
+  static TableAddOpListener perDay(
+      AccessCountTableDeque deque,
+      AccessCountTableHandler tableAggregator,
+      ExecutorService service) {
     return new AggregatingTableAddOpListener(
-        deque, aggregator, service, Constants.ONE_DAY_IN_MILLIS);
+        deque, tableAggregator, service, Constants.ONE_DAY_IN_MILLIS);
   }
 
-  static TableAddOpListener perHour(AccessCountTableDeque deque,
-      AccessCountTableAggregator aggregator, ExecutorService service) {
+  static TableAddOpListener perHour(
+      AccessCountTableDeque deque,
+      AccessCountTableHandler tableAggregator,
+      ExecutorService service) {
     return new AggregatingTableAddOpListener(
-        deque, aggregator, service, Constants.ONE_HOUR_IN_MILLIS);
+        deque, tableAggregator, service, Constants.ONE_HOUR_IN_MILLIS);
   }
 
-  static TableAddOpListener perMinute(AccessCountTableDeque deque,
-      AccessCountTableAggregator aggregator, ExecutorService service) {
+  static TableAddOpListener perMinute(
+      AccessCountTableDeque deque,
+      AccessCountTableHandler tableAggregator,
+      ExecutorService service) {
     return new AggregatingTableAddOpListener(
-        deque, aggregator, service, Constants.ONE_MINUTE_IN_MILLIS);
+        deque, tableAggregator, service, Constants.ONE_MINUTE_IN_MILLIS);
   }
 
   static TableAddOpListener noOp() {

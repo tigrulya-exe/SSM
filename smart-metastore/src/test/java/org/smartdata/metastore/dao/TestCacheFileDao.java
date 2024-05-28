@@ -21,7 +21,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartdata.metastore.TestDaoBase;
-import org.smartdata.metrics.FileAccessEvent;
+import org.smartdata.metastore.model.AggregatedAccessCounts;
 import org.smartdata.model.CachedFileStatus;
 
 import java.util.ArrayList;
@@ -39,74 +39,67 @@ public class TestCacheFileDao extends TestDaoBase {
   }
 
   @Test
-  public void testUpdateCachedFiles() throws Exception {
+  public void testUpdateCachedFiles() {
     CachedFileStatus first = new CachedFileStatus(80L,
         "testPath", 1000L, 2000L, 100);
     cacheFileDao.insert(first);
     CachedFileStatus second = new CachedFileStatus(90L,
         "testPath2", 2000L, 3000L, 200);
     cacheFileDao.insert(second);
-    Map<String, Long> pathToId = new HashMap<>();
-    pathToId.put("testPath", 80L);
-    pathToId.put("testPath2", 90L);
-    pathToId.put("testPath3", 100L);
-    List<FileAccessEvent> events = new ArrayList<>();
-    events.add(new FileAccessEvent("testPath", 3000L));
-    events.add(new FileAccessEvent("testPath", 4000L));
-    events.add(new FileAccessEvent("testPath2", 4000L));
-    events.add(new FileAccessEvent("testPath2", 5000L));
-    events.add(new FileAccessEvent("testPath3", 8000L));
-    events.add(new FileAccessEvent("testPath3", 9000L));
+    List<AggregatedAccessCounts> accessCounts = new ArrayList<>();
+    accessCounts.add(new AggregatedAccessCounts(80L, 2, 4000L));
+    accessCounts.add(new AggregatedAccessCounts(90L, 2, 5000L));
+    accessCounts.add(new AggregatedAccessCounts(100L, 2, 9000L));
+
     // Sync status
     first.setLastAccessTime(4000L);
     first.setNumAccessed(first.getNumAccessed() + 2);
     second.setLastAccessTime(5000L);
     second.setNumAccessed(second.getNumAccessed() + 2);
-    cacheFileDao.update(pathToId, events);
+    cacheFileDao.update(accessCounts);
     List<CachedFileStatus> statuses = cacheFileDao.getAll();
-    Assert.assertTrue(statuses.size() == 2);
+    Assert.assertEquals(2, statuses.size());
     Map<Long, CachedFileStatus> statusMap = new HashMap<>();
     for (CachedFileStatus status : statuses) {
       statusMap.put(status.getFid(), status);
     }
     Assert.assertTrue(statusMap.containsKey(80L));
     CachedFileStatus dbFirst = statusMap.get(80L);
-    Assert.assertTrue(dbFirst.equals(first));
+    Assert.assertEquals(first, dbFirst);
     Assert.assertTrue(statusMap.containsKey(90L));
     CachedFileStatus dbSecond = statusMap.get(90L);
-    Assert.assertTrue(dbSecond.equals(second));
+    Assert.assertEquals(second, dbSecond);
   }
 
   @Test
-  public void testInsertDeleteCachedFiles() throws Exception {
+  public void testInsertDeleteCachedFiles() {
     cacheFileDao
         .insert(80L,
             "testPath", 123456L, 234567L, 456);
-    Assert.assertTrue(cacheFileDao.getById(
-        80L).getFromTime() == 123456L);
+    Assert.assertEquals(123456L, cacheFileDao.getById(
+        80L).getFromTime());
     // Update record with 80l id
     cacheFileDao.update(80L,
         123455L, 460);
-    Assert.assertTrue(cacheFileDao
+    Assert.assertEquals(123455L, cacheFileDao
         .getAll().get(0)
-        .getLastAccessTime() == 123455L);
-    CachedFileStatus[] cachedFileStatuses = new CachedFileStatus[]{
+        .getLastAccessTime());
+    CachedFileStatus[] cachedFileStatuses = new CachedFileStatus[] {
         new CachedFileStatus(321L, "testPath",
             113334L, 222222L, 222)};
     cacheFileDao.insert(cachedFileStatuses);
-    Assert.assertTrue(cacheFileDao.getById(321L)
-        .equals(cachedFileStatuses[0]));
-    Assert.assertTrue(cacheFileDao.getAll().size() == 2);
+    Assert.assertEquals(cachedFileStatuses[0], cacheFileDao.getById(321L));
+    Assert.assertEquals(2, cacheFileDao.getAll().size());
     // Delete one record
     cacheFileDao.deleteById(321L);
-    Assert.assertTrue(cacheFileDao.getAll().size() == 1);
+    Assert.assertEquals(1, cacheFileDao.getAll().size());
     // Clear all records
     cacheFileDao.deleteAll();
-    Assert.assertTrue(cacheFileDao.getAll().size() == 0);
+    Assert.assertTrue(cacheFileDao.getAll().isEmpty());
   }
 
   @Test
-  public void testGetCachedFileStatus() throws Exception {
+  public void testGetCachedFileStatus() {
     cacheFileDao.insert(6L, "testPath", 1490918400000L,
         234567L, 456);
     CachedFileStatus cachedFileStatus = new CachedFileStatus(6L, "testPath", 1490918400000L,
@@ -116,12 +109,12 @@ public class TestCacheFileDao extends TestDaoBase {
     cacheFileDao.insert(23L, "testPath", 1490918400000L,
         234567L, 456);
     CachedFileStatus dbcachedFileStatus = cacheFileDao.getById(6);
-    Assert.assertTrue(dbcachedFileStatus.equals(cachedFileStatus));
+    Assert.assertEquals(cachedFileStatus, dbcachedFileStatus);
     List<CachedFileStatus> cachedFileList = cacheFileDao.getAll();
     List<Long> fids = cacheFileDao.getFids();
-    Assert.assertTrue(fids.size() == 3);
-    Assert.assertTrue(cachedFileList.get(0).getFid() == 6);
-    Assert.assertTrue(cachedFileList.get(1).getFid() == 19);
-    Assert.assertTrue(cachedFileList.get(2).getFid() == 23);
+    Assert.assertEquals(3, fids.size());
+    Assert.assertEquals(6, cachedFileList.get(0).getFid());
+    Assert.assertEquals(19, cachedFileList.get(1).getFid());
+    Assert.assertEquals(23, cachedFileList.get(2).getFid());
   }
 }

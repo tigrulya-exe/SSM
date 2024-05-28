@@ -15,47 +15,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.metastore.dao.accesscount;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.smartdata.metastore.MetaStore;
+import org.smartdata.metastore.model.AccessCountTable;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.ReentrantLock;
 
-import static org.mockito.Mockito.when;
 import static org.smartdata.metastore.TestDBUtil.addAccessCountTableToDeque;
 
 public class TestAddTableOpListener {
 
-  @Mock
-  private MetaStore adapter;
+  private ExecutorService executorService;
 
-  private final ExecutorService executorService = Executors.newFixedThreadPool(4);
-
-  private final ReentrantLock accessCountLock = new ReentrantLock();
-
-  private AccessCountTableAggregator aggregator;
+  private AccessCountTableHandler tableHandler;
 
   @Before
   public void setup() {
-    MockitoAnnotations.initMocks(this);
-    aggregator = new AccessCountTableAggregator(adapter);
-    when(adapter.getAccessCountLock()).thenReturn(accessCountLock);
+    executorService = Executors.newFixedThreadPool(4);
+    tableHandler = new NoOpAccessCountTableHandler();
+  }
+
+  @After
+  public void shutDown() {
+    executorService.shutdownNow();
   }
 
   @Test
   public void testMinuteTableListener() throws Exception {
     long oneSec = 1000L;
-    TableEvictor tableEvictor = new CountEvictor(adapter, 10);
+    AccessCountTableEvictor tableEvictor = new CountTableEvictor(tableHandler, 10);
     AccessCountTableDeque minuteTableDeque = new AccessCountTableDeque(tableEvictor);
     TableAddOpListener minuteTableListener =
-        TableAddOpListener.perMinute(minuteTableDeque, aggregator, executorService);
+        TableAddOpListener.perMinute(minuteTableDeque, tableHandler, executorService);
     AccessCountTableDeque secondTableDeque =
         new AccessCountTableDeque(tableEvictor, minuteTableListener);
 
@@ -82,10 +78,10 @@ public class TestAddTableOpListener {
   @Test
   public void testHourTableListener() throws Exception {
     long oneMin = 60 * 1000L;
-    TableEvictor tableEvictor = new CountEvictor(adapter, 10);
+    AccessCountTableEvictor tableEvictor = new CountTableEvictor(tableHandler, 10);
     AccessCountTableDeque hourTableDeque = new AccessCountTableDeque(tableEvictor);
     TableAddOpListener hourTableListener =
-        TableAddOpListener.perHour(hourTableDeque, aggregator, executorService);
+        TableAddOpListener.perHour(hourTableDeque, tableHandler, executorService);
     AccessCountTableDeque minuteTableDeque =
         new AccessCountTableDeque(tableEvictor, hourTableListener);
 
@@ -112,10 +108,10 @@ public class TestAddTableOpListener {
   @Test
   public void testDayTableListener() throws Exception {
     long oneHour = 60 * 60 * 1000L;
-    TableEvictor tableEvictor = new CountEvictor(adapter, 10);
+    AccessCountTableEvictor tableEvictor = new CountTableEvictor(tableHandler, 10);
     AccessCountTableDeque dayTableDeque = new AccessCountTableDeque(tableEvictor);
     TableAddOpListener dayTableListener =
-        TableAddOpListener.perDay(dayTableDeque, aggregator, executorService);
+        TableAddOpListener.perDay(dayTableDeque, tableHandler, executorService);
     AccessCountTableDeque hourTableDeque =
         new AccessCountTableDeque(tableEvictor, dayTableListener);
 

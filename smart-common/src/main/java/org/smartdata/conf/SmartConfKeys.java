@@ -98,6 +98,9 @@ public class SmartConfKeys {
       "smart.access.count.aggregation.interval.ms";
   public static final int SMART_ACCESS_COUNT_AGGREGATION_INTERVAL_MS_DEFAULT = 5000;
 
+  public static final String SMART_ACCESS_COUNT_AGGREGATOR_FAILOVER_KEY =
+      "smart.access.count.aggregator.failover";
+
   public static final String SMART_NUM_DAY_TABLES_TO_KEEP_KEY =
       "smart.access.count.day.tables.num";
   public static final int SMART_NUM_DAY_TABLES_TO_KEEP_DEFAULT = 30;

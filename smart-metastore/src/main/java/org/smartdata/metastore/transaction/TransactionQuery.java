@@ -15,14 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model;
+package org.smartdata.metastore.transaction;
 
-import lombok.Data;
+import org.springframework.transaction.support.TransactionCallback;
 
-@Data
-public class FileAccessInfo {
-  private final long fid;
-  private final String path;
-  private final int accessCount;
-  private final long lastAccessedTime;
+public interface TransactionQuery<V> {
+  V execute() throws Exception;
+
+  default TransactionCallback<V> toCallback() {
+    return transactionStatus -> {
+      try {
+        return this.execute();
+      } catch (Exception e) {
+        throw new WrappedTransactionException(e);
+      }
+    };
+  }
 }

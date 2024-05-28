@@ -15,31 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.metastore.dao.accesscount;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.MetaStore;
+import org.smartdata.metastore.model.AccessCountTable;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.mockito.Mockito.mock;
 import static org.smartdata.metastore.TestDBUtil.addAccessCountTableToDeque;
 import static org.smartdata.metastore.utils.Constants.ONE_SECOND_IN_MILLIS;
 
-public class TestTableEvictor {
-  private MetaStore adapter;
-  private AccessCountTableAggregator aggregator;
-
+public class TestAccessCountTableEvictor {
   private ExecutorService executorService;
+  private AccessCountTableHandler tableHandler;
 
   @Before
   public void setUp() {
-    adapter = mock(MetaStore.class);
-    aggregator = new AccessCountTableAggregator(adapter);
+    tableHandler = new NoOpAccessCountTableHandler();
     executorService = Executors.newSingleThreadExecutor();
   }
 
@@ -50,7 +46,7 @@ public class TestTableEvictor {
 
   @Test
   public void testCountEvictor() {
-    CountEvictor countEvictor = new CountEvictor(adapter, 2);
+    CountTableEvictor countEvictor = new CountTableEvictor(tableHandler, 2);
     AccessCountTableDeque tableDeque = new AccessCountTableDeque(countEvictor);
 
     tableDeque.add(new AccessCountTable(0L, 1L));
@@ -123,11 +119,11 @@ public class TestTableEvictor {
 
   private AccessCountTableDeque buildSecondDeque(int evictThreshold) {
     AccessCountTableDeque minuteDeque = new AccessCountTableDeque(
-        new CountEvictor(adapter, 999));
+        new CountTableEvictor(tableHandler, 999));
     TableAddOpListener minuteTableListener =
-        TableAddOpListener.perMinute(minuteDeque, aggregator, executorService);
+        TableAddOpListener.perMinute(minuteDeque, tableHandler, executorService);
 
-    TableEvictor secondEvictor = new CountEvictor(adapter, evictThreshold);
+    AccessCountTableEvictor secondEvictor = new CountTableEvictor(tableHandler, evictThreshold);
     return new AccessCountTableDeque(secondEvictor, minuteTableListener);
   }
 }

@@ -17,11 +17,11 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.smartdata.metrics.FileAccessEvent;
+import org.smartdata.metastore.model.AggregatedAccessCounts;
 import org.smartdata.model.CachedFileStatus;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 public interface CacheFileDao {
   List<CachedFileStatus> getAll();
@@ -39,8 +39,7 @@ public interface CacheFileDao {
 
   int update(Long fid, Long lastAccessTime, Integer numAccessed);
 
-  void update(Map<String, Long> pathToIds,
-              List<FileAccessEvent> events);
+  void update(Collection<AggregatedAccessCounts> events);
 
   void deleteById(long fid);
 

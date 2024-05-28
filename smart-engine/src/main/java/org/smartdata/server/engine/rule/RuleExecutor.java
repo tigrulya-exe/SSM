@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.smartdata.exception.QueueFullException;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
-import org.smartdata.metastore.dao.AccessCountTable;
+import org.smartdata.metastore.model.AccessCountTable;
 import org.smartdata.model.CmdletDescriptor;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;

@@ -17,10 +17,9 @@
  */
 package org.smartdata.metastore.dao.impl;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.smartdata.metastore.dao.AbstractDao;
 import org.smartdata.metastore.dao.CacheFileDao;
-import org.smartdata.metrics.FileAccessEvent;
+import org.smartdata.metastore.model.AggregatedAccessCounts;
 import org.smartdata.model.CachedFileStatus;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -32,6 +31,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class DefaultCacheFileDao extends AbstractDao implements CacheFileDao {
   private static final String TABLE_NAME = "cached_file";
@@ -49,7 +51,7 @@ public class DefaultCacheFileDao extends AbstractDao implements CacheFileDao {
   @Override
   public CachedFileStatus getById(long fid) {
     return jdbcTemplate.queryForObject("SELECT * FROM cached_file WHERE fid = ?",
-        new Object[]{fid}, new CacheFileRowMapper());
+        new Object[] {fid}, new CacheFileRowMapper());
   }
 
   @Override
@@ -82,36 +84,19 @@ public class DefaultCacheFileDao extends AbstractDao implements CacheFileDao {
     return jdbcTemplate.update(sql, lastAccessTime, numAccessed, fid);
   }
 
+  // todo use batch update
   @Override
-  public void update(Map<String, Long> pathToIds,
-                     List<FileAccessEvent> events) {
-    Map<Long, CachedFileStatus> idToStatus = new HashMap<>();
-    List<CachedFileStatus> cachedFileStatuses = getAll();
-    for (CachedFileStatus status : cachedFileStatuses) {
-      idToStatus.put(status.getFid(), status);
-    }
-    Collection<Long> cachedIds = idToStatus.keySet();
-    Collection<Long> needToUpdate = CollectionUtils.intersection(cachedIds, pathToIds.values());
-    if (!needToUpdate.isEmpty()) {
-      Map<Long, Integer> idToCount = new HashMap<>();
-      Map<Long, Long> idToLastTime = new HashMap<>();
-      for (FileAccessEvent event : events) {
-        Long fid = pathToIds.get(event.getPath());
-        if (needToUpdate.contains(fid)) {
-          if (!idToCount.containsKey(fid)) {
-            idToCount.put(fid, 0);
-          }
-          idToCount.put(fid, idToCount.get(fid) + 1);
-          if (!idToLastTime.containsKey(fid)) {
-            idToLastTime.put(fid, event.getTimestamp());
-          }
-          idToLastTime.put(fid, Math.max(event.getTimestamp(), idToLastTime.get(fid)));
-        }
-      }
-      for (Long fid : needToUpdate) {
-        Integer newAccessCount = idToStatus.get(fid).getNumAccessed() + idToCount.get(fid);
-        this.update(fid, idToLastTime.get(fid), newAccessCount);
-      }
+  public void update(Collection<AggregatedAccessCounts> accessCounts) {
+    Map<Long, CachedFileStatus> idToStatus = getAll().stream()
+        .collect(Collectors.toMap(
+            CachedFileStatus::getFid,
+            Function.identity()
+        ));
+
+    for (AggregatedAccessCounts aggregatedAccessCounts : accessCounts) {
+      Optional.of(aggregatedAccessCounts.getFileId())
+          .map(idToStatus::get)
+          .ifPresent(status -> merge(aggregatedAccessCounts, status));
     }
   }
 
@@ -125,6 +110,19 @@ public class DefaultCacheFileDao extends AbstractDao implements CacheFileDao {
   public void deleteAll() {
     String sql = "DELETE FROM cached_file";
     jdbcTemplate.execute(sql);
+  }
+
+  private void merge(
+      AggregatedAccessCounts aggregatedAccessCounts,
+      CachedFileStatus cachedFileStatus) {
+    long lastAccessTime = Math.max(
+        cachedFileStatus.getLastAccessTime(),
+        aggregatedAccessCounts.getLastAccessedTimestamp());
+
+    int accessCounts = cachedFileStatus.getNumAccessed()
+        + aggregatedAccessCounts.getAccessCount();
+
+    update(aggregatedAccessCounts.getFileId(), lastAccessTime, accessCounts);
   }
 
   private Map<String, Object> toMap(CachedFileStatus cachedFileStatus) {

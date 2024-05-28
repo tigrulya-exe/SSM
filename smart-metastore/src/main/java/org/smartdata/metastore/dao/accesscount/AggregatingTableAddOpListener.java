@@ -15,10 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.metastore.dao.accesscount;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.smartdata.metastore.model.AccessCountTable;
 
 import java.util.List;
 import java.util.Set;
@@ -30,18 +31,18 @@ public class AggregatingTableAddOpListener implements TableAddOpListener {
   static final Logger LOG = LoggerFactory.getLogger(AggregatingTableAddOpListener.class);
 
   private final AccessCountTableDeque coarseGrainedTableDeque;
-  private final AccessCountTableAggregator tableAggregator;
+  private final AccessCountTableHandler tableAggregator;
   private final ExecutorService executorService;
   private final Set<AccessCountTable> tablesUnderConstruction;
   private final long millisPerGranularity;
 
   AggregatingTableAddOpListener(
       AccessCountTableDeque deque,
-      AccessCountTableAggregator aggregator,
+      AccessCountTableHandler tableAggregator,
       ExecutorService executorService,
       long millisPerGranularity) {
     this.coarseGrainedTableDeque = deque;
-    this.tableAggregator = aggregator;
+    this.tableAggregator = tableAggregator;
     this.executorService = executorService;
     this.millisPerGranularity = millisPerGranularity;
     tablesUnderConstruction = ConcurrentHashMap.newKeySet();

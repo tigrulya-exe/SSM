@@ -22,16 +22,18 @@ import org.smartdata.metastore.DBType;
 import org.smartdata.metastore.dao.impl.DefaultDaoProvider;
 import org.smartdata.metastore.dao.postgres.PostgresDaoProvider;
 import org.smartdata.metastore.dao.sqlite.SqliteDaoProvider;
+import org.springframework.transaction.PlatformTransactionManager;
 
 public class DaoProviderFactory {
-  public DaoProvider createDaoProvider(DBPool dbPool, DBType dbType) {
+  public DaoProvider createDaoProvider(
+      DBPool dbPool, PlatformTransactionManager transactionManager, DBType dbType) {
     switch (dbType) {
       case POSTGRES:
-        return new PostgresDaoProvider(dbPool);
+        return new PostgresDaoProvider(dbPool, transactionManager);
       case SQLITE:
-        return new SqliteDaoProvider(dbPool);
+        return new SqliteDaoProvider(dbPool, transactionManager);
       default:
-        return new DefaultDaoProvider(dbPool);
+        return new DefaultDaoProvider(dbPool, transactionManager);
     }
   }
 }

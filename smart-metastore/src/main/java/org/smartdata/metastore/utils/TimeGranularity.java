@@ -24,5 +24,37 @@ public enum TimeGranularity {
   DAY,
   WEEK,
   MONTH,
-  YEAR
+  YEAR;
+
+  public static TimeGranularity of(long intervalMillis) {
+    if (intervalMillis / Constants.ONE_DAY_IN_MILLIS > 0) {
+      return TimeGranularity.DAY;
+    }
+    if (intervalMillis / Constants.ONE_HOUR_IN_MILLIS > 0) {
+      return TimeGranularity.HOUR;
+    }
+    if (intervalMillis / Constants.ONE_MINUTE_IN_MILLIS > 0) {
+      return TimeGranularity.MINUTE;
+    }
+    return TimeGranularity.SECOND;
+  }
+
+  public static TimeGranularity decreaseGranularity(TimeGranularity granularity) {
+    switch (granularity) {
+      case YEAR:
+        return TimeGranularity.MONTH;
+      case MONTH:
+        return TimeGranularity.WEEK;
+      case WEEK:
+        return TimeGranularity.DAY;
+      case DAY:
+        return TimeGranularity.HOUR;
+      case HOUR:
+        return TimeGranularity.MINUTE;
+      case MINUTE:
+        return TimeGranularity.SECOND;
+      default:
+        return null;
+    }
+  }
 }

@@ -31,6 +31,8 @@ import org.smartdata.metastore.dao.DaoProviderFactory;
 import org.smartdata.metastore.db.DBHandlersFactory;
 import org.smartdata.metastore.db.DbSchemaManager;
 import org.smartdata.metastore.db.metadata.DbMetadataProvider;
+import org.springframework.jdbc.support.JdbcTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.sqlite.JDBC;
 import org.testcontainers.jdbc.ContainerDatabaseDriver;
 
@@ -60,7 +62,7 @@ public abstract class TestDaoBase {
 
   @Parameters(name = "{0}")
   public static Object[] parameters() {
-    return new Object[][]{
+    return new Object[][] {
         {DBType.SQLITE, JDBC.class.getName(), getUniqueSqliteUrl()},
         {DBType.MYSQL, ContainerDatabaseDriver.class.getName(),
             "jdbc:tc:mysql:5.7.34:///ssm_mysql"},
@@ -83,9 +85,13 @@ public abstract class TestDaoBase {
     druidPool = new DruidPool(druidProps);
     dbSchemaManager = dbHandlersFactory
         .createDbManager(druidPool, new Configuration());
-    daoProvider = new DaoProviderFactory().createDaoProvider(druidPool, dbType);
+    PlatformTransactionManager transactionManager =
+        new JdbcTransactionManager(druidPool.getDataSource());
+    daoProvider = new DaoProviderFactory()
+        .createDaoProvider(druidPool, transactionManager, dbType);
     dbMetadataProvider = dbHandlersFactory.createDbMetadataProvider(druidPool, dbType);
-    metaStore = new MetaStore(druidPool, dbSchemaManager, daoProvider, dbMetadataProvider);
+    metaStore = new MetaStore(
+        druidPool, dbSchemaManager, daoProvider, dbMetadataProvider, transactionManager);
   }
 
   @Before
