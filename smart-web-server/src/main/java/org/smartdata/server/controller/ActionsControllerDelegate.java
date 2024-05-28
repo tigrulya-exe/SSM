@@ -22,6 +22,7 @@ import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.PageRequest;
 import org.smartdata.metastore.queries.sort.ActionSortField;
 import org.smartdata.model.ActionInfo;
+import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.request.ActionSearchRequest;
 import org.smartdata.server.engine.CmdletManager;
 import org.smartdata.server.engine.action.ActionInfoHandler;
@@ -84,11 +85,11 @@ public class ActionsControllerDelegate implements ActionsApiDelegate {
   @Override
   public ActionInfoDto submitAction(
       SubmitActionRequestDto submitActionRequestDto) throws Exception {
-    long cmdletId = cmdletManager.submitCmdlet(
+    CmdletInfo cmdletInfo = cmdletManager.submitCmdlet(
         submitActionRequestDto.getAction());
 
     ActionInfo actionInfo = cmdletManager.getCmdletInfoHandler()
-        .getSingleActionInfo(cmdletId);
+        .getSingleActionInfo(cmdletInfo.getCid());
     return actionInfoMapper.toActionInfoDto(actionInfo);
   }
 }

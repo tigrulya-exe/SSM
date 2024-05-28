@@ -46,7 +46,6 @@ import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;

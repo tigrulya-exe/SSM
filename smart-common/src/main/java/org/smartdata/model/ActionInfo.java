@@ -73,10 +73,10 @@ public class ActionInfo {
   }
 
   public ActionSource getSource() {
-    boolean hasRuleIdArg = Optional.ofNullable(args)
+    return Optional.ofNullable(args)
         .filter(map -> map.containsKey(CmdletDescriptor.RULE_ID))
-        .isPresent();
-    return hasRuleIdArg ? ActionSource.RULE : ActionSource.USER;
+        .map(hasRuleIdArg -> ActionSource.RULE)
+        .orElse(ActionSource.USER);
   }
 
   // Applicable to some actions that need to create new file to replace

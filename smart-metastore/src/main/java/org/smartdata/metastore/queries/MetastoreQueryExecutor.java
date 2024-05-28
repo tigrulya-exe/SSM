@@ -18,6 +18,7 @@
 package org.smartdata.metastore.queries;
 
 import org.smartdata.metastore.model.SearchResult;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -51,9 +52,13 @@ public class MetastoreQueryExecutor {
   }
 
   public long executeCount(MetastoreQuery query) {
-    Long rowsCount = namedJdbcTemplate.queryForObject(
-        query.toSqlCountQuery(), query.getParameters(), Long.class);
-    return Optional.ofNullable(rowsCount).orElse(0L);
+    try {
+      Long rowsCount = namedJdbcTemplate.queryForObject(
+          query.toSqlCountQuery(), query.getParameters(), Long.class);
+      return Optional.ofNullable(rowsCount).orElse(0L);
+    } catch (EmptyResultDataAccessException exception) {
+      return 0;
+    }
   }
 
   private <T> SearchResult<T> executePagedTransaction(

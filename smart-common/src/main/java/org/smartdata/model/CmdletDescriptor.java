@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.smartdata.utils.FormattingUtil.actionToString;
 
@@ -118,14 +118,9 @@ public class CmdletDescriptor {
   }
 
   public String toCmdletString() {
-    StringJoiner cmdletBuilder = new StringJoiner(" ; ");
-
-    for (int i = 0; i < getActionSize(); i++) {
-      String action = actionToString(getActionName(i), getActionArgs(i));
-      cmdletBuilder.add(action);
-    }
-
-    return cmdletBuilder.toString();
+    return IntStream.range(0, getActionSize())
+        .mapToObj(i -> actionToString(getActionName(i), getActionArgs(i)))
+        .collect(Collectors.joining(" ; "));
   }
 
   public boolean equals(CmdletDescriptor des) {

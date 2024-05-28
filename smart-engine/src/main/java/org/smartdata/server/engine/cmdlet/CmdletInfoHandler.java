@@ -17,7 +17,6 @@
  */
 package org.smartdata.server.engine.cmdlet;
 
-import org.apache.hadoop.yarn.webapp.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.exception.NotFoundException;
