@@ -26,6 +26,7 @@ import org.smartdata.metastore.queries.sort.ClusterNodeSortField;
 import org.smartdata.metastore.queries.sort.Sorting;
 import org.smartdata.server.generated.model.ClusterSortDto;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,7 +48,7 @@ public interface ClusterNodePageRequestMapper
 
   default List<Sorting<ClusterNodeSortField>> toSortings(List<ClusterSortDto> sortColumns) {
     if (CollectionUtils.isEmpty(sortColumns)) {
-      return null;
+      return Collections.emptyList();
     }
 
     return sortColumns.stream()

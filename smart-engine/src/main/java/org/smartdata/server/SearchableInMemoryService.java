@@ -42,26 +42,26 @@ public abstract class SearchableInMemoryService<RequestT, EntityT, ColumnT exten
   @Override
   public SearchResult<EntityT> search(RequestT searchRequest, PageRequest<ColumnT> pageRequest) {
     MutableLong filteredEntitiesCount = new MutableLong();
-    Stream<EntityT> fileteredStream = filteredStream(searchRequest)
+    Stream<EntityT> filteredStream = filteredStream(searchRequest)
         .peek(element -> filteredEntitiesCount.increment());
 
     if (pageRequest != null) {
-      fileteredStream = Optional.ofNullable(pageRequest.getSortColumns())
+      filteredStream = Optional.ofNullable(pageRequest.getSortColumns())
           .filter(CollectionUtils::isNotEmpty)
           .flatMap(this::entityComparator)
-          .map(fileteredStream::sorted)
-          .orElse(fileteredStream);
+          .map(filteredStream::sorted)
+          .orElse(filteredStream);
 
-      fileteredStream = Optional.ofNullable(pageRequest.getOffset())
-          .map(fileteredStream::skip)
-          .orElse(fileteredStream);
+      filteredStream = Optional.ofNullable(pageRequest.getOffset())
+          .map(filteredStream::skip)
+          .orElse(filteredStream);
 
-      fileteredStream = Optional.ofNullable(pageRequest.getLimit())
-          .map(fileteredStream::limit)
-          .orElse(fileteredStream);
+      filteredStream = Optional.ofNullable(pageRequest.getLimit())
+          .map(filteredStream::limit)
+          .orElse(filteredStream);
     }
 
-    List<EntityT> items = fileteredStream.collect(Collectors.toList());
+    List<EntityT> items = filteredStream.collect(Collectors.toList());
     return SearchResult.of(items, filteredEntitiesCount.longValue());
   }
 

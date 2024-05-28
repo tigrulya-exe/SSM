@@ -41,11 +41,11 @@ public class SsmContextInitializer implements
       beanFactory.registerSingleton("cmdletManager", smartEngine.getCmdletManager());
       beanFactory.registerSingleton("ruleManager", smartEngine.getRuleManager());
       beanFactory.registerSingleton("auditService", smartEngine.getAuditService());
+      beanFactory.registerSingleton("clusterNodesManager",
+          smartEngine.getClusterNodesManager());
       beanFactory.registerSingleton(
           "cmdletInfoHandler", smartEngine.getCmdletManager().getCmdletInfoHandler());
       beanFactory.registerSingleton(
           "actionInfoHandler", smartEngine.getCmdletManager().getActionInfoHandler());
-      beanFactory.registerSingleton("clusterNodesManager",
-          smartEngine.getClusterNodesManager());
     }
 }

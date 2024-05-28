@@ -44,7 +44,7 @@ public interface ClusterNodeMapper extends SmartMapper {
   ClusterNodeSearchRequest toSearchRequest(
       RegistrationTimeIntervalDto registrationTime);
 
-  @Mapping(source = "registrationTimeFrom", target = "fromMillis")
-  @Mapping(source = "registrationTimeTo", target = "toMillis")
+  @Mapping(source = "registrationTimeFrom", target = "from")
+  @Mapping(source = "registrationTimeTo", target = "to")
   TimeInterval toTimeInterval(RegistrationTimeIntervalDto intervalDto);
 }
