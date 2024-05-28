@@ -15,14 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model;
+package org.smartdata.metastore.dao.accesscount;
 
-import lombok.Data;
+import org.smartdata.metastore.MetaStoreException;
+import org.smartdata.metastore.model.AccessCountTable;
 
-@Data
-public class FileAccessInfo {
-  private final long fid;
-  private final String path;
-  private final int accessCount;
-  private final long lastAccessedTime;
+import java.util.List;
+
+public interface AccessCountTableHandler {
+  void dropTable(AccessCountTable accessCountTable) throws MetaStoreException;
+
+  void aggregate(AccessCountTable destinationTable,
+                 List<AccessCountTable> tablesToAggregate) throws MetaStoreException;
 }

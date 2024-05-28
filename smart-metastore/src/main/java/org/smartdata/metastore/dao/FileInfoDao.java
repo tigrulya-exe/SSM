@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface FileInfoDao {
+  String FILE_PATH_FIELD = "path";
 
   List<FileInfo> getAll();
 

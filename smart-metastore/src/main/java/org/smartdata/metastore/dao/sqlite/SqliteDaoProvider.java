@@ -22,10 +22,11 @@ import org.smartdata.metastore.dao.FileInfoDao;
 import org.smartdata.metastore.dao.FileStateDao;
 import org.smartdata.metastore.dao.SmallFileDao;
 import org.smartdata.metastore.dao.impl.DefaultDaoProvider;
+import org.springframework.transaction.PlatformTransactionManager;
 
 public class SqliteDaoProvider extends DefaultDaoProvider {
-  public SqliteDaoProvider(DBPool dbPool) {
-    super(dbPool);
+  public SqliteDaoProvider(DBPool dbPool, PlatformTransactionManager transactionManager) {
+    super(dbPool, transactionManager);
   }
 
   @Override

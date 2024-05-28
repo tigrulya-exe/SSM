@@ -340,7 +340,7 @@ public class CompressionScheduler extends ActionSchedulerService {
       // The new fid may have not been updated in metastore, so
       // we get it from dfs client.
       long newFid = dfsClient.getFileInfo(filePath).getFileId();
-      metaStore.updateAccessCountTableFid(oldFid, newFid);
+      metaStore.updateAccessCountTableFileIds(oldFid, newFid);
     } catch (Exception e) {
       LOG.warn("Failed to take over file access count for all tables, " +
               "which may make the measurement for data temperature inaccurate!",

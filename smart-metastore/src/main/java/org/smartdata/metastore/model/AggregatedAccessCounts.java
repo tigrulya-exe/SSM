@@ -15,14 +15,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model;
+package org.smartdata.metastore.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import org.smartdata.metrics.FileAccessEvent;
 
 @Data
-public class FileAccessInfo {
-  private final long fid;
-  private final String path;
+@AllArgsConstructor
+@RequiredArgsConstructor
+public class AggregatedAccessCounts {
+  private long fileId;
   private final int accessCount;
-  private final long lastAccessedTime;
+  private final long lastAccessedTimestamp;
+
+  public AggregatedAccessCounts merge(AggregatedAccessCounts other) {
+    return new AggregatedAccessCounts(
+        fileId,
+        accessCount + other.accessCount,
+        Math.max(lastAccessedTimestamp, other.lastAccessedTimestamp));
+  }
+
+  public AggregatedAccessCounts withFileId(long fileId) {
+    this.fileId = fileId;
+    return this;
+  }
+
+  public static AggregatedAccessCounts fromEvent(FileAccessEvent fileAccessEvent) {
+    return new AggregatedAccessCounts(
+        1,
+        fileAccessEvent.getTimestamp()
+    );
+  }
 }

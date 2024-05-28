@@ -576,4 +576,19 @@
       to be used in SSM REST server basic authentication.
     </description>
   </property>
+
+  <property>
+    <name>smart.access.count.aggregator.failover</name>
+    <value>SUBMIT_NEW_FAILED_EVENTS_LATER</value>
+    <description>
+      Failover strategy for file access events aggregator. Possible values:
+        DROP_EVENTS - drop file access events that caused exception.
+        FAIL - throw exception, no failover.
+        SUBMIT_FAILED_EVENTS_LATER - save all file access events that caused exception
+          for later submission. Should be used carefully, because in case of repeated
+          exceptions can potentially cause OOM error.
+        SUBMIT_NEW_FAILED_EVENTS_LATER - save new file access events that caused exception
+          for later submission and drop old failing events.
+    </description>
+  </property>
 </configuration>
