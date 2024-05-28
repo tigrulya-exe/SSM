@@ -72,8 +72,7 @@ public abstract class SearchableAbstractDao<RequestT, EntityT, ColumnT extends S
 
   protected Optional<EntityT> executeSingle(MetastoreQuery query) {
     return Optional.ofNullable(executeQuery(query))
-        .filter(entities -> !entities.isEmpty())
-        .map(entities -> entities.get(0));
+        .flatMap(entities -> entities.stream().findFirst());
   }
 
   public long count(RequestT searchRequest) {
