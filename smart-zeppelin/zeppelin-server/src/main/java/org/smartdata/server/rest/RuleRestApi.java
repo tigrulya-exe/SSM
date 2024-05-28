@@ -153,7 +153,7 @@ public class RuleRestApi {
   public Response cmdlets(@PathParam("ruleId") long ruleId) {
     try {
       return new JsonResponse<>(Response.Status.OK,
-          cmdletInfoHandler.listCmdletsInfo(ruleId, null)).build();
+          cmdletInfoHandler.listCmdletsInfo(ruleId)).build();
     } catch (Exception e) {
       LOGGER.error("Exception in RuleRestApi while getting cmdlets", e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,

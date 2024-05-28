@@ -53,7 +53,7 @@ public class PostgresDaoProvider extends DefaultDaoProvider {
 
   @Override
   public CmdletDao cmdletDao() {
-    return new PostgresCmdletDao(dataSource);
+    return new PostgresCmdletDao(dataSource, transactionManager);
   }
 
   @Override

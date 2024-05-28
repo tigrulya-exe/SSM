@@ -20,6 +20,7 @@ package org.smartdata.server.error;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.smartdata.exception.NotFoundException;
 import org.smartdata.metastore.MetaStoreException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
@@ -35,6 +36,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import javax.validation.ConstraintViolationException;
 
 import java.io.IOException;
+import java.text.ParseException;
 
 @ControllerAdvice
 public class SmartExceptionHandler extends ResponseEntityExceptionHandler {
@@ -47,18 +49,30 @@ public class SmartExceptionHandler extends ResponseEntityExceptionHandler {
     return handleExceptionInternal(
         exception,
         request,
-        "SSM_ERROR",
+        SsmErrorCode.SSM_INTERNAL_ERROR,
         HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  @ExceptionHandler(value = {ConstraintViolationException.class})
+  @ExceptionHandler(value =
+      {ConstraintViolationException.class, ParseException.class})
   protected ResponseEntity<Object> handleValidationExceptions(
       Exception exception, WebRequest request) {
     return handleExceptionInternal(
         exception,
         request,
-        "VALIDATION_ERROR",
+        SsmErrorCode.VALIDATION_ERROR,
         HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(value = {NotFoundException.class})
+  protected ResponseEntity<Object> handleNotFoundException(
+      Exception exception, WebRequest request) {
+    return handleExceptionInternal(
+        exception,
+        null,
+        new HttpHeaders(),
+        HttpStatus.NOT_FOUND,
+        request);
   }
 
   @Override
@@ -88,12 +102,12 @@ public class SmartExceptionHandler extends ResponseEntityExceptionHandler {
   }
 
   private ResponseEntity<Object> handleExceptionInternal(
-      Exception exception, WebRequest request, String errorCode, HttpStatus status) {
+      Exception exception, WebRequest request, SsmErrorCode errorCode, HttpStatus status) {
     LOG.error("Exception during handling request on {}",
         request.getDescription(false), exception);
 
     ErrorDto<String> errorBody = new ErrorDto<>(
-        errorCode,
+        errorCode.toString(),
         exception.getMessage(),
         ExceptionUtils.getStackTrace(exception));
 

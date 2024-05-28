@@ -181,6 +181,10 @@ public class MetaStore implements CopyMetaService,
     return userActivityDao;
   }
 
+  public CmdletDao cmdletDao() {
+    return cmdletDao;
+  }
+
   public Long queryForLong(String sql) throws MetaStoreException {
     try {
       return generalDao.queryForLong(sql);
@@ -827,7 +831,7 @@ public class MetaStore implements CopyMetaService,
           || lastPart.contains("ramdisk")) {
         DetailedRuleInfo detailedRuleInfo = new DetailedRuleInfo(ruleInfo);
         // Add mover progress
-        List<CmdletInfo> cmdletInfos = cmdletDao.getByRid(ruleInfo.getId());
+        List<CmdletInfo> cmdletInfos = cmdletDao.getByRuleId(ruleInfo.getId());
         int currPos = 0;
         for (CmdletInfo cmdletInfo : cmdletInfos) {
           if (cmdletInfo.getState().getValue() <= 4) {
@@ -968,9 +972,9 @@ public class MetaStore implements CopyMetaService,
     LOG.debug("List cmdlet, start {}, offset {}", start, offset);
     try {
       if (orderBy.size() == 0) {
-        return cmdletDao.getByRid(rid, start, offset);
+        return cmdletDao.getByRuleId(rid, start, offset);
       } else {
-        return cmdletDao.getByRid(rid, start, offset, orderBy, desc);
+        return cmdletDao.getByRuleId(rid, start, offset, orderBy, desc);
       }
     } catch (Exception e) {
       throw new MetaStoreException(e);
@@ -979,43 +983,19 @@ public class MetaStore implements CopyMetaService,
 
   public long getNumCmdletsByRid(long rid) {
     try {
-      return cmdletDao.getNumByRid(rid);
+      return cmdletDao.getNumByRuleId(rid);
     } catch (Exception e) {
       return 0;
     }
   }
 
-  public List<CmdletInfo> listPageCmdlets(long start, long offset,
-                                          List<String> orderBy, List<Boolean> desc)
+  public void upsertCmdlets(List<CmdletInfo> commands)
       throws MetaStoreException {
-    LOG.debug("List cmdlet, start {}, offset {}", start, offset);
-    try {
-      if (orderBy.size() == 0) {
-        return cmdletDao.getAPageOfCmdlet(start, offset);
-      } else {
-        return cmdletDao.getAPageOfCmdlet(start, offset, orderBy, desc);
-      }
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
-  public void deleteAllRules() throws MetaStoreException {
-    try {
-      ruleDao.deleteAll();
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
-
-  public void insertCmdlets(CmdletInfo[] commands)
-      throws MetaStoreException {
-    if (commands.length == 0) {
+    if (commands.isEmpty()) {
       return;
     }
     try {
-      cmdletDao.replace(commands);
+      cmdletDao.upsert(commands);
     } catch (Exception e) {
       throw new MetaStoreException(e);
     }
@@ -1055,33 +1035,11 @@ public class MetaStore implements CopyMetaService,
     }
   }
 
-  @Override
-  public List<CmdletInfo> getCmdlets(String cidCondition,
-                                     String ridCondition,
-                                     CmdletState state) throws MetaStoreException {
-    try {
-      return cmdletDao.getByCondition(cidCondition, ridCondition, state);
-    } catch (EmptyResultDataAccessException e) {
-      return new ArrayList<>();
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
   public List<CmdletInfo> getCmdlets(CmdletState state) throws MetaStoreException {
     try {
       return cmdletDao.getByState(state);
     } catch (EmptyResultDataAccessException e) {
       return new ArrayList<>();
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
-  public boolean updateCmdlet(CmdletInfo cmdletInfo)
-      throws MetaStoreException {
-    try {
-      return cmdletDao.update(cmdletInfo) >= 0;
     } catch (Exception e) {
       throw new MetaStoreException(e);
     }
@@ -1108,9 +1066,9 @@ public class MetaStore implements CopyMetaService,
   }
 
   @Override
-  public void deleteCmdlet(long cid) throws MetaStoreException {
+  public boolean deleteCmdlet(long cid) throws MetaStoreException {
     try {
-      cmdletDao.delete(cid);
+      return cmdletDao.delete(cid);
     } catch (Exception e) {
       throw new MetaStoreException(e);
     }
@@ -1148,7 +1106,7 @@ public class MetaStore implements CopyMetaService,
     }
   }
 
-  public int getNumCmdletsInTerminiatedStates() throws MetaStoreException {
+  public long getNumCmdletsInTerminiatedStates() throws MetaStoreException {
     try {
       return cmdletDao.getNumCmdletsInTerminiatedStates();
     } catch (Exception e) {
@@ -1381,7 +1339,7 @@ public class MetaStore implements CopyMetaService,
     if (size <= 0) {
       size = Integer.MAX_VALUE;
     }
-    List<CmdletInfo> cmdletInfos = cmdletDao.getByRid(rid);
+    List<CmdletInfo> cmdletInfos = cmdletDao.getByRuleId(rid);
     List<ActionInfo> runningActions = new ArrayList<>();
     List<ActionInfo> finishedActions = new ArrayList<>();
     int total = 0;
@@ -1410,7 +1368,7 @@ public class MetaStore implements CopyMetaService,
   public List<ActionInfo> getActions(long rid, long start, long offset) throws MetaStoreException {
     long mark = 0;
     long count = 0;
-    List<CmdletInfo> cmdletInfos = cmdletDao.getByRid(rid);
+    List<CmdletInfo> cmdletInfos = cmdletDao.getByRuleId(rid);
     List<ActionInfo> totalActions = new ArrayList<>();
     for (CmdletInfo cmdletInfo : cmdletInfos) {
       List<Long> aids = cmdletInfo.getAids();

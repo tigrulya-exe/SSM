@@ -17,58 +17,49 @@
  */
 package org.smartdata.metastore.dao;
 
+import org.smartdata.metastore.queries.sort.CmdletSortField;
 import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.CmdletState;
+import org.smartdata.model.request.CmdletSearchRequest;
 
 import java.util.List;
 
-public interface CmdletDao {
-  List<CmdletInfo> getAll();
+public interface CmdletDao extends Searchable<CmdletSearchRequest, CmdletInfo, CmdletSortField> {
+  CmdletInfo getById(long id);
 
-  List<CmdletInfo> getAPageOfCmdlet(long start, long offset,
-                                    List<String> orderBy, List<Boolean> isDesc);
+  List<CmdletInfo> getByRuleId(long ruleId);
 
-  List<CmdletInfo> getAPageOfCmdlet(long start, long offset);
+  // todo remove after zeppelin removal
+  long getNumByRuleId(long ruleId);
 
-  List<CmdletInfo> getByIds(List<Long> aids);
+  // todo remove after zeppelin removal
+  List<CmdletInfo> getByRuleId(long ruleId, long start, long offset);
 
-  CmdletInfo getById(long cid);
-
-  List<CmdletInfo> getByRid(long rid);
-
-  long getNumByRid(long rid);
-
-  List<CmdletInfo> getByRid(long rid, long start, long offset);
-
-  List<CmdletInfo> getByRid(long rid, long start, long offset,
-                            List<String> orderBy, List<Boolean> isDesc);
+  // todo remove after zeppelin removal
+  List<CmdletInfo> getByRuleId(long ruleId, long start, long offset,
+                               List<String> orderBy, List<Boolean> isDesc);
 
   List<CmdletInfo> getByState(CmdletState state);
 
-  int getNumCmdletsInTerminiatedStates();
+  long getNumCmdletsInTerminiatedStates();
 
-  List<CmdletInfo> getByCondition(
-      String cidCondition, String ridCondition, CmdletState state);
+  boolean delete(long id);
 
-  void delete(long cid);
-
-  int[] batchDelete(List<Long> cids);
+  void batchDelete(List<Long> ids);
 
   int deleteBeforeTime(long timestamp);
 
   int deleteKeepNewCmd(long num);
 
-  void deleteAll();
-
   void insert(CmdletInfo cmdletInfo);
 
-  void insert(CmdletInfo[] cmdletInfos);
+  void insert(CmdletInfo... cmdletInfos);
 
-  int[] replace(CmdletInfo[] cmdletInfos);
+  void upsert(List<CmdletInfo> cmdletInfos);
 
-  int update(long cid, int state);
+  int update(long id, int state);
 
-  int update(long cid, String parameters, int state);
+  int update(long id, String parameters, int state);
 
   int update(CmdletInfo cmdletInfo);
 

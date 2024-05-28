@@ -15,22 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model.audit;
+package org.smartdata.utils;
 
-import lombok.Builder;
-import lombok.Data;
+import org.smartdata.model.TimeInterval;
 
 import java.time.Instant;
+import java.util.Optional;
+import java.util.function.Function;
 
-@Data
-@Builder
-public class UserActivityEvent {
-  private final Long id;
-  private final String username;
-  private final Instant timestamp;
-  private final Long objectId;
-  private final UserActivityObject objectType;
-  private final UserActivityOperation operation;
-  private final UserActivityResult result;
-  private final String additionalInfo;
+public class DateTimeUtils {
+  public static Long intervalStartToEpoch(TimeInterval timeInterval) {
+    return intervalToEpoch(timeInterval, TimeInterval::getFrom);
+  }
+
+  public static Long intervalEndToEpoch(TimeInterval timeInterval) {
+    return intervalToEpoch(timeInterval, TimeInterval::getTo);
+  }
+
+  private static Long intervalToEpoch(
+      TimeInterval timeInterval, Function<TimeInterval, Instant> instantGetter) {
+    return Optional.ofNullable(timeInterval)
+        .map(instantGetter)
+        .map(Instant::toEpochMilli)
+        .orElse(null);
+  }
 }

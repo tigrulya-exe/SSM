@@ -50,7 +50,7 @@ public interface AuditEventMapper extends SmartMapper {
       List<@Valid AuditOperationDto> operations,
       List<@Valid AuditEventResultDto> results);
 
-  @Mapping(source = "timestampFrom", target = "fromMillis")
-  @Mapping(source = "timestampTo", target = "toMillis")
+  @Mapping(source = "timestampFrom", target = "from")
+  @Mapping(source = "timestampTo", target = "to")
   TimeInterval toTimeInterval(EventTimeIntervalDto intervalDto);
 }

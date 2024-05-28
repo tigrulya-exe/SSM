@@ -19,7 +19,6 @@ package org.smartdata.metastore.dao;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.PageRequest;
 import org.smartdata.metastore.queries.sort.AuditSortField;
@@ -33,7 +32,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.smartdata.model.audit.UserActivityObject.CMDLET;
 import static org.smartdata.model.audit.UserActivityObject.RULE;
@@ -44,7 +42,8 @@ import static org.smartdata.model.audit.UserActivityOperation.STOP;
 import static org.smartdata.model.audit.UserActivityResult.FAILURE;
 import static org.smartdata.model.audit.UserActivityResult.SUCCESS;
 
-public class TestUserActivityDao extends TestDaoBase {
+public class TestUserActivityDao
+    extends TestSearchableDao<AuditSearchRequest, UserActivityEvent, AuditSortField, Instant> {
   private static final Instant FIRST_EVENT_TIMESTAMP =
       Instant.EPOCH.plus(10, ChronoUnit.MINUTES);
   private static final Instant SECOND_EVENT_TIMESTAMP =
@@ -236,25 +235,19 @@ public class TestUserActivityDao extends TestDaoBase {
     testSearch(searchRequest);
   }
 
-  private void testSearch(AuditSearchRequest searchRequest, Instant... expectedEventInstances) {
-    PageRequest<AuditSortField> pageRequest = PageRequest.<AuditSortField>builder()
-        .offset(0L)
-        .limit(expectedEventInstances.length)
-        .sortByAsc(AuditSortField.TIMESTAMP)
-        .build();
+  @Override
+  protected Searchable<AuditSearchRequest, UserActivityEvent, AuditSortField> searchable() {
+    return userActivityDao;
+  }
 
-    SearchResult<UserActivityEvent> searchResult =
-        userActivityDao.search(searchRequest, pageRequest);
+  @Override
+  protected Instant getIdentifier(UserActivityEvent userActivityEvent) {
+    return userActivityEvent.getTimestamp();
+  }
 
-    List<UserActivityEvent> items = searchResult.getItems();
-    assertEquals(expectedEventInstances.length, searchResult.getTotal());
-    assertEquals(expectedEventInstances.length, items.size());
-
-    Instant[] actualEventTimestamps = items.stream()
-        .map(UserActivityEvent::getTimestamp)
-        .toArray(Instant[]::new);
-
-    assertArrayEquals(expectedEventInstances, actualEventTimestamps);
+  @Override
+  protected AuditSortField defaultSortField() {
+    return AuditSortField.TIMESTAMP;
   }
 
   private void insertTestEvents() {

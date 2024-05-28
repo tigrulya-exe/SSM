@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.metastore.SqliteTestDaoBase;
+import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
 import org.smartdata.server.engine.CmdletManager;
@@ -66,9 +67,9 @@ public class TestCmdletLifecycleLogger extends SqliteTestDaoBase {
   @Test
   public void testSuccessfullySubmitCmdlet() throws Exception {
     String cmdlet = "cache -file /testCacheFile";
-    long id = cmdletManager.submitCmdlet(cmdlet);
+    CmdletInfo cmdletInfo = cmdletManager.submitCmdlet(cmdlet);
 
-    List<UserActivityEvent> cmdletEvents = findCmdletEvents(id);
+    List<UserActivityEvent> cmdletEvents = findCmdletEvents(cmdletInfo.getCid());
     Assert.assertEquals(1, cmdletEvents.size());
 
     UserActivityEvent event = cmdletEvents.get(0);
@@ -95,11 +96,11 @@ public class TestCmdletLifecycleLogger extends SqliteTestDaoBase {
   @Test
   public void testSuccessfullyStopCmdlet() throws Exception {
     String cmdlet = "cache -file /testCacheFile";
-    long id = cmdletManager.submitCmdlet(cmdlet);
+    CmdletInfo cmdletInfo = cmdletManager.submitCmdlet(cmdlet);
 
-    cmdletManager.disableCmdlet(id);
+    cmdletManager.disableCmdlet(cmdletInfo.getCid());
 
-    List<UserActivityEvent> cmdletEvents = findCmdletEvents(id);
+    List<UserActivityEvent> cmdletEvents = findCmdletEvents(cmdletInfo.getCid());
     Assert.assertEquals(2, cmdletEvents.size());
 
     UserActivityEvent event = cmdletEvents.get(1);
@@ -108,18 +109,50 @@ public class TestCmdletLifecycleLogger extends SqliteTestDaoBase {
   }
 
   @Test
+  public void testStopCmdletWithError() {
+    long nonExistingCmdletId = 777L;
+    try {
+      cmdletManager.disableCmdlet(nonExistingCmdletId);
+    } catch (Exception ignore) {
+    }
+
+    List<UserActivityEvent> cmdletEvents = findCmdletEvents(nonExistingCmdletId);
+    Assert.assertEquals(1, cmdletEvents.size());
+
+    UserActivityEvent event = cmdletEvents.get(0);
+    Assert.assertEquals(STOP, event.getOperation());
+    Assert.assertEquals(FAILURE, event.getResult());
+  }
+
+  @Test
   public void testSuccessfullyDeleteCmdlet() throws Exception {
     String cmdlet = "cache -file /testCacheFile";
-    long id = cmdletManager.submitCmdlet(cmdlet);
+    CmdletInfo cmdletInfo = cmdletManager.submitCmdlet(cmdlet);
 
-    cmdletManager.deleteCmdlet(id);
+    cmdletManager.deleteCmdlet(cmdletInfo.getCid());
 
-    List<UserActivityEvent> cmdletEvents = findCmdletEvents(id);
+    List<UserActivityEvent> cmdletEvents = findCmdletEvents(cmdletInfo.getCid());
     Assert.assertEquals(2, cmdletEvents.size());
 
     UserActivityEvent event = cmdletEvents.get(1);
     Assert.assertEquals(DELETE, event.getOperation());
     Assert.assertEquals(SUCCESS, event.getResult());
+  }
+
+  @Test
+  public void testDeleteCmdletWithError() {
+    long nonExistingCmdletId = 777L;
+    try {
+      cmdletManager.deleteCmdlet(nonExistingCmdletId);
+    } catch (Exception ignore) {
+    }
+
+    List<UserActivityEvent> cmdletEvents = findCmdletEvents(nonExistingCmdletId);
+    Assert.assertEquals(1, cmdletEvents.size());
+
+    UserActivityEvent event = cmdletEvents.get(0);
+    Assert.assertEquals(DELETE, event.getOperation());
+    Assert.assertEquals(FAILURE, event.getResult());
   }
 
   private List<UserActivityEvent> findCmdletEvents(long cmdletId) {

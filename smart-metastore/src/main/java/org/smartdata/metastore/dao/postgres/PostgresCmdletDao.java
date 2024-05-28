@@ -19,21 +19,25 @@ package org.smartdata.metastore.dao.postgres;
 
 import org.smartdata.metastore.dao.impl.DefaultCmdletDao;
 import org.smartdata.model.CmdletInfo;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+
+import java.util.List;
 
 public class PostgresCmdletDao extends DefaultCmdletDao {
   private static final String PRIMARY_KEY_FIELD = "cid";
 
   private final PostgresUpsertSupport upsertSupport;
 
-  public PostgresCmdletDao(DataSource dataSource) {
-    super(dataSource);
+  public PostgresCmdletDao(
+      DataSource dataSource, PlatformTransactionManager transactionManager) {
+    super(dataSource, transactionManager);
     this.upsertSupport = new PostgresUpsertSupport(dataSource, tableName);
   }
 
   @Override
-  public int[] replace(CmdletInfo[] cmdletInfos) {
-    return upsertSupport.batchUpsert(cmdletInfos, this::toMap, PRIMARY_KEY_FIELD);
+  public void upsert(List<CmdletInfo> cmdletInfos) {
+    upsertSupport.batchUpsert(cmdletInfos, this::toMap, PRIMARY_KEY_FIELD);
   }
 }

@@ -21,7 +21,6 @@ import org.smartdata.metastore.SearchableAbstractDao;
 import org.smartdata.metastore.dao.UserActivityDao;
 import org.smartdata.metastore.queries.MetastoreQuery;
 import org.smartdata.metastore.queries.sort.AuditSortField;
-import org.smartdata.model.TimeInterval;
 import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.audit.UserActivityObject;
 import org.smartdata.model.audit.UserActivityOperation;
@@ -37,14 +36,11 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
 
 import static org.smartdata.metastore.queries.MetastoreQuery.selectAll;
-import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.greaterThanEqual;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.betweenEpochInclusive;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.in;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.inStrings;
-import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.lessThanEqual;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.like;
 
 public class DefaultUserActivityDao
@@ -71,17 +67,11 @@ public class DefaultUserActivityDao
 
   @Override
   protected MetastoreQuery searchQuery(AuditSearchRequest searchRequest) {
-    Long timestampFrom =
-        getIntervalTimestampEpoch(searchRequest, TimeInterval::getFrom);
-    Long timestampTo =
-        getIntervalTimestampEpoch(searchRequest, TimeInterval::getTo);
-
     return selectAll()
         .from(TABLE_NAME)
         .where(
             like("username", searchRequest.getUserLike()),
-            greaterThanEqual("timestamp", timestampFrom),
-            lessThanEqual("timestamp", timestampTo),
+            betweenEpochInclusive("timestamp", searchRequest.getTimestampBetween()),
             inStrings("object_type", searchRequest.getObjectTypes()),
             in("object_id", searchRequest.getObjectIds()),
             inStrings("operation", searchRequest.getOperations()),
@@ -122,13 +112,5 @@ public class DefaultUserActivityDao
     properties.put("result", event.getResult());
     properties.put("additional_info", event.getAdditionalInfo());
     return properties;
-  }
-
-  private Long getIntervalTimestampEpoch(
-      AuditSearchRequest searchRequest, Function<TimeInterval, Instant> instantGetter) {
-    return Optional.ofNullable(searchRequest.getTimestampBetween())
-        .map(instantGetter)
-        .map(Instant::toEpochMilli)
-        .orElse(null);
   }
 }
