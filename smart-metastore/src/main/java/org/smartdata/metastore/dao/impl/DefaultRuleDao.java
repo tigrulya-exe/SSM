@@ -17,72 +17,65 @@
  */
 package org.smartdata.metastore.dao.impl;
 
-import org.smartdata.metastore.dao.AbstractDao;
+import org.apache.commons.collections4.CollectionUtils;
+import org.smartdata.metastore.SearchableAbstractDao;
 import org.smartdata.metastore.dao.RuleDao;
+import org.smartdata.metastore.queries.MetastoreQuery;
+import org.smartdata.metastore.queries.sort.RuleSortField;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
-import org.springframework.jdbc.core.RowMapper;
+import org.smartdata.model.request.RuleSearchRequest;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-public class DefaultRuleDao extends AbstractDao implements RuleDao {
+import static org.smartdata.metastore.queries.MetastoreQuery.selectAll;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.betweenEpochInclusive;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.equal;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.in;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.like;
+
+public class DefaultRuleDao
+    extends SearchableAbstractDao<RuleSearchRequest, RuleInfo, RuleSortField>
+    implements RuleDao {
   private static final String TABLE_NAME = "rule";
+  private static final List<RuleState> SEARCHABLE_STATES = Arrays.asList(
+      RuleState.ACTIVE, RuleState.NEW, RuleState.DISABLED, RuleState.FINISHED);
 
-  public DefaultRuleDao(DataSource dataSource) {
-    super(dataSource, TABLE_NAME);
+  public DefaultRuleDao(
+      DataSource dataSource, PlatformTransactionManager transactionManager) {
+    super(dataSource, transactionManager, TABLE_NAME);
   }
 
   @Override
   public List<RuleInfo> getAll() {
-    return jdbcTemplate.query("SELECT * FROM rule",
-        new RuleRowMapper());
+    MetastoreQuery query = selectAll().from(TABLE_NAME);
+    return executeQuery(query);
   }
 
   @Override
   public RuleInfo getById(long id) {
-    return jdbcTemplate.queryForObject("SELECT * FROM rule WHERE id = ?",
-        new Object[]{id}, new RuleRowMapper());
-  }
+    MetastoreQuery query = selectAll()
+        .from(TABLE_NAME)
+        .where(
+            equal("id", id)
+        );
 
-  @Override
-  public List<RuleInfo> getAPageOfRule(long start, long offset, List<String> orderBy,
-                                       List<Boolean> isDesc) {
-    boolean ifHasAid = false;
-    String sql = "SELECT * FROM rule ORDER BY ";
-
-    for (int i = 0; i < orderBy.size(); i++) {
-      if (orderBy.get(i).equals("rid")) {
-        ifHasAid = true;
-      }
-      sql = sql + orderBy.get(i);
-      if (isDesc.size() > i) {
-        if (isDesc.get(i)) {
-          sql = sql + " desc ";
-        }
-        sql = sql + ",";
-      }
-    }
-
-    if (!ifHasAid) {
-      sql = sql + "rid,";
-    }
-
-    sql = sql.substring(0, sql.length() - 1);
-    sql = sql + " LIMIT " + start + "," + offset + ";";
-    return jdbcTemplate.query(sql, new RuleRowMapper());
-  }
-
-  @Override
-  public List<RuleInfo> getAPageOfRule(long start, long offset) {
-    String sql = "SELECT * FROM rule LIMIT " + start + "," + offset + ";";
-    return jdbcTemplate.query(sql, new RuleRowMapper());
+    return executeSingle(query)
+        .orElseThrow(() -> new EmptyResultDataAccessException(
+            "Rule with following id not found: " + id, 1));
   }
 
   @Override
@@ -122,12 +115,6 @@ public class DefaultRuleDao extends AbstractDao implements RuleDao {
     jdbcTemplate.update(sql, id);
   }
 
-  @Override
-  public void deleteAll() {
-    final String sql = "DELETE FROM rule";
-    jdbcTemplate.update(sql);
-  }
-
   private Map<String, Object> toMap(RuleInfo ruleInfo) {
     Map<String, Object> parameters = new HashMap<>();
     if (ruleInfo.getSubmitTime() == 0) {
@@ -142,19 +129,43 @@ public class DefaultRuleDao extends AbstractDao implements RuleDao {
     return parameters;
   }
 
-  private static class RuleRowMapper implements RowMapper<RuleInfo> {
+  @Override
+  protected MetastoreQuery searchQuery(RuleSearchRequest searchRequest) {
+    List<Integer> stateValues = Optional.ofNullable(searchRequest.getStates())
+        .filter(CollectionUtils::isNotEmpty)
+        .orElseGet(() -> getDefaultStates(searchRequest))
+        .stream()
+        .map(RuleState::getValue)
+        .collect(Collectors.toList());
 
-    @Override
-    public RuleInfo mapRow(ResultSet resultSet, int i) throws SQLException {
-      RuleInfo ruleInfo = new RuleInfo();
-      ruleInfo.setId(resultSet.getLong("id"));
-      ruleInfo.setSubmitTime(resultSet.getLong("submit_time"));
-      ruleInfo.setRuleText(resultSet.getString("rule_text"));
-      ruleInfo.setState(RuleState.fromValue((int) resultSet.getByte("state")));
-      ruleInfo.setNumChecked(resultSet.getLong("checked_count"));
-      ruleInfo.setNumCmdsGen(resultSet.getLong("generated_cmdlets"));
-      ruleInfo.setLastCheckTime(resultSet.getLong("last_check_time"));
-      return ruleInfo;
-    }
+    return selectAll()
+        .from(TABLE_NAME)
+        .where(
+            in("id", searchRequest.getIds()),
+            like("rule_text", searchRequest.getTextRepresentationLike()),
+            betweenEpochInclusive("submit_time", searchRequest.getSubmissionTime()),
+            in("state", stateValues),
+            betweenEpochInclusive("last_check_time",
+                searchRequest.getLastActivationTime())
+        );
+  }
+
+  @Override
+  protected RuleInfo mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+    return RuleInfo.builder()
+        .setId(resultSet.getLong("id"))
+        .setSubmitTime(resultSet.getLong("submit_time"))
+        .setRuleText(resultSet.getString("rule_text"))
+        .setState(RuleState.fromValue(resultSet.getByte("state")))
+        .setNumChecked(resultSet.getLong("checked_count"))
+        .setNumCmdsGen(resultSet.getLong("generated_cmdlets"))
+        .setLastCheckTime(resultSet.getLong("last_check_time"))
+        .build();
+  }
+
+  private List<RuleState> getDefaultStates(RuleSearchRequest searchRequest) {
+    return searchRequest.isIncludeDeletedRules()
+        ? Collections.emptyList()
+        : SEARCHABLE_STATES;
   }
 }

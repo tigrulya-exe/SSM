@@ -23,6 +23,7 @@ import org.smartdata.action.ActionException;
 import org.smartdata.action.ActionRegistry;
 import org.smartdata.action.SmartAction;
 import org.smartdata.exception.NotFoundException;
+import org.smartdata.exception.SsmParseException;
 import org.smartdata.hdfs.action.move.AbstractMoveFileAction;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
@@ -44,7 +45,6 @@ import org.smartdata.server.engine.model.ActionGroup;
 import org.smartdata.server.engine.model.DetailedFileActionGroup;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -235,7 +235,7 @@ public class ActionInfoHandler
   }
 
   public List<ActionInfo> createActionInfos(
-      CmdletDescriptor cmdletDescriptor, CmdletInfo cmdletInfo) throws ParseException {
+      CmdletDescriptor cmdletDescriptor, CmdletInfo cmdletInfo) throws SsmParseException {
 
     validateActionNames(cmdletDescriptor);
 
@@ -322,14 +322,14 @@ public class ActionInfoHandler
   /**
    * Check if action names in cmdletDescriptor are correct.
    */
-  private void validateActionNames(CmdletDescriptor cmdletDescriptor) throws ParseException {
+  private void validateActionNames(CmdletDescriptor cmdletDescriptor) throws SsmParseException {
     List<String> unknownActions = cmdletDescriptor.getActionNames()
         .stream()
         .filter(name -> !ActionRegistry.registeredAction(name))
         .collect(Collectors.toList());
 
     if (!unknownActions.isEmpty()) {
-      throw new ParseException("Unknown actions used in cmdlet: " + unknownActions, 0);
+      throw new SsmParseException("Unknown actions used in cmdlet: " + unknownActions);
     }
   }
 }

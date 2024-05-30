@@ -22,13 +22,21 @@ import org.slf4j.LoggerFactory;
 import org.smartdata.AbstractService;
 import org.smartdata.action.ActionRegistry;
 import org.smartdata.conf.SmartConfKeys;
+import org.smartdata.exception.NotFoundException;
+import org.smartdata.exception.SsmParseException;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
+import org.smartdata.metastore.dao.RuleDao;
+import org.smartdata.metastore.dao.Searchable;
+import org.smartdata.metastore.model.SearchResult;
+import org.smartdata.metastore.queries.PageRequest;
+import org.smartdata.metastore.queries.sort.RuleSortField;
 import org.smartdata.model.CmdletDescriptor;
 import org.smartdata.model.DetailedRuleInfo;
 import org.smartdata.model.PathChecker;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
+import org.smartdata.model.request.RuleSearchRequest;
 import org.smartdata.model.rule.RuleExecutorPluginManager;
 import org.smartdata.model.rule.RulePluginManager;
 import org.smartdata.model.rule.RuleTranslationResult;
@@ -66,7 +74,10 @@ import static org.smartdata.model.audit.UserActivityOperation.STOP;
 /**
  * Manage and execute rules. We can have 'cache' here to decrease the needs to execute a SQL query.
  */
-public class RuleManager extends AbstractService implements Auditable {
+public class RuleManager
+    extends AbstractService
+    implements Auditable, Searchable<RuleSearchRequest, RuleInfo, RuleSortField> {
+
   public static final Logger LOG = LoggerFactory.getLogger(RuleManager.class.getName());
 
   private final ServerContext serverContext;
@@ -76,6 +87,7 @@ public class RuleManager extends AbstractService implements Auditable {
   private final PathChecker pathChecker;
 
   private final AuditService auditService;
+  private final RuleDao ruleDao;
 
   private boolean isClosed = false;
 
@@ -103,6 +115,7 @@ public class RuleManager extends AbstractService implements Auditable {
     this.serverContext = context;
     this.auditService = auditService;
     this.metaStore = context.getMetaStore();
+    this.ruleDao = metaStore.ruleDao();
     this.pathChecker = new PathChecker(context.getConf());
 
     FileCopyScheduleStrategy copyScheduleStrategy = FileCopyScheduleStrategy.of(
@@ -117,6 +130,11 @@ public class RuleManager extends AbstractService implements Auditable {
       RuleExecutorPluginManager.addPlugin(new SmallFilePlugin(context, cmdletManager));
       RuleExecutorPluginManager.addPlugin(new ErasureCodingPlugin(context));
     }
+  }
+
+  public RuleInfo submitRule(String rule) throws IOException {
+    long ruleId = submitRule(rule, RuleState.NEW);
+    return mapRules.get(ruleId).getRuleInfo();
   }
 
   /**
@@ -147,7 +165,7 @@ public class RuleManager extends AbstractService implements Auditable {
     //check whitelist
     validatePathsCovered(tr.getPathPatterns(), pathChecker);
 
-    RuleInfo ruleInfo = RuleInfo.newBuilder()
+    RuleInfo ruleInfo = RuleInfo.builder()
         .setRuleText(rule)
         .setState(initState)
         .build();
@@ -177,7 +195,7 @@ public class RuleManager extends AbstractService implements Auditable {
       }
     }
     if (error.length() > 0) {
-      throw new IOException(error.toString());
+      throw new SsmParseException(error.toString());
     }
   }
 
@@ -230,7 +248,7 @@ public class RuleManager extends AbstractService implements Auditable {
   private RuleInfoRepo checkIfExists(long ruleID) throws IOException {
     RuleInfoRepo infoRepo = mapRules.get(ruleID);
     if (infoRepo == null) {
-      throw new IOException("Rule with ID = " + ruleID + " not found");
+      throw new NotFoundException("Rule with ID = " + ruleID + " not found");
     }
     return infoRepo;
   }
@@ -240,6 +258,7 @@ public class RuleManager extends AbstractService implements Auditable {
     return infoRepo.getRuleInfo();
   }
 
+  // todo remove after zeppelin removal
   public List<DetailedRuleInfo> listRulesMoveInfo() throws IOException {
     try {
       return metaStore.listMoveRules();
@@ -248,6 +267,7 @@ public class RuleManager extends AbstractService implements Auditable {
     }
   }
 
+  // todo remove after zeppelin removal
   public List<DetailedRuleInfo> listRulesSyncInfo() throws IOException {
     try {
       return metaStore.listSyncRules();
@@ -297,7 +317,7 @@ public class RuleManager extends AbstractService implements Auditable {
     // Load rules table
     List<RuleInfo> rules;
     try {
-      rules = metaStore.getRuleInfo();
+      rules = metaStore.getRuleInfos();
     } catch (MetaStoreException e) {
       LOG.error("Can not load rules from database", e);
       return;
@@ -359,5 +379,16 @@ public class RuleManager extends AbstractService implements Auditable {
   @Override
   public AuditService getAuditService() {
     return auditService;
+  }
+
+  @Override
+  public SearchResult<RuleInfo> search(
+      RuleSearchRequest searchRequest, PageRequest<RuleSortField> pageRequest) {
+    return ruleDao.search(searchRequest, pageRequest);
+  }
+
+  @Override
+  public List<RuleInfo> search(RuleSearchRequest searchRequest) {
+    return ruleDao.search(searchRequest);
   }
 }

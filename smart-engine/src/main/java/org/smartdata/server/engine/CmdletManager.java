@@ -31,6 +31,7 @@ import org.smartdata.cmdlet.parser.ParsedCmdlet;
 import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.exception.NotFoundException;
 import org.smartdata.exception.QueueFullException;
+import org.smartdata.exception.SsmParseException;
 import org.smartdata.hdfs.scheduler.ActionSchedulerService;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
@@ -232,7 +233,7 @@ public class CmdletManager extends AbstractService
       }
     } catch (MetaStoreException e) {
       LOG.error("DB connection error occurs when ssm is reloading cmdlets!");
-    } catch (ParseException pe) {
+    } catch (SsmParseException pe) {
       LOG.error("Failed to parse cmdlet string for tracking task", pe);
     }
   }
@@ -248,7 +249,7 @@ public class CmdletManager extends AbstractService
 
   private void recoverCmdletInfo(
       CmdletInfo cmdletInfo,
-      Consumer<List<ActionInfo>> actionInfosHandler) throws IOException, ParseException {
+      Consumer<List<ActionInfo>> actionInfosHandler) throws IOException {
     CmdletDescriptor cmdletDescriptor =
         buildCmdletDescriptor(cmdletInfo.getParameters());
     cmdletDescriptor.setRuleId(cmdletInfo.getRid());
@@ -330,7 +331,7 @@ public class CmdletManager extends AbstractService
     dispatcher.registerExecutorService(executorService);
   }
 
-  public CmdletInfo submitCmdlet(String cmdlet) throws IOException, ParseException {
+  public CmdletInfo submitCmdlet(String cmdlet) throws IOException {
     long cmdletId = submitCmdletInternal(cmdlet);
     // it will fetch cmdlet info from memory cache
     return cmdletInfoHandler.getCmdletInfo(cmdletId);
@@ -338,7 +339,7 @@ public class CmdletManager extends AbstractService
 
   @ReturnsAuditId
   @Audit(objectType = CMDLET, operation = START)
-  private long submitCmdletInternal(String cmdlet) throws IOException, ParseException {
+  private long submitCmdletInternal(String cmdlet) throws IOException {
     LOG.debug("Received Cmdlet -> [ {} ]", cmdlet);
     try {
       if (StringUtils.isBlank(cmdlet)) {
@@ -346,17 +347,20 @@ public class CmdletManager extends AbstractService
       }
       CmdletDescriptor cmdletDescriptor = buildCmdletDescriptor(cmdlet);
       return submitCmdlet(cmdletDescriptor);
-    } catch (ParseException parseException) {
+    } catch (SsmParseException parseException) {
       LOG.error("Wrong format for cmdlet '{}'", cmdlet, parseException);
-      throw new ParseException(
-          "Error parsing cmdlet: " + cmdlet + ". " + parseException.getMessage(),
-          parseException.getErrorOffset());
+      throw new SsmParseException(
+          "Error parsing cmdlet: " + cmdlet + ". " + parseException.getMessage());
     }
   }
 
-  private CmdletDescriptor buildCmdletDescriptor(String cmdlet) throws ParseException {
-    ParsedCmdlet parsedCmdlet = cmdletParser.parse(cmdlet);
-    return new CmdletDescriptor(parsedCmdlet);
+  private CmdletDescriptor buildCmdletDescriptor(String cmdlet) throws SsmParseException {
+    try {
+      ParsedCmdlet parsedCmdlet = cmdletParser.parse(cmdlet);
+      return new CmdletDescriptor(parsedCmdlet);
+    } catch (ParseException parseException) {
+      throw new SsmParseException(parseException.getMessage(), parseException.getCause());
+    }
   }
 
   private void validatePendingCmdletsCount() throws QueueFullException {
@@ -366,7 +370,7 @@ public class CmdletManager extends AbstractService
     }
   }
 
-  public long submitCmdlet(CmdletDescriptor cmdletDescriptor) throws IOException, ParseException {
+  public long submitCmdlet(CmdletDescriptor cmdletDescriptor) throws IOException {
     // To avoid repeatedly submitting task. If tracker contains one CmdletDescriptor
     // with the same rule id and cmdlet string, return -1.
     if (tracker.contains(cmdletDescriptor)) {

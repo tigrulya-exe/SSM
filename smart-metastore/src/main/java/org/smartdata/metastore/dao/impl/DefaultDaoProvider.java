@@ -61,7 +61,7 @@ public class DefaultDaoProvider implements DaoProvider {
 
   @Override
   public RuleDao ruleDao() {
-    return new DefaultRuleDao(dataSource);
+    return new DefaultRuleDao(dataSource, transactionManager);
   }
 
   @Override

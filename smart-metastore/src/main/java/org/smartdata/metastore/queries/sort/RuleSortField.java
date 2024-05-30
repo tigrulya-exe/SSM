@@ -15,36 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model;
+package org.smartdata.metastore.queries.sort;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-/**
- * The possible state that a rule can be in.
- */
 @Getter
 @RequiredArgsConstructor
-public enum RuleState {
-  ACTIVE(0),      // functioning
-  NEW(1),      // without execute the rule cmdlets
-  DISABLED(2),    // stop maintain info for the rule
-  FINISHED(3),    // for one-shot rule
-  DELETED(4);
+public enum RuleSortField implements SortField {
+  ID("id"),
+  STATE("state"),
+  SUBMIT_TIME("submit_time"),
+  LAST_CHECK_TIME("last_check_time"),
+  CHECKED_COUNT("checked_count"),
+  GENERATED_CMDLETS("generated_cmdlets");
 
-  private final int value;
-
-  public static RuleState fromValue(int value) {
-    for (RuleState r : values()) {
-      if (value == r.getValue()) {
-        return r;
-      }
-    }
-    return null;
-  }
-
-  @Override
-  public String toString() {
-    return String.format("RuleState{value=%s} %s", value, super.toString());
-  }
+  private final String fieldName;
 }

@@ -266,7 +266,7 @@ public class TestMetaStore extends TestDaoBase {
     RuleInfo info21 = metaStore.getRuleInfo(info2.getId());
     Assert.assertNotEquals(info11, info21);
 
-    List<RuleInfo> infos = metaStore.getRuleInfo();
+    List<RuleInfo> infos = metaStore.getRuleInfos();
     Assert.assertEquals(2, infos.size());
   }
 

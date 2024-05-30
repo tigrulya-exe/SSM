@@ -15,36 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model;
+package org.smartdata.model.request;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Singular;
+import org.smartdata.model.RuleState;
+import org.smartdata.model.TimeInterval;
 
-/**
- * The possible state that a rule can be in.
- */
-@Getter
-@RequiredArgsConstructor
-public enum RuleState {
-  ACTIVE(0),      // functioning
-  NEW(1),      // without execute the rule cmdlets
-  DISABLED(2),    // stop maintain info for the rule
-  FINISHED(3),    // for one-shot rule
-  DELETED(4);
+import java.util.List;
 
-  private final int value;
+@Data
+@Builder
+public class RuleSearchRequest {
+  @Singular(ignoreNullCollections = true)
+  private final List<Long> ids;
+  private final String textRepresentationLike;
+  private final TimeInterval submissionTime;
+  @Singular(ignoreNullCollections = true)
+  private final List<RuleState> states;
+  private final TimeInterval lastActivationTime;
+  private final boolean includeDeletedRules;
 
-  public static RuleState fromValue(int value) {
-    for (RuleState r : values()) {
-      if (value == r.getValue()) {
-        return r;
-      }
-    }
-    return null;
-  }
-
-  @Override
-  public String toString() {
-    return String.format("RuleState{value=%s} %s", value, super.toString());
+  public static RuleSearchRequest noFilters() {
+    return builder().build();
   }
 }

@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.smartdata.action.ActionRegistry;
 import org.smartdata.cmdlet.parser.CmdletParser;
 import org.smartdata.conf.SmartConf;
+import org.smartdata.exception.SsmParseException;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.model.ActionInfo;
 import org.smartdata.model.CmdletDescriptor;
@@ -41,8 +42,6 @@ import org.smartdata.server.engine.audit.AuditService;
 import org.smartdata.server.engine.cmdlet.CmdletDispatcher;
 import org.smartdata.server.engine.cmdlet.CmdletInfoHandler;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
 
@@ -131,7 +130,7 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
     try {
       cmdletManager.submitCmdlet(
           "allssd -file /testMoveFile/file1 ; cache -file /testCacheFile ; bug /bug bug bug");
-    } catch (IOException | ParseException e) {
+    } catch (SsmParseException e) {
       System.out.println("Wrong cmdlet is detected!");
       Assert.assertTrue(true);
     }
