@@ -1,0 +1,30 @@
+:global {
+  body.theme-dark {
+    --sortingLabel-color-hover: var(--color-offWhite);
+  }
+  body.theme-light {
+    --sortingLabel-color-hover: var(--color-blue);
+  }
+}
+
+.sortingLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: color 250ms;
+
+  &__arrow {
+    &_desc {
+      transform: rotate(180deg);
+    }
+  }
+
+  &:not(:global(.is-sorted)):not(:hover) &__arrow {
+    visibility: hidden;
+  }
+
+  &:hover {
+    color: var(--sortingLabel-color-hover);
+  }
+}

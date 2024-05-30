@@ -1,0 +1,147 @@
+:global {
+  body.theme-dark {
+    --tableV3-th-background-primary: var(--color-black29);
+    --tableV3-th-background-hover-primary: var(--color-newLight);
+    --tableV3-th-color-hover-primary: var(--color-offWhite);
+    --tableV3-tr-background-primary: var(--color-newDarkLighter-30);
+    --tableV3-tr-background-hover-primary: var(--color-plate-20);
+    --tableV3-td-color-primary: var(--color-grayLighter);
+    --tableV3-td-color-hover-primary: var(--color-offWhite);
+    --tableV3-border-primary: var(--color-dark1);
+    --tableV3-shadow-primary: transparent;
+  }
+
+  body.theme-light {
+    --tableV3-th-background-primary: var(--color-whitePure);
+    --tableV3-th-background-hover-primary: var(--color-plateLight);
+    --tableV3-th-color-hover-primary: var(--color-blue);
+    --tableV3-tr-background-primary: var(--color-whitePure-50);
+    --tableV3-tr-background-hover-primary: var(--color-plateLight-50);
+    --tableV3-td-color-primary: var(--color-grayDarker);
+    --tableV3-td-color-hover-primary: var(--color-dark1);
+    --tableV3-border-primary: var(--color-plateLight);
+    --tableV3-shadow-primary: rgba(119, 231, 255, 0.12);
+  }
+}
+
+.tableWrapper {
+  overflow: auto;
+  position: relative;
+
+  &:has(> .table_primary) {
+    box-shadow: 0 5px 20px 0 var(--tableV3-shadow-primary);
+  }
+}
+
+.table {
+  overflow: hidden;
+  width: 100%;
+  text-align: left;
+  box-sizing: border-box;
+  border-collapse: collapse;
+  border-style: hidden;
+
+  &__row_noData:not(:only-child) {
+    display: none !important;
+  }
+
+  &__spinnerWrapper {
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  & :is(td, th) {
+    padding: 0;
+  }
+
+  th {
+    color: var(--tableV3-th-color);
+    font-weight: 500;
+  }
+
+  &_primary {
+    --tableV3-cell-padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 18px;
+    font-weight: 300;
+
+    & > tbody > tr {
+      background: var(--tableV3-tr-background-primary);
+      transition: background-color 250ms, color 250ms;
+
+      &:hover {
+        background: var(--tableV3-tr-background-hover-primary);
+        color: var(--tableV3-td-color-hover-primary);
+      }
+    }
+
+    & > :is(thead, tbody) > tr {
+      & > :is(th, td) {
+        border: 1px solid var(--tableV3-border-primary);
+        height: var(--tableV3-th-height);
+      }
+
+      & > th {
+        transition: background-color 250ms, color 250ms;
+        background: var(--tableV3-th-background-primary);
+        &:hover {
+          background: var(--tableV3-th-background-hover-primary);
+        }
+      }
+    }
+
+    .tableCell {
+      --tableV3-th-height: 44px;
+    }
+
+    // there is tableHeaderCell_hasSubColumns in thead, in this case we can set height = 32 for ALL th
+    // because rowspan=1 will be equal 31px, and rowspan>1 will be 31*rowspan
+    &:has(> thead .tableHeaderCell_hasSubColumns) > thead .tableHeaderCell {
+      --tableV3-th-height: 31px;
+    }
+
+    // alternative condition
+    //&:has(> thead th:not([rowspan="1"])) > thead .tableHeaderCell {
+    //  --tableV3-th-height: 31px;
+    //}
+  }
+}
+
+.tableCell {
+
+  &_oneLine {
+    white-space: nowrap;
+  }
+
+  &__inner {
+    padding: var(--tableV3-cell-padding);
+    justify-content: var(--tableV3-cell-align);
+  }
+
+  &_align-left {
+    text-align: left;
+    --tableV3-cell-align: start;
+  }
+
+  &_align-right {
+    text-align: right;
+    --tableV3-cell-align: end;
+  }
+
+  &_align-center {
+    text-align: center;
+    --tableV3-cell-align: center;
+  }
+}
+
+.tableHeaderCell {
+  .tableCell__inner {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+  }
+}

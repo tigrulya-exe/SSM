@@ -51,13 +51,13 @@ export const dateDuration = (dateFrom: Date, dateTo: Date, format = '{days}d {ho
 };
 
 export const secondsToDuration = (seconds: number) => {
-  const curDate = new Date();
+  const curDate = new Date(0);
 
   return dateDuration(curDate, new Date(curDate.getTime() + seconds * 1000));
 };
 
 export const millisecondsToDuration = (milliseconds: number) => {
-  const curDate = new Date();
+  const curDate = new Date(0);
 
   return dateDuration(curDate, new Date(curDate.getTime() + milliseconds));
 };

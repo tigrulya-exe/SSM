@@ -1,0 +1,10 @@
+.tableFilter {
+  &__button {
+    border-radius: 4px !important;
+    min-height: 24px !important;;
+
+    &:global(.has-filter) {
+      color: var(--text-green-color) !important;
+    }
+  }
+}

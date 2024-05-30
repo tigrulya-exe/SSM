@@ -17,6 +17,7 @@
  */
 export const allowIconsNames = [
   //
+  'arrow-sorting',
   'chevron-double',
   'chevron',
   'close',
@@ -29,6 +30,7 @@ export const allowIconsNames = [
   'status-info',
   'status-ok',
   'status-warning',
+  'table-filter',
   'user',
 ] as const;
 

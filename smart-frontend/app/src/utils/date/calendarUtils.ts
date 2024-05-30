@@ -37,12 +37,13 @@ import {
   isBefore,
   eachDayOfInterval,
 } from 'date-fns';
-import { isEqual } from '@utils/date/index';
+import { isEqual } from './index';
+import { localDateToUtc } from '@utils/date/utcUtils';
 
 const getToday = () => {
   const localToday = new Date();
 
-  return localToday;
+  return localDateToUtc(localToday);
 };
 
 const isDateLessThan = (date: Date, minDate?: Date) => !!minDate && compareAsc(minDate, date) === 1;

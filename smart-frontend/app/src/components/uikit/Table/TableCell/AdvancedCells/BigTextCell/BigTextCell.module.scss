@@ -1,0 +1,11 @@
+.bigTextCell {
+  &__tooltip {
+    max-width: 700px;
+    word-break: break-all;
+  }
+  &__textWrap {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}
