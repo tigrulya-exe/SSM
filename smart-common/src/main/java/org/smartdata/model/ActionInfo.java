@@ -15,139 +15,101 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.smartdata.model;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import static org.smartdata.utils.FormattingUtil.actionToString;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder(setterPrefix = "set")
 public class ActionInfo {
   // Old file id
   public static final String OLD_FILE_ID = "-oid";
+
   private long actionId;
   private long cmdletId;
   private String actionName;
   private Map<String, String> args;
-  private String result;
-  private String log;
+  @lombok.Builder.Default
+  private String result = "";
+  @lombok.Builder.Default
+  private String log = "";
 
   // For action set flexibility
-  private String execHost;
   private boolean successful;
   private long createTime;
   private boolean finished;
   private long finishTime;
-
   private float progress;
-
-  public ActionInfo() {
-    this.result = "";
-    this.log = "";
-  }
+  private String execHost;
 
   public ActionInfo(long actionId, long cmdletId, String actionName,
-      Map<String, String> args, String result, String log,
-      boolean successful, long createTime, boolean finished,
-      long finishTime, float progress) {
-    this.actionId = actionId;
-    this.cmdletId = cmdletId;
-    this.actionName = actionName;
-    this.args = args;
-    this.result = result;
-    this.log = log;
-    this.execHost = "";
-    this.successful = successful;
-    this.createTime = createTime;
-    this.finished = finished;
-    this.finishTime = finishTime;
-    this.progress = progress;
+                    Map<String, String> args, String result, String log,
+                    boolean successful, long createTime, boolean finished,
+                    long finishTime, float progress) {
+    this(actionId, cmdletId, actionName,
+        args, result, log, successful, createTime,
+        finished, finishTime, progress, "");
   }
 
-  public long getActionId() {
-    return actionId;
+  public String getActionText() {
+    return actionToString(actionName, args);
   }
 
-  public void setActionId(long actionId) {
-    this.actionId = actionId;
-  }
-
-  public long getCmdletId() {
-    return cmdletId;
-  }
-
-  public void setCmdletId(long cmdletId) {
-    this.cmdletId = cmdletId;
-  }
-
-  public String getActionName() {
-    return actionName;
-  }
-
-  public void setActionName(String actionName) {
-    this.actionName = actionName;
-  }
-
-  public Map<String, String> getArgs() {
-    return args;
-  }
-
-  public void setArgs(Map<String, String> args) {
-    this.args = args;
-  }
-
-  public String getArgsJsonString() {
-    Gson gson = new Gson();
-    return gson.toJson(args);
-  }
-
-  public void setArgsFromJsonString(String jsonArgs) {
-    Gson gson = new Gson();
-    args = gson.fromJson(jsonArgs,
-        new TypeToken<Map<String, String>>() {
-        }.getType());
+  public ActionSource getSource() {
+    return Optional.ofNullable(args)
+        .filter(map -> map.containsKey(CmdletDescriptor.RULE_ID))
+        .map(hasRuleIdArg -> ActionSource.RULE)
+        .orElse(ActionSource.USER);
   }
 
   // Applicable to some actions that need to create new file to replace
   // the old one.
-  public void setOldFileIds(List<Long> oids) {
-    getArgs().put(OLD_FILE_ID, toJsonString(oids));
+  public void setOldFileIds(List<Long> oldFileIds) {
+    args.put(OLD_FILE_ID, fileIdsToArg(oldFileIds));
   }
 
   // Applicable to some actions that need to create new file to replace
   // the old one.
   public List<Long> getOldFileIds() {
-    return fromJsonString(
-        Optional.ofNullable(getArgs().get(OLD_FILE_ID)).orElse(""));
+    return argToFileIds(args.get(OLD_FILE_ID));
   }
 
-  public static String toJsonString(List<Long> oids) {
-    return new Gson().toJson(oids);
+  private String fileIdsToArg(List<Long> fileIds) {
+    if (CollectionUtils.isEmpty(fileIds)) {
+      return "";
+    }
+
+    return fileIds.stream()
+        .map(Object::toString)
+        .collect(Collectors.joining(","));
   }
 
-  public static List<Long> fromJsonString(String oIdJson) {
-    return new Gson().fromJson(oIdJson,
-        new TypeToken<ArrayList<Long>>(){}.getType());
-  }
+  private List<Long> argToFileIds(String fileIdsString) {
+    if (StringUtils.isBlank(fileIdsString)) {
+      return Collections.emptyList();
+    }
 
-  public String getResult() {
-    return result;
-  }
-
-  public void setResult(String result) {
-    this.result = result;
-  }
-
-  public String getLog() {
-    return log;
-  }
-
-  public void setLog(String log) {
-    this.log = log;
+    // replace for backward compatibility
+    return Arrays.stream(fileIdsString.replaceAll("\\[|]|\\s", "").split(","))
+        .map(Long::valueOf)
+        .collect(Collectors.toList());
   }
 
   public void appendLog(String log) {
@@ -156,195 +118,5 @@ public class ActionInfo {
 
   public void appendLogLine(String logLine) {
     this.log += logLine + "\n";
-  }
-
-  public boolean isSuccessful() {
-    return successful;
-  }
-
-  public void setSuccessful(boolean successful) {
-    this.successful = successful;
-  }
-
-  public long getCreateTime() {
-    return createTime;
-  }
-
-  public void setCreateTime(long createTime) {
-    this.createTime = createTime;
-  }
-
-  public boolean isFinished() {
-    return finished;
-  }
-
-  public void setFinished(boolean finished) {
-    this.finished = finished;
-  }
-
-  public long getFinishTime() {
-    return finishTime;
-  }
-
-  public void setFinishTime(long finishTime) {
-    this.finishTime = finishTime;
-  }
-
-  public float getProgress() {
-    return progress;
-  }
-
-  public void setProgress(float progress) {
-    this.progress = progress;
-  }
-
-  public String getExecHost() {
-    return execHost;
-  }
-
-  public void setExecHost(String execHost) {
-    this.execHost = execHost;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    ActionInfo that = (ActionInfo) o;
-    return actionId == that.actionId
-        && cmdletId == that.cmdletId
-        && successful == that.successful
-        && createTime == that.createTime
-        && finished == that.finished
-        && finishTime == that.finishTime
-        && Float.compare(that.progress, progress) == 0
-        && Objects.equals(actionName, that.actionName)
-        && Objects.equals(args, that.args)
-        && Objects.equals(result, that.result)
-        && Objects.equals(log, that.log);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(
-        actionId,
-        cmdletId,
-        actionName,
-        args,
-        result,
-        log,
-        successful,
-        createTime,
-        finished,
-        finishTime,
-        progress);
-  }
-
-  @Override
-  public String toString() {
-    return "ActionInfo{"
-        + "actionId=" + actionId
-        + ", cmdletId=" + cmdletId
-        + ", actionName='" + actionName + "'"
-        + ", args=" + args
-        + ", result='" + result + "'"
-        + ", log='" + log + "'"
-        + ", execHost='" + execHost + "'"
-        + ", successful=" + successful
-        + ", createTime=" + createTime
-        + ", finished=" + finished
-        + ", finishTime=" + finishTime
-        + ", progress=" + progress
-        + '}';
-  }
-
-  public static Builder newBuilder() {
-    return new Builder();
-  }
-
-  public static class Builder {
-    private long actionId;
-    private long cmdletId;
-    private String actionName;
-    private Map<String, String> args;
-    private String result;
-    private String log;
-
-    private boolean successful;
-
-    private long createTime;
-    private boolean finished;
-    private long finishTime;
-
-    private float progress;
-
-    public Builder() {
-      this.result = "";
-      this.log = "";
-    }
-
-    public Builder setActionId(long actionId) {
-      this.actionId = actionId;
-      return this;
-    }
-
-    public Builder setCmdletId(long cmdletId) {
-      this.cmdletId = cmdletId;
-      return this;
-    }
-
-    public Builder setActionName(String actionName) {
-      this.actionName = actionName;
-      return this;
-    }
-
-    public Builder setArgs(Map<String, String> args) {
-      this.args = args;
-      return this;
-    }
-
-    public Builder setResult(String result) {
-      this.result = result;
-      return this;
-    }
-
-    public Builder setLog(String log) {
-      this.log = log;
-      return this;
-    }
-
-    public Builder setSuccessful(boolean successful) {
-      this.successful = successful;
-      return this;
-    }
-
-    public Builder setCreateTime(long createTime) {
-      this.createTime = createTime;
-      return this;
-    }
-
-    public Builder setFinished(boolean finished) {
-      this.finished = finished;
-      return this;
-    }
-
-    public Builder setFinishTime(long finishTime) {
-      this.finishTime = finishTime;
-      return this;
-    }
-
-    public Builder setProgress(float progress) {
-      this.progress = progress;
-      return this;
-    }
-
-    public ActionInfo build() {
-      return new ActionInfo(actionId, cmdletId, actionName, args, result,
-          log, successful, createTime, finished, finishTime, progress);
-    }
   }
 }

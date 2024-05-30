@@ -186,7 +186,7 @@ public class ActionRestApi {
     Long longNumber = Long.parseLong(actionId);
     try {
       return new JsonResponse<>(Response.Status.OK,
-          actionInfoHandler.getActionInfo(longNumber)).build();
+          actionInfoHandler.getActionInfoOrNull(longNumber)).build();
     } catch (Exception e) {
       logger.error("Exception in ActionRestApi while getting info", e);
       return new JsonResponse<>(Response.Status.INTERNAL_SERVER_ERROR,

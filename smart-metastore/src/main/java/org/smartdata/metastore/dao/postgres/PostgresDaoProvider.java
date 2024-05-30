@@ -48,7 +48,7 @@ public class PostgresDaoProvider extends DefaultDaoProvider {
 
   @Override
   public ActionDao actionDao() {
-    return new PostgresActionDao(dataSource);
+    return new PostgresActionDao(dataSource, transactionManager);
   }
 
   @Override

@@ -36,8 +36,8 @@ import org.smartdata.server.generated.model.ActionDto;
 import org.smartdata.server.generated.model.ActionInfoDto;
 import org.smartdata.server.generated.model.ActionSortDto;
 import org.smartdata.server.generated.model.ActionSourceDto;
+import org.smartdata.server.generated.model.ActionStateDto;
 import org.smartdata.server.generated.model.ActionsDto;
-import org.smartdata.server.generated.model.CmdletStateDto;
 import org.smartdata.server.generated.model.CompletionTimeIntervalDto;
 import org.smartdata.server.generated.model.ErrorResponseDto;
 import org.smartdata.server.generated.model.PageRequestDto;
@@ -101,7 +101,7 @@ public interface ActionsApi {
      * @param textRepresentationLike The object&#39;s text representation filter.  May contain special characters like \&quot;/\&quot;, \&quot;&#39;\&quot;, so should be encoded. (optional)
      * @param submissionTime Time interval in which the entity was submitted (optional)
      * @param hosts List of hosts on which the action is/was running (optional)
-     * @param states List of cmdlet states (optional)
+     * @param states List of action states (optional)
      * @param sources List of action sources (optional)
      * @param completionTime Time interval in which the action was finished (optional)
      * @return OK (status code 200)
@@ -133,7 +133,7 @@ public interface ActionsApi {
         @Parameter(name = "textRepresentationLike", description = "The object's text representation filter.  May contain special characters like \"/\", \"'\", so should be encoded.", in = ParameterIn.QUERY) @Valid @RequestParam(value = "textRepresentationLike", required = false) String textRepresentationLike,
         @Parameter(name = "submissionTime", description = "Time interval in which the entity was submitted", in = ParameterIn.QUERY) @Valid SubmissionTimeIntervalDto submissionTime,
         @Parameter(name = "hosts", description = "List of hosts on which the action is/was running", in = ParameterIn.QUERY) @Valid @RequestParam(value = "hosts", required = false) List<String> hosts,
-        @Parameter(name = "states", description = "List of cmdlet states", in = ParameterIn.QUERY) @Valid @RequestParam(value = "states", required = false) List<@Valid CmdletStateDto> states,
+        @Parameter(name = "states", description = "List of action states", in = ParameterIn.QUERY) @Valid @RequestParam(value = "states", required = false) List<@Valid ActionStateDto> states,
         @Parameter(name = "sources", description = "List of action sources", in = ParameterIn.QUERY) @Valid @RequestParam(value = "sources", required = false) List<@Valid ActionSourceDto> sources,
         @Parameter(name = "completionTime", description = "Time interval in which the action was finished", in = ParameterIn.QUERY) @Valid CompletionTimeIntervalDto completionTime
     ) throws Exception {

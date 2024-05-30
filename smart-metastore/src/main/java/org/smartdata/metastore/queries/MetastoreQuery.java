@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.smartdata.metastore.queries.expression.MetastoreQueryExpression;
 import org.smartdata.metastore.queries.sort.Sorting;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,6 +114,11 @@ public class MetastoreQuery {
         .append(offset)
         .append("\n");
     return this;
+  }
+
+  @SafeVarargs
+  public final <T> MetastoreQuery orderBy(Sorting<T>... sortColumns) {
+    return orderBy(Arrays.asList(sortColumns));
   }
 
   public <T> MetastoreQuery orderBy(List<Sorting<T>> sortColumns) {

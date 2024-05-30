@@ -138,7 +138,7 @@ public class ProtoBufferHelper {
   }
 
   public static ActionInfo convert(ActionInfoProto infoProto) {
-    ActionInfo.Builder builder = ActionInfo.newBuilder()
+    ActionInfo.Builder builder = ActionInfo.builder()
         .setActionName(infoProto.getActionName())
         .setResult(infoProto.getResult())
         .setLog(infoProto.getLog())

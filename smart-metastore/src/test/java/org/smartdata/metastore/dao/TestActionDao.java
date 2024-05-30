@@ -22,17 +22,30 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.smartdata.metastore.TestDaoBase;
+import org.smartdata.metastore.queries.PageRequest;
+import org.smartdata.metastore.queries.sort.ActionSortField;
 import org.smartdata.model.ActionInfo;
+import org.smartdata.model.ActionSource;
+import org.smartdata.model.ActionState;
+import org.smartdata.model.TimeInterval;
+import org.smartdata.model.request.ActionSearchRequest;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TestActionDao extends TestDaoBase {
+public class TestActionDao
+    extends TestSearchableDao<ActionSearchRequest, ActionInfo, ActionSortField, Long> {
+
+  private static final long FIRST_ACTION_ID = 0;
+  private static final long SECOND_ACTION_ID = 1;
+  private static final long THIRD_ACTION_ID = 2;
+
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
   private ActionDao actionDao;
@@ -64,17 +77,17 @@ public class TestActionDao extends TestDaoBase {
         "", false, 123213213L, true, 123123L,
         100);
 
-    actionDao.insert(new ActionInfo[]{actionInfo, actionInfo1, actionInfo2, actionInfo3});
+    actionDao.insert(actionInfo, actionInfo1, actionInfo2, actionInfo3);
 
     List<String> order = new ArrayList<>();
     order.add("aid");
     List<Boolean> desc = new ArrayList<>();
     desc.add(false);
-    Assert.assertTrue(actionDao.getAPageOfAction(2, 1, order, desc).get(0).equals(actionInfo2));
+    Assert.assertEquals(actionInfo2, actionDao.getAPageOfAction(2, 1, order, desc).get(0));
   }
 
   @Test
-  public void testInsertGetAction() throws Exception {
+  public void testInsertGetAction() {
     Map<String, String> args = new HashMap<>();
     ActionInfo actionInfo = new ActionInfo(1, 1,
         "cache", args, "Test",
@@ -82,14 +95,14 @@ public class TestActionDao extends TestDaoBase {
         100);
     actionDao.insert(new ActionInfo[]{actionInfo});
     ActionInfo dbActionInfo = actionDao.getById(1L);
-    Assert.assertTrue(actionInfo.equals(dbActionInfo));
+    Assert.assertEquals(actionInfo, dbActionInfo);
     // Get wrong id
     expectedException.expect(EmptyResultDataAccessException.class);
     actionDao.getById(100L);
   }
 
   @Test
-  public void testUpdateAction() throws Exception {
+  public void testUpdateAction() {
     Map<String, String> args = new HashMap<>();
     ActionInfo actionInfo = new ActionInfo(1, 1,
         "cache", args, "Test",
@@ -99,11 +112,11 @@ public class TestActionDao extends TestDaoBase {
     actionInfo.setSuccessful(true);
     actionDao.update(actionInfo);
     ActionInfo dbActionInfo = actionDao.getById(actionInfo.getActionId());
-    Assert.assertTrue(actionInfo.equals(dbActionInfo));
+    Assert.assertEquals(actionInfo, dbActionInfo);
   }
 
   @Test
-  public void testGetNewDeleteAction() throws Exception {
+  public void testGetNewDeleteAction() {
     Map<String, String> args = new HashMap<>();
     ActionInfo actionInfo = new ActionInfo(1, 1,
         "cache", args, "Test",
@@ -111,95 +124,282 @@ public class TestActionDao extends TestDaoBase {
         100);
     List<ActionInfo> actionInfoList = actionDao.getLatestActions(0);
     // Get from empty table
-    Assert.assertTrue(actionInfoList.size() == 0);
+    Assert.assertTrue(actionInfoList.isEmpty());
     actionDao.insert(actionInfo);
     actionInfo.setActionId(2);
     actionDao.insert(actionInfo);
     actionInfoList = actionDao.getLatestActions(0);
-    Assert.assertTrue(actionInfoList.size() == 2);
+    Assert.assertEquals(2, actionInfoList.size());
     actionInfoList = actionDao.getByIds(Arrays.asList(1L, 2L));
-    Assert.assertTrue(actionInfoList.size() == 2);
+    Assert.assertEquals(2, actionInfoList.size());
     actionDao.delete(actionInfo.getActionId());
-    actionInfoList = actionDao.getAll();
-    Assert.assertTrue(actionInfoList.size() == 1);
+    actionInfoList = actionDao.search(ActionSearchRequest.noFilters());
+    Assert.assertEquals(1, actionInfoList.size());
   }
 
   @Test
-  public void testGetLatestActionListByFinishAndSuccess() {
+  public void testMaxId() {
     Map<String, String> args = new HashMap<>();
     ActionInfo actionInfo = new ActionInfo(1, 1,
         "cache", args, "Test",
         "Test", false, 123213213L, true, 123123L,
         100);
-    List<ActionInfo> actionInfoList =
-        actionDao.getLatestActions("cache", 0, false, true);
-    //Get from empty table
-    Assert.assertTrue(actionInfoList.size() == 0);
+    Assert.assertEquals(0, actionDao.getMaxId());
     actionDao.insert(actionInfo);
-    actionInfo.setActionId(2);
-    actionDao.insert(actionInfo);
-    actionInfoList = actionDao.getLatestActions("cache", 0, false, true);
-    Assert.assertTrue(actionInfoList.size() == 2);
-    actionInfoList = actionDao.getByIds(Arrays.asList(1L, 2L));
-    Assert.assertTrue(actionInfoList.size() == 2);
-    actionInfoList = actionDao.getLatestActions("cache", 1, false, true);
-    Assert.assertTrue(actionInfoList.size() == 1);
+    Assert.assertEquals(2, actionDao.getMaxId());
   }
 
   @Test
-  public void testGetLatestActionListByFinish() {
-    Map<String, String> args = new HashMap<>();
-    ActionInfo actionInfo = new ActionInfo(1, 1,
-        "cache", args, "Test",
-        "Test", false, 123213213L, true, 123123L,
-        100);
-    List<ActionInfo> actionInfoList =
-        actionDao.getLatestActions("cache", 0);
-    //Get from empty table
-    Assert.assertTrue(actionInfoList.size() == 0);
-    actionDao.insert(actionInfo);
-    actionInfo.setActionId(2);
-    actionDao.insert(actionInfo);
-    actionInfoList = actionDao.getLatestActions("cache", 0, true);
-    Assert.assertTrue(actionInfoList.size() == 2);
-    actionInfoList = actionDao.getByIds(Arrays.asList(1L, 2L));
-    Assert.assertTrue(actionInfoList.size() == 2);
-    actionInfoList = actionDao.getLatestActions("cache", 1, true);
-    Assert.assertTrue(actionInfoList.size() == 1);
+  public void testSearchAllActions() {
+    insertActionsForSearch();
+
+    testSearch(ActionSearchRequest.noFilters(),
+        FIRST_ACTION_ID, SECOND_ACTION_ID, THIRD_ACTION_ID);
   }
 
   @Test
-  public void testGetLatestActionListBySuccess() {
-    Map<String, String> args = new HashMap<>();
-    ActionInfo actionInfo = new ActionInfo(1, 1,
-        "cache", args, "Test",
-        "Test", false, 123213213L, true, 123123L,
-        100);
-    List<ActionInfo> actionInfoList =
-        actionDao.getLatestActions("cache", false, 0);
-    //Get from empty table
-    Assert.assertTrue(actionInfoList.size() == 0);
-    actionDao.insert(actionInfo);
-    actionInfo.setActionId(2);
-    actionDao.insert(actionInfo);
-    actionInfoList = actionDao.getLatestActions("cache", false, 0);
-    Assert.assertTrue(actionInfoList.size() == 2);
-    actionInfoList = actionDao.getByIds(Arrays.asList(1L, 2L));
-    Assert.assertTrue(actionInfoList.size() == 2);
-    actionInfoList = actionDao.getLatestActions("cache", false, 1);
-    Assert.assertTrue(actionInfoList.size() == 1);
+  public void testSearchById() {
+    insertActionsForSearch();
+
+    ActionSearchRequest searchRequest = ActionSearchRequest.builder()
+        .id(FIRST_ACTION_ID)
+        .id(THIRD_ACTION_ID)
+        .build();
+
+    testSearch(searchRequest, FIRST_ACTION_ID, THIRD_ACTION_ID);
+
+    searchRequest = ActionSearchRequest.builder()
+        .id(SECOND_ACTION_ID)
+        .build();
+
+    testSearch(searchRequest, SECOND_ACTION_ID);
+
+    searchRequest = ActionSearchRequest.builder()
+        .id(777L)
+        .build();
+
+    testSearch(searchRequest);
   }
 
+  @Test
+  public void testSearchByTextRepresentation() {
+    insertActionsForSearch();
+
+    ActionSearchRequest searchRequest = ActionSearchRequest.builder()
+        .textRepresentationLike("write -")
+        .build();
+
+    testSearch(searchRequest, FIRST_ACTION_ID, SECOND_ACTION_ID);
+
+    searchRequest = ActionSearchRequest.builder()
+        .textRepresentationLike("read -file test")
+        .build();
+
+    testSearch(searchRequest, THIRD_ACTION_ID);
+
+    searchRequest = ActionSearchRequest.builder()
+        .textRepresentationLike("another text")
+        .build();
+
+    testSearch(searchRequest);
+  }
 
   @Test
-  public void testMaxId() throws Exception {
-    Map<String, String> args = new HashMap<>();
-    ActionInfo actionInfo = new ActionInfo(1, 1,
-        "cache", args, "Test",
-        "Test", false, 123213213L, true, 123123L,
-        100);
-    Assert.assertTrue(actionDao.getMaxId() == 0);
-    actionDao.insert(actionInfo);
-    Assert.assertTrue(actionDao.getMaxId() == 2);
+  public void testSearchBySubmissionTime() {
+    insertActionsForSearch();
+
+    ActionSearchRequest searchRequest = ActionSearchRequest.builder()
+        .submissionTime(new TimeInterval(
+            Instant.EPOCH, Instant.now()))
+        .build();
+
+    testSearch(searchRequest, FIRST_ACTION_ID, SECOND_ACTION_ID, THIRD_ACTION_ID);
+
+    searchRequest = ActionSearchRequest.builder()
+        .submissionTime(new TimeInterval(
+            Instant.ofEpochMilli(1), Instant.ofEpochMilli(14)))
+        .build();
+
+    testSearch(searchRequest, SECOND_ACTION_ID);
+
+    searchRequest = ActionSearchRequest.builder()
+        .submissionTime(new TimeInterval(
+            Instant.ofEpochMilli(16), Instant.now()))
+        .build();
+
+    testSearch(searchRequest);
+  }
+
+  @Test
+  public void testSearchByHosts() {
+    insertActionsForSearch();
+
+    ActionSearchRequest searchRequest = ActionSearchRequest.builder()
+        .host("localhost")
+        .host("remote_host")
+        .build();
+
+    testSearch(searchRequest, FIRST_ACTION_ID, SECOND_ACTION_ID, THIRD_ACTION_ID);
+
+    searchRequest = ActionSearchRequest.builder()
+        .host("remote_host")
+        .build();
+
+    testSearch(searchRequest, THIRD_ACTION_ID);
+
+    searchRequest = ActionSearchRequest.builder()
+        .host("another_host")
+        .build();
+
+    testSearch(searchRequest);
+  }
+
+  @Test
+  public void testSearchByStates() {
+    insertActionsForSearch();
+
+    ActionSearchRequest searchRequest = ActionSearchRequest.builder()
+        .state(ActionState.RUNNING)
+        .build();
+
+    testSearch(searchRequest, SECOND_ACTION_ID);
+
+    searchRequest = ActionSearchRequest.builder()
+        .state(ActionState.FAILED)
+        .build();
+
+    testSearch(searchRequest, THIRD_ACTION_ID);
+
+    searchRequest = ActionSearchRequest.builder()
+        .state(ActionState.SUCCESSFUL)
+        .build();
+
+    testSearch(searchRequest, FIRST_ACTION_ID);
+
+    searchRequest = ActionSearchRequest.builder()
+        .state(ActionState.RUNNING)
+        .state(ActionState.SUCCESSFUL)
+        .build();
+
+    testSearch(searchRequest, FIRST_ACTION_ID, SECOND_ACTION_ID);
+  }
+
+  @Test
+  public void testSearchBySources() {
+    insertActionsForSearch();
+
+    ActionSearchRequest searchRequest = ActionSearchRequest.builder()
+        .source(ActionSource.USER)
+        .source(ActionSource.RULE)
+        .build();
+
+    testSearch(searchRequest, FIRST_ACTION_ID, SECOND_ACTION_ID, THIRD_ACTION_ID);
+
+    searchRequest = ActionSearchRequest.builder()
+        .source(ActionSource.USER)
+        .build();
+
+    testSearch(searchRequest, FIRST_ACTION_ID, THIRD_ACTION_ID);
+
+    searchRequest = ActionSearchRequest.builder()
+        .source(ActionSource.RULE)
+        .build();
+
+    testSearch(searchRequest, SECOND_ACTION_ID);
+  }
+
+  @Test
+  public void testSearchByCompletionTime() {
+    insertActionsForSearch();
+
+    ActionSearchRequest searchRequest = ActionSearchRequest.builder()
+        .completionTime(new TimeInterval(
+            Instant.ofEpochMilli(1), Instant.now()))
+        .build();
+
+    testSearch(searchRequest, FIRST_ACTION_ID, THIRD_ACTION_ID);
+
+    searchRequest = ActionSearchRequest.builder()
+        .completionTime(new TimeInterval(
+            Instant.ofEpochMilli(11), Instant.now()))
+        .build();
+
+    testSearch(searchRequest, THIRD_ACTION_ID);
+
+    searchRequest = ActionSearchRequest.builder()
+        .completionTime(new TimeInterval(
+            Instant.ofEpochMilli(101), Instant.now()))
+        .build();
+
+    testSearch(searchRequest);
+  }
+
+  @Test
+  public void testSortByStatus() {
+    insertActionsForSearch();
+
+    PageRequest<ActionSortField> pageRequest = PageRequest.<ActionSortField>builder()
+        .sortByAsc(ActionSortField.STATUS)
+        .build();
+
+    testPagedSearch(
+        ActionSearchRequest.noFilters(),
+        pageRequest,
+        SECOND_ACTION_ID, THIRD_ACTION_ID, FIRST_ACTION_ID);
+  }
+
+  private void insertActionsForSearch() {
+    ActionInfo actionInfo1 = ActionInfo.builder()
+        .setActionId(FIRST_ACTION_ID)
+        .setCmdletId(1)
+        .setActionName("write")
+        .setArgs(ImmutableMap.of("-file", "license.txt"))
+        .setResult("success")
+        .setLog("logloglog")
+        .setSuccessful(true)
+        .setCreateTime(0)
+        .setFinished(true)
+        .setFinishTime(10)
+        .setExecHost("localhost")
+        .build();
+
+    ActionInfo actionInfo2 = ActionInfo.builder()
+        .setActionId(SECOND_ACTION_ID)
+        .setCmdletId(2)
+        .setActionName("write")
+        .setArgs(ImmutableMap.of("-arg", "check", "-ruleId", "1"))
+        .setCreateTime(1)
+        .setFinished(false)
+        .setExecHost("localhost")
+        .build();
+
+    ActionInfo actionInfo3 = ActionInfo.builder()
+        .setActionId(THIRD_ACTION_ID)
+        .setCmdletId(1)
+        .setActionName("read")
+        .setArgs(ImmutableMap.of("-file", "test.txt"))
+        .setSuccessful(false)
+        .setCreateTime(15)
+        .setFinished(true)
+        .setFinishTime(100)
+        .setExecHost("remote_host")
+        .build();
+
+    actionDao.insert(actionInfo1, actionInfo2, actionInfo3);
+  }
+
+  @Override
+  protected Searchable<ActionSearchRequest, ActionInfo, ActionSortField> searchable() {
+    return actionDao;
+  }
+
+  @Override
+  protected Long getIdentifier(ActionInfo actionInfo) {
+    return actionInfo.getActionId();
+  }
+
+  @Override
+  protected ActionSortField defaultSortField() {
+    return ActionSortField.ID;
   }
 }

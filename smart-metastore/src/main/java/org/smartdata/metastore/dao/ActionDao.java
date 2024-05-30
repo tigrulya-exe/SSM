@@ -18,44 +18,37 @@
 package org.smartdata.metastore.dao;
 
 import org.smartdata.metastore.model.SearchResult;
+import org.smartdata.metastore.queries.sort.ActionSortField;
 import org.smartdata.model.ActionInfo;
+import org.smartdata.model.request.ActionSearchRequest;
 
 import java.util.List;
 
-public interface ActionDao {
-  List<ActionInfo> getAll();
-
+public interface ActionDao
+    extends Searchable<ActionSearchRequest, ActionInfo, ActionSortField> {
+  // todo delete after zeppelin removal
   Long getCountOfAction();
 
   ActionInfo getById(long aid);
 
   List<ActionInfo> getByIds(List<Long> aids);
 
-  List<ActionInfo> getByCid(long cid);
-
-  List<ActionInfo> getByCondition(String aidCondition,
-                                  String cidCondition);
-
+  // todo do we need it at rpc?
   List<ActionInfo> getLatestActions(int size);
 
+  // todo delete after zeppelin removal
   List<ActionInfo> getLatestActions(String actionName, int size);
 
-  List<ActionInfo> getLatestActions(String actionName, int size,
-                                    boolean successful, boolean finished);
-
-  List<ActionInfo> getLatestActions(String actionName, boolean successful,
-                                    int size);
-
+  // todo delete after zeppelin removal
   List<ActionInfo> getAPageOfAction(long start, long offset, List<String> orderBy,
                                     List<Boolean> isDesc);
 
+  // todo delete after zeppelin removal
   List<ActionInfo> getAPageOfAction(long start, long offset);
 
+  // todo delete after zeppelin removal
   SearchResult<ActionInfo> searchAction(String path, long start, long offset, List<String> orderBy,
                                         List<Boolean> isDesc);
-
-  List<ActionInfo> getLatestActions(String actionType, int size,
-                                    boolean finished);
 
   void delete(long aid);
 
@@ -63,13 +56,11 @@ public interface ActionDao {
 
   int[] batchDeleteCmdletActions(List<Long> cids);
 
-  void deleteAll();
-
   void insert(ActionInfo actionInfo);
 
-  void insert(ActionInfo[] actionInfos);
+  void insert(ActionInfo... actionInfos);
 
-  int[] replace(ActionInfo[] actionInfos);
+  void upsert(List<ActionInfo> actionInfos);
 
   int update(ActionInfo actionInfo);
 

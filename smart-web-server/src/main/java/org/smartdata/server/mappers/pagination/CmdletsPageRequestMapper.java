@@ -34,5 +34,5 @@ public interface CmdletsPageRequestMapper
   @ValueMapping(source = "_STATE", target = "STATE")
   @ValueMapping(source = "_GENERATETIME", target = "GENERATE_TIME")
   @ValueMapping(source = "_STATECHANGEDTIME", target = "STATE_CHANGED_TIME")
-  CmdletSortField toPageRequest(CmdletSortDto sortColumn);
+  CmdletSortField toSortField(CmdletSortDto sortColumn);
 }

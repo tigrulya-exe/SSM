@@ -123,6 +123,16 @@ public class CmdletInfoHandler
         .orElseThrow(() -> NotFoundException.forCmdlet(cid));
   }
 
+  public ActionInfo getSingleActionInfo(long cmdletId) throws IOException {
+    Long actionId = Optional.ofNullable(getCmdletInfo(cmdletId))
+        .map(CmdletInfo::getAids)
+        .flatMap(actionIds -> actionIds.stream().findFirst())
+        .orElseThrow(() -> new NotFoundException(
+            "Cmdlet doesn't generate actions: " + cmdletId));
+
+    return actionInfoHandler.getActionInfo(actionId);
+  }
+
   public CmdletGroup listCmdletsInfo(
       long rid, long pageIndex, long numPerPage,
       List<String> orderBy, List<Boolean> isDesc) throws MetaStoreException {

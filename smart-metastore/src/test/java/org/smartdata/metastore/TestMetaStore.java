@@ -40,6 +40,7 @@ import org.smartdata.model.StorageCapacity;
 import org.smartdata.model.StoragePolicy;
 import org.smartdata.model.SystemInfo;
 import org.smartdata.model.XAttribute;
+import org.smartdata.model.request.ActionSearchRequest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,7 +92,7 @@ public class TestMetaStore extends TestDaoBase {
           actionInfoList.get(0).setFinishTime(System.currentTimeMillis());
           sleep(5);
           metaStore.updateActions(actionInfoList.toArray(new ActionInfo[0]));
-          metaStore.getActions(null, null);
+          metaStore.actionDao().search(ActionSearchRequest.noFilters());
         } catch (MetaStoreException | InterruptedException e) {
           System.out.println(e.getMessage());
           Assert.fail();
@@ -139,7 +140,7 @@ public class TestMetaStore extends TestDaoBase {
           actionInfoList.get(0).setFinished(true);
           actionInfoList.get(0).setFinishTime(System.currentTimeMillis());
           metaStore.updateActions(actionInfoList.toArray(new ActionInfo[0]));
-          metaStore.getActions(null, null);
+          metaStore.actionDao().search(ActionSearchRequest.noFilters());
         } catch (MetaStoreException e) {
           System.out.println(e.getMessage());
           Assert.fail();
@@ -531,31 +532,14 @@ public class TestMetaStore extends TestDaoBase {
     ActionInfo actionInfo =
         new ActionInfo(1, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L,
             100);
-    metaStore.insertActions(new ActionInfo[]{actionInfo});
-    List<ActionInfo> actionInfos = metaStore.getActions(null, null);
+    metaStore.upsertActions(Collections.singletonList(actionInfo));
+    List<ActionInfo> actionInfos = metaStore.actionDao()
+        .search(ActionSearchRequest.noFilters());
     Assert.assertEquals(1, actionInfos.size());
     actionInfo.setResult("Finished");
     metaStore.updateActions(new ActionInfo[]{actionInfo});
-    actionInfos = metaStore.getActions(null, null);
+    actionInfos = metaStore.actionDao().search(ActionSearchRequest.noFilters());
     Assert.assertEquals(actionInfo, actionInfos.get(0));
-  }
-
-  @Test
-  public void testGetNewCreatedActions() throws Exception {
-    Map<String, String> args = new HashMap<>();
-    List<ActionInfo> actionInfos;
-    ActionInfo actionInfo =
-        new ActionInfo(1, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L,
-            100);
-    metaStore.insertAction(actionInfo);
-    actionInfo.setActionId(2);
-    metaStore.insertAction(actionInfo);
-    actionInfos = metaStore.getNewCreatedActions(1);
-    Assert.assertEquals(1, actionInfos.size());
-    actionInfos = metaStore.getNewCreatedActions("cache", 1, true, true);
-    Assert.assertEquals(1, actionInfos.size());
-    actionInfos = metaStore.getNewCreatedActions(2);
-    Assert.assertEquals(2, actionInfos.size());
   }
 
   @Test
@@ -567,14 +551,14 @@ public class TestMetaStore extends TestDaoBase {
         new ActionInfo(
             currentId, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L,
             100);
-    metaStore.insertActions(new ActionInfo[]{actionInfo});
+    metaStore.upsertActions(Collections.singletonList(actionInfo));
     currentId = metaStore.getMaxActionId();
     Assert.assertEquals(1, currentId);
     actionInfo =
         new ActionInfo(
             currentId, 1, "cache", args, "Test", "Test", true, 123213213L, true, 123123L,
             100);
-    metaStore.insertActions(new ActionInfo[]{actionInfo});
+    metaStore.upsertActions(Collections.singletonList(actionInfo));
     currentId = metaStore.getMaxActionId();
     Assert.assertEquals(2, currentId);
   }

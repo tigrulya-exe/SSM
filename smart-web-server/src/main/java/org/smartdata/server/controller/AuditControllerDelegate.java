@@ -53,10 +53,10 @@ public class AuditControllerDelegate implements AuditApiDelegate {
       List<@Valid AuditSortDto> sort,
       String usernameLike,
       EventTimeIntervalDto eventTime,
-      List<@Valid AuditObjectTypeDto> objectTypes,
+      List<AuditObjectTypeDto> objectTypes,
       List<Long> objectIds,
-      List<@Valid AuditOperationDto> operations,
-      List<@Valid AuditEventResultDto> results) {
+      List<AuditOperationDto> operations,
+      List<AuditEventResultDto> results) {
 
     AuditSearchRequest searchRequest = auditEventMapper.toSearchRequest(
         usernameLike, eventTime, objectTypes, objectIds, operations, results);

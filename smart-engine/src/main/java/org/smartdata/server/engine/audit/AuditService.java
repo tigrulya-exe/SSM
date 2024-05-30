@@ -27,8 +27,8 @@ import org.smartdata.model.request.AuditSearchRequest;
 
 import java.util.List;
 
-public class AuditService
-    implements Searchable<AuditSearchRequest, UserActivityEvent, AuditSortField> {
+public class AuditService implements
+    Searchable<AuditSearchRequest, UserActivityEvent, AuditSortField> {
   private final UserActivityDao userActivityDao;
 
   public AuditService(UserActivityDao userActivityDao) {

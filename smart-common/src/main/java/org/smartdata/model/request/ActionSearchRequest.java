@@ -15,30 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.queries.sort;
+package org.smartdata.model.request;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.Singular;
+import org.smartdata.model.ActionSource;
+import org.smartdata.model.ActionState;
+import org.smartdata.model.TimeInterval;
+
+import java.util.List;
 
 @Data
-public class Sorting<T> {
-  public enum Order {
-    ASC,
-    DESC
-  }
+@Builder
+public class ActionSearchRequest {
+  @Singular(ignoreNullCollections = true)
+  private final List<Long> ids;
+  private final String textRepresentationLike;
+  private final TimeInterval submissionTime;
+  @Singular(ignoreNullCollections = true)
+  private final List<String> hosts;
+  @Singular(ignoreNullCollections = true)
+  private final List<ActionState> states;
+  @Singular(ignoreNullCollections = true)
+  private final List<ActionSource> sources;
+  private final TimeInterval completionTime;
 
-  private final T column;
-  private final Order order;
-
-  public static <T> Sorting<T> descending(T column) {
-    return new Sorting<>(column, Order.DESC);
-  }
-
-  public static <T> Sorting<T> ascending(T column) {
-    return new Sorting<>(column, Order.ASC);
-  }
-
-  @Override
-  public String toString() {
-    return column + " " + order;
+  public static ActionSearchRequest noFilters() {
+    return builder().build();
   }
 }
