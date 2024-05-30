@@ -26,7 +26,6 @@ export interface TableCellProps extends Omit<React.TdHTMLAttributes<HTMLTableCel
   width?: string;
   minWidth?: string;
   isMultilineText?: boolean;
-  hasIconOnly?: boolean;
 }
 
 const TableCell = React.forwardRef<HTMLTableCellElement, TableCellProps>(

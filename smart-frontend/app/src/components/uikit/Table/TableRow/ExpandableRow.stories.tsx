@@ -118,7 +118,7 @@ export const ExpandableRow: Story = {
             <TableCell>{entity.state}</TableCell>
             <TableCell>{entity.product}</TableCell>
             <TableCell>{entity.version}</TableCell>
-            <TableCell hasIconOnly>
+            <TableCell>
               <IconButton icon="chevron" size={14} onClick={() => handleExpandClick(entity.id)} />
             </TableCell>
           </ExpandableRowComponent>
