@@ -145,3 +145,28 @@
     justify-content: space-between;
   }
 }
+
+.table {
+  &_primary {
+    .expandableRowMain {
+      &:not(:global(.is-open)) {
+        & > td {
+          border-bottom: none !important;
+        }
+
+        & + tr > td {
+          border: none !important;
+        }
+      }
+    }
+  }
+
+  .expandableRowContent {
+    &__inner {
+      padding: var(--tableV3-cell-padding);
+    }
+  }
+}
+.expandableRowContent > td {
+  height: auto !important;
+}

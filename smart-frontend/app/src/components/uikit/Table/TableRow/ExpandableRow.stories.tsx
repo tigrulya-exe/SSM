@@ -93,7 +93,6 @@ export const ExpandableRow: Story = {
         {data.map((entity) => (
           <ExpandableRowComponent
             key={entity.id}
-            colSpan={6}
             isExpanded={expandableRows[entity.id]}
             expandedContent={<div>{longText}</div>}
           >
@@ -103,7 +102,7 @@ export const ExpandableRow: Story = {
             <TableCell>{entity.product}</TableCell>
             <TableCell>{entity.version}</TableCell>
             <TableCell hasIconOnly>
-              <IconButton icon="chevron" size={32} onClick={() => handleExpandClick(entity.id)} />
+              <IconButton icon="chevron" size={14} onClick={() => handleExpandClick(entity.id)} />
             </TableCell>
           </ExpandableRowComponent>
         ))}
