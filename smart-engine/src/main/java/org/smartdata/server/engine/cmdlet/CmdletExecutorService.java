@@ -26,7 +26,7 @@ import java.util.List;
 
 public abstract class CmdletExecutorService {
   protected CmdletManager cmdletManager;
-  private ExecutorType executorType;
+  private final ExecutorType executorType;
 
   public CmdletExecutorService(CmdletManager cmdletManager, ExecutorType executorType) {
     this.cmdletManager = cmdletManager;

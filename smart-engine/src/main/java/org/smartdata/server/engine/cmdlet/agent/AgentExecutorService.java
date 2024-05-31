@@ -30,7 +30,7 @@ import java.util.List;
 
 public class AgentExecutorService extends CmdletExecutorService {
 
-  private AgentMaster master;
+  private final AgentMaster master;
 
   public AgentExecutorService(SmartConf conf, CmdletManager cmdletManager) throws IOException {
     super(cmdletManager, ExecutorType.AGENT);
