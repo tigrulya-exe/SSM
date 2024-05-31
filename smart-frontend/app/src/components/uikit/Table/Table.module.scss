@@ -122,11 +122,6 @@
     &:has(> thead .tableHeaderCell_hasSubColumns) > thead .tableHeaderCell {
       --table-th-height: 31px;
     }
-
-    // alternative condition
-    //&:has(> thead th:not([rowspan="1"])) > thead .tableHeaderCell {
-    //  --table-th-height: 31px;
-    //}
   }
 }
 
