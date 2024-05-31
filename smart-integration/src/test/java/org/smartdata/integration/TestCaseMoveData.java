@@ -52,6 +52,25 @@ public class TestCaseMoveData extends IntegrationTestBase {
 //    }
 //  }
 
+  @Test
+  public void test() throws Exception {
+    String file = "/test/1";
+    waitCmdletComplete(submitCmdlet("write -length 104 -file " + file));
+    waitCmdletComplete(submitCmdlet("write -length 104 -file " + file));
+    waitCmdletComplete(submitCmdlet("write -length 104 -file " + file));
+
+//    String rule = "file : every 5s | path matches \"/test/*\" | read";
+//    long ruleId = RuleRestApi.submitRule(rule);
+//
+//    startRule(ruleId);
+//
+//    waitRuleTriggered(ruleId);
+
+    while (true) {
+      Thread.sleep(1000L);
+    }
+  }
+
   @Test(timeout = 120000)
   public void testArchiveColdData() throws Exception {
     String file = "/testArchive/testArchiveFile";
