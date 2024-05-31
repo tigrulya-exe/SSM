@@ -22,3 +22,4 @@ export { useLocalStorage } from './useLocalStorage';
 export { useStore } from './useStore';
 export { useDebounce } from './useDebounce';
 export { useRequestTimer } from './useRequestTimer';
+export { useResizeObserver } from './useResizeObserver';

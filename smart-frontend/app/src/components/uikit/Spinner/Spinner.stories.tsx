@@ -15,13 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const defaultPerPagesList = [
-  { value: 10, label: '10 per page' },
-  { value: 30, label: '30 per page' },
-  { value: 50, label: '50 per page' },
-  { value: 100, label: '100 per page' },
-];
+import { SpinnerPanel } from '@uikit/Spinner/Spinner';
+import type { Meta, StoryFn } from '@storybook/react';
 
-// in milliseconds
-export const defaultSpinnerDelay = 250;
-export const defaultDebounceDelay = 300;
+const SpinnerStyle = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+};
+
+export default {
+  title: 'uikit/Spinner',
+  component: SpinnerPanel,
+  argTypes: {
+    size: {
+      type: 'number',
+      name: 'Size',
+      defaultValue: 40,
+    },
+  },
+} as Meta<typeof SpinnerPanel>;
+
+const Template: StoryFn<typeof SpinnerPanel> = (args) => {
+  return (
+    <div style={SpinnerStyle}>
+      <SpinnerPanel {...args} />
+    </div>
+  );
+};
+
+export const SpinnerElement = Template.bind({});

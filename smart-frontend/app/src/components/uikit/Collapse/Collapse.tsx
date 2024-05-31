@@ -15,13 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const defaultPerPagesList = [
-  { value: 10, label: '10 per page' },
-  { value: 30, label: '30 per page' },
-  { value: 50, label: '50 per page' },
-  { value: 100, label: '100 per page' },
-];
+import React from 'react';
+import cn from 'classnames';
+import s from './Collapse.module.scss';
 
-// in milliseconds
-export const defaultSpinnerDelay = 250;
-export const defaultDebounceDelay = 300;
+interface CollapseProps extends React.HTMLAttributes<HTMLDivElement> {
+  isExpanded: boolean;
+}
+
+const Collapse: React.FC<CollapseProps> = ({ isExpanded, children, className, ...props }) => {
+  const classes = cn(className, s.collapse, { 'is-open': isExpanded });
+
+  return (
+    <div className={classes} {...props}>
+      <div className={s.collapse__inner}>{children}</div>
+    </div>
+  );
+};
+
+export default Collapse;

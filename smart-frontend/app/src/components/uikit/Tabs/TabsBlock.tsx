@@ -20,14 +20,14 @@ import cn from 'classnames';
 import s from './Tabs.module.scss';
 
 export interface TabsBlockProps extends React.HTMLAttributes<HTMLDivElement> {
-  dataTest?: string;
+  variant?: 'primary' | 'secondary';
 }
 
-const TabsBlock: React.FC<TabsBlockProps> = ({ children, className, dataTest = 'tab-container', ...props }) => {
-  const classes = cn(className, s.tabsBlock, s['tabsBlock_primary']);
+const TabsBlock: React.FC<TabsBlockProps> = ({ children, className, variant = 'primary', ...props }) => {
+  const classes = cn(className, s.tabsBlock, s[`tabsBlock_${variant}`]);
 
   return (
-    <div className={classes} {...props} data-test={dataTest}>
+    <div className={classes} {...props}>
       {children}
     </div>
   );

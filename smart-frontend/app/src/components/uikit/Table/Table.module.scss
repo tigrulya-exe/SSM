@@ -1,0 +1,183 @@
+:global {
+  body.theme-dark {
+    --table-th-background-primary: var(--color-newDark-50);
+    --table-th-background-hover-primary: var(--color-newDarkLighter);
+    --table-th-color-primary: var(--color-grayUsual);
+    --table-th-color-hover-primary: var(--color-offWhite);
+
+    --table-tr-odd-background-primary: var(--color-newDark);
+    --table-tr-even-background-primary: var(--color-newDark-50);
+    --table-tr-odd-background-hover-primary: var(--color-plate-20);
+    --table-tr-even-background-hover-primary: var(--color-newDarkLighter);
+
+    --table-td-color-primary: var(--color-grayUsual);
+    --table-td-color-hover-primary: var(--color-offWhite);
+    --table-border-primary: var(--color-dark1);
+    --table-shadow-primary: transparent;
+  }
+
+  body.theme-light {
+    --table-th-background-primary: var(--color-colourful60);
+    --table-th-background-hover-primary: var(--color-lightStrokeLighter);
+    --table-th-color-primary: var(--color-ADCM);
+    --table-th-color-hover-primary: var(--color-dark1);
+
+    --table-tr-odd-background-primary: var(--color-colourful);
+    --table-tr-even-background-primary: var(--color-colourful60);
+    --table-tr-odd-background-hover-primary: #C7CFF0;
+    --table-tr-even-background-hover-primary: var(--color-lightStrokeLighter);
+
+    --table-td-color-primary: var(--color-ADCM);
+    --table-td-color-hover-primary: var(--color-dark1);
+    --table-border-primary: var(--color-plateLight);
+    --table-shadow-primary: rgba(119, 231, 255, 0.12);
+  }
+}
+
+.tableWrapper {
+  overflow: auto;
+  position: relative;
+
+  &:has(> .table_primary) {
+    box-shadow: 0 5px 20px 0 var(--table-shadow-primary);
+  }
+}
+
+.table {
+  overflow: hidden;
+  width: 100%;
+  text-align: left;
+  box-sizing: border-box;
+  border-collapse: collapse;
+  border-style: hidden;
+
+  &__row_noData:not(:only-child) {
+    display: none !important;
+  }
+
+  &__spinnerWrapper {
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  & :is(td, th) {
+    padding: 0;
+  }
+
+  th {
+    color: var(--table-th-color-primary);
+    font-weight: 500;
+  }
+
+  &_primary {
+    --table-cell-padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    line-height: 18px;
+    font-weight: 300;
+
+    & > tbody > tr {
+      &:nth-child(even) {
+        background: var(--table-tr-even-background-primary);
+        --table-tr-background-hover-primary: var(--table-tr-even-background-hover-primary);
+      }
+      &:nth-child(odd) {
+        background: var(--table-tr-odd-background-primary);
+        --table-tr-background-hover-primary: var(--table-tr-odd-background-hover-primary);
+      }
+      transition: background-color 250ms, color 250ms;
+      color: var(--table-th-color-primary);
+
+      &:hover {
+        background: var(--table-tr-background-hover-primary);
+        color: var(--table-td-color-hover-primary);
+      }
+    }
+
+    & > :is(thead, tbody) > tr {
+      & > :is(th, td) {
+        border: 1px solid var(--table-border-primary);
+        border-bottom: none;
+        border-top: none;
+        height: var(--table-th-height);
+      }
+
+      & > th {
+        transition: background-color 250ms, color 250ms;
+        background: var(--table-th-background-primary);
+        &:hover {
+          background: var(--table-th-background-hover-primary);
+        }
+      }
+    }
+
+    .tableCell {
+      --table-th-height: 44px;
+    }
+
+    // there is tableHeaderCell_hasSubColumns in thead, in this case we can set height = 32 for ALL th
+    // because rowspan=1 will be equal 31px, and rowspan>1 will be 31*rowspan
+    &:has(> thead .tableHeaderCell_hasSubColumns) > thead .tableHeaderCell {
+      --table-th-height: 31px;
+    }
+  }
+}
+
+.tableCell {
+
+  &_oneLine {
+    white-space: nowrap;
+  }
+
+  &__inner {
+    padding: var(--table-cell-padding);
+    justify-content: var(--table-cell-align);
+  }
+
+  &_align-left {
+    text-align: left;
+    --table-cell-align: start;
+  }
+
+  &_align-right {
+    text-align: right;
+    --table-cell-align: end;
+  }
+
+  &_align-center {
+    text-align: center;
+    --table-cell-align: center;
+  }
+}
+
+.tableHeaderCell {
+  .tableCell__inner {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.table {
+  &_primary {
+    .expandableRowMain {
+      &:not(:global(.is-open)) {
+        & + tr > td {
+          border: none !important;
+        }
+      }
+    }
+  }
+
+  .expandableRowContent {
+    &__inner {
+      padding: var(--table-cell-padding);
+    }
+  }
+}
+.expandableRowContent > td {
+  height: auto !important;
+}

@@ -15,6 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { StaticDateRange } from '@models/dateRange';
+
 export const localDateToUtc = (localDate: Date) => {
   const timestamp = localDate.getTime();
   const offset = localDate.getTimezoneOffset() * 60 * 1000; // minutes * 60sec * 1000ms
@@ -27,4 +29,12 @@ export const utcDateToLocal = (utcDate: Date) => {
   const offset = utcDate.getTimezoneOffset() * 60 * 1000; // minutes * 60sec * 1000ms
 
   return new Date(timestamp - offset);
+};
+
+export const utcStaticDateRange = (staticRange: StaticDateRange): StaticDateRange => {
+  const { from, to } = staticRange;
+  return {
+    from: utcDateToLocal(from),
+    to: utcDateToLocal(to),
+  };
 };

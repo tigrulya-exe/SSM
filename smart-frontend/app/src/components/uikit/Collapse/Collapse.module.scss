@@ -1,0 +1,14 @@
+.collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s;
+  overflow: hidden;
+
+  &:global(.is-open) {
+    grid-template-rows: 1fr;
+  }
+
+  &__inner {
+    min-height: 0;
+  }
+}

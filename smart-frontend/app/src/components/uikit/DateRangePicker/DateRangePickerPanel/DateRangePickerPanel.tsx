@@ -57,7 +57,7 @@ const DateRangePickerPanel: React.FC<DateRangePickerPanelProps> = ({
 
   return (
     <div data-test="data-picker-panel">
-      <TabsBlock>
+      <TabsBlock variant="secondary">
         <TabButton onClick={getHandleTabClick('range')} isActive={activeTab === 'range'}>
           Range
         </TabButton>

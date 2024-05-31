@@ -1,87 +1,86 @@
 :global {
   body.theme-dark {
-    --tab-inactive-color: var(--color-grayUsual);
-    --tab-inactive-color-bg: transparent;
+    // primary
+    --tabBlock-background-primary: var(--color-plate-10);
+    --tab-color-primary: var(--color-grayUsual);
+    --tab-color-active-primary: var(--color-greenSaturated);
+    --tab-background-active-primary: var(--color-greenSaturated-15);
+    --tab-color-hover-primary: var(--color-offWhite);
+    --tab-color-disabled-primary: var(--color-grayReadingOnly);
 
-    --tab-inactive-hover-color: var(--color-offWhite);
-    --tab-inactive-hover-bg: transparent;
-
-    --tab-inactive-disabled-color: var(--color-grayReadingOnly);
-
-    --tab-active-color: var(--color-greenSaturated);
-    --tab-active-bg: var(--color-greenSaturated-15);
-
-    --tab-active-hover-color: var(--color-offWhite);
-    --tab-active-hover-bg: var(--color-greenSaturated-15);
-
-    --tabs-block-bg: var(--color-plate-10);
+    // secondary
+    --tab-color-secondary: var(--color-grayUsual);
+    --tab-color-active-secondary: var(--color-greenSaturated);
+    --tab-color-hover-secondary: var(--color-offWhite);
   }
 
   body.theme-light {
-    --tab-inactive-color: var(--color-ADCM);
-    --tab-inactive-color-bg: transparent;
-
-    --tab-inactive-hover-color: var(--color-dark1);
-    --tab-inactive-hover-bg: transparent;
-
-    --tab-inactive-disabled-color: var(--color-popupLightDarker);
-
-    --tab-active-color: var(--color-greenLogo);
-    --tab-active-bg: var(--color-greenSaturated-15);
-
-    --tab-active-hover-color: var(--color-dark1);
-    --tab-active-hover-bg: var(--color-greenSaturated-15);
-
-    --tabs-block-bg: var(--color-plate-10);
+    // primary
+    --tabBlock-background-primary: var(--color-plate-10);
+    --tab-color-primary: var(--color-ADCM);
+    --tab-color-active-primary: var(--color-greenLogo);
+    --tab-background-active-primary: var(--color-greenSaturated-15);
+    --tab-color-hover-primary: var(--color-dark1);
+    --tab-color-disabled-primary: var(--color-popupLightDarker);
   }
 }
 
 .tabsBlock {
-  display: flex;
-  align-items: center;
-  width: fit-content;
-  border-radius: 8px;
-  background: var(--tabs-block-bg);
-
   &_primary {
-    padding: 0 var(--page-padding-h);
-
-    --tab-color: var(--tab-inactive-color);
-    --tab-bg: var(--tab-inactive-bg);
+    display: flex;
+    align-items: stretch;
+    background-color: var(--tabBlock-background-primary);
+    border-radius: 8px;
+    width: fit-content;
 
     .tab {
-      font-weight: 500;
       font-size: 15px;
-      line-height: normal;
-      color: var(--tab-color);
-      background: var(--tab-bg);
-      transition: color 250ms;
+      line-height: 18px;
+      font-weight: 500;
+      color: var(--tab-color-primary);
+      transition: color 250ms, background-color 250ms;
       padding: 4px 12px;
       border: none;
       cursor: pointer;
-
-      &:hover {
-        --tab-color: var(--tab-inactive-hover-color);
-        --tab-bg: var(--tab-inactive-hover-bg);
-      }
-
-      &:global(.active) {
-        --tab-color: var(--tab-active-color);
-        --tab-bg: var(--tab-active-bg);
-
-        &:hover {
-          --tab-color: var(--tab-active-hover-color);
-          --tab-bg: var(--tab-active-hover-bg);
-        }
-      }
-
-      &_disabled,
-      &_disabled:hover {
-        cursor: default;
-        --tab-color: var(--tab-inactive-disabled-color);
-      }
-
       border-radius: 8px;
+
+      &:global(.active), // default class which ReactRouter set  on current NavLink
+      &:global(.is-active) {
+        color: var(--tab-color-active-primary);
+        background: var(--tab-background-active-primary);
+      }
+      &:hover {
+        color: var(--tab-color-hover-primary);
+      }
+      &:disabled,
+      &.tab_disabled {
+        color: var(--tab-color-disabled-primary);
+      }
+    }
+  }
+
+  &_secondary {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .tab {
+      font-size: 15px;
+      line-height: 18px;
+      font-weight: 500;
+      color: var(--tab-color-secondary);
+      transition: color 250ms;
+      border: none;
+      cursor: pointer;
+
+      &:global(.active), // default class which ReactRouter set  on current NavLink
+      &:global(.is-active) {
+        color: var(--tab-color-active-secondary);
+      }
+      &:hover {
+        color: var(--tab-color-hover-secondary);
+      }
     }
   }
 }

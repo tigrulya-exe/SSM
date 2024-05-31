@@ -38,13 +38,11 @@ const meta = {
     },
     size: {
       description: 'Size',
-      defaultValue: 'medium',
       options: ['medium', 'small'],
       control: { type: 'radio' },
     },
     variant: {
       description: 'Variant',
-      defaultValue: 'primary',
       options: ['primary', 'secondary'],
       control: { type: 'radio' },
     },

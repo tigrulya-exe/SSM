@@ -15,13 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const defaultPerPagesList = [
-  { value: 10, label: '10 per page' },
-  { value: 30, label: '30 per page' },
-  { value: 50, label: '50 per page' },
-  { value: 100, label: '100 per page' },
-];
+import type { SelectOption } from '@uikit/Select/Select.types';
 
-// in milliseconds
-export const defaultSpinnerDelay = 250;
-export const defaultDebounceDelay = 300;
+export const generateOptions = <T>(keys: T[], getLabel?: (key: T) => string): SelectOption<T>[] => {
+  return keys.map((key) => ({
+    label: getLabel ? getLabel(key) : key?.toString() || '',
+    value: key,
+  }));
+};
+
+export const getStatusLabel = (status: string) => {
+  const statusLabel = status.trim().replaceAll('_', ' ');
+  return statusLabel[0].toUpperCase() + (statusLabel?.slice(1).toLowerCase() ?? '');
+};

@@ -15,13 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const defaultPerPagesList = [
-  { value: 10, label: '10 per page' },
-  { value: 30, label: '30 per page' },
-  { value: 50, label: '50 per page' },
-  { value: 100, label: '100 per page' },
-];
+import React from 'react';
 
-// in milliseconds
-export const defaultSpinnerDelay = 250;
-export const defaultDebounceDelay = 300;
+export type TableRowProps = React.HTMLAttributes<HTMLTableRowElement>;
+
+const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
+  ({ children, className, ...props }: TableRowProps, ref) => {
+    return (
+      <tr ref={ref} className={className} {...props}>
+        {children}
+      </tr>
+    );
+  },
+);
+
+export default TableRow;

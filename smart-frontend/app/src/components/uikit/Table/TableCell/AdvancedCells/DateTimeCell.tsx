@@ -15,13 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const defaultPerPagesList = [
-  { value: 10, label: '10 per page' },
-  { value: 30, label: '30 per page' },
-  { value: 50, label: '50 per page' },
-  { value: 100, label: '100 per page' },
-];
+import React from 'react';
+import { orElseGet } from '@utils/checkUtils';
+import TableCell from '@uikit/Table/TableCell/TableCell';
+import { dateToString } from '@utils/date/dateConvertUtils';
+import type { AdvancedCellsProps } from './AdvancedCells.types';
 
-// in milliseconds
-export const defaultSpinnerDelay = 250;
-export const defaultDebounceDelay = 300;
+const prepareDate = (value: number) => {
+  return dateToString(new Date(value), { toUtc: true });
+};
+
+const DateTimeCell = ({ value, ...props }: AdvancedCellsProps<number>) => {
+  return (
+    <TableCell width="180px" minWidth="125px" {...props}>
+      {orElseGet(value, prepareDate)}
+    </TableCell>
+  );
+};
+
+export default DateTimeCell;

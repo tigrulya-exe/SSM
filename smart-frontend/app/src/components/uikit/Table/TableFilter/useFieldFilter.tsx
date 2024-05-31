@@ -15,13 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const defaultPerPagesList = [
-  { value: 10, label: '10 per page' },
-  { value: 30, label: '30 per page' },
-  { value: 50, label: '50 per page' },
-  { value: 100, label: '100 per page' },
-];
+import type { EmptyTableFilter } from '@models/table';
+import { useTableContext } from '@uikit/Table/TableContext';
 
-// in milliseconds
-export const defaultSpinnerDelay = 250;
-export const defaultDebounceDelay = 300;
+export const useFieldFilter = <Filter extends EmptyTableFilter, Value>(filterName: keyof Filter) => {
+  const { filter, onFiltering } = useTableContext<Filter>();
+
+  const setFilterValue = (value?: Value) => onFiltering?.({ ...filter, [filterName]: value } as Filter);
+
+  const filterValue = filter?.[filterName] as Value;
+
+  return [filterValue, setFilterValue] as const;
+};

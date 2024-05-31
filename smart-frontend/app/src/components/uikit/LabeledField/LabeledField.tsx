@@ -25,11 +25,10 @@ export interface LabeledFieldProps extends React.HTMLAttributes<HTMLDivElement> 
   disabled?: boolean;
   hint?: ReactNode;
   direction?: 'column' | 'row';
-  dataTest?: string;
 }
 
 const LabeledField = React.forwardRef<HTMLDivElement, LabeledFieldProps>(
-  ({ label, hint = '', className, disabled = false, direction = 'column', children, dataTest, ...props }, ref) => {
+  ({ label, hint = '', className, disabled = false, direction = 'column', children, ...props }, ref) => {
     const labeledFieldClasses = cn(
       s.labeledField,
       {
