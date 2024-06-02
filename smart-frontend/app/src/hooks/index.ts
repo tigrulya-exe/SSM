@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+export { useBreadcrumbs } from './useBreadcrumbs';
 export { useDispatch } from './useDispatch';
 export { useForwardRef } from './useForwardRef';
 export { useLocalStorage } from './useLocalStorage';

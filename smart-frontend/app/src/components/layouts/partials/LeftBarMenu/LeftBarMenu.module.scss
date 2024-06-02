@@ -1,0 +1,36 @@
+.leftBarMenuItem {
+  display: flex;
+  gap: 8px;
+  text-align: inherit;
+  justify-content: flex-start;
+  font-size: 15px;
+  line-height: 18px;
+
+  transition: color 250ms;
+  color: var(--text-default-color);
+
+  &:hover {
+    color: var(--text-title-color);
+  }
+
+  &:active,
+  &:global(.active) {
+    color: var(--text-green-color);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.leftBarMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}

@@ -1,0 +1,10 @@
+.mainLeftSideBar {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+
+  &__systemMenu {
+    margin-top: auto;
+  }
+}

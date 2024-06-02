@@ -27,6 +27,7 @@
 
   &__title {
     color: var(--text-title-color);
+    text-align: center;
   }
 
   &__title,
@@ -39,8 +40,11 @@
 
   &__defaultControls {
     display: flex;
-    justify-content: right;
-    margin-left: auto;
+    justify-content: center;
+
+    button {
+      min-width: 110px;
+    }
   }
 
   &__controlsOnTop {
