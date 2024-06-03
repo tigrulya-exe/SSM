@@ -15,23 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import React from 'react';
+import { Button, IconButton, Input } from '@uikit';
 
-import { defineConfig } from 'vite';
-import tsConfigPaths from 'vite-tsconfig-paths';
-import createSvgSpritePlugin from 'vite-plugin-svg-spriter'
-import react from '@vitejs/plugin-react';
+const ClusterInfoPage: React.FC = () => {
+  return (
+    <div>
+      <span>Cluster Info</span>
+      <div>
+        <div>
+          Button: <br /> <br />
+          <Button>Some label</Button>
+        </div>
+        <br />
+        <br />
+        <div>
+          IconButton: <br /> <br />
+          <IconButton icon="chevron" />
+        </div>
+        <br />
+        <br />
+        <div>
+          Input: <br /> <br />
+          <Input endAdornment={<IconButton icon="search" variant="secondary" size={16} />} />
+        </div>
+      </div>
+    </div>
+  );
+};
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  server: {
-    port: 5175,
-  },
-  plugins: [
-    tsConfigPaths(),
-    createSvgSpritePlugin({ svgFolder: './src/components/uikit/Icon/icons' }),
-    react(),
-  ],
-  resolve: {
-    extensions: ['.tsx', '.ts', '.json', '.mts', '.mjs', '.js', '.jsx'],
-  },
-});
+export default ClusterInfoPage;

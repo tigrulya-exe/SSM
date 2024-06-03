@@ -17,39 +17,34 @@
  */
 import React from 'react';
 import { Provider } from 'react-redux';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom';
 import { store } from '@store';
-import { Button, IconButton, Input } from '@uikit';
 import './styles/app.scss';
+import MainLayout from '@layouts/MainLayout/MainLayout';
+import ClusterInfoPage from '@pages/ClusterInfoPage/ClusterInfoPage';
+import RulesPage from '@pages/RulesPage/RulesPage';
+import ActionsPage from '@pages/ActionsPage/ActionsPage';
+import AuditPage from '@pages/AuditPage/AuditPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Provider store={store}>
         <Routes>
+          {/*<Route path="/login" element={<LoginPage />} />*/}
           <Route
             path="/"
             element={
-              <>
-                <div>
-                  Button: <br /> <br />
-                  <Button>Some label</Button>
-                </div>
-                <br />
-                <br />
-                <div>
-                  IconButton: <br /> <br />
-                  <IconButton icon="chevron" />
-                </div>
-                <br />
-                <br />
-                <div>
-                  Input: <br /> <br />
-                  <Input endAdornment={<IconButton icon="search" variant="secondary" size={16} />} />
-                </div>
-              </>
+              <MainLayout>
+                <Outlet />
+              </MainLayout>
             }
-          />
+          >
+            <Route index element={<ClusterInfoPage />} />
+            <Route path="/rules" element={<RulesPage />} />
+            <Route path="/actions" element={<ActionsPage />} />
+            <Route path="/audit" element={<AuditPage />} />
+          </Route>
         </Routes>
       </Provider>
     </BrowserRouter>

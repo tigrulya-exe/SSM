@@ -1,0 +1,38 @@
+:global {
+  body.theme-dark {
+    --themeSwitcher-color: var(--color-grayUsual);
+    --themeSwitcher-color-hover: var(--color-offWhite);
+    --themeSwitcher-border-active: var(--color-dark1);
+    --themeSwitcher-background-active: var(--color-newLight);
+    --themeSwitcher-color-active: var(--color-greenSaturated);
+
+  }
+  body.theme-light {
+    --themeSwitcher-color: var(--color-ADCM);
+    --themeSwitcher-color-hover: var(--color-dark1);
+    --themeSwitcher-border-active: var(--color-lightStrokeLighter);
+    --themeSwitcher-background-active: var(--color-plateLight);
+    --themeSwitcher-color-active: var(--color-greenLogo);
+  }
+}
+
+.themeSwitcher {
+  display: inline-flex;
+  gap: 4px;
+
+  button {
+    color: var(--themeSwitcher-color);
+    border-radius: 50%;
+
+    &:hover {
+      color: var(--themeSwitcher-color-hover);
+    }
+
+    &:global(.is-active) {
+      cursor: default;
+      box-shadow: inset 0 0 0 1px var(--themeSwitcher-border-active);
+      background: var(--themeSwitcher-background-active);
+      color: var(--themeSwitcher-color-active);
+    }
+  }
+}

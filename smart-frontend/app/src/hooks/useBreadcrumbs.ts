@@ -15,23 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useMemo } from 'react';
+import { buildBreadcrumbs } from '@utils/breadcrumbsUtils';
+import { useCurrentRoute } from '@hooks/useCurrentRoute';
 
-import { defineConfig } from 'vite';
-import tsConfigPaths from 'vite-tsconfig-paths';
-import createSvgSpritePlugin from 'vite-plugin-svg-spriter'
-import react from '@vitejs/plugin-react';
+export const useBreadcrumbs = () => {
+  const currentRoute = useCurrentRoute();
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  server: {
-    port: 5175,
-  },
-  plugins: [
-    tsConfigPaths(),
-    createSvgSpritePlugin({ svgFolder: './src/components/uikit/Icon/icons' }),
-    react(),
-  ],
-  resolve: {
-    extensions: ['.tsx', '.ts', '.json', '.mts', '.mjs', '.js', '.jsx'],
-  },
-});
+  const breadcrumbs = useMemo(() => {
+    if (currentRoute) {
+      return buildBreadcrumbs(currentRoute);
+    }
+    return [];
+  }, [currentRoute]);
+
+  return breadcrumbs;
+};

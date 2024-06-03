@@ -15,23 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import React from 'react';
+import LeftBarMenuItem from './LeftBarMenuItem';
+import { Tooltip, ConditionalWrapper } from '@uikit';
 
-import { defineConfig } from 'vite';
-import tsConfigPaths from 'vite-tsconfig-paths';
-import createSvgSpritePlugin from 'vite-plugin-svg-spriter'
-import react from '@vitejs/plugin-react';
+const LeftBarUserItem: React.FC = () => {
+  // Todo: use name from store
+  const userName = 'AdminAdminAdminAdmin';
+  const isShowTooltip = userName.length > 12;
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  server: {
-    port: 5175,
-  },
-  plugins: [
-    tsConfigPaths(),
-    createSvgSpritePlugin({ svgFolder: './src/components/uikit/Icon/icons' }),
-    react(),
-  ],
-  resolve: {
-    extensions: ['.tsx', '.ts', '.json', '.mts', '.mjs', '.js', '.jsx'],
-  },
-});
+  return (
+    <ConditionalWrapper Component={Tooltip} isWrap={isShowTooltip} label={userName}>
+      <LeftBarMenuItem icon="user" label={userName} />
+    </ConditionalWrapper>
+  );
+};
+
+export default LeftBarUserItem;

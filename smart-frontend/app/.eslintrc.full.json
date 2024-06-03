@@ -8,6 +8,8 @@
           ["@hooks", "./src/hooks/"],
           ["@layouts", "./src/components/layouts"],
           ["@models", "./src/models/"],
+          ["@pages", "./src/components/pages/"],
+          ["@routes", "./src/routes/"],
           ["@store", "./src/store/"],
           ["@uikit", "./src/components/uikit/"],
           ["@utils", "./src/utils/"]

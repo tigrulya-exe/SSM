@@ -17,14 +17,21 @@
  */
 export const allowIconsNames = [
   //
+  'actions',
+  'audit',
   'arrow-sorting',
   'chevron-double',
   'chevron',
+  'cluster-info',
   'close',
   'check',
+  'documentation',
   'eye',
   'eye-closed',
   'logout',
+  'moon',
+  'rules',
+  'sun',
   'search',
   'status-error',
   'status-info',

@@ -15,23 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import React from 'react';
+import { Link } from 'react-router-dom';
+import s from './Breadcrumbs.module.scss';
+import type { BreadcrumbsItemConfig } from '@routes/routes.types';
+import { useBreadcrumbs } from '@hooks';
 
-import { defineConfig } from 'vite';
-import tsConfigPaths from 'vite-tsconfig-paths';
-import createSvgSpritePlugin from 'vite-plugin-svg-spriter'
-import react from '@vitejs/plugin-react';
+const Breadcrumbs: React.FC = () => {
+  const breadcrumbsList = useBreadcrumbs();
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  server: {
-    port: 5175,
-  },
-  plugins: [
-    tsConfigPaths(),
-    createSvgSpritePlugin({ svgFolder: './src/components/uikit/Icon/icons' }),
-    react(),
-  ],
-  resolve: {
-    extensions: ['.tsx', '.ts', '.json', '.mts', '.mjs', '.js', '.jsx'],
-  },
-});
+  return (
+    <ul className={s.breadcrumbs}>
+      {breadcrumbsList.map(({ label, href }) => (
+        <CrumbsItem label={label} href={href} key={label + href} />
+      ))}
+    </ul>
+  );
+};
+
+export default Breadcrumbs;
+
+const CrumbsItem: React.FC<BreadcrumbsItemConfig> = ({ label, href }) => {
+  return <li>{href ? <Link to={href}>{label}</Link> : <span>{label}</span>}</li>;
+};

@@ -20,17 +20,15 @@ import Modal from '@uikit/Modal/Modal';
 import type { ModalOptions } from '@uikit/Modal/Modal.types';
 import IconButton from '@uikit/IconButton/IconButton';
 import Text from '@uikit/Text/Text';
-import type { DialogDefaultControlsProps } from '@uikit/Dialog/DialogDefaultControls';
-import DialogDefaultControls from '@uikit/Dialog/DialogDefaultControls';
-import Panel from '@uikit/Panel/Panel';
+import type { DialogDefaultControlsProps } from './DialogDefaultControls';
+import DialogDefaultControls from './DialogDefaultControls';
 import s from './Dialog.module.scss';
 import cn from 'classnames';
 
 export interface DialogProps extends ModalOptions, DialogDefaultControlsProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   title?: React.ReactNode;
   dialogControls?: React.ReactNode;
-  isDialogControlsOnTop?: boolean;
   width?: string;
   height?: string;
   maxWidth?: string;
@@ -46,7 +44,6 @@ const Dialog: React.FC<DialogProps> = ({
   children,
   title,
   dialogControls,
-  isDialogControlsOnTop,
   cancelButtonLabel,
   actionButtonLabel,
   isActionDisabled,
@@ -103,13 +100,8 @@ const Dialog: React.FC<DialogProps> = ({
           {title}
         </Text>
       )}
-      {isDialogControlsOnTop && dialogControlsComponent && (
-        <Panel className={s.dialog__controlsOnTop} variant="primary">
-          {dialogControlsComponent}
-        </Panel>
-      )}
-      <div className={s.dialog__body}>{children}</div>
-      {!isDialogControlsOnTop && dialogControlsComponent}
+      {children && <div className={s.dialog__body}>{children}</div>}
+      {dialogControlsComponent}
     </Modal>
   );
 };

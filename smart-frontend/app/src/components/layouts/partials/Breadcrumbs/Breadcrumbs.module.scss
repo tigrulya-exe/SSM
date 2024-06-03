@@ -1,0 +1,23 @@
+.breadcrumbs {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+
+  li {
+    display: flex;
+
+    &:not(:first-child)::before {
+      content: '/';
+      margin-right: 5px;
+    }
+  }
+
+  a {
+    transition: color 250ms;
+    color: var(--text-default-color);
+
+    &:hover {
+      color: var(--text-title-color);
+    }
+  }
+}

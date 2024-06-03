@@ -15,23 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import React from 'react';
+import CurrentDate from '@layouts/partials/CurrentDate/CurrentDate';
+import ThemeSwitcher from '@layouts/partials/ThemeSwitcher/ThemeSwitcher';
+import s from './HeaderToolbar.module.scss';
 
-import { defineConfig } from 'vite';
-import tsConfigPaths from 'vite-tsconfig-paths';
-import createSvgSpritePlugin from 'vite-plugin-svg-spriter'
-import react from '@vitejs/plugin-react';
+const HeaderToolbar: React.FC<React.PropsWithChildren> = () => {
+  return (
+    <div className={s.headerToolbar}>
+      <CurrentDate />
+      <ThemeSwitcher />
+    </div>
+  );
+};
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  server: {
-    port: 5175,
-  },
-  plugins: [
-    tsConfigPaths(),
-    createSvgSpritePlugin({ svgFolder: './src/components/uikit/Icon/icons' }),
-    react(),
-  ],
-  resolve: {
-    extensions: ['.tsx', '.ts', '.json', '.mts', '.mjs', '.js', '.jsx'],
-  },
-});
+export default HeaderToolbar;

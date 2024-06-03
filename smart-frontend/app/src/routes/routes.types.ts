@@ -15,23 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+export type BreadcrumbsItemConfig = {
+  label: string;
+  href?: string;
+};
 
-import { defineConfig } from 'vite';
-import tsConfigPaths from 'vite-tsconfig-paths';
-import createSvgSpritePlugin from 'vite-plugin-svg-spriter'
-import react from '@vitejs/plugin-react';
+interface PageRouteConfig {
+  breadcrumbs: BreadcrumbsItemConfig[];
+}
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  server: {
-    port: 5175,
-  },
-  plugins: [
-    tsConfigPaths(),
-    createSvgSpritePlugin({ svgFolder: './src/components/uikit/Icon/icons' }),
-    react(),
-  ],
-  resolve: {
-    extensions: ['.tsx', '.ts', '.json', '.mts', '.mjs', '.js', '.jsx'],
-  },
-});
+export type RoutesConfigs = Record<string, PageRouteConfig>;
+
+export type DynamicParameters = { [key: string]: string | undefined };
+
+export type Route = {
+  path: string;
+  params: DynamicParameters;
+};

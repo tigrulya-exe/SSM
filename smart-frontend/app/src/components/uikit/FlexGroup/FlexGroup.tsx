@@ -15,23 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { CSSProperties } from 'react';
+import React, { useMemo } from 'react';
+import cn from 'classnames';
+import s from './FlexGroup.module.scss';
 
-import { defineConfig } from 'vite';
-import tsConfigPaths from 'vite-tsconfig-paths';
-import createSvgSpritePlugin from 'vite-plugin-svg-spriter'
-import react from '@vitejs/plugin-react';
+interface FlexGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+  gap?: CSSProperties['gap'];
+}
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  server: {
-    port: 5175,
-  },
-  plugins: [
-    tsConfigPaths(),
-    createSvgSpritePlugin({ svgFolder: './src/components/uikit/Icon/icons' }),
-    react(),
-  ],
-  resolve: {
-    extensions: ['.tsx', '.ts', '.json', '.mts', '.mjs', '.js', '.jsx'],
-  },
-});
+const FlexGroup: React.FC<FlexGroupProps> = ({ children, className, gap, style, ...props }) => {
+  const innerStyle = useMemo(() => ({ gap, ...style }), [gap, style]);
+
+  return (
+    <div className={cn(className, s.flexGroup)} style={innerStyle} {...props}>
+      {children}
+    </div>
+  );
+};
+
+export default FlexGroup;

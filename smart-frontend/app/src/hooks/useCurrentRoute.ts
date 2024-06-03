@@ -15,23 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useMemo } from 'react';
+import { useLocation, matchRoutes } from 'react-router-dom';
+import routes from '@routes/routes';
 
-import { defineConfig } from 'vite';
-import tsConfigPaths from 'vite-tsconfig-paths';
-import createSvgSpritePlugin from 'vite-plugin-svg-spriter'
-import react from '@vitejs/plugin-react';
+const pagesRoutes = Object.keys(routes).map((path: string) => ({ path }));
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  server: {
-    port: 5175,
-  },
-  plugins: [
-    tsConfigPaths(),
-    createSvgSpritePlugin({ svgFolder: './src/components/uikit/Icon/icons' }),
-    react(),
-  ],
-  resolve: {
-    extensions: ['.tsx', '.ts', '.json', '.mts', '.mjs', '.js', '.jsx'],
-  },
-});
+export const useCurrentRoute = () => {
+  const { pathname } = useLocation();
+
+  const currentRoute = useMemo(() => {
+    const matchedRoutes = matchRoutes(pagesRoutes, pathname);
+    if (!matchedRoutes?.length || !matchedRoutes[0]?.route.path) return;
+
+    return {
+      path: matchedRoutes[0].route.path,
+      params: matchedRoutes[0].params,
+    };
+  }, [pathname]);
+
+  return currentRoute;
+};

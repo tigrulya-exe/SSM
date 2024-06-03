@@ -1,0 +1,27 @@
+:global {
+  body.theme-dark {
+    --mainLayout-background: var(--color-ADQMblack);
+    --mainLayout-body-background: var(--color-ADHnew);
+  }
+
+  body.theme-light {
+    --mainLayout-background: var(--color-colourful);
+    --mainLayout-body-background: var(--color-colourful25);
+  }
+}
+
+.mainLayout {
+  display: grid;
+  grid-template-columns: 240px auto;
+  min-height: 100vh;
+
+  background: var(--mainLayout-background);
+
+  &__body {
+    min-width: 0;
+    background: var(--mainLayout-body-background);
+
+    border-radius: 40px 0 0 40px;;
+    padding: 36px 40px;
+  }
+}

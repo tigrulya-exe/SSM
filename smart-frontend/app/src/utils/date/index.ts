@@ -15,6 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { format, isEqual, isValid } from 'date-fns';
+import { format, isEqual, isValid, intervalToDuration } from 'date-fns';
 
-export { format, isEqual, isValid };
+export { format, isEqual, isValid, intervalToDuration };
