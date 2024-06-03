@@ -19,7 +19,9 @@ package org.smartdata.server.config;
 
 import org.apache.commons.lang.StringUtils;
 import org.smartdata.conf.SmartConf;
+import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.server.security.SmartPrincipalInitializerFilter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
@@ -42,7 +44,6 @@ import org.springframework.security.kerberos.web.authentication.SpnegoAuthentica
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
@@ -53,16 +54,18 @@ import java.util.stream.Collectors;
 
 @EnableWebSecurity
 @Configuration
-// @ConditionalOnProperty(name = SmartConfKeys.SMART_SECURITY_ENABLE, havingValue = "true")
+@ConditionalOnProperty(name = SmartConfKeys.SMART_SECURITY_ENABLE, havingValue = "true")
 public class SpnegoSecurityConfiguration {
 
   @Bean
   public SecurityFilterChain kerberosSecurityFilterChain(
       HttpSecurity http,
-      SpnegoAuthenticationProcessingFilter spnegoFilter,
-      UsernamePasswordAuthenticationFilter usernameFilter) throws Exception {
+      SpnegoAuthenticationProcessingFilter spnegoFilter) throws Exception {
     http.cors().disable()
         .csrf().disable()
+        .exceptionHandling()
+        .authenticationEntryPoint(spnegoEntryPoint())
+        .and()
         .httpBasic()
         .and()
         .authorizeRequests()
@@ -71,8 +74,6 @@ public class SpnegoSecurityConfiguration {
         .anonymous().disable()
         .addFilterBefore(
             spnegoFilter, BasicAuthenticationFilter.class)
-//        .addFilterAfter(
-//            usernameFilter, SpnegoAuthenticationProcessingFilter.class)
         .addFilterAfter(
             new SmartPrincipalInitializerFilter(), BasicAuthenticationFilter.class)
         .logout(logout -> logout.deleteCookies("JSESSIONID")
@@ -123,35 +124,22 @@ public class SpnegoSecurityConfiguration {
   public KerberosTicketValidator kerberosTicketValidator(SmartConf smartConf) {
     SunJaasKerberosTicketValidator ticketValidator = new SunJaasKerberosTicketValidator();
     // todo validate non null
-//    String principal = smartConf.get(SmartConfKeys.SMART_SERVER_KERBEROS_PRINCIPAL_KEY);
-    String principal = "HTTP/myhost.com@ARENADATA.IO";
+    String principal = smartConf.get(SmartConfKeys.SMART_SERVER_KERBEROS_PRINCIPAL_KEY);
     ticketValidator.setServicePrincipal(principal);
-//    String keytabPath = smartConf.get(SmartConfKeys.SMART_SERVER_KEYTAB_FILE_KEY);
-    String keytabPath = "test";
+    String keytabPath = smartConf.get(SmartConfKeys.SMART_SERVER_KEYTAB_FILE_KEY);
     ticketValidator.setKeyTabLocation(new FileSystemResource(keytabPath));
     return ticketValidator;
   }
 
   @Bean
   public SpnegoEntryPoint spnegoEntryPoint() {
-    return new SpnegoEntryPoint("/api/v2/login");
+    return new SpnegoEntryPoint();
   }
 
   @Bean
   public UserDetailsService userDetailsService(SmartConf smartConf) {
     List<UserDetails> predefinedUsers = parsePredefinedUsers(smartConf);
     return new InMemoryUserDetailsManager(predefinedUsers);
-  }
-
-  @Bean
-  public UsernamePasswordAuthenticationFilter usernamePasswordAuthenticationFilter(
-      AuthenticationManager authManager) {
-    UsernamePasswordAuthenticationFilter filter = new UsernamePasswordAuthenticationFilter();
-    filter.setAuthenticationManager(authManager);
-    filter.setFilterProcessesUrl("/api/v2/login");
-    filter.setAuthenticationSuccessHandler(
-        new NoOpAuthenticationSuccessHandler());
-    return filter;
   }
 
   private List<UserDetails> parsePredefinedUsers(SmartConf smartConf) {

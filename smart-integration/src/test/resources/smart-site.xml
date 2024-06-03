@@ -17,5 +17,20 @@
 <!-- Put site-specific property overrides in this file. -->
 
 <configuration>
-
+  <property>
+    <name>smart.security.enable</name>
+    <value>true</value>
+  </property>
+  <property>
+    <name>smart.server.keytab.file</name>
+    <value>/Users/tigrulya/IdeaProjects/SSM/smart-integration/src/test/resources/ssm.keytab</value>
+  </property>
+  <property>
+    <name>smart.server.kerberos.principal</name>
+    <value>ssm/free-ipa-ssm-1@RU-CENTRAL1-A.INTERNAL</value>
+  </property>
+<!--  <property>-->
+<!--    <name>smart.agent.keytab.file</name>-->
+<!--    <value>/home/tigrulya/sources/SSM/smart-dist/target/smart-data-1.6.0-SNAPSHOT/keytab/smartagent.keytab</value>-->
+<!--  </property>-->
 </configuration>
