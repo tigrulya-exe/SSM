@@ -49,6 +49,8 @@ import org.springframework.security.kerberos.web.authentication.SpnegoAuthentica
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import java.util.Arrays;
@@ -76,19 +78,25 @@ public class SecurityConfiguration {
 //  @ConditionalOnProperty(name = SmartConfKeys.SMART_SECURITY_ENABLE, havingValue = "true")
   public SecurityFilterChain kerberosSecurityFilterChain(
       HttpSecurity http,
-      SpnegoAuthenticationProcessingFilter spnegoFilter) throws Exception {
+      SpnegoAuthenticationProcessingFilter spnegoFilter,
+      UsernamePasswordAuthenticationFilter usernameFilter) throws Exception {
     withDisabledCsrf(http)
+        .anonymous().disable()
         .addFilterBefore(spnegoFilter, BasicAuthenticationFilter.class)
+        .addFilterAfter(
+            usernameFilter, SpnegoAuthenticationProcessingFilter.class)
         .addFilterAfter(
             new SmartPrincipalInitializerFilter(), BasicAuthenticationFilter.class)
         .authorizeRequests()
         .anyRequest()
         .authenticated()
+//        .and()
+//        .formLogin()
         .and()
-        .httpBasic();
-//        .authenticationEntryPoint("/api/v2/login")
-//        .loginPage("/api/v2/login")
-//        .permitAll();
+        .rememberMe()
+        .and()
+        .logout(logout -> logout.deleteCookies("JSESSIONID")
+            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()));
     return http.build();
   }
 
@@ -160,6 +168,17 @@ public class SecurityConfiguration {
   public UserDetailsService userDetailsService(SmartConf smartConf) {
     List<UserDetails> predefinedUsers = parsePredefinedUsers(smartConf);
     return new InMemoryUserDetailsManager(predefinedUsers);
+  }
+
+  @Bean
+  public UsernamePasswordAuthenticationFilter usernamePasswordAuthenticationFilter(
+      AuthenticationManager authManager) {
+    UsernamePasswordAuthenticationFilter filter = new UsernamePasswordAuthenticationFilter();
+    filter.setAuthenticationManager(authManager);
+    filter.setFilterProcessesUrl("/api/v2/login");
+//    filter.setAuthenticationSuccessHandler();
+//    filter.setAuthenticationSuccessHandler();
+    return filter;
   }
 
   private List<UserDetails> parsePredefinedUsers(SmartConf smartConf) {
