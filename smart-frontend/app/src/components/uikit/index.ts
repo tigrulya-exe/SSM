@@ -17,27 +17,29 @@
  */
 
 import Button from '@uikit/Button/Button';
+import Checkbox from './Checkbox/Checkbox';
+import ConditionalWrapper from '@uikit/ConditionalWrapper/ConditionalWrapper';
+import Dialog from './Dialog/Dialog';
 import Icon from '@uikit/Icon/Icon';
 import IconButton from '@uikit/IconButton/IconButton';
 import type { IconsNames } from '@uikit/Icon/sprite';
 import Input from '@uikit/Input/Input';
 import InputNumber from './InputNumber/InputNumber';
-import PasswordInput from './PasswordInput/PasswordInput';
-import Select from './Select/SingleSelect/Select/Select';
 import MultiSelect from './Select/MultiSelect/MultiSelect';
-import Dialog from './Dialog/Dialog';
-import Tooltip from './Tooltip/Tooltip';
+import PasswordInput from './PasswordInput/PasswordInput';
 import Panel from './Panel/Panel';
 import Popover from './Popover/Popover';
 import PopoverPanelDefault from './Popover/PopoverPanelDefault/PopoverPanelDefault';
-import Checkbox from './Checkbox/Checkbox';
 import SearchInput from './SearchInput/SearchInput';
+import Select from './Select/SingleSelect/Select/Select';
+import Tooltip from './Tooltip/Tooltip';
 
 export {
   //
   Button,
   Dialog,
   Checkbox,
+  ConditionalWrapper,
   Icon,
   IconButton,
   IconsNames,

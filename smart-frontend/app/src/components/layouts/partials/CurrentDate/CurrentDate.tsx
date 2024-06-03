@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 import React, { useEffect, useState } from 'react';
-import { format } from 'date-fns';
 import cn from 'classnames';
 import { localDateToUtc } from '@utils/date/utcUtils';
+import { format } from '@utils/date';
 
 import s from './CurrentDate.module.scss';
 

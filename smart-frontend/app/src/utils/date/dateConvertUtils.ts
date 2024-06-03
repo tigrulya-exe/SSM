@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { format, intervalToDuration } from 'date-fns';
+import { format, intervalToDuration } from './index';
 import { localDateToUtc } from './utcUtils';
 import type { SerializedDate } from '@models/dateRange';
 

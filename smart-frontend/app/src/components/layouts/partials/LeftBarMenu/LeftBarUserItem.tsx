@@ -17,8 +17,7 @@
  */
 import React from 'react';
 import LeftBarMenuItem from './LeftBarMenuItem';
-import { Tooltip } from '@uikit';
-import ConditionalWrapper from '@uikit/ConditionalWrapper/ConditionalWrapper';
+import { Tooltip, ConditionalWrapper } from '@uikit';
 
 const LeftBarUserItem: React.FC = () => {
   // Todo: use name from store
