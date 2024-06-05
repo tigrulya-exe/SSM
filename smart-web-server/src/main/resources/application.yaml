@@ -4,3 +4,8 @@ springdoc:
   swagger-ui:
     url: /ssm-api.yaml
     disable-swagger-default-url: true
+server:
+  servlet:
+    session:
+      cookie:
+        name: SSM_SESSION_ID

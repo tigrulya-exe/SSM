@@ -41,6 +41,7 @@ public class SmartPrincipalInitializerFilter extends OncePerRequestFilter {
 
     Optional.ofNullable(SecurityContextHolder.getContext())
         .map(SecurityContext::getAuthentication)
+        .filter(Authentication::isAuthenticated)
         .map(Authentication::getName)
         .map(SmartPrincipal::new)
         .ifPresent(SmartPrincipalHolder::setCurrentPrincipal);

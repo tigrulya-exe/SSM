@@ -17,49 +17,78 @@
  */
 package org.smartdata.server.config;
 
-import org.smartdata.conf.SmartConfKeys;
+import lombok.RequiredArgsConstructor;
 import org.smartdata.server.security.SmartPrincipalInitializerFilter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-@EnableWebSecurity
-@Configuration(proxyBeanMethods = false)
+import java.util.List;
+
+@Configuration
 public class SecurityConfiguration {
+  private static final String SESSION_COOKIE_NAME = "SSM_SESSIONID";
+
+  @Bean
+  @ConditionalOnProperty(name = ConfigKeys.WEB_SECURITY_ENABLED, havingValue = "true")
+  public AuthenticationManager authenticationManager(
+      List<AuthenticationProvider> authenticationProviders) {
+    if (authenticationProviders.isEmpty()) {
+      throw new IllegalArgumentException(
+          "REST server security is enabled, but no authentication method is provided");
+    }
+    return new ProviderManager(authenticationProviders);
+  }
+
+  @Bean
+  @ConditionalOnProperty(name = ConfigKeys.WEB_SECURITY_ENABLED, havingValue = "true")
+  public SecurityFilterChain securityFilterChain(
+      HttpSecurity http, List<SsmAuthHttpConfigurer> authHttpConfigurers) throws Exception {
+    http.cors().disable()
+        .csrf().disable()
+        .authorizeRequests()
+        .anyRequest().authenticated()
+        .and()
+        .anonymous().disable()
+        .addFilterAfter(
+            new SmartPrincipalInitializerFilter(), BasicAuthenticationFilter.class)
+        .logout(logout -> logout.deleteCookies(SESSION_COOKIE_NAME)
+            .logoutUrl("/api/v2/logout")
+            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()));
+
+    for (SsmAuthHttpConfigurer configurer : authHttpConfigurers) {
+      http.apply(configurer);
+    }
+
+    return http.build();
+  }
+
   @Bean
   @ConditionalOnProperty(
-      name = SmartConfKeys.SMART_SECURITY_ENABLE,
+      name = ConfigKeys.WEB_SECURITY_ENABLED,
       havingValue = "false",
       matchIfMissing = true)
   public SecurityFilterChain disabledSecurityFilterChain(HttpSecurity http) throws Exception {
-    withDisabledCsrf(http)
+    http.cors().disable()
+        .csrf().disable()
         .authorizeRequests()
         .anyRequest()
         .permitAll();
     return http.build();
   }
 
-  @Bean
-  @ConditionalOnProperty(name = SmartConfKeys.SMART_SECURITY_ENABLE, havingValue = "true")
-  public SecurityFilterChain kerberosSecurityFilterChain(HttpSecurity http) throws Exception {
-    withDisabledCsrf(http)
-        .addFilterBefore(
-            new SmartPrincipalInitializerFilter(), AnonymousAuthenticationFilter.class)
-        .authorizeRequests()
-        .anyRequest()
-        // todo ADH-4364: replace with SPNEGO filter registration
-        .permitAll();
-    return http.build();
-  }
-
-  private HttpSecurity withDisabledCsrf(HttpSecurity http) throws Exception {
-    return http.cors()
-        .disable()
-        .csrf()
-        .disable();
+  @RequiredArgsConstructor
+  public static class BasicAuthHttpConfigurer extends SsmAuthHttpConfigurer {
+    @Override
+    public void init(HttpSecurity http) throws Exception {
+      http.httpBasic();
+    }
   }
 }

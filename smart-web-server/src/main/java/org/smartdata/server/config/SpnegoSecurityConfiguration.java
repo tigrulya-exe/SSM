@@ -1,0 +1,93 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.smartdata.server.config;
+
+import lombok.RequiredArgsConstructor;
+import org.smartdata.conf.SmartConf;
+import org.smartdata.conf.SmartConfKeys;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
+import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosTicketValidator;
+import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
+import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+
+import static org.smartdata.server.config.ConfigKeys.SPNEGO_AUTH_ENABLED;
+import static org.smartdata.server.config.ConfigKeys.WEB_SECURITY_ENABLED;
+
+@Configuration
+@ConditionalOnProperty(
+    name = {WEB_SECURITY_ENABLED, SPNEGO_AUTH_ENABLED},
+    havingValue = "true")
+public class SpnegoSecurityConfiguration {
+  @Bean
+  public SsmAuthHttpConfigurer spnegoAuthHttpConfigurer(
+      AuthenticationManager authManager) {
+    return new SsmSpnegoAuthHttpConfigurer(spnegoAuthFilter(authManager));
+  }
+
+  @Bean
+  public AuthenticationProvider kerberosServiceAuthenticationProvider(
+      SunJaasKerberosTicketValidator kerberosTicketValidator) {
+    KerberosServiceAuthenticationProvider provider = new KerberosServiceAuthenticationProvider();
+    provider.setTicketValidator(kerberosTicketValidator);
+    provider.setUserDetailsService(
+        KerberosBasicAuthSecurityConfiguration.kerberosUserDetailsService());
+    return provider;
+  }
+
+  @Bean
+  public SunJaasKerberosTicketValidator kerberosTicketValidator(SmartConf smartConf) {
+    String principal = smartConf.getNonNull(SmartConfKeys.SMART_SERVER_KERBEROS_PRINCIPAL_KEY);
+    String keytabPath = smartConf.getNonNull(SmartConfKeys.SMART_SERVER_KEYTAB_FILE_KEY);
+
+    SunJaasKerberosTicketValidator ticketValidator = new SunJaasKerberosTicketValidator();
+    ticketValidator.setServicePrincipal(principal);
+    ticketValidator.setKeyTabLocation(new FileSystemResource(keytabPath));
+    return ticketValidator;
+  }
+
+  private SpnegoAuthenticationProcessingFilter spnegoAuthFilter(
+      AuthenticationManager authManager) {
+    SpnegoAuthenticationProcessingFilter spnegoAuthFilter =
+        new SpnegoAuthenticationProcessingFilter();
+    spnegoAuthFilter.setAuthenticationManager(authManager);
+    return spnegoAuthFilter;
+  }
+
+  @RequiredArgsConstructor
+  public static class SsmSpnegoAuthHttpConfigurer extends SsmAuthHttpConfigurer {
+
+    private final SpnegoAuthenticationProcessingFilter spnegoAuthFilter;
+
+    @Override
+    public void init(HttpSecurity http) throws Exception {
+      http.exceptionHandling()
+          .authenticationEntryPoint(new SpnegoEntryPoint())
+          .and()
+          .addFilterAfter(spnegoAuthFilter, BasicAuthenticationFilter.class);
+    }
+  }
+
+}
