@@ -17,7 +17,6 @@
  */
 package org.smartdata.server.config;
 
-import lombok.RequiredArgsConstructor;
 import org.smartdata.server.security.SmartPrincipalInitializerFilter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -84,7 +83,6 @@ public class SecurityConfiguration {
     return http.build();
   }
 
-  @RequiredArgsConstructor
   public static class BasicAuthHttpConfigurer extends SsmAuthHttpConfigurer {
     @Override
     public void init(HttpSecurity http) throws Exception {
