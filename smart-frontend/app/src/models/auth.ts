@@ -15,16 +15,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import s from './PageContent.module.scss';
-import cn from 'classnames';
-
-const PageContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => {
-  return (
-    <main className={cn(className, s.pageContent)} {...props}>
-      {children}
-    </main>
-  );
-};
-
-export default PageContent;
+export type AuthState = 'NotAuth' | 'Checking' | 'Authed';

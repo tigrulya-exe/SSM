@@ -21,18 +21,12 @@ import { AuthApi } from '@api';
 import { createAsyncThunk } from './redux';
 import { getErrorMessage } from '@utils/responseUtils';
 import { showError } from './notificationsSlice';
+import type { AuthState } from '@models/auth';
 
 type LoginActionPayload = {
   username: string;
   password: string;
 };
-
-export enum AUTH_STATE {
-  Checking = 'checking',
-  NotAuth = 'not_auth',
-  Authed = 'authed',
-}
-export type AuthState = AUTH_STATE.NotAuth | AUTH_STATE.Checking | AUTH_STATE.Authed;
 
 type UserState = {
   username: string;
@@ -72,7 +66,7 @@ const createInitialState = (): UserState => ({
   username: '',
   needCheckSession: true,
   hasError: false,
-  authState: AUTH_STATE.NotAuth,
+  authState: 'NotAuth',
   message: '',
 });
 
@@ -89,14 +83,14 @@ const authSlice = createSlice({
       state.message = '';
       state.hasError = false;
       state.needCheckSession = false;
-      state.authState = AUTH_STATE.Checking;
+      state.authState = 'Checking';
     });
     builder.addCase(login.fulfilled, (state, action) => {
       state.username = action.payload.name;
       state.message = '';
       state.hasError = false;
       state.needCheckSession = false;
-      state.authState = AUTH_STATE.Authed;
+      state.authState = 'Authed';
     });
     builder.addCase(login.rejected, (_, action) => {
       const error = action.payload as RequestError;
@@ -105,7 +99,7 @@ const authSlice = createSlice({
         message: getErrorMessage(error),
         hasError: true,
         needCheckSession: false,
-        authState: AUTH_STATE.NotAuth,
+        authState: 'NotAuth',
       };
     });
 
@@ -114,25 +108,25 @@ const authSlice = createSlice({
         ...createInitialState(),
         hasError: false,
         needCheckSession: false,
-        authState: AUTH_STATE.NotAuth,
+        authState: 'NotAuth',
       };
     });
     builder.addCase(logout.rejected, () => createInitialState());
 
     builder.addCase(checkSession.pending, (state) => {
       state.hasError = false;
-      state.authState = AUTH_STATE.Checking;
+      state.authState = 'Checking';
     });
     builder.addCase(checkSession.fulfilled, (state, action) => {
       state.username = action.payload.name;
       state.hasError = false;
       state.needCheckSession = false;
-      state.authState = AUTH_STATE.Authed;
+      state.authState = 'Authed';
     });
     builder.addCase(checkSession.rejected, (state) => {
       state.hasError = false;
       state.needCheckSession = false;
-      state.authState = AUTH_STATE.NotAuth;
+      state.authState = 'NotAuth';
     });
   },
 });
