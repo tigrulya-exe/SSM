@@ -25,27 +25,34 @@ import ClusterInfoPage from '@pages/ClusterInfoPage/ClusterInfoPage';
 import RulesPage from '@pages/RulesPage/RulesPage';
 import ActionsPage from '@pages/ActionsPage/ActionsPage';
 import AuditPage from '@pages/AuditPage/AuditPage';
+import LoginPage from '@pages/LoginPage/LoginPage';
+import UserSession from '@layouts/partials/UserSession/UserSession';
+import PrivateResource from '@layouts/partials/PrivateResource/PrivateResource';
 
 function App() {
   return (
     <BrowserRouter>
       <Provider store={store}>
-        <Routes>
-          {/*<Route path="/login" element={<LoginPage />} />*/}
-          <Route
-            path="/"
-            element={
-              <MainLayout>
-                <Outlet />
-              </MainLayout>
-            }
-          >
-            <Route index element={<ClusterInfoPage />} />
-            <Route path="/rules" element={<RulesPage />} />
-            <Route path="/actions" element={<ActionsPage />} />
-            <Route path="/audit" element={<AuditPage />} />
-          </Route>
-        </Routes>
+        <UserSession>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/"
+              element={
+                <PrivateResource>
+                  <MainLayout>
+                    <Outlet />
+                  </MainLayout>
+                </PrivateResource>
+              }
+            >
+              <Route index element={<ClusterInfoPage />} />
+              <Route path="/rules" element={<RulesPage />} />
+              <Route path="/actions" element={<ActionsPage />} />
+              <Route path="/audit" element={<AuditPage />} />
+            </Route>
+          </Routes>
+        </UserSession>
       </Provider>
     </BrowserRouter>
   );

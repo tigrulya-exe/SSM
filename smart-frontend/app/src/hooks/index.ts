@@ -17,6 +17,7 @@
  */
 
 export { useBreadcrumbs } from './useBreadcrumbs';
+export { useCheckSession } from './useCheckSession';
 export { useDispatch } from './useDispatch';
 export { useForwardRef } from './useForwardRef';
 export { useLocalStorage } from './useLocalStorage';

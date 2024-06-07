@@ -18,10 +18,10 @@
 import React from 'react';
 import LeftBarMenuItem from './LeftBarMenuItem';
 import { Tooltip, ConditionalWrapper } from '@uikit';
+import { useStore } from '@hooks';
 
 const LeftBarUserItem: React.FC = () => {
-  // Todo: use name from store
-  const userName = 'AdminAdminAdminAdmin';
+  const userName = useStore((s) => s.auth.username);
   const isShowTooltip = userName.length > 12;
 
   return (

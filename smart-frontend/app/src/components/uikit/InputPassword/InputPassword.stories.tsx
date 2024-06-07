@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import type { StoryFn, Meta } from '@storybook/react';
-import PasswordInput from './PasswordInput';
+import PasswordInput from './InputPassword';
 
 export default {
   title: 'uikit/PasswordInput',

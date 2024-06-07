@@ -18,12 +18,15 @@
 import React, { useState } from 'react';
 import LeftBarMenuItem from './LeftBarMenuItem';
 import { Dialog } from '@uikit';
+import { useDispatch } from '@hooks';
+import { logout } from '@store/authSlice';
 
 const LeftBarLogoutItem: React.FC = () => {
+  const dispatch = useDispatch();
   const [isOpenConfirm, setIsOpenConfirm] = useState(false);
 
   const handleLogout = () => {
-    // dispatch(logout());
+    dispatch(logout());
     setIsOpenConfirm(false);
   };
 

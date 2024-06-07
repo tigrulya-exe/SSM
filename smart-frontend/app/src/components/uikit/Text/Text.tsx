@@ -20,7 +20,7 @@ import React from 'react';
 import cn from 'classnames';
 import s from './Text.module.scss';
 
-type TagType = keyof Pick<React.ReactHTML, 'h1' | 'h2' | 'h3' | 'h4'>;
+type TagType = keyof Pick<React.ReactHTML, 'h1' | 'h2' | 'h3' | 'h4' | 'div'>;
 
 export interface TextProps extends HTMLAttributes<HTMLElement> {
   variant: TagType;

@@ -26,7 +26,7 @@ import LeftBarUserItem from '@layouts/partials/LeftBarMenu/LeftBarUserItem';
 const MainLeftSideBar: React.FC = () => {
   return (
     <aside className={s.mainLeftSideBar}>
-      <MainLogo />
+      <MainLogo height="23px" />
       <LeftBarMenu>
         <LeftBarMenuItem icon="cluster-info" label="Cluster Info" to="/" />
         <LeftBarMenuItem icon="rules" label="Rules" to="/rules" />

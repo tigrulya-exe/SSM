@@ -21,12 +21,15 @@ import cn from 'classnames';
 import { Link } from 'react-router-dom';
 import s from './MainLogo.module.scss';
 
-type MainLogoProps = Omit<HTMLAttributes<HTMLAnchorElement>, 'children'>;
+interface MainLogoProps extends Omit<HTMLAttributes<HTMLAnchorElement>, 'children'> {
+  height?: string;
+  width?: string;
+}
 
-const MainLogo: React.FC<MainLogoProps> = ({ className, ...props }) => {
+const MainLogo: React.FC<MainLogoProps> = ({ className, height, width, ...props }) => {
   return (
     <Link to="/" className={cn(s.mainLogo, className)} {...props}>
-      <svg viewBox="0 0 84 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 84 23" fill="none" xmlns="http://www.w3.org/2000/svg" height={height} width={width}>
         <path
           d="M28.7082 17.7058H23.0735L21.963 20.4114H19.8053L24.8674 8.72656H26.927L32.0176 20.4114H29.8346L28.7082 17.7058ZM28.0154 16.0037L25.8925 10.8976L23.7822 16.0037H28.0154Z"
           fill="#00A872"
