@@ -17,7 +17,6 @@
  */
 import React, { useState } from 'react';
 import IconButton from '@uikit/IconButton/IconButton';
-import s from './PasswordInput.module.scss';
 import type { InputProps } from '@uikit/Input/Input';
 import Input from '@uikit/Input/Input';
 
@@ -27,7 +26,7 @@ interface PasswordFieldProps extends Omit<InputProps, 'type' | 'endAdornment' | 
 
 const dummyPasswordValue = '******';
 
-const PasswordInput = React.forwardRef<HTMLInputElement, PasswordFieldProps>(
+const InputPassword = React.forwardRef<HTMLInputElement, PasswordFieldProps>(
   ({ areAsterisksShown = false, placeholder, ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
     const [passwordPlaceholder, setPasswordPlaceholder] = useState(dummyPasswordValue);
@@ -62,11 +61,11 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordFieldProps>(
         onBlur={blurHandler}
         endAdornment={
           <IconButton
-            className={s.passwordField__eye}
             icon={showPassword ? 'eye' : 'eye-closed'}
             onClick={toggleShowPassword}
             disabled={props.disabled}
             variant="secondary"
+            type="button"
           />
         }
       />
@@ -74,4 +73,4 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordFieldProps>(
   },
 );
 
-export default PasswordInput;
+export default InputPassword;

@@ -15,27 +15,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { HTMLAttributes } from 'react';
 import React from 'react';
-import cn from 'classnames';
-import s from './Text.module.scss';
+import { useStore } from '@hooks';
+import { Navigate, useLocation } from 'react-router-dom';
+import NonAuthLayout from '@layouts/NonAuthLayout/NonAuthLayout';
+import LoginForm from '@pages/LoginPage/LoginForm/LoginForm';
 
-type TagType = keyof Pick<React.ReactHTML, 'h1' | 'h2' | 'h3' | 'h4' | 'div'>;
+type RedirectLocationState = {
+  from: string;
+};
 
-export interface TextProps extends HTMLAttributes<HTMLElement> {
-  variant: TagType;
-  component?: TagType | null;
-}
+const LoginPage: React.FC = () => {
+  const { authState } = useStore((s) => s.auth);
 
-const Text = ({ variant, component = null, className, children, ...props }: TextProps) => {
-  const textClasses = cn(s.text, className, s[`text_${variant}`]);
-  const Tag = component ?? variant;
+  const location = useLocation();
+  const from = (location.state as RedirectLocationState)?.from || '/';
+
+  if (authState === 'Authed') {
+    return <Navigate to={from} replace />;
+  }
 
   return (
-    <Tag className={textClasses} {...props}>
-      {children}
-    </Tag>
+    <NonAuthLayout>
+      <LoginForm />
+    </NonAuthLayout>
   );
 };
 
-export default Text;
+export default LoginPage;

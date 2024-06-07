@@ -26,6 +26,7 @@
     "plugin:import/typescript"
   ],
   "rules": {
+    "import/no-unresolved": ["error", { "ignore": ["\\.svg\\?react$"] }],
     "import/no-cycle": [
       "error",
       {

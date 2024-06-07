@@ -15,27 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { HTMLAttributes } from 'react';
-import React from 'react';
-import cn from 'classnames';
-import s from './Text.module.scss';
+import { useEffect } from 'react';
+import { useDispatch } from './useDispatch';
+import { checkSession } from '@store/authSlice';
+import { useStore } from './useStore';
 
-type TagType = keyof Pick<React.ReactHTML, 'h1' | 'h2' | 'h3' | 'h4' | 'div'>;
+export const useCheckSession = () => {
+  const dispatch = useDispatch();
+  const needCheckSession = useStore((s) => s.auth.needCheckSession);
 
-export interface TextProps extends HTMLAttributes<HTMLElement> {
-  variant: TagType;
-  component?: TagType | null;
-}
-
-const Text = ({ variant, component = null, className, children, ...props }: TextProps) => {
-  const textClasses = cn(s.text, className, s[`text_${variant}`]);
-  const Tag = component ?? variant;
-
-  return (
-    <Tag className={textClasses} {...props}>
-      {children}
-    </Tag>
-  );
+  useEffect(() => {
+    needCheckSession && dispatch(checkSession());
+  }, [dispatch, needCheckSession]);
 };
-
-export default Text;

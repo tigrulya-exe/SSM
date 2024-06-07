@@ -15,27 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { HTMLAttributes } from 'react';
-import React from 'react';
-import cn from 'classnames';
-import s from './Text.module.scss';
+import { httpClient } from './httpClient';
 
-type TagType = keyof Pick<React.ReactHTML, 'h1' | 'h2' | 'h3' | 'h4' | 'div'>;
+export class AuthApi {
+  public static async login(username: string, password: string) {
+    const response = await httpClient.post('/api/v1/login', {
+      username,
+      password,
+    });
 
-export interface TextProps extends HTMLAttributes<HTMLElement> {
-  variant: TagType;
-  component?: TagType | null;
+    return response.data;
+  }
+
+  public static async logout() {
+    const response = await httpClient.post('/api/v1/logout');
+    return response.data;
+  }
+
+  public static async checkSession() {
+    const response = await httpClient.post<{ name: string }>('/api/v1/currentUser');
+
+    return response.data;
+  }
 }
-
-const Text = ({ variant, component = null, className, children, ...props }: TextProps) => {
-  const textClasses = cn(s.text, className, s[`text_${variant}`]);
-  const Tag = component ?? variant;
-
-  return (
-    <Tag className={textClasses} {...props}>
-      {children}
-    </Tag>
-  );
-};
-
-export default Text;

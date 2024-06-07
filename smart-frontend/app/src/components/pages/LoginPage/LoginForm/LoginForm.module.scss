@@ -1,0 +1,15 @@
+.loginForm {
+  width: 455px;
+
+  &__submit {
+    width: 50%;
+    display: flex;
+  }
+
+  &__title {
+    color: var(--text-title-color);
+    margin-bottom: 31px;
+    font-size: 40px;
+    font-weight: 500;
+  }
+}

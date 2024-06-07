@@ -20,15 +20,28 @@ import { defineConfig } from 'vite';
 import tsConfigPaths from 'vite-tsconfig-paths';
 import createSvgSpritePlugin from 'vite-plugin-svg-spriter'
 import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
     port: 5175,
+    proxy: {
+      '/api': {
+        // target: 'http://localhost:5555',
+        // remote test stand
+        target: 'http://10.92.41.197:5555',
+        changeOrigin: true,
+      },
+    },
+    cors: true,
   },
   plugins: [
     tsConfigPaths(),
     createSvgSpritePlugin({ svgFolder: './src/components/uikit/Icon/icons' }),
+    svgr({
+      exclude: [/virtual:/, /node_modules/],
+    }),
     react(),
   ],
   resolve: {

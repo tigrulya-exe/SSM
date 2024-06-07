@@ -15,27 +15,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { HTMLAttributes } from 'react';
-import React from 'react';
-import cn from 'classnames';
-import s from './Text.module.scss';
+import type { StoryFn, Meta } from '@storybook/react';
+import PasswordInput from './InputPassword';
 
-type TagType = keyof Pick<React.ReactHTML, 'h1' | 'h2' | 'h3' | 'h4' | 'div'>;
+export default {
+  title: 'uikit/PasswordInput',
+  component: PasswordInput,
+  argTypes: {
+    size: {
+      description: 'Size',
+      defaultValue: 'medium',
+      options: ['medium', 'small'],
+      control: { type: 'radio' },
+    },
+    variant: {
+      description: 'Variant',
+      defaultValue: 'primary',
+      options: ['primary', 'secondary'],
+      control: { type: 'radio' },
+    },
+  },
+} as Meta<typeof PasswordInput>;
 
-export interface TextProps extends HTMLAttributes<HTMLElement> {
-  variant: TagType;
-  component?: TagType | null;
-}
-
-const Text = ({ variant, component = null, className, children, ...props }: TextProps) => {
-  const textClasses = cn(s.text, className, s[`text_${variant}`]);
-  const Tag = component ?? variant;
-
+const Template: StoryFn<typeof PasswordInput> = (args) => {
   return (
-    <Tag className={textClasses} {...props}>
-      {children}
-    </Tag>
+    <div style={{ padding: '40px' }}>
+      <PasswordInput {...args} />
+    </div>
   );
 };
 
-export default Text;
+export const PasswordInputElement = Template.bind({
+  size: 'medium',
+  variant: 'primary',
+});

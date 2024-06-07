@@ -20,15 +20,16 @@ import s from './MainLayout.module.scss';
 import NotificationsSideBar from '@layouts/partials/NotificationsSideBar/NotificationsSideBar';
 import MainHeader from '@layouts/partials/MainHeader/MainHeader';
 import MainLeftSideBar from '@layouts/partials/MainLeftSideBar/MainLeftSideBar';
+import PageContent from '@layouts/partials/PageContent/PageContent';
 
 const MainLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
     <div className={s.mainLayout}>
       <MainLeftSideBar />
-      <div className={s.mainLayout__body}>
+      <PageContent className={s.mainLayout__body}>
         <MainHeader />
         {children}
-      </div>
+      </PageContent>
       <NotificationsSideBar />
     </div>
   );

@@ -15,27 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { HTMLAttributes } from 'react';
 import React from 'react';
-import cn from 'classnames';
-import s from './Text.module.scss';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useStore } from '@hooks';
 
-type TagType = keyof Pick<React.ReactHTML, 'h1' | 'h2' | 'h3' | 'h4' | 'div'>;
+const PrivateResource: React.FC<React.PropsWithChildren> = ({ children }) => {
+  const needCheckSession = useStore((s) => s.auth.needCheckSession);
+  const authState = useStore((s) => s.auth.authState);
+  const location = useLocation();
 
-export interface TextProps extends HTMLAttributes<HTMLElement> {
-  variant: TagType;
-  component?: TagType | null;
-}
+  if (needCheckSession) {
+    return null;
+  }
 
-const Text = ({ variant, component = null, className, children, ...props }: TextProps) => {
-  const textClasses = cn(s.text, className, s[`text_${variant}`]);
-  const Tag = component ?? variant;
+  if (authState === 'NotAuth') {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
-  return (
-    <Tag className={textClasses} {...props}>
-      {children}
-    </Tag>
-  );
+  return <>{children}</>;
 };
 
-export default Text;
+export default PrivateResource;

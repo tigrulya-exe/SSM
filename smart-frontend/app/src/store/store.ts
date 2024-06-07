@@ -18,8 +18,10 @@
 import { combineReducers } from 'redux';
 import { configureStore } from '@reduxjs/toolkit';
 import notificationsSlice from './notificationsSlice';
+import authSlice from '@store/authSlice';
 
 const rootReducer = combineReducers({
+  auth: authSlice,
   notifications: notificationsSlice,
 });
 

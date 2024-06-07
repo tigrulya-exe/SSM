@@ -18,10 +18,6 @@
   background: var(--mainLayout-background);
 
   &__body {
-    min-width: 0;
     background: var(--mainLayout-body-background);
-
-    border-radius: 40px 0 0 40px;;
-    padding: 36px 40px;
   }
 }

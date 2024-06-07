@@ -26,12 +26,13 @@ import type { IconsNames } from '@uikit/Icon/sprite';
 import Input from '@uikit/Input/Input';
 import InputNumber from './InputNumber/InputNumber';
 import MultiSelect from './Select/MultiSelect/MultiSelect';
-import PasswordInput from './PasswordInput/PasswordInput';
+import InputPassword from '@uikit/InputPassword/InputPassword';
 import Panel from './Panel/Panel';
 import Popover from './Popover/Popover';
 import PopoverPanelDefault from './Popover/PopoverPanelDefault/PopoverPanelDefault';
 import SearchInput from './SearchInput/SearchInput';
 import Select from './Select/SingleSelect/Select/Select';
+import Text from './Text/Text';
 import Tooltip from './Tooltip/Tooltip';
 
 export {
@@ -45,12 +46,13 @@ export {
   IconsNames,
   Input,
   InputNumber,
+  InputPassword,
   MultiSelect,
-  PasswordInput,
   Panel,
   Popover,
   PopoverPanelDefault,
   Select,
   SearchInput,
+  Text,
   Tooltip,
 };

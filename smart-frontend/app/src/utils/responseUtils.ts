@@ -15,27 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { HTMLAttributes } from 'react';
-import React from 'react';
-import cn from 'classnames';
-import s from './Text.module.scss';
+import type { RequestError } from '@api';
 
-type TagType = keyof Pick<React.ReactHTML, 'h1' | 'h2' | 'h3' | 'h4' | 'div'>;
-
-export interface TextProps extends HTMLAttributes<HTMLElement> {
-  variant: TagType;
-  component?: TagType | null;
+export interface ResponseErrorData {
+  message: string;
 }
 
-const Text = ({ variant, component = null, className, children, ...props }: TextProps) => {
-  const textClasses = cn(s.text, className, s[`text_${variant}`]);
-  const Tag = component ?? variant;
+export const getErrorMessage = (requestError: RequestError) => {
+  const data = (requestError.response?.data ?? {}) as ResponseErrorData;
 
-  return (
-    <Tag className={textClasses} {...props}>
-      {children}
-    </Tag>
-  );
+  return data.message ?? requestError.message ?? 'Something wrong';
 };
-
-export default Text;

@@ -15,27 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { HTMLAttributes } from 'react';
 import React from 'react';
+import s from './PageContent.module.scss';
 import cn from 'classnames';
-import s from './Text.module.scss';
 
-type TagType = keyof Pick<React.ReactHTML, 'h1' | 'h2' | 'h3' | 'h4' | 'div'>;
-
-export interface TextProps extends HTMLAttributes<HTMLElement> {
-  variant: TagType;
-  component?: TagType | null;
-}
-
-const Text = ({ variant, component = null, className, children, ...props }: TextProps) => {
-  const textClasses = cn(s.text, className, s[`text_${variant}`]);
-  const Tag = component ?? variant;
-
+const PageContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => {
   return (
-    <Tag className={textClasses} {...props}>
+    <main className={cn(className, s.pageContent)} {...props}>
       {children}
-    </Tag>
+    </main>
   );
 };
 
-export default Text;
+export default PageContent;
