@@ -55,7 +55,7 @@ public class SecurityConfiguration {
       List<SsmAuthHttpConfigurer> authHttpConfigurers) throws Exception {
     baseHttpSecurity(http)
         .authorizeRequests()
-        .anyRequest().authenticated()
+        .antMatchers("/api/**").authenticated()
         .and()
         .anonymous().disable()
         .addFilterAfter(
