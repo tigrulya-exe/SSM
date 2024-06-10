@@ -17,6 +17,7 @@
  */
 package org.smartdata.metastore.dao.impl;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.smartdata.metastore.MetaStoreException;
 import org.smartdata.metastore.dao.AbstractDao;
 import org.smartdata.metastore.dao.FileInfoDao;
@@ -31,6 +32,7 @@ import javax.sql.DataSource;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +65,10 @@ public class DefaultAccessCountEventDao
   // todo ADH-4496 replace with searchable
   @Override
   public List<FileAccessInfo> getHotFiles(List<AccessCountTable> tables, int topNum) {
+    if (CollectionUtils.isEmpty(tables)) {
+      return Collections.emptyList();
+    }
+
     String statement = hotFilesQueryString(tables)
         + " ORDER BY count DESC, access_counts.fid ASC LIMIT " + topNum;
     SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(statement);

@@ -72,7 +72,6 @@ import org.smartdata.model.DataNodeStorageInfo;
 import org.smartdata.model.DetailedFileAction;
 import org.smartdata.model.DetailedRuleInfo;
 import org.smartdata.model.ErasureCodingPolicyInfo;
-import org.smartdata.model.FileAccessInfo;
 import org.smartdata.model.FileDiff;
 import org.smartdata.model.FileDiffState;
 import org.smartdata.model.FileInfo;
@@ -97,7 +96,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -385,29 +383,6 @@ public class MetaStore implements CopyMetaService,
       return new HashMap<>();
     } catch (Exception e) {
       throw new MetaStoreException(e);
-    }
-  }
-
-  public List<FileAccessInfo> getHotFiles(
-      List<AccessCountTable> tables,
-      int topNum) throws MetaStoreException {
-    Iterator<AccessCountTable> tableIterator = tables.iterator();
-    if (tableIterator.hasNext()) {
-      try {
-        return accessCountEventDao.getHotFiles(tables, topNum);
-      } catch (EmptyResultDataAccessException e) {
-        return new ArrayList<>();
-      } catch (Exception e) {
-        throw new MetaStoreException(e);
-      } finally {
-        for (AccessCountTable accessCountTable : tables) {
-          if (accessCountTable.isEphemeral()) {
-            dropTable(accessCountTable.getTableName());
-          }
-        }
-      }
-    } else {
-      return new ArrayList<>();
     }
   }
 
