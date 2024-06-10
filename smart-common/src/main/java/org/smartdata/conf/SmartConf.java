@@ -95,6 +95,12 @@ public class SmartConf extends Configuration {
         ));
   }
 
+  public String getNonNull(String key) {
+    return Optional.ofNullable(get(key))
+        .orElseThrow(() ->
+            new IllegalArgumentException("Required option not provided: " + key));
+  }
+
   public Map<String, String> asMap() {
     return asMap(key -> true);
   }

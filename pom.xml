@@ -95,6 +95,7 @@
     <springdoc.openapi.version>1.7.0</springdoc.openapi.version>
     <hibernate.validator.version>6.2.5.Final</hibernate.validator.version>
     <spring.boot.version>2.7.18</spring.boot.version>
+    <spring.boot.security.kerberos.version>1.0.1.RELEASE</spring.boot.security.kerberos.version>
     <openapi.generator.version>6.6.0</openapi.generator.version>
     <commons.lang3.version>3.12.0</commons.lang3.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
