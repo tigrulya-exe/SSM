@@ -1,0 +1,27 @@
+:global {
+  body.theme-dark {
+    --error-code-text-color: var(--color-ADHdark);
+  }
+  body.theme-light {
+    --error-code-text-color: var(--color-colourful-60);
+  }
+}
+
+.errorPageContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  &__errorCode {
+    order: 1;
+    z-index: -1;
+    font-size: 500px;
+    line-height: 400px;
+    font-weight: 700;
+    text-align: end;
+    color: var(--error-code-text-color);
+    margin-top: auto;
+  }
+}

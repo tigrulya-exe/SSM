@@ -28,6 +28,7 @@ import AuditPage from '@pages/AuditPage/AuditPage';
 import LoginPage from '@pages/LoginPage/LoginPage';
 import UserSession from '@layouts/partials/UserSession/UserSession';
 import PrivateResource from '@layouts/partials/PrivateResource/PrivateResource';
+import NotFoundPage from '@pages/NotFoundPage/NotFoundPage';
 
 function App() {
   return (
@@ -50,6 +51,7 @@ function App() {
               <Route path="/rules" element={<RulesPage />} />
               <Route path="/actions" element={<ActionsPage />} />
               <Route path="/audit" element={<AuditPage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>
         </UserSession>
