@@ -30,7 +30,7 @@ export default defineConfig({
       '/api': {
         // target: 'http://localhost:5555',
         // remote test stand
-        target: 'http://10.92.41.197:5555',
+        target: 'http://10.92.38.118:8081',
         changeOrigin: true,
       },
     },

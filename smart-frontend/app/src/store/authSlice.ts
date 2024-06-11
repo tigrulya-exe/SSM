@@ -86,7 +86,8 @@ const authSlice = createSlice({
       state.authState = 'Checking';
     });
     builder.addCase(login.fulfilled, (state, action) => {
-      state.username = action.payload.name;
+      // TODO: remove fallback string. In really api should response user info
+      state.username = action.payload.name ?? 'testUser';
       state.message = '';
       state.hasError = false;
       state.needCheckSession = false;
@@ -118,7 +119,8 @@ const authSlice = createSlice({
       state.authState = 'Checking';
     });
     builder.addCase(checkSession.fulfilled, (state, action) => {
-      state.username = action.payload.name;
+      // TODO: remove fallback string. In really api should response user info
+      state.username = action.payload.name ?? 'testUser';
       state.hasError = false;
       state.needCheckSession = false;
       state.authState = 'Authed';
