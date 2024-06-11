@@ -53,7 +53,7 @@ public class SecurityConfiguration {
     http.cors().disable()
         .csrf().disable()
         .authorizeRequests()
-        .anyRequest().authenticated()
+        .antMatchers("/api/**").authenticated()
         .and()
         .anonymous().disable()
         .addFilterAfter(
