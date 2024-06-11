@@ -24,8 +24,10 @@ import org.smartdata.metastore.db.metadata.DbMetadataProvider;
 import org.smartdata.metastore.model.AccessCountTable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -89,6 +91,33 @@ public class TestDbAccessCountTableManager extends TestDaoBase {
 
     dbAccessCountTableManager.dropTable(dummyTable("another"));
     assertTableExists("table2");
+  }
+
+  @Test
+  public void testRecoverOnlyValidTables() throws Exception {
+    // table from previous SSM version without last access time column
+    AccessCountTable oldTable = new AccessCountTable(0, 5000);
+    metaStore.execute(
+        "CREATE TABLE " + oldTable.getTableName()
+            + "(fid BIGINT NOT NULL, "
+            + "count INTEGER NOT NULL)");
+
+    accessCountTableDao.insert(oldTable);
+
+    // non-existing table
+    AccessCountTable deletedTable = new AccessCountTable(15000, 20000);
+    accessCountTableDao.insert(deletedTable);
+
+    List<AccessCountTable> validTables = Arrays.asList(
+        new AccessCountTable(5000, 10000),
+        new AccessCountTable(10000, 15000),
+        new AccessCountTable(20000, 25000));
+    for (AccessCountTable table: validTables) {
+      dbAccessCountTableManager.createTable(table);
+    }
+
+    List<AccessCountTable> validatedTables = dbAccessCountTableManager.getTables();
+    assertEquals(validTables, validatedTables);
   }
 
   private void assertTableExists(String tableName) {

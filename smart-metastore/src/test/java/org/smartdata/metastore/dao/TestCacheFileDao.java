@@ -20,10 +20,9 @@ package org.smartdata.metastore.dao;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.queries.sort.CachedFilesSortField;
-import org.smartdata.metrics.FileAccessEvent;
-import org.smartdata.metastore.TestDaoBase;
+import org.smartdata.exception.NotFoundException;
 import org.smartdata.metastore.model.AggregatedAccessCounts;
+import org.smartdata.metastore.queries.sort.CachedFilesSortField;
 import org.smartdata.model.CachedFileStatus;
 import org.smartdata.model.TimeInterval;
 import org.smartdata.model.request.CachedFileSearchRequest;
@@ -82,7 +81,7 @@ public class TestCacheFileDao extends TestSearchableDao<
   }
 
   @Test
-  public void testInsertDeleteCachedFiles() {
+  public void testInsertDeleteCachedFiles() throws NotFoundException {
     cacheFileDao
         .insert(80L,
             "testPath", 123456L, 234567L, 456);
@@ -109,7 +108,7 @@ public class TestCacheFileDao extends TestSearchableDao<
   }
 
   @Test
-  public void testGetCachedFileStatus() {
+  public void testGetCachedFileStatus() throws NotFoundException {
     cacheFileDao.insert(6L, "testPath", 1490918400000L,
         234567L, 456);
     CachedFileStatus cachedFileStatus = new CachedFileStatus(6L, "testPath", 1490918400000L,
@@ -127,6 +126,7 @@ public class TestCacheFileDao extends TestSearchableDao<
     Assert.assertEquals(19, cachedFileList.get(1).getFid());
     Assert.assertEquals(23, cachedFileList.get(2).getFid());
   }
+
   @Test
   public void testSearchWithoutFilters() {
     createTestCachedFiles();

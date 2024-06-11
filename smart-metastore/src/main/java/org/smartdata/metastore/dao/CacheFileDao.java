@@ -17,10 +17,9 @@
  */
 package org.smartdata.metastore.dao;
 
-import org.smartdata.metastore.model.AggregatedAccessCounts;
 import org.smartdata.exception.NotFoundException;
+import org.smartdata.metastore.model.AggregatedAccessCounts;
 import org.smartdata.metastore.queries.sort.CachedFilesSortField;
-import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.model.CachedFileStatus;
 import org.smartdata.model.request.CachedFileSearchRequest;
 

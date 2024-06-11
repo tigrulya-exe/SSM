@@ -17,15 +17,12 @@
  */
 package org.smartdata.metastore.dao.impl;
 
-import org.smartdata.metastore.dao.AbstractDao;
-import org.apache.commons.collections.CollectionUtils;
 import org.smartdata.exception.NotFoundException;
 import org.smartdata.metastore.SearchableAbstractDao;
 import org.smartdata.metastore.dao.CacheFileDao;
 import org.smartdata.metastore.model.AggregatedAccessCounts;
 import org.smartdata.metastore.queries.MetastoreQuery;
 import org.smartdata.metastore.queries.sort.CachedFilesSortField;
-import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.model.CachedFileStatus;
 import org.smartdata.model.request.CachedFileSearchRequest;
 import org.springframework.transaction.PlatformTransactionManager;
