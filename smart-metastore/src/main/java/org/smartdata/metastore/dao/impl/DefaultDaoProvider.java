@@ -111,7 +111,7 @@ public class DefaultDaoProvider implements DaoProvider {
 
   @Override
   public AccessCountEventDao accessCountEventDao() {
-    return new DefaultAccessCountEventDao(dataSource);
+    return new DefaultAccessCountEventDao(dataSource, transactionManager);
   }
 
   @Override

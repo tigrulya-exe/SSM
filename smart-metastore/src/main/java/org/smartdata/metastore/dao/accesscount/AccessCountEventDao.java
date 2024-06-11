@@ -39,6 +39,8 @@ public interface AccessCountEventDao {
   List<FileAccessInfo> getHotFiles(List<AccessCountTable> tables, int topNum)
       throws MetaStoreException;
 
+  void validate(AccessCountTable table) throws MetaStoreException;
+
   void updateFileIds(List<AccessCountTable> accessCountTables,
                      long fidSrc, long fidDest) throws MetaStoreException;
 

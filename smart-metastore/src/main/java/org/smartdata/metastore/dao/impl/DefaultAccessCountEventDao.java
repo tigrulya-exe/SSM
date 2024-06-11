@@ -24,9 +24,13 @@ import org.smartdata.metastore.dao.FileInfoDao;
 import org.smartdata.metastore.dao.accesscount.AccessCountEventDao;
 import org.smartdata.metastore.model.AccessCountTable;
 import org.smartdata.metastore.model.AggregatedAccessCounts;
+import org.smartdata.metastore.queries.MetastoreQuery;
+import org.smartdata.metastore.queries.MetastoreQueryExecutor;
 import org.smartdata.model.FileAccessInfo;
+import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
@@ -37,14 +41,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.smartdata.metastore.queries.MetastoreQuery.select;
+
 public class DefaultAccessCountEventDao
     extends AbstractDao
     implements AccessCountEventDao {
 
   private static final String TABLE_NAME = "access_count_table";
 
-  public DefaultAccessCountEventDao(DataSource dataSource) {
+  // todo ADH-4496 replace with searchable dao
+  private final MetastoreQueryExecutor queryExecutor;
+
+  public DefaultAccessCountEventDao(
+      DataSource dataSource, PlatformTransactionManager transactionManager) {
     super(dataSource, TABLE_NAME);
+
+    this.queryExecutor = new MetastoreQueryExecutor(dataSource, transactionManager);
   }
 
   @Override
@@ -83,6 +95,18 @@ public class DefaultAccessCountEventDao
               sqlRowSet.getLong(AccessCountEventDao.LAST_ACCESSED_TIME_FIELD)));
     }
     return accessCounts;
+  }
+
+  @Override
+  public void validate(AccessCountTable table) throws MetaStoreException {
+    MetastoreQuery query = select(FILE_ID_FIELD, ACCESS_COUNT_FIELD, LAST_ACCESSED_TIME_FIELD)
+        .from(table.getTableName())
+        .limit(1);
+    try {
+      queryExecutor.execute(query, new ColumnMapRowMapper());
+    } catch (Exception exception) {
+      throw new MetaStoreException(exception);
+    }
   }
 
   @Override

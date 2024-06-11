@@ -32,6 +32,7 @@ import javax.sql.DataSource;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DbAccessCountTableManager
     extends AbstractDao implements AccessCountTableHandler {
@@ -122,7 +123,21 @@ public class DbAccessCountTableManager
   }
 
   public List<AccessCountTable> getTables() {
-    return accessCountTableDao.getAllSortedTables();
+    return accessCountTableDao.getAllSortedTables()
+        .stream()
+        .filter(this::isValid)
+        .collect(Collectors.toList());
+  }
+
+  private boolean isValid(AccessCountTable table) {
+    try {
+      accessCountEventDao.validate(table);
+      return true;
+    } catch (MetaStoreException exception) {
+      LOG.error("Can't recover table {}, dropping it", table, exception);
+      dropDbTable(table);
+      return false;
+    }
   }
 
   private void fillPartialTable(AccessCountTable dest, AccessCountTable source) {
