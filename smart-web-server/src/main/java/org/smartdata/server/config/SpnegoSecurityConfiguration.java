@@ -18,8 +18,8 @@
 package org.smartdata.server.config;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import org.smartdata.conf.SmartConf;
-import org.smartdata.conf.SmartConfKeys;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +33,11 @@ import org.springframework.security.kerberos.web.authentication.SpnegoAuthentica
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
+import java.util.Optional;
+
+import static org.smartdata.conf.SmartConfKeys.SMART_SERVER_KERBEROS_PRINCIPAL_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_SERVER_KEYTAB_FILE_KEY;
+import static org.smartdata.server.config.ConfigKeys.SMART_REST_SERVER_KEYTAB_FILE_KEY;
 import static org.smartdata.server.config.ConfigKeys.SPNEGO_AUTH_ENABLED;
 import static org.smartdata.server.config.ConfigKeys.WEB_SECURITY_ENABLED;
 
@@ -59,13 +64,23 @@ public class SpnegoSecurityConfiguration {
 
   @Bean
   public SunJaasKerberosTicketValidator kerberosTicketValidator(SmartConf smartConf) {
-    String principal = smartConf.getNonNull(SmartConfKeys.SMART_SERVER_KERBEROS_PRINCIPAL_KEY);
-    String keytabPath = smartConf.getNonNull(SmartConfKeys.SMART_SERVER_KEYTAB_FILE_KEY);
+    String principal = smartConf.getNonEmpty(SMART_SERVER_KERBEROS_PRINCIPAL_KEY);
+    String keytabPath = getKeytabPath(smartConf);
 
     SunJaasKerberosTicketValidator ticketValidator = new SunJaasKerberosTicketValidator();
     ticketValidator.setServicePrincipal(principal);
     ticketValidator.setKeyTabLocation(new FileSystemResource(keytabPath));
     return ticketValidator;
+  }
+
+  private String getKeytabPath(SmartConf smartConf) {
+    return Optional.ofNullable(smartConf.get(SMART_REST_SERVER_KEYTAB_FILE_KEY))
+        .filter(StringUtils::isNotBlank)
+        .orElseGet(() -> smartConf.getNonEmpty(
+            SMART_SERVER_KEYTAB_FILE_KEY,
+            "SSM principal keytab for SPNEGO is not provided. "
+                + "Please specify it either in the 'smart.rest.server.auth.spnego.keytab' "
+                + "or in the 'smart.server.keytab.file' option."));
   }
 
   private SpnegoAuthenticationProcessingFilter spnegoAuthFilter(

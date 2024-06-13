@@ -17,10 +17,6 @@
  */
 package org.smartdata.server.generated.api;
 
-import java.util.List;
-import java.util.Optional;
-import javax.annotation.Generated;
-import javax.validation.Valid;
 import org.smartdata.server.generated.model.AuditEventResultDto;
 import org.smartdata.server.generated.model.AuditEventsDto;
 import org.smartdata.server.generated.model.AuditObjectTypeDto;
@@ -29,6 +25,12 @@ import org.smartdata.server.generated.model.AuditSortDto;
 import org.smartdata.server.generated.model.EventTimeIntervalDto;
 import org.smartdata.server.generated.model.PageRequestDto;
 import org.springframework.web.context.request.NativeWebRequest;
+
+import javax.annotation.Generated;
+import javax.validation.Valid;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * A delegate to be called by the {@link AuditApiController}}.
@@ -54,6 +56,7 @@ public interface AuditApiDelegate {
      * @param results List of audit event results (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      * @see AuditApi#getAuditEvents
      */
     default AuditEventsDto getAuditEvents(PageRequestDto pageRequest,

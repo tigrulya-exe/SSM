@@ -17,15 +17,17 @@
  */
 package org.smartdata.server.generated.api;
 
-import java.util.List;
-import java.util.Optional;
-import javax.annotation.Generated;
-import javax.validation.Valid;
 import org.smartdata.server.generated.model.ClusterNodesDto;
 import org.smartdata.server.generated.model.ClusterSortDto;
 import org.smartdata.server.generated.model.PageRequestDto;
 import org.smartdata.server.generated.model.RegistrationTimeIntervalDto;
 import org.springframework.web.context.request.NativeWebRequest;
+
+import javax.annotation.Generated;
+import javax.validation.Valid;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * A delegate to be called by the {@link ClusterApiController}}.
@@ -46,6 +48,7 @@ public interface ClusterApiDelegate {
      * @param registrationTime Time interval in which node was registered in master (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      * @see ClusterApi#getClusterNodes
      */
     default ClusterNodesDto getClusterNodes(PageRequestDto pageRequest,
