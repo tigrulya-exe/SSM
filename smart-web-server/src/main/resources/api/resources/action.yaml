@@ -14,3 +14,5 @@ get:
             $ref: '../schemas/actions/Action.yaml'
     '404':
       description: Action with specified id not found
+    '401':
+      description: Unauthorized

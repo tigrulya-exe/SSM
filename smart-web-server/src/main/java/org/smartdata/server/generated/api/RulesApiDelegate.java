@@ -17,10 +17,6 @@
  */
 package org.smartdata.server.generated.api;
 
-import java.util.List;
-import java.util.Optional;
-import javax.annotation.Generated;
-import javax.validation.Valid;
 import org.smartdata.server.generated.model.LastActivationTimeIntervalDto;
 import org.smartdata.server.generated.model.PageRequestDto;
 import org.smartdata.server.generated.model.RuleDto;
@@ -30,6 +26,12 @@ import org.smartdata.server.generated.model.RulesDto;
 import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
 import org.smartdata.server.generated.model.SubmitRuleRequestDto;
 import org.springframework.web.context.request.NativeWebRequest;
+
+import javax.annotation.Generated;
+import javax.validation.Valid;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * A delegate to be called by the {@link RulesApiController}}.
@@ -48,6 +50,7 @@ public interface RulesApiDelegate {
      * @param submitRuleRequestDto  (required)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      * @see RulesApi#addRule
      */
     default RuleDto addRule(SubmitRuleRequestDto submitRuleRequestDto) throws Exception {
@@ -61,6 +64,7 @@ public interface RulesApiDelegate {
      * @param id Id of the resource (required)
      * @return Rule has been removed (status code 200)
      *         or Rule with specified id not found (status code 404)
+     *         or Unauthorized (status code 401)
      * @see RulesApi#deleteRule
      */
     default void deleteRule(Long id) throws Exception {
@@ -74,6 +78,7 @@ public interface RulesApiDelegate {
      * @param id Id of the resource (required)
      * @return OK (status code 200)
      *         or Rule with specified id not found (status code 404)
+     *         or Unauthorized (status code 401)
      * @see RulesApi#getRule
      */
     default RuleDto getRule(Long id) throws Exception {
@@ -92,6 +97,7 @@ public interface RulesApiDelegate {
      * @param lastActivationTime Time interval in which the rule was activated (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      * @see RulesApi#getRules
      */
     default RulesDto getRules(PageRequestDto pageRequest,
@@ -111,6 +117,7 @@ public interface RulesApiDelegate {
      * @return Rule has been started (status code 200)
      *         or Rule with specified id not found (status code 404)
      *         or Unsupported state transition (status code 400)
+     *         or Unauthorized (status code 401)
      * @see RulesApi#startRule
      */
     default void startRule(Long id) throws Exception {
@@ -125,6 +132,7 @@ public interface RulesApiDelegate {
      * @return Rule has been stopped (status code 200)
      *         or Rule with specified id not found (status code 404)
      *         or Unsupported state transition (status code 400)
+     *         or Unauthorized (status code 401)
      * @see RulesApi#stopRule
      */
     default void stopRule(Long id) throws Exception {

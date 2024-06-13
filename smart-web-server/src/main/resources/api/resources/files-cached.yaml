@@ -31,3 +31,5 @@ get:
         application/json:
           schema:
             $ref: '../schemas/common/ErrorResponse.yaml'
+    '401':
+      description: Unauthorized
