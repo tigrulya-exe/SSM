@@ -19,6 +19,7 @@ package org.smartdata.server.generated.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import javax.annotation.Generated;
 
 /**
@@ -27,25 +28,25 @@ import javax.annotation.Generated;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 public enum CachedFileSortDto {
-  
-  FID("fid"),
-  
+
+  ID("id"),
+
   PATH("path"),
-  
+
   ACCESSCOUNT("accessCount"),
-  
+
   CACHEDTIME("cachedTime"),
-  
+
   LASTACCESSTIME("lastAccessTime"),
-  
-  _FID("-fid"),
-  
+
+  _ID("-id"),
+
   _PATH("-path"),
-  
+
   _ACCESSCOUNT("-accessCount"),
-  
+
   _CACHEDTIME("-cachedTime"),
-  
+
   _LASTACCESSTIME("-lastAccessTime");
 
   private String value;

@@ -19,6 +19,7 @@ package org.smartdata.server.generated.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import javax.annotation.Generated;
 
 /**
@@ -27,25 +28,25 @@ import javax.annotation.Generated;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 public enum CmdletSortDto {
-  
+
   ID("id"),
-  
+
   RULEID("ruleId"),
-  
+
   STATE("state"),
-  
-  GENERATETIME("generateTime"),
-  
+
+  SUBMISSIONTIME("submissionTime"),
+
   STATECHANGEDTIME("stateChangedTime"),
-  
+
   _ID("-id"),
-  
+
   _RULEID("-ruleId"),
-  
+
   _STATE("-state"),
-  
-  _GENERATETIME("-generateTime"),
-  
+
+  _SUBMISSIONTIME("-submissionTime"),
+
   _STATECHANGEDTIME("-stateChangedTime");
 
   private String value;

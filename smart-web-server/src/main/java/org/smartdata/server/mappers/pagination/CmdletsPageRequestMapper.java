@@ -27,12 +27,12 @@ import org.smartdata.server.generated.model.CmdletSortDto;
 public interface CmdletsPageRequestMapper
     extends BasePageRequestMapper<CmdletSortDto, CmdletSortField> {
   @ValueMapping(source = "RULEID", target = "RULE_ID")
-  @ValueMapping(source = "GENERATETIME", target = "GENERATE_TIME")
+  @ValueMapping(source = "SUBMISSIONTIME", target = "GENERATE_TIME")
   @ValueMapping(source = "STATECHANGEDTIME", target = "STATE_CHANGED_TIME")
   @ValueMapping(source = "_ID", target = "ID")
   @ValueMapping(source = "_RULEID", target = "RULE_ID")
   @ValueMapping(source = "_STATE", target = "STATE")
-  @ValueMapping(source = "_GENERATETIME", target = "GENERATE_TIME")
+  @ValueMapping(source = "_SUBMISSIONTIME", target = "GENERATE_TIME")
   @ValueMapping(source = "_STATECHANGEDTIME", target = "STATE_CHANGED_TIME")
   CmdletSortField toSortField(CmdletSortDto sortColumn);
 }

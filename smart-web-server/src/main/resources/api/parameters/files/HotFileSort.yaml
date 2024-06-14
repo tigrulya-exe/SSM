@@ -2,9 +2,11 @@ title: HotFilesSort
 type: string
 description: Sort field names prefixed with '-' for descending order
 enum:
-  - fid
+  - id
   - path
-  - access_count
-  - -fid
+  - accessCount
+  - lastAccessTime
+  - -id
   - -path
-  - -access_count
+  - -accessCount
+  - -lastAccessTime
