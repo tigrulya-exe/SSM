@@ -21,7 +21,7 @@ import PopoverPanelDefault from '@uikit/Popover/PopoverPanelDefault/PopoverPanel
 import DateRangePickerPanel from '@uikit/DateRangePicker/DateRangePickerPanel/DateRangePickerPanel';
 import { useFieldFilter } from '@uikit/Table/TableFilter/useFieldFilter';
 import type { SerializedDate, DateRange } from '@models/dateRange';
-import { dateRangeParse, dateRangeStringify } from '@utils/date/dateRangeUtils';
+import { deserializeDateRange, serializeDateRange } from '@utils/date/dateRangeUtils';
 
 interface TableDateRangePickerFilterProps<FilterConfig extends EmptyTableFilter> {
   filterName: keyof FilterConfig;
@@ -36,11 +36,11 @@ const TableDateRangePickerFilter = <FilterConfig extends EmptyTableFilter>({
 
   // DateRangePickerPanel work with from,to instance of Date. But in filter (and in Slice) we save safe number (seconds) value
   const localFilterValue = useMemo(() => {
-    return filterValue ? dateRangeParse(filterValue) : 'now-1h';
+    return filterValue ? deserializeDateRange(filterValue) : 'now-1h';
   }, [filterValue]);
 
   const handleApply = (value: DateRange) => {
-    const storeSafeValue = dateRangeStringify(value);
+    const storeSafeValue = serializeDateRange(value);
     setFilterValue(storeSafeValue);
     closeFilter();
   };

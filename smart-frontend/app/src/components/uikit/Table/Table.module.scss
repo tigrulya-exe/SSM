@@ -72,7 +72,7 @@
   }
 
   &_primary {
-    --table-cell-padding: 6px 12px;
+    --table-cell-padding: 6px 20px;
     border-radius: 20px;
     font-size: 14px;
     line-height: 18px;
@@ -114,7 +114,7 @@
     }
 
     .tableCell {
-      --table-th-height: 44px;
+      --table-th-height: 48px;
     }
 
     // there is tableHeaderCell_hasSubColumns in thead, in this case we can set height = 32 for ALL th
@@ -157,7 +157,7 @@
     display: flex;
     gap: 10px;
     align-items: center;
-    justify-content: space-between;
+    justify-content: var(--table-cell-align, space-between);
   }
 }
 

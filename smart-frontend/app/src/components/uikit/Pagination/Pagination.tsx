@@ -25,7 +25,6 @@ import Select from '@uikit/Select/SingleSelect/Select/Select';
 import { usePagination } from './usePagination';
 import type { PaginationDataItem, PaginationProps } from '@uikit/Pagination/Pagination.types';
 import { defaultPerPagesList } from '@constants';
-import Button from '@uikit/Button/Button';
 
 const MAX_VISIBLE_ITEMS = 9;
 const DEFAULT_PER_PAGE_ITEMS = 14;
@@ -105,27 +104,8 @@ const Pagination = ({
     }
   }, [totalItems, pageNumber, perPage, setPageNumber]);
 
-  const handleResetFiltersClick = () => {
-    console.info('reset');
-  };
-
   return (
     <div className={paginationWrapperClasses} data-test={dataTest}>
-      {!hidePerPage && (
-        <>
-          <span className={s.pagination__selectLabel}>Show</span>
-          <Select
-            className={s.pagination__select}
-            onChange={setPerPage}
-            value={pageData.perPage}
-            options={perPageItems}
-            dataTest="pagination-per-page-popover"
-          />
-        </>
-      )}
-      <Button variant="tertiary" onClick={handleResetFiltersClick}>
-        Reset filters
-      </Button>
       {frequencyComponent && (
         <>
           <span className={s.pagination__selectLabel}>Frequency</span>
@@ -158,6 +138,19 @@ const Pagination = ({
           dataTest="pagination-last-page"
         />
       </div>
+
+      {!hidePerPage && (
+        <>
+          <span className={s.pagination__selectLabel}>Show</span>
+          <Select
+            className={s.pagination__select}
+            onChange={setPerPage}
+            value={pageData.perPage}
+            options={perPageItems}
+            dataTest="pagination-per-page-popover"
+          />
+        </>
+      )}
     </div>
   );
 };

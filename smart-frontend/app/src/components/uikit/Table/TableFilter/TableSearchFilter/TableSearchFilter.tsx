@@ -48,7 +48,7 @@ const TableSearchFilter = <FilterConfig extends EmptyTableFilter>({
   };
 
   return (
-    <PopoverPanelDefault>
+    <PopoverPanelDefault style={{ padding: '20px', border: '12px' }}>
       <SearchInput {...props} value={localValue ?? ''} onChange={handleChange} denyCharsPattern={denyCharsPattern} />
     </PopoverPanelDefault>
   );

@@ -3796,7 +3796,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/qs@npm:*, @types/qs@npm:^6.9.5":
+"@types/qs@npm:*, @types/qs@npm:^6, @types/qs@npm:^6.9.5":
   version: 6.9.15
   resolution: "@types/qs@npm:6.9.15"
   checksum: 10c0/49c5ff75ca3adb18a1939310042d273c9fc55920861bd8e5100c8a923b3cda90d759e1a95e18334092da1c8f7b820084687770c83a1ccef04fb2c6908117c823
@@ -9583,7 +9583,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:^6.10.0":
+"qs@npm:6.12.1, qs@npm:^6.10.0":
   version: 6.12.1
   resolution: "qs@npm:6.12.1"
   dependencies:
@@ -10542,6 +10542,7 @@ __metadata:
     "@storybook/react": "npm:^8.0.8"
     "@storybook/react-vite": "npm:^8.0.8"
     "@storybook/test": "npm:^8.0.8"
+    "@types/qs": "npm:^6"
     "@types/react": "npm:18.2.66"
     "@types/react-dom": "npm:18.2.22"
     "@typescript-eslint/eslint-plugin": "npm:7.2.0"
@@ -10565,6 +10566,7 @@ __metadata:
     js-base64: "npm:3.7.7"
     lint-staged: "npm:15.2.2"
     prettier: "npm:3.2.5"
+    qs: "npm:6.12.1"
     react: "npm:18.2.0"
     react-dom: "npm:18.2.0"
     react-merge-refs: "npm:2.1.1"

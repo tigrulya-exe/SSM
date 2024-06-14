@@ -33,6 +33,7 @@ import PopoverPanelDefault from './Popover/PopoverPanelDefault/PopoverPanelDefau
 import SearchInput from './SearchInput/SearchInput';
 import Select from './Select/SingleSelect/Select/Select';
 import Text from './Text/Text';
+import Title from './Title/Title';
 import Tooltip from './Tooltip/Tooltip';
 
 export {
@@ -54,5 +55,6 @@ export {
   Select,
   SearchInput,
   Text,
+  Title,
   Tooltip,
 };

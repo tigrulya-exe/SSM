@@ -1,0 +1,37 @@
+/** 'offline' | 'running' | 'online' | 'failed';
+*/
+
+:global {
+  body.theme-dark {
+    --statusMarker-offline: var(--color-grayDisabled);
+    --statusMarker-running: var(--color-blue);
+    --statusMarker-online: var(--color-greenSaturated);
+    --statusMarker-failed: var(--color-red);
+  }
+  body.theme-light {
+    --statusMarker-offline: var(--color-popupLightDarker);
+    --statusMarker-running: var(--color-blue);
+    --statusMarker-online: var(--color-greenLogo);
+    --statusMarker-failed: var(--color-red);
+  }
+}
+
+.statusMarker {
+  width: 6px;
+  height: 6px;
+  display: inline-flex;
+  border-radius: 50%;
+
+  &_offline {
+    background-color: var(--statusMarker-offline);
+  }
+  &_running {
+    background-color: var(--statusMarker-running);
+  }
+  &_online {
+    background-color: var(--statusMarker-online);
+  }
+  &_failed {
+    background-color: var(--statusMarker-failed);
+  }
+}

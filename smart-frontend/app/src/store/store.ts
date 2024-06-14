@@ -19,10 +19,16 @@ import { combineReducers } from 'redux';
 import { configureStore } from '@reduxjs/toolkit';
 import notificationsSlice from './notificationsSlice';
 import authSlice from '@store/authSlice';
+import rulesSlice from '@store/adh/rules/rulesSlice';
+import rulesTableSlice from '@store/adh/rules/rulesTableSlice';
 
 const rootReducer = combineReducers({
   auth: authSlice,
   notifications: notificationsSlice,
+  adh: combineReducers({
+    rules: rulesSlice,
+    rulesTable: rulesTableSlice,
+  }),
 });
 
 // The store setup is wrapped in `makeStore` to allow reuse

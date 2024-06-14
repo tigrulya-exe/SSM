@@ -71,5 +71,5 @@ export const dateToSeconds = (date: Date): number => {
   return Math.floor(date.getTime() / 1000);
 };
 
-export const dateParse = (seconds: SerializedDate): Date => secondsToDate(seconds);
-export const dateStringify = (date: Date): SerializedDate => dateToSeconds(date);
+export const deserializeDate = (seconds: SerializedDate): Date => secondsToDate(seconds);
+export const serializeDate = (date: Date): SerializedDate => dateToSeconds(date);
