@@ -970,16 +970,16 @@ components:
       enum:
       - id
       - submitTime
-      - lastCheckTime
-      - checkedCount
-      - generatedCmdlets
-      - status
+      - lastActivationTime
+      - activationCount
+      - cmdletsGenerated
+      - state
       - -id
       - -submitTime
-      - -lastCheckTime
-      - -checkedCount
-      - -generatedCmdlets
-      - -status
+      - -lastActivationTime
+      - -activationCount
+      - -cmdletsGenerated
+      - -state
       title: RuleSort
       type: string
     RuleState:
@@ -1081,12 +1081,12 @@ components:
       - id
       - ruleId
       - state
-      - generateTime
+      - submissionTime
       - stateChangedTime
       - -id
       - -ruleId
       - -state
-      - -generateTime
+      - -submissionTime
       - -stateChangedTime
       title: CmdletSort
       type: string
@@ -1169,15 +1169,15 @@ components:
       enum:
       - id
       - execHost
-      - createTime
-      - finishTime
-      - status
+      - submissionTime
+      - completionTime
+      - state
       - source
       - -id
       - -execHost
-      - -createTime
-      - -finishTime
-      - -status
+      - -submissionTime
+      - -completionTime
+      - -state
       - -source
       title: ActionSort
       type: string
@@ -1285,12 +1285,14 @@ components:
     HotFileSort:
       description: Sort field names prefixed with '-' for descending order
       enum:
-      - fid
+      - id
       - path
-      - access_count
-      - -fid
+      - accessCount
+      - lastAccessTime
+      - -id
       - -path
-      - -access_count
+      - -accessCount
+      - -lastAccessTime
       title: HotFilesSort
       type: string
     FileAccessInfo:
@@ -1325,12 +1327,12 @@ components:
     CachedFileSort:
       description: Sort field names prefixed with '-' for descending order
       enum:
-      - fid
+      - id
       - path
       - accessCount
       - cachedTime
       - lastAccessTime
-      - -fid
+      - -id
       - -path
       - -accessCount
       - -cachedTime
@@ -1377,11 +1379,11 @@ components:
       enum:
       - id
       - registrationTime
-      - executors
+      - executorsCount
       - status
       - -id
       - -registrationTime
-      - -executors
+      - -executorsCount
       - -status
       title: ClusterSort
       type: string

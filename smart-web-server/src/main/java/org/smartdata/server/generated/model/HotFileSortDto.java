@@ -19,6 +19,7 @@ package org.smartdata.server.generated.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import javax.annotation.Generated;
 
 /**
@@ -27,18 +28,22 @@ import javax.annotation.Generated;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 public enum HotFileSortDto {
-  
-  FID("fid"),
-  
+
+  ID("id"),
+
   PATH("path"),
-  
-  ACCESS_COUNT("access_count"),
-  
-  _FID("-fid"),
-  
+
+  ACCESSCOUNT("accessCount"),
+
+  LASTACCESSTIME("lastAccessTime"),
+
+  _ID("-id"),
+
   _PATH("-path"),
-  
-  _ACCESS_COUNT("-access_count");
+
+  _ACCESSCOUNT("-accessCount"),
+
+  _LASTACCESSTIME("-lastAccessTime");
 
   private String value;
 
