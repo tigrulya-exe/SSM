@@ -25,8 +25,9 @@ import IconButton from '@uikit/IconButton/IconButton';
 import type { IconsNames } from '@uikit/Icon/sprite';
 import Input from '@uikit/Input/Input';
 import InputNumber from './InputNumber/InputNumber';
-import MultiSelect from './Select/MultiSelect/MultiSelect';
 import InputPassword from '@uikit/InputPassword/InputPassword';
+import MultilineInput from '@uikit/MultilineInput/MultilineInput';
+import MultiSelect from './Select/MultiSelect/MultiSelect';
 import Panel from './Panel/Panel';
 import Popover from './Popover/Popover';
 import PopoverPanelDefault from './Popover/PopoverPanelDefault/PopoverPanelDefault';
@@ -48,6 +49,7 @@ export {
   Input,
   InputNumber,
   InputPassword,
+  MultilineInput,
   MultiSelect,
   Panel,
   Popover,

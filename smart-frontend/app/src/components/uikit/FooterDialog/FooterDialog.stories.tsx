@@ -50,7 +50,7 @@ const FooterDialogExample: React.FC<FooterDialogProps> = (props) => {
     <>
       <Button onClick={handleOpen}>Click to open first footer dialog</Button>
       <div style={{ width: '300px', height: '100px', marginLeft: '100px' }}>
-        <FooterDialog {...props} isShown={isShown} onOpenChange={setIsShown} onAction={handleAction}>
+        <FooterDialog {...props} isOpen={isShown} onOpenChange={setIsShown} onAction={handleAction}>
           <div>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam commodo dui vel turpis mollis dignissim.
             Aliquam semper risus sollicitudin, consectetur risus aliquam, fringilla neque. Sed cursus elit eu sem

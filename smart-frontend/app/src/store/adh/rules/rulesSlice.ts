@@ -8,6 +8,8 @@ import { AdhRulesApi } from '@api';
 import { executeWithMinDelay } from '@utils/requestUtils';
 import { defaultSpinnerDelay } from '@constants';
 import type { Rule as AdhRule } from '@models/adh_gen/rule';
+// eslint-disable-next-line import/no-cycle
+import { startRule, stopRule } from './rulesActionsSlice';
 
 interface AdhRulesSliceState {
   rules: AdhRule[];
@@ -80,6 +82,20 @@ const rulesSlice = createSlice({
     builder.addCase(loadRules.rejected, (state) => {
       state.rules = [];
       state.totalCount = 0;
+    });
+    builder.addCase(startRule.fulfilled, (state, action) => {
+      const ruleId = action.meta.arg;
+      const currentRule = state.rules.find((rule) => rule.id === ruleId);
+      if (currentRule) {
+        currentRule.state = 'ACTIVE';
+      }
+    });
+    builder.addCase(stopRule.fulfilled, (state, action) => {
+      const ruleId = action.meta.arg;
+      const currentRule = state.rules.find((rule) => rule.id === ruleId);
+      if (currentRule) {
+        currentRule.state = 'DISABLED';
+      }
     });
   },
 });

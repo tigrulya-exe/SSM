@@ -21,6 +21,7 @@ import notificationsSlice from './notificationsSlice';
 import authSlice from '@store/authSlice';
 import rulesSlice from '@store/adh/rules/rulesSlice';
 import rulesTableSlice from '@store/adh/rules/rulesTableSlice';
+import rulesActionsSlice from '@store/adh/rules/rulesActionsSlice';
 
 const rootReducer = combineReducers({
   auth: authSlice,
@@ -28,6 +29,7 @@ const rootReducer = combineReducers({
   adh: combineReducers({
     rules: rulesSlice,
     rulesTable: rulesTableSlice,
+    rulesActions: rulesActionsSlice,
   }),
 });
 

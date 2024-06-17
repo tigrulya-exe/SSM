@@ -12,15 +12,15 @@ const roleStateToStatus: Record<AdhRuleState, Status> = {
 };
 
 interface RuleStatusCellProps {
-  role: AdhRule;
+  rule: AdhRule;
 }
 
-const RuleStatusCell: React.FC<RuleStatusCellProps> = ({ role }) => {
+const RuleStatusCell: React.FC<RuleStatusCellProps> = ({ rule }) => {
   return (
     <TableCell>
       <FlexGroup gap="6px">
-        <StatusMarker status={roleStateToStatus[role.state]} />
-        {getStatusLabel(role.state)}
+        <StatusMarker status={roleStateToStatus[rule.state]} />
+        {getStatusLabel(rule.state)}
       </FlexGroup>
     </TableCell>
   );

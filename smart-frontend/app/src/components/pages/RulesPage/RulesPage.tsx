@@ -22,6 +22,7 @@ import FlexGroup from '@uikit/FlexGroup/FlexGroup';
 import RuleCreateBtn from './RuleCreateBtn/RuleCreateBtn';
 import RulesTable from './RulesTable/RulesTable';
 import { useRequestRules } from './useRequestRules';
+import RulesDialogs from './RulesDialogs/RulesDialogs';
 
 const RulesPage: React.FC = () => {
   useRequestRules();
@@ -34,6 +35,7 @@ const RulesPage: React.FC = () => {
       </FlexGroup>
       <RulesToolbar />
       <RulesTable />
+      <RulesDialogs />
     </div>
   );
 };

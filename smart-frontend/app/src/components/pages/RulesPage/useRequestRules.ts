@@ -1,5 +1,5 @@
 import { useDebounce, useDispatch, useRequestTimer, useStore } from '@hooks';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { cleanupRules, getRules, refreshRules } from '@store/adh/rules/rulesSlice';
 import { cleanupRulesTable } from '@store/adh/rules/rulesTableSlice';
 import { defaultDebounceDelay } from '@constants';
@@ -20,13 +20,21 @@ export const useRequestRules = () => {
     [dispatch],
   );
 
-  const debounceGetData = useDebounce(() => {
-    dispatch(getRules());
-  }, defaultDebounceDelay);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debounceGetData = useCallback(
+    useDebounce(() => {
+      dispatch(getRules());
+    }, defaultDebounceDelay),
+    [],
+  );
 
-  const debounceRefreshData = useDebounce(() => {
-    dispatch(refreshRules());
-  }, defaultDebounceDelay);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debounceRefreshData = useCallback(
+    useDebounce(() => {
+      dispatch(refreshRules());
+    }, defaultDebounceDelay),
+    [],
+  );
 
   useRequestTimer(debounceGetData, debounceRefreshData, requestFrequency, true, [
     filter,

@@ -1,13 +1,13 @@
 import type { TableColumnSchema } from '@uikit/Table/Table.types';
 import { SchemaColumnType } from '@uikit/Table/Table.types';
-import TableCell from '@uikit/Table/TableCell/TableCell';
-import FlexGroup from '@uikit/FlexGroup/FlexGroup';
-import { IconButton } from '@uikit';
 import { TableDateRangePickerFilter, TableMultiSelectFilter, TableSearchFilter } from '@uikit/Table/TableFilter';
 import type { AdhRule, AdhRuleFilter } from '@models/adh';
 import { AdhRuleState } from '@models/adh';
-import RuleStatusCell from '@pages/RulesPage/RulesTable/RuleStatusCell/RuleStatusCell';
+import RuleStatusCell from './RuleStatusCell/RuleStatusCell';
+import RuleActionsCell from './RuleActionsCell/RuleActionsCell';
 import { getOptionsFromEnum } from '@uikit/Select/Select.utils';
+
+const ruleStatesOptions = getOptionsFromEnum(AdhRuleState);
 
 export const rulesColumns: TableColumnSchema[] = [
   {
@@ -67,33 +67,23 @@ export const rulesColumns: TableColumnSchema[] = [
     width: '150px',
     filterRenderer: () => {
       return (
-        <TableMultiSelectFilter<AdhRuleFilter, AdhRuleState>
-          filterName="ruleStates"
-          options={getOptionsFromEnum(AdhRuleState)}
-        />
+        <TableMultiSelectFilter<AdhRuleFilter, AdhRuleState> filterName="ruleStates" options={ruleStatesOptions} />
       );
     },
     filterName: 'ruleStates',
     schema: {
-      cellRenderer: (role: AdhRule) => {
-        return <RuleStatusCell role={role} />;
+      cellRenderer: (rule: AdhRule) => {
+        return <RuleStatusCell rule={rule} />;
       },
     },
   },
   {
     name: 'actions',
-    label: 'Actions',
+    label: 'Actions1',
     headerAlign: 'center',
     width: '120px',
     schema: {
-      cellRenderer: () => (
-        <TableCell align="center">
-          <FlexGroup gap="4px">
-            <IconButton icon="play" />
-            <IconButton icon="delete" />
-          </FlexGroup>
-        </TableCell>
-      ),
+      cellRenderer: (rule: AdhRule) => <RuleActionsCell rule={rule} />,
     },
   },
 ];

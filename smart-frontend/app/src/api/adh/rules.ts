@@ -24,9 +24,35 @@ export class AdhRulesApi {
       paginationParams,
     );
 
-    const query = qs.stringify(queryParams);
+    const query = qs.stringify(queryParams, { arrayFormat: 'repeat' });
 
     const response = await httpClient.get<PaginateCollection<AdhRule>>(`/api/v2/rules?${query}`);
+
+    return response.data;
+  }
+
+  public static async createRule(text: string) {
+    const response = await httpClient.post('/api/v2/rules', {
+      rule: text,
+    });
+
+    return response.data;
+  }
+
+  public static async deleteRule(id: number) {
+    const response = await httpClient.delete(`/api/v2/rules/${id}`);
+
+    return response.data;
+  }
+
+  public static async startRule(id: number) {
+    const response = await httpClient.post(`/api/v2/rules/${id}/start`);
+
+    return response.data;
+  }
+
+  public static async stopRule(id: number) {
+    const response = await httpClient.post(`/api/v2/rules/${id}/stop`);
 
     return response.data;
   }

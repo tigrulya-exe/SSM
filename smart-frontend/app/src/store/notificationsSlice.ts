@@ -101,5 +101,5 @@ const notificationsSlice = createSlice({
   },
 });
 
-export const { showInfo, showError, closeNotification, cleanupNotifications } = notificationsSlice.actions;
+export const { showInfo, showError, showSuccess, closeNotification, cleanupNotifications } = notificationsSlice.actions;
 export default notificationsSlice.reducer;
