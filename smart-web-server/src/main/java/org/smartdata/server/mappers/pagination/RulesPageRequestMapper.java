@@ -28,16 +28,15 @@ public interface RulesPageRequestMapper
     extends BasePageRequestMapper<RuleSortDto, RuleSortField> {
 
   @ValueMapping(source = "SUBMITTIME", target = "SUBMIT_TIME")
-  @ValueMapping(source = "LASTCHECKTIME", target = "LAST_CHECK_TIME")
-  @ValueMapping(source = "CHECKEDCOUNT", target = "CHECKED_COUNT")
-  @ValueMapping(source = "GENERATEDCMDLETS", target = "GENERATED_CMDLETS")
-  @ValueMapping(source = "STATUS", target = "STATE")
+  @ValueMapping(source = "LASTACTIVATIONTIME", target = "LAST_CHECK_TIME")
+  @ValueMapping(source = "ACTIVATIONCOUNT", target = "CHECKED_COUNT")
+  @ValueMapping(source = "CMDLETSGENERATED", target = "GENERATED_CMDLETS")
   @ValueMapping(source = "_ID", target = "ID")
   @ValueMapping(source = "_SUBMITTIME", target = "SUBMIT_TIME")
-  @ValueMapping(source = "_LASTCHECKTIME", target = "LAST_CHECK_TIME")
-  @ValueMapping(source = "_CHECKEDCOUNT", target = "CHECKED_COUNT")
-  @ValueMapping(source = "_GENERATEDCMDLETS", target = "GENERATED_CMDLETS")
-  @ValueMapping(source = "_STATUS", target = "STATE")
+  @ValueMapping(source = "_LASTACTIVATIONTIME", target = "LAST_CHECK_TIME")
+  @ValueMapping(source = "_ACTIVATIONCOUNT", target = "CHECKED_COUNT")
+  @ValueMapping(source = "_CMDLETSGENERATED", target = "GENERATED_CMDLETS")
+  @ValueMapping(source = "_STATE", target = "STATE")
   RuleSortField toSortField(RuleSortDto sortColumn);
 
 }

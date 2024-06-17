@@ -15,11 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.security;
+package org.smartdata.server.controller;
 
-import lombok.Data;
+import org.smartdata.security.SmartPrincipalHolder;
+import org.smartdata.server.generated.api.SystemApiDelegate;
+import org.smartdata.server.generated.model.UserInfoDto;
+import org.springframework.stereotype.Component;
 
-@Data
-public class SmartPrincipal {
-  private final String name;
+@Component
+public class SystemControllerDelegate implements SystemApiDelegate {
+  @Override
+  public UserInfoDto getCurrentUser() {
+    String username = SmartPrincipalHolder.getCurrentPrincipal().getName();
+    return new UserInfoDto(username);
+  }
 }

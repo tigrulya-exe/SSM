@@ -17,10 +17,6 @@
  */
 package org.smartdata.server.generated.api;
 
-import java.util.List;
-import java.util.Optional;
-import javax.annotation.Generated;
-import javax.validation.Valid;
 import org.smartdata.server.generated.model.ActionDto;
 import org.smartdata.server.generated.model.ActionInfoDto;
 import org.smartdata.server.generated.model.ActionSortDto;
@@ -32,6 +28,12 @@ import org.smartdata.server.generated.model.PageRequestDto;
 import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
 import org.smartdata.server.generated.model.SubmitActionRequestDto;
 import org.springframework.web.context.request.NativeWebRequest;
+
+import javax.annotation.Generated;
+import javax.validation.Valid;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * A delegate to be called by the {@link ActionsApiController}}.
@@ -50,6 +52,7 @@ public interface ActionsApiDelegate {
      * @param id Id of the resource (required)
      * @return OK (status code 200)
      *         or Action with specified id not found (status code 404)
+     *         or Unauthorized (status code 401)
      * @see ActionsApi#getAction
      */
     default ActionDto getAction(Long id) throws Exception {
@@ -70,6 +73,7 @@ public interface ActionsApiDelegate {
      * @param completionTime Time interval in which the action was finished (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      * @see ActionsApi#getActions
      */
     default ActionsDto getActions(PageRequestDto pageRequest,
@@ -90,6 +94,7 @@ public interface ActionsApiDelegate {
      * @param submitActionRequestDto  (required)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      * @see ActionsApi#submitAction
      */
     default ActionInfoDto submitAction(SubmitActionRequestDto submitActionRequestDto) throws Exception {

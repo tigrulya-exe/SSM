@@ -28,10 +28,8 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
-import javax.annotation.Generated;
-import javax.validation.Valid;
 import org.smartdata.server.generated.model.CachedFileSortDto;
 import org.smartdata.server.generated.model.CachedFilesDto;
 import org.smartdata.server.generated.model.CachedTimeIntervalDto;
@@ -46,6 +44,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import javax.annotation.Generated;
+import javax.validation.Valid;
+
+import java.util.List;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 @Validated
@@ -65,6 +68,7 @@ public interface FilesApi {
      * @param lastAccessedTime Time interval in which the file was accessed (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      */
     @Operation(
         operationId = "getAccessCounts",
@@ -76,7 +80,11 @@ public interface FilesApi {
             }),
             @ApiResponse(responseCode = "400", description = "Data is filled incorrectly", content = {
                 @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDto.class))
-            })
+            }),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+        },
+        security = {
+            @SecurityRequirement(name = "basicAuth")
         }
     )
     @RequestMapping(
@@ -106,6 +114,7 @@ public interface FilesApi {
      * @param cachedTime Time interval in which the file was cached (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      */
     @Operation(
         operationId = "getCachedFiles",
@@ -117,7 +126,11 @@ public interface FilesApi {
             }),
             @ApiResponse(responseCode = "400", description = "Data is filled incorrectly", content = {
                 @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDto.class))
-            })
+            }),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+        },
+        security = {
+            @SecurityRequirement(name = "basicAuth")
         }
     )
     @RequestMapping(

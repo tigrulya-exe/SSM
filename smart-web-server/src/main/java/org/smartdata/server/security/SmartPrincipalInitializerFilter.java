@@ -39,12 +39,14 @@ public class SmartPrincipalInitializerFilter extends OncePerRequestFilter {
       HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
 
-    Optional.ofNullable(SecurityContextHolder.getContext())
+    SmartPrincipal principal = Optional.ofNullable(SecurityContextHolder.getContext())
         .map(SecurityContext::getAuthentication)
         .filter(Authentication::isAuthenticated)
         .map(Authentication::getName)
         .map(SmartPrincipal::new)
-        .ifPresent(SmartPrincipalHolder::setCurrentPrincipal);
+        .orElseGet(SmartPrincipalHolder::anonymous);
+
+    SmartPrincipalHolder.setCurrentPrincipal(principal);
 
     filterChain.doFilter(request, response);
 

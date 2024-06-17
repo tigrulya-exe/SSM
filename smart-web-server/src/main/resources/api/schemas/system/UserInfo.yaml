@@ -1,0 +1,8 @@
+title: UserInfo
+type: object
+properties:
+  name:
+    type: string
+    description: Name of the user
+required:
+  - name

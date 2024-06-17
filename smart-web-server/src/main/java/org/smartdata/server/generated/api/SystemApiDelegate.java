@@ -17,28 +17,34 @@
  */
 package org.smartdata.server.generated.api;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.smartdata.server.generated.model.UserInfoDto;
+import org.springframework.web.context.request.NativeWebRequest;
 
 import javax.annotation.Generated;
 
 import java.util.Optional;
 
+/**
+ * A delegate to be called by the {@link SystemApiController}}.
+ * Implement this interface with a {@link org.springframework.stereotype.Service} annotated class.
+ */
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
-@RestController
-@RequestMapping("${openapi.sSMAPIDocumentation.base-path:}")
-public class CmdletsApiController implements CmdletsApi {
+public interface SystemApiDelegate {
 
-    private final CmdletsApiDelegate delegate;
-
-    public CmdletsApiController(@Autowired(required = false) CmdletsApiDelegate delegate) {
-        this.delegate = Optional.ofNullable(delegate).orElse(new CmdletsApiDelegate() {});
+    default Optional<NativeWebRequest> getRequest() {
+        return Optional.empty();
     }
 
-    @Override
-    public CmdletsApiDelegate getDelegate() {
-        return delegate;
+    /**
+     * GET /api/v2/system/current-user : Get current logged in user
+     *
+     * @return OK (status code 200)
+     *         or Unauthorized (status code 401)
+     * @see SystemApi#getCurrentUser
+     */
+    default UserInfoDto getCurrentUser() throws Exception {
+        throw new IllegalArgumentException("Not implemented");
+
     }
 
 }

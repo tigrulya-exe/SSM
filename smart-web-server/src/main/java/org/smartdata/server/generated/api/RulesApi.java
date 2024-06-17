@@ -28,10 +28,8 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
-import javax.annotation.Generated;
-import javax.validation.Valid;
 import org.smartdata.server.generated.model.ErrorResponseDto;
 import org.smartdata.server.generated.model.LastActivationTimeIntervalDto;
 import org.smartdata.server.generated.model.PageRequestDto;
@@ -50,6 +48,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.annotation.Generated;
+import javax.validation.Valid;
+
+import java.util.List;
+
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 @Validated
 @Tag(name = "Rules", description = "the Rules API")
@@ -65,6 +68,7 @@ public interface RulesApi {
      * @param submitRuleRequestDto  (required)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      */
     @Operation(
         operationId = "addRule",
@@ -76,7 +80,11 @@ public interface RulesApi {
             }),
             @ApiResponse(responseCode = "400", description = "Data is filled incorrectly", content = {
                 @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDto.class))
-            })
+            }),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+        },
+        security = {
+            @SecurityRequirement(name = "basicAuth")
         }
     )
     @RequestMapping(
@@ -100,6 +108,7 @@ public interface RulesApi {
      * @param id Id of the resource (required)
      * @return Rule has been removed (status code 200)
      *         or Rule with specified id not found (status code 404)
+     *         or Unauthorized (status code 401)
      */
     @Operation(
         operationId = "deleteRule",
@@ -107,7 +116,11 @@ public interface RulesApi {
         tags = { "Rules" },
         responses = {
             @ApiResponse(responseCode = "200", description = "Rule has been removed"),
-            @ApiResponse(responseCode = "404", description = "Rule with specified id not found")
+            @ApiResponse(responseCode = "404", description = "Rule with specified id not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+        },
+        security = {
+            @SecurityRequirement(name = "basicAuth")
         }
     )
     @RequestMapping(
@@ -129,6 +142,7 @@ public interface RulesApi {
      * @param id Id of the resource (required)
      * @return OK (status code 200)
      *         or Rule with specified id not found (status code 404)
+     *         or Unauthorized (status code 401)
      */
     @Operation(
         operationId = "getRule",
@@ -138,7 +152,11 @@ public interface RulesApi {
             @ApiResponse(responseCode = "200", description = "OK", content = {
                 @Content(mediaType = "application/json", schema = @Schema(implementation = RuleDto.class))
             }),
-            @ApiResponse(responseCode = "404", description = "Rule with specified id not found")
+            @ApiResponse(responseCode = "404", description = "Rule with specified id not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+        },
+        security = {
+            @SecurityRequirement(name = "basicAuth")
         }
     )
     @RequestMapping(
@@ -166,6 +184,7 @@ public interface RulesApi {
      * @param lastActivationTime Time interval in which the rule was activated (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      */
     @Operation(
         operationId = "getRules",
@@ -177,7 +196,11 @@ public interface RulesApi {
             }),
             @ApiResponse(responseCode = "400", description = "Data is filled incorrectly", content = {
                 @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDto.class))
-            })
+            }),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+        },
+        security = {
+            @SecurityRequirement(name = "basicAuth")
         }
     )
     @RequestMapping(
@@ -206,6 +229,7 @@ public interface RulesApi {
      * @return Rule has been started (status code 200)
      *         or Rule with specified id not found (status code 404)
      *         or Unsupported state transition (status code 400)
+     *         or Unauthorized (status code 401)
      */
     @Operation(
         operationId = "startRule",
@@ -216,7 +240,11 @@ public interface RulesApi {
             @ApiResponse(responseCode = "404", description = "Rule with specified id not found"),
             @ApiResponse(responseCode = "400", description = "Unsupported state transition", content = {
                 @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDto.class))
-            })
+            }),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+        },
+        security = {
+            @SecurityRequirement(name = "basicAuth")
         }
     )
     @RequestMapping(
@@ -240,6 +268,7 @@ public interface RulesApi {
      * @return Rule has been stopped (status code 200)
      *         or Rule with specified id not found (status code 404)
      *         or Unsupported state transition (status code 400)
+     *         or Unauthorized (status code 401)
      */
     @Operation(
         operationId = "stopRule",
@@ -250,7 +279,11 @@ public interface RulesApi {
             @ApiResponse(responseCode = "404", description = "Rule with specified id not found"),
             @ApiResponse(responseCode = "400", description = "Unsupported state transition", content = {
                 @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDto.class))
-            })
+            }),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+        },
+        security = {
+            @SecurityRequirement(name = "basicAuth")
         }
     )
     @RequestMapping(

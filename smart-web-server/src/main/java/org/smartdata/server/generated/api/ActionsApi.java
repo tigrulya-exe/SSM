@@ -28,10 +28,8 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
-import javax.annotation.Generated;
-import javax.validation.Valid;
 import org.smartdata.server.generated.model.ActionDto;
 import org.smartdata.server.generated.model.ActionInfoDto;
 import org.smartdata.server.generated.model.ActionSortDto;
@@ -52,6 +50,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.annotation.Generated;
+import javax.validation.Valid;
+
+import java.util.List;
+
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 @Validated
 @Tag(name = "Actions", description = "the Actions API")
@@ -67,6 +70,7 @@ public interface ActionsApi {
      * @param id Id of the resource (required)
      * @return OK (status code 200)
      *         or Action with specified id not found (status code 404)
+     *         or Unauthorized (status code 401)
      */
     @Operation(
         operationId = "getAction",
@@ -76,7 +80,11 @@ public interface ActionsApi {
             @ApiResponse(responseCode = "200", description = "OK", content = {
                 @Content(mediaType = "application/json", schema = @Schema(implementation = ActionDto.class))
             }),
-            @ApiResponse(responseCode = "404", description = "Action with specified id not found")
+            @ApiResponse(responseCode = "404", description = "Action with specified id not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+        },
+        security = {
+            @SecurityRequirement(name = "basicAuth")
         }
     )
     @RequestMapping(
@@ -106,6 +114,7 @@ public interface ActionsApi {
      * @param completionTime Time interval in which the action was finished (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      */
     @Operation(
         operationId = "getActions",
@@ -117,7 +126,11 @@ public interface ActionsApi {
             }),
             @ApiResponse(responseCode = "400", description = "Data is filled incorrectly", content = {
                 @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDto.class))
-            })
+            }),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+        },
+        security = {
+            @SecurityRequirement(name = "basicAuth")
         }
     )
     @RequestMapping(
@@ -147,6 +160,7 @@ public interface ActionsApi {
      * @param submitActionRequestDto  (required)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      */
     @Operation(
         operationId = "submitAction",
@@ -158,7 +172,11 @@ public interface ActionsApi {
             }),
             @ApiResponse(responseCode = "400", description = "Data is filled incorrectly", content = {
                 @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDto.class))
-            })
+            }),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+        },
+        security = {
+            @SecurityRequirement(name = "basicAuth")
         }
     )
     @RequestMapping(

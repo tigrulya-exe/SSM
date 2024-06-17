@@ -14,6 +14,8 @@ get:
             $ref: '../schemas/cmdlets/Cmdlet.yaml'
     '404':
       description: Cmdlet with specified id not found
+    '401':
+      description: Unauthorized
 delete:
   tags:
     - Cmdlets
@@ -26,3 +28,5 @@ delete:
       description: Cmdlet has been removed
     '404':
       description: Cmdlet with specified id not found
+    '401':
+      description: Unauthorized

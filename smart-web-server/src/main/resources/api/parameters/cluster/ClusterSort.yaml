@@ -4,9 +4,9 @@ description: Sort field names prefixed with '-' for descending order
 enum:
   - id
   - registrationTime
-  - executors
+  - executorsCount
   - status
   - -id
   - -registrationTime
-  - -executors
+  - -executorsCount
   - -status
