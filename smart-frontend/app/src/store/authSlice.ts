@@ -38,8 +38,8 @@ type UserState = {
 
 const login = createAsyncThunk('auth/login', async (arg: LoginActionPayload, thunkAPI) => {
   try {
-    await AuthApi.login(arg.username, arg.password);
-    return AuthApi.checkSession();
+    const userInfo = await AuthApi.login(arg.username, arg.password);
+    return userInfo;
   } catch (error) {
     thunkAPI.dispatch(showError({ message: getErrorMessage(error as RequestError) }));
     return thunkAPI.rejectWithValue(error);
@@ -86,8 +86,7 @@ const authSlice = createSlice({
       state.authState = 'Checking';
     });
     builder.addCase(login.fulfilled, (state, action) => {
-      // TODO: remove fallback string. In really api should response user info
-      state.username = action.payload.name ?? 'testUser';
+      state.username = action.payload.name;
       state.message = '';
       state.hasError = false;
       state.needCheckSession = false;
@@ -119,8 +118,7 @@ const authSlice = createSlice({
       state.authState = 'Checking';
     });
     builder.addCase(checkSession.fulfilled, (state, action) => {
-      // TODO: remove fallback string. In really api should response user info
-      state.username = action.payload.name ?? 'testUser';
+      state.username = action.payload.name;
       state.hasError = false;
       state.needCheckSession = false;
       state.authState = 'Authed';
