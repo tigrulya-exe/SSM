@@ -19,6 +19,7 @@ package org.smartdata.server.generated.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import javax.annotation.Generated;
 
 /**
@@ -27,33 +28,33 @@ import javax.annotation.Generated;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 public enum AuditSortDto {
-  
+
   ID("id"),
-  
+
   USERNAME("username"),
-  
+
   TIMESTAMP("timestamp"),
-  
+
   OBJECTTYPE("objectType"),
-  
+
   OBJECTID("objectId"),
-  
+
   OPERATION("operation"),
-  
+
   RESULT("result"),
-  
+
   _ID("-id"),
-  
+
   _USERNAME("-username"),
-  
+
   _TIMESTAMP("-timestamp"),
-  
+
   _OBJECTTYPE("-objectType"),
-  
+
   _OBJECTID("-objectId"),
-  
+
   _OPERATION("-operation"),
-  
+
   _RESULT("-result");
 
   private String value;

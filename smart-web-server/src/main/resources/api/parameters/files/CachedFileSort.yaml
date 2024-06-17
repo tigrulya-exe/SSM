@@ -2,12 +2,12 @@ title: FilesSort
 type: string
 description: Sort field names prefixed with '-' for descending order
 enum:
-  - fid
+  - id
   - path
   - accessCount
   - cachedTime
   - lastAccessTime
-  - -fid
+  - -id
   - -path
   - -accessCount
   - -cachedTime

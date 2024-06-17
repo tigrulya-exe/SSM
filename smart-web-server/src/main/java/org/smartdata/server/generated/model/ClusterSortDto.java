@@ -19,6 +19,7 @@ package org.smartdata.server.generated.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import javax.annotation.Generated;
 
 /**
@@ -27,21 +28,21 @@ import javax.annotation.Generated;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 public enum ClusterSortDto {
-  
+
   ID("id"),
-  
+
   REGISTRATIONTIME("registrationTime"),
-  
-  EXECUTORS("executors"),
-  
+
+  EXECUTORSCOUNT("executorsCount"),
+
   STATUS("status"),
-  
+
   _ID("-id"),
-  
+
   _REGISTRATIONTIME("-registrationTime"),
-  
-  _EXECUTORS("-executors"),
-  
+
+  _EXECUTORSCOUNT("-executorsCount"),
+
   _STATUS("-status");
 
   private String value;

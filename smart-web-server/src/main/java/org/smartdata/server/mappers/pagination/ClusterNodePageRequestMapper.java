@@ -38,9 +38,10 @@ public interface ClusterNodePageRequestMapper
     extends BasePageRequestMapper<ClusterSortDto, ClusterNodeSortField> {
 
   @ValueMapping(source = "REGISTRATIONTIME", target = "REGISTRATION_TIME")
+  @ValueMapping(source = "EXECUTORSCOUNT", target = "EXECUTORS")
   @ValueMapping(source = "_ID", target = "ID")
   @ValueMapping(source = "_REGISTRATIONTIME", target = "REGISTRATION_TIME")
-  @ValueMapping(source = "_EXECUTORS", target = "EXECUTORS")
+  @ValueMapping(source = "_EXECUTORSCOUNT", target = "EXECUTORS")
   @ValueMapping(source = "STATUS", target = MappingConstants.THROW_EXCEPTION)
   @ValueMapping(source = "_STATUS", target = MappingConstants.THROW_EXCEPTION)
   ClusterNodeSortField toSortField(ClusterSortDto sortColumn);
