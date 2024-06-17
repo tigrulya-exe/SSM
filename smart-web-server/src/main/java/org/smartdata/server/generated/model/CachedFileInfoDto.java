@@ -20,9 +20,11 @@ package org.smartdata.server.generated.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Objects;
+
 import javax.annotation.Generated;
 import javax.validation.constraints.NotNull;
+
+import java.util.Objects;
 
 /**
  * CachedFileInfoDto
@@ -38,9 +40,9 @@ public class CachedFileInfoDto {
 
   private Integer accessCount;
 
-  private Integer cachedTime;
+  private Long cachedTime;
 
-  private Integer lastAccessTime;
+  private Long lastAccessTime;
 
   public CachedFileInfoDto() {
     super();
@@ -49,7 +51,8 @@ public class CachedFileInfoDto {
   /**
    * Constructor with only required parameters
    */
-  public CachedFileInfoDto(Long id, String path, Integer accessCount, Integer cachedTime, Integer lastAccessTime) {
+  public CachedFileInfoDto(Long id, String path, Integer accessCount, Long cachedTime,
+                           Long lastAccessTime) {
     this.id = id;
     this.path = path;
     this.accessCount = accessCount;
@@ -65,8 +68,8 @@ public class CachedFileInfoDto {
   /**
    * Id of the file
    * @return id
-  */
-  @NotNull 
+   */
+  @NotNull
   @Schema(name = "id", description = "Id of the file", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("id")
   public Long getId() {
@@ -85,8 +88,8 @@ public class CachedFileInfoDto {
   /**
    * Path of the file
    * @return path
-  */
-  @NotNull 
+   */
+  @NotNull
   @Schema(name = "path", description = "Path of the file", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("path")
   public String getPath() {
@@ -105,8 +108,8 @@ public class CachedFileInfoDto {
   /**
    * Number of accesses to the file
    * @return accessCount
-  */
-  @NotNull 
+   */
+  @NotNull
   @Schema(name = "accessCount", description = "Number of accesses to the file", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("accessCount")
   public Integer getAccessCount() {
@@ -117,7 +120,7 @@ public class CachedFileInfoDto {
     this.accessCount = accessCount;
   }
 
-  public CachedFileInfoDto cachedTime(Integer cachedTime) {
+  public CachedFileInfoDto cachedTime(Long cachedTime) {
     this.cachedTime = cachedTime;
     return this;
   }
@@ -125,19 +128,19 @@ public class CachedFileInfoDto {
   /**
    * UNIX timestamp (UTC) when the file was cached
    * @return cachedTime
-  */
-  @NotNull 
+   */
+  @NotNull
   @Schema(name = "cachedTime", description = "UNIX timestamp (UTC) when the file was cached", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("cachedTime")
-  public Integer getCachedTime() {
+  public Long getCachedTime() {
     return cachedTime;
   }
 
-  public void setCachedTime(Integer cachedTime) {
+  public void setCachedTime(Long cachedTime) {
     this.cachedTime = cachedTime;
   }
 
-  public CachedFileInfoDto lastAccessTime(Integer lastAccessTime) {
+  public CachedFileInfoDto lastAccessTime(Long lastAccessTime) {
     this.lastAccessTime = lastAccessTime;
     return this;
   }
@@ -145,15 +148,15 @@ public class CachedFileInfoDto {
   /**
    * UNIX timestamp (UTC) of the last file access
    * @return lastAccessTime
-  */
-  @NotNull 
+   */
+  @NotNull
   @Schema(name = "lastAccessTime", description = "UNIX timestamp (UTC) of the last file access", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("lastAccessTime")
-  public Integer getLastAccessTime() {
+  public Long getLastAccessTime() {
     return lastAccessTime;
   }
 
-  public void setLastAccessTime(Integer lastAccessTime) {
+  public void setLastAccessTime(Long lastAccessTime) {
     this.lastAccessTime = lastAccessTime;
   }
 

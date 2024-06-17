@@ -1313,7 +1313,7 @@ components:
           type: integer
         lastAccessTime:
           description: UNIX timestamp (UTC) of the last file access
-          format: int32
+          format: int64
           type: integer
       required:
       - accessCount
@@ -1325,12 +1325,12 @@ components:
     CachedFileSort:
       description: Sort field names prefixed with '-' for descending order
       enum:
-      - fid
+      - id
       - path
       - accessCount
       - cachedTime
       - lastAccessTime
-      - -fid
+      - -id
       - -path
       - -accessCount
       - -cachedTime
@@ -1358,11 +1358,11 @@ components:
           type: integer
         cachedTime:
           description: UNIX timestamp (UTC) when the file was cached
-          format: int32
+          format: int64
           type: integer
         lastAccessTime:
           description: UNIX timestamp (UTC) of the last file access
-          format: int32
+          format: int64
           type: integer
       required:
       - accessCount

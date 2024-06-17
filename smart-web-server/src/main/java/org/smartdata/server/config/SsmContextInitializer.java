@@ -47,5 +47,7 @@ public class SsmContextInitializer implements
           "cmdletInfoHandler", smartEngine.getCmdletManager().getCmdletInfoHandler());
       beanFactory.registerSingleton(
           "actionInfoHandler", smartEngine.getCmdletManager().getActionInfoHandler());
+      beanFactory.registerSingleton(
+          "cachedFilesManager", smartEngine.getStatesManager().getCachedFilesManager());
     }
 }

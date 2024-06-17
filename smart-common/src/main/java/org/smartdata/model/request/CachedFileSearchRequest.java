@@ -15,22 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model;
+package org.smartdata.model.request;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import org.smartdata.model.TimeInterval;
 
-/**
- * Information maintained for a file cached in hdfs.
- */
 @Data
 @Builder
-@RequiredArgsConstructor
-public class CachedFileStatus {
-  private final long fid;
-  private final String path;
-  private final long fromTime;
-  private final long lastAccessTime;
-  private final int numAccessed;
+public class CachedFileSearchRequest {
+  private final String pathLike;
+  private final TimeInterval cachedTime;
+  private final TimeInterval lastAccessedTime;
+
+  public static CachedFileSearchRequest noFilters() {
+    return builder().build();
+  }
 }

@@ -81,7 +81,7 @@ public class DefaultDaoProvider implements DaoProvider {
 
   @Override
   public CacheFileDao cacheFileDao() {
-    return new DefaultCacheFileDao(dataSource);
+    return new DefaultCacheFileDao(dataSource, transactionManager);
   }
 
   @Override

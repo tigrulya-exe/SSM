@@ -14,11 +14,11 @@ properties:
     description: Number of accesses to the file
   cachedTime:
     type: integer
-    format: int32
+    format: int64
     description: UNIX timestamp (UTC) when the file was cached
   lastAccessTime:
     type: integer
-    format: int32
+    format: int64
     description: UNIX timestamp (UTC) of the last file access
 required:
   - id

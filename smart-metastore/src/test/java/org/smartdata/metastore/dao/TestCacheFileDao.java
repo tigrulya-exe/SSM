@@ -20,16 +20,23 @@ package org.smartdata.metastore.dao;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.TestDaoBase;
+import org.smartdata.metastore.queries.sort.CachedFilesSortField;
 import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.model.CachedFileStatus;
+import org.smartdata.model.TimeInterval;
+import org.smartdata.model.request.CachedFileSearchRequest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TestCacheFileDao extends TestDaoBase {
+public class TestCacheFileDao extends TestSearchableDao<
+    CachedFileSearchRequest, CachedFileStatus, CachedFilesSortField, Long> {
+
+  private static final long FIRST_FILE_ID = 1L;
+  private static final long SECOND_FILE_ID = 2L;
+  private static final long THIRD_FILE_ID = 3L;
 
   private CacheFileDao cacheFileDao;
 
@@ -39,7 +46,7 @@ public class TestCacheFileDao extends TestDaoBase {
   }
 
   @Test
-  public void testUpdateCachedFiles() throws Exception {
+  public void testUpdateCachedFiles() {
     CachedFileStatus first = new CachedFileStatus(80L,
         "testPath", 1000L, 2000L, 100);
     cacheFileDao.insert(first);
@@ -58,23 +65,24 @@ public class TestCacheFileDao extends TestDaoBase {
     events.add(new FileAccessEvent("testPath3", 8000L));
     events.add(new FileAccessEvent("testPath3", 9000L));
     // Sync status
-    first.setLastAccessTime(4000L);
-    first.setNumAccessed(first.getNumAccessed() + 2);
-    second.setLastAccessTime(5000L);
-    second.setNumAccessed(second.getNumAccessed() + 2);
+    first = new CachedFileStatus(80L,
+        "testPath", 1000L, 4000L, first.getNumAccessed() + 2);
+    second = new CachedFileStatus(90L,
+        "testPath2", 2000L, 5000L, second.getNumAccessed() + 2);
+
     cacheFileDao.update(pathToId, events);
     List<CachedFileStatus> statuses = cacheFileDao.getAll();
-    Assert.assertTrue(statuses.size() == 2);
+    Assert.assertEquals(2, statuses.size());
     Map<Long, CachedFileStatus> statusMap = new HashMap<>();
     for (CachedFileStatus status : statuses) {
       statusMap.put(status.getFid(), status);
     }
     Assert.assertTrue(statusMap.containsKey(80L));
     CachedFileStatus dbFirst = statusMap.get(80L);
-    Assert.assertTrue(dbFirst.equals(first));
+    Assert.assertEquals(first, dbFirst);
     Assert.assertTrue(statusMap.containsKey(90L));
     CachedFileStatus dbSecond = statusMap.get(90L);
-    Assert.assertTrue(dbSecond.equals(second));
+    Assert.assertEquals(second, dbSecond);
   }
 
   @Test
@@ -82,27 +90,26 @@ public class TestCacheFileDao extends TestDaoBase {
     cacheFileDao
         .insert(80L,
             "testPath", 123456L, 234567L, 456);
-    Assert.assertTrue(cacheFileDao.getById(
-        80L).getFromTime() == 123456L);
+    Assert.assertEquals(123456L, cacheFileDao.getById(
+        80L).getFromTime());
     // Update record with 80l id
     cacheFileDao.update(80L,
         123455L, 460);
-    Assert.assertTrue(cacheFileDao
+    Assert.assertEquals(123455L, cacheFileDao
         .getAll().get(0)
-        .getLastAccessTime() == 123455L);
-    CachedFileStatus[] cachedFileStatuses = new CachedFileStatus[]{
+        .getLastAccessTime());
+    CachedFileStatus[] cachedFileStatuses = new CachedFileStatus[] {
         new CachedFileStatus(321L, "testPath",
             113334L, 222222L, 222)};
     cacheFileDao.insert(cachedFileStatuses);
-    Assert.assertTrue(cacheFileDao.getById(321L)
-        .equals(cachedFileStatuses[0]));
-    Assert.assertTrue(cacheFileDao.getAll().size() == 2);
+    Assert.assertEquals(cachedFileStatuses[0], cacheFileDao.getById(321L));
+    Assert.assertEquals(2, cacheFileDao.getAll().size());
     // Delete one record
     cacheFileDao.deleteById(321L);
-    Assert.assertTrue(cacheFileDao.getAll().size() == 1);
+    Assert.assertEquals(1, cacheFileDao.getAll().size());
     // Clear all records
     cacheFileDao.deleteAll();
-    Assert.assertTrue(cacheFileDao.getAll().size() == 0);
+    Assert.assertTrue(cacheFileDao.getAll().isEmpty());
   }
 
   @Test
@@ -116,12 +123,136 @@ public class TestCacheFileDao extends TestDaoBase {
     cacheFileDao.insert(23L, "testPath", 1490918400000L,
         234567L, 456);
     CachedFileStatus dbcachedFileStatus = cacheFileDao.getById(6);
-    Assert.assertTrue(dbcachedFileStatus.equals(cachedFileStatus));
+    Assert.assertEquals(cachedFileStatus, dbcachedFileStatus);
     List<CachedFileStatus> cachedFileList = cacheFileDao.getAll();
     List<Long> fids = cacheFileDao.getFids();
-    Assert.assertTrue(fids.size() == 3);
-    Assert.assertTrue(cachedFileList.get(0).getFid() == 6);
-    Assert.assertTrue(cachedFileList.get(1).getFid() == 19);
-    Assert.assertTrue(cachedFileList.get(2).getFid() == 23);
+    Assert.assertEquals(3, fids.size());
+    Assert.assertEquals(6, cachedFileList.get(0).getFid());
+    Assert.assertEquals(19, cachedFileList.get(1).getFid());
+    Assert.assertEquals(23, cachedFileList.get(2).getFid());
+  }
+
+  @Test
+  public void testSearchWithoutFilters() {
+    createTestCachedFiles();
+
+    testSearch(CachedFileSearchRequest.noFilters(),
+        FIRST_FILE_ID, SECOND_FILE_ID, THIRD_FILE_ID);
+  }
+
+  @Test
+  public void testSearchByPath() {
+    createTestCachedFiles();
+
+    CachedFileSearchRequest request = CachedFileSearchRequest.builder()
+        .pathLike("/src/")
+        .build();
+
+    testSearch(request, FIRST_FILE_ID, THIRD_FILE_ID);
+
+    request = CachedFileSearchRequest.builder()
+        .pathLike("/des")
+        .build();
+
+    testSearch(request, SECOND_FILE_ID);
+
+    request = CachedFileSearchRequest.builder()
+        .pathLike("/another_dir")
+        .build();
+
+    testSearch(request);
+  }
+
+  @Test
+  public void testSearchByCachedTime() {
+    createTestCachedFiles();
+
+    CachedFileSearchRequest request = CachedFileSearchRequest.builder()
+        .cachedTime(TimeInterval.ofEpochMillis(0L, 1000L))
+        .build();
+
+    testSearch(request,
+        FIRST_FILE_ID, SECOND_FILE_ID, THIRD_FILE_ID);
+
+    request = CachedFileSearchRequest.builder()
+        .cachedTime(TimeInterval.ofEpochMillis(2L, 5L))
+        .build();
+
+    testSearch(request, SECOND_FILE_ID, THIRD_FILE_ID);
+
+    request = CachedFileSearchRequest.builder()
+        .cachedTime(TimeInterval.ofEpochMillis(6L, 500L))
+        .build();
+
+    testSearch(request);
+  }
+
+  @Test
+  public void testSearchByLastAccessedTime() {
+    createTestCachedFiles();
+
+    CachedFileSearchRequest request = CachedFileSearchRequest.builder()
+        .lastAccessedTime(TimeInterval.ofEpochMillis(0L, 1000L))
+        .build();
+
+    testSearch(request,
+        FIRST_FILE_ID, SECOND_FILE_ID, THIRD_FILE_ID);
+
+    request = CachedFileSearchRequest.builder()
+        .lastAccessedTime(TimeInterval.ofEpochMillis(10L, 17L))
+        .build();
+
+    testSearch(request, FIRST_FILE_ID, THIRD_FILE_ID);
+
+    request = CachedFileSearchRequest.builder()
+        .cachedTime(TimeInterval.ofEpochMillis(18L, 500L))
+        .build();
+
+    testSearch(request);
+  }
+
+  private void createTestCachedFiles() {
+    CachedFileStatus file1 = CachedFileStatus.builder()
+        .fid(FIRST_FILE_ID)
+        .path("/src/dir/tmp.log")
+        .fromTime(1L)
+        .lastAccessTime(12L)
+        .numAccessed(12)
+        .build();
+    cacheFileDao.insert(file1);
+
+    CachedFileStatus file2 = CachedFileStatus.builder()
+        .fid(SECOND_FILE_ID)
+        .path("/dest/etc/test.java")
+        .fromTime(2L)
+        .lastAccessTime(9L)
+        .numAccessed(9)
+        .build();
+    cacheFileDao.insert(file2);
+
+    CachedFileStatus file3 = CachedFileStatus.builder()
+        .fid(THIRD_FILE_ID)
+        .path("/src/third.txt")
+        .fromTime(5L)
+        .lastAccessTime(17L)
+        .numAccessed(5)
+        .build();
+    cacheFileDao.insert(file3);
+  }
+
+  @Override
+  protected Searchable<
+      CachedFileSearchRequest, CachedFileStatus, CachedFilesSortField> searchable() {
+    return cacheFileDao;
+  }
+
+  @Override
+  protected Long getIdentifier(CachedFileStatus cachedFileStatus) {
+    return cachedFileStatus.getFid();
+  }
+
+  @Override
+  protected CachedFilesSortField defaultSortField() {
+    return CachedFilesSortField.FILE_ID;
   }
 }
