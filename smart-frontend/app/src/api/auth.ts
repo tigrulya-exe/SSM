@@ -18,9 +18,13 @@
 import { httpClient } from './httpClient';
 import { encode } from 'js-base64';
 
+interface CheckSessionSuccess {
+  name: string;
+}
+
 export class AuthApi {
   public static async login(username: string, password: string) {
-    const response = await httpClient.get('/api/v2/rules', {
+    const response = await httpClient.get<CheckSessionSuccess>('/api/v2/system/current-user', {
       headers: {
         Authorization: `Basic ${encode(`${username}:${password}`)}`,
       },
@@ -35,7 +39,7 @@ export class AuthApi {
   }
 
   public static async checkSession() {
-    const response = await httpClient.get<{ name: string }>('/api/v2/rules');
+    const response = await httpClient.get<CheckSessionSuccess>('/api/v2/system/current-user');
 
     return response.data;
   }

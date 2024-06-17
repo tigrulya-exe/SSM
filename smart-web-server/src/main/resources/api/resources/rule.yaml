@@ -14,6 +14,8 @@ get:
             $ref: '../schemas/rules/Rule.yaml'
     '404':
       description: Rule with specified id not found
+    '401':
+      description: Unauthorized
 delete:
   tags:
     - Rules
@@ -26,3 +28,5 @@ delete:
       description: Rule has been removed
     '404':
       description: Rule with specified id not found
+    '401':
+      description: Unauthorized

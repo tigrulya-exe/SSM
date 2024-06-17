@@ -19,6 +19,7 @@ package org.smartdata.server.generated.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import javax.annotation.Generated;
 
 /**
@@ -27,28 +28,28 @@ import javax.annotation.Generated;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 public enum ActionSortDto {
-  
+
   ID("id"),
-  
+
   EXECHOST("execHost"),
-  
-  CREATETIME("createTime"),
-  
-  FINISHTIME("finishTime"),
-  
-  STATUS("status"),
-  
+
+  SUBMISSIONTIME("submissionTime"),
+
+  COMPLETIONTIME("completionTime"),
+
+  STATE("state"),
+
   SOURCE("source"),
 
   _ID("-id"),
-  
+
   _EXECHOST("-execHost"),
-  
-  _CREATETIME("-createTime"),
-  
-  _FINISHTIME("-finishTime"),
-  
-  _STATUS("-status"),
+
+  _SUBMISSIONTIME("-submissionTime"),
+
+  _COMPLETIONTIME("-completionTime"),
+
+  _STATE("-state"),
 
   _SOURCE("-source");
 

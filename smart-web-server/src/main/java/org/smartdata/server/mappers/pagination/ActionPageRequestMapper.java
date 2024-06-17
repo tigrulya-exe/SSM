@@ -28,13 +28,14 @@ public interface ActionPageRequestMapper
     extends BasePageRequestMapper<ActionSortDto, ActionSortField> {
 
   @ValueMapping(source = "EXECHOST", target = "EXEC_HOST")
-  @ValueMapping(source = "CREATETIME", target = "CREATE_TIME")
-  @ValueMapping(source = "FINISHTIME", target = "FINISH_TIME")
+  @ValueMapping(source = "SUBMISSIONTIME", target = "CREATE_TIME")
+  @ValueMapping(source = "COMPLETIONTIME", target = "FINISH_TIME")
+  @ValueMapping(source = "STATE", target = "STATUS")
   @ValueMapping(source = "_ID", target = "ID")
   @ValueMapping(source = "_EXECHOST", target = "EXEC_HOST")
-  @ValueMapping(source = "_CREATETIME", target = "CREATE_TIME")
-  @ValueMapping(source = "_FINISHTIME", target = "FINISH_TIME")
-  @ValueMapping(source = "_STATUS", target = "STATUS")
+  @ValueMapping(source = "_SUBMISSIONTIME", target = "CREATE_TIME")
+  @ValueMapping(source = "_COMPLETIONTIME", target = "FINISH_TIME")
+  @ValueMapping(source = "_STATE", target = "STATUS")
   @ValueMapping(source = "_SOURCE", target = "SOURCE")
   ActionSortField toSortField(ActionSortDto sortColumn);
 }

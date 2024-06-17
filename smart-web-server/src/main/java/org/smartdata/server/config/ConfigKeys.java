@@ -29,4 +29,7 @@ public class ConfigKeys {
       "smart.rest.server.auth.predefined.enabled";
 
   public static final String PREDEFINED_USERS = "smart.rest.server.auth.predefined.users";
+
+  public static final String SMART_REST_SERVER_KEYTAB_FILE_KEY =
+      "smart.rest.server.auth.spnego.keytab";
 }

@@ -28,16 +28,16 @@ import java.util.Optional;
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 @RestController
 @RequestMapping("${openapi.sSMAPIDocumentation.base-path:}")
-public class CmdletsApiController implements CmdletsApi {
+public class SystemApiController implements SystemApi {
 
-    private final CmdletsApiDelegate delegate;
+    private final SystemApiDelegate delegate;
 
-    public CmdletsApiController(@Autowired(required = false) CmdletsApiDelegate delegate) {
-        this.delegate = Optional.ofNullable(delegate).orElse(new CmdletsApiDelegate() {});
+    public SystemApiController(@Autowired(required = false) SystemApiDelegate delegate) {
+        this.delegate = Optional.ofNullable(delegate).orElse(new SystemApiDelegate() {});
     }
 
     @Override
-    public CmdletsApiDelegate getDelegate() {
+    public SystemApiDelegate getDelegate() {
         return delegate;
     }
 
