@@ -17,10 +17,6 @@
  */
 package org.smartdata.server.generated.api;
 
-import java.util.List;
-import java.util.Optional;
-import javax.annotation.Generated;
-import javax.validation.Valid;
 import org.smartdata.server.generated.model.CmdletDto;
 import org.smartdata.server.generated.model.CmdletSortDto;
 import org.smartdata.server.generated.model.CmdletStateDto;
@@ -30,6 +26,12 @@ import org.smartdata.server.generated.model.StateChangeTimeIntervalDto;
 import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
 import org.smartdata.server.generated.model.SubmitCmdletRequestDto;
 import org.springframework.web.context.request.NativeWebRequest;
+
+import javax.annotation.Generated;
+import javax.validation.Valid;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * A delegate to be called by the {@link CmdletsApiController}}.
@@ -48,6 +50,7 @@ public interface CmdletsApiDelegate {
      * @param submitCmdletRequestDto  (required)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      * @see CmdletsApi#addCmdlet
      */
     default CmdletDto addCmdlet(SubmitCmdletRequestDto submitCmdletRequestDto) throws Exception {
@@ -61,6 +64,7 @@ public interface CmdletsApiDelegate {
      * @param id Id of the resource (required)
      * @return Cmdlet has been removed (status code 200)
      *         or Cmdlet with specified id not found (status code 404)
+     *         or Unauthorized (status code 401)
      * @see CmdletsApi#deleteCmdlet
      */
     default void deleteCmdlet(Long id) throws Exception {
@@ -74,6 +78,7 @@ public interface CmdletsApiDelegate {
      * @param id Id of the resource (required)
      * @return OK (status code 200)
      *         or Cmdlet with specified id not found (status code 404)
+     *         or Unauthorized (status code 401)
      * @see CmdletsApi#getCmdlet
      */
     default CmdletDto getCmdlet(Long id) throws Exception {
@@ -93,6 +98,7 @@ public interface CmdletsApiDelegate {
      * @param stateChangedTime Time interval in which the state of the cmdlet was changed (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      * @see CmdletsApi#getCmdlets
      */
     default CmdletsDto getCmdlets(PageRequestDto pageRequest,
@@ -112,6 +118,7 @@ public interface CmdletsApiDelegate {
      * @param id Id of the resource (required)
      * @return Cmdlet has been stopped (status code 200)
      *         or Cmdlet with specified id not found (status code 404)
+     *         or Unauthorized (status code 401)
      * @see CmdletsApi#stopCmdlet
      */
     default void stopCmdlet(Long id) throws Exception {

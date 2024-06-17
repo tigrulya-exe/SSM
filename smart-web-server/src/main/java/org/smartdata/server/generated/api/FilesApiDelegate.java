@@ -17,10 +17,6 @@
  */
 package org.smartdata.server.generated.api;
 
-import java.util.List;
-import java.util.Optional;
-import javax.annotation.Generated;
-import javax.validation.Valid;
 import org.smartdata.server.generated.model.CachedFileSortDto;
 import org.smartdata.server.generated.model.CachedFilesDto;
 import org.smartdata.server.generated.model.CachedTimeIntervalDto;
@@ -29,6 +25,12 @@ import org.smartdata.server.generated.model.HotFileSortDto;
 import org.smartdata.server.generated.model.LastAccessedTimeIntervalDto;
 import org.smartdata.server.generated.model.PageRequestDto;
 import org.springframework.web.context.request.NativeWebRequest;
+
+import javax.annotation.Generated;
+import javax.validation.Valid;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * A delegate to be called by the {@link FilesApiController}}.
@@ -50,6 +52,7 @@ public interface FilesApiDelegate {
      * @param lastAccessedTime Time interval in which the file was accessed (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      * @see FilesApi#getAccessCounts
      */
     default FileAccessCountsDto getAccessCounts(PageRequestDto pageRequest,
@@ -70,6 +73,7 @@ public interface FilesApiDelegate {
      * @param cachedTime Time interval in which the file was cached (optional)
      * @return OK (status code 200)
      *         or Data is filled incorrectly (status code 400)
+     *         or Unauthorized (status code 401)
      * @see FilesApi#getCachedFiles
      */
     default CachedFilesDto getCachedFiles(PageRequestDto pageRequest,

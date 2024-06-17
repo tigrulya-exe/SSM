@@ -17,6 +17,7 @@
  */
 package org.smartdata.conf;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,10 +96,14 @@ public class SmartConf extends Configuration {
         ));
   }
 
-  public String getNonNull(String key) {
+  public String getNonEmpty(String key) {
+    return getNonEmpty(key, "Required option not provided: " + key);
+  }
+
+  public String getNonEmpty(String key, String errorText) {
     return Optional.ofNullable(get(key))
-        .orElseThrow(() ->
-            new IllegalArgumentException("Required option not provided: " + key));
+        .filter(StringUtils::isNotBlank)
+        .orElseThrow(() -> new IllegalArgumentException(errorText));
   }
 
   public Map<String, String> asMap() {

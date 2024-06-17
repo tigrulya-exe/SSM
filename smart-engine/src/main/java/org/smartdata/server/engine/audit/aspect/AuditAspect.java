@@ -113,8 +113,8 @@ public class AuditAspect {
   private UserActivityEvent.Builder eventBuilder(
       Audit audit, Long objectId) {
     String currentUserName = SmartPrincipalHolder
-        .getCurrentPrincipalName()
-        .orElse(null);
+        .getCurrentPrincipal()
+        .getName();
 
     return UserActivityEvent.builder()
         .objectId(objectId)

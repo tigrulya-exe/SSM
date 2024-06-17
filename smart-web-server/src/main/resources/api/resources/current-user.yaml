@@ -1,0 +1,14 @@
+get:
+  tags:
+    - System
+  summary: Get current logged in user
+  operationId: getCurrentUser
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/system/UserInfo.yaml'
+    '401':
+      description: Unauthorized

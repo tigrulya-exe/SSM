@@ -32,6 +32,8 @@ get:
         application/json:
           schema:
             $ref: '../schemas/common/ErrorResponse.yaml'
+    '401':
+      description: Unauthorized
 post:
   tags:
     - Rules
@@ -56,3 +58,5 @@ post:
         application/json:
           schema:
             $ref: '../schemas/common/ErrorResponse.yaml'
+    '401':
+      description: Unauthorized

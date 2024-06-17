@@ -10,6 +10,7 @@ tags:
   - name: Files
   - name: Cluster
   - name: Audit
+  - name: System
 
 servers:
   - url: http://localhost:8081
@@ -53,3 +54,16 @@ paths:
   # Audit
   /api/v2/audit/events:
     $ref: './resources/audit-events.yaml'
+
+  # System
+  /api/v2/system/current-user:
+    $ref: './resources/current-user.yaml'
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+
+security:
+  - basicAuth: []
