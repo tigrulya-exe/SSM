@@ -16,8 +16,7 @@
  * limitations under the License.
  */
 import React from 'react';
-import FlexGroup from '@uikit/FlexGroup/FlexGroup';
-import { IconButton } from '@uikit';
+import { FlexGroup, IconButton } from '@uikit';
 import TableCell from '@uikit/Table/TableCell/TableCell';
 import { useDispatch } from '@hooks';
 import type { AdhRule } from '@models/adh';
@@ -41,14 +40,14 @@ const RuleActionsCell: React.FC<RuleActionsCellProps> = ({ rule }) => {
   };
 
   return (
-    <TableCell align="center">
+    <TableCell align="center" data-qa="actions">
       <FlexGroup gap="4px">
         {rule.state === 'ACTIVE' ? (
-          <IconButton icon="pause" title="Stop rule" onClick={handlePause} />
+          <IconButton icon="pause" title="Stop rule" onClick={handlePause} data-qa="action-stop" />
         ) : (
-          <IconButton icon="play" title="Start rule" onClick={handlePlay} />
+          <IconButton icon="play" title="Start rule" onClick={handlePlay} data-qa="action-start" />
         )}
-        <IconButton icon="delete" title="Delete rule" onClick={handleDelete} />
+        <IconButton icon="delete" title="Delete rule" onClick={handleDelete} data-qa="action-delete" />
       </FlexGroup>
     </TableCell>
   );

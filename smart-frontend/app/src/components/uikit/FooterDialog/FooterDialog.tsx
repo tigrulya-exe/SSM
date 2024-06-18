@@ -22,8 +22,8 @@ import DialogDefaultControls from '@uikit/FooterDialog/FooterDialogDefaultContro
 import s from './FooterDialog.module.scss';
 import cn from 'classnames';
 import { FloatingPortal } from '@floating-ui/react';
-import { Title } from '@uikit';
 import FlexGroup from '@uikit/FlexGroup/FlexGroup';
+import Title from '@uikit/Title/Title';
 
 export interface FooterDialogProps extends ModalOptions, DialogDefaultControlsProps {
   children: React.ReactNode;

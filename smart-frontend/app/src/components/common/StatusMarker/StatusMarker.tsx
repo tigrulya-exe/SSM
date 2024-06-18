@@ -16,12 +16,12 @@
  * limitations under the License.
  */
 import React from 'react';
-import type { Status } from './StatusMarker.types';
+import type { CommonStatus } from './StatusMarker.types';
 import cn from 'classnames';
 import s from './StatusMarker.module.scss';
 
 interface StatusMarkerProps extends React.HTMLAttributes<HTMLDivElement> {
-  status: Status;
+  status: CommonStatus;
 }
 
 const StatusMarker: React.FC<StatusMarkerProps> = ({ status, className, ...props }) => {

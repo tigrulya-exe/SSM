@@ -41,7 +41,7 @@ const RuleStartDialog: React.FC = () => {
       title="Are you sure you want to start rule?"
       onAction={handleDelete}
       actionButtonLabel="Start"
-    ></Dialog>
+    />
   );
 };
 

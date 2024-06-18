@@ -17,13 +17,13 @@
  */
 import React from 'react';
 import TableCell from '@uikit/Table/TableCell/TableCell';
-import FlexGroup from '@uikit/FlexGroup/FlexGroup';
 import StatusMarker from '@commonComponents/StatusMarker/StatusMarker';
 import type { AdhRule, AdhRuleState } from '@models/adh';
 import { getStatusLabel } from '@utils/humanisationUtils';
-import type { Status } from '@commonComponents/StatusMarker/StatusMarker.types';
+import type { CommonStatus } from '@commonComponents/StatusMarker/StatusMarker.types';
+import { FlexGroup } from '@uikit';
 
-const roleStateToStatus: Record<AdhRuleState, Status> = {
+const roleStateToStatus: Record<AdhRuleState, CommonStatus> = {
   ACTIVE: 'online',
   DISABLED: 'offline',
 };
@@ -34,7 +34,7 @@ interface RuleStatusCellProps {
 
 const RuleStatusCell: React.FC<RuleStatusCellProps> = ({ rule }) => {
   return (
-    <TableCell>
+    <TableCell data-qa="state">
       <FlexGroup gap="6px">
         <StatusMarker status={roleStateToStatus[rule.state]} />
         {getStatusLabel(rule.state)}

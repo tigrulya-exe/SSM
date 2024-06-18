@@ -96,7 +96,7 @@ export const rulesColumns: TableColumnSchema[] = [
   },
   {
     name: 'actions',
-    label: 'Actions1',
+    label: 'Actions',
     headerAlign: 'center',
     width: '120px',
     schema: {

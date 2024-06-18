@@ -16,9 +16,8 @@
  * limitations under the License.
  */
 import React from 'react';
-import { Title } from '@uikit';
+import { FlexGroup, Title } from '@uikit';
 import RulesToolbar from './RulesToolbar/RulesToolbar';
-import FlexGroup from '@uikit/FlexGroup/FlexGroup';
 import RuleCreateBtn from './RuleCreateBtn/RuleCreateBtn';
 import RulesTable from './RulesTable/RulesTable';
 import { useRequestRules } from './useRequestRules';

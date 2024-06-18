@@ -16,10 +16,9 @@
  * limitations under the License.
  */
 import React, { useEffect, useState } from 'react';
-import FooterDialog from '@uikit/FooterDialog/FooterDialog';
 import { useDispatch, useStore } from '@hooks';
 import { closeCreateRuleDialog, createRuleWithUpdate } from '@store/adh/rules/rulesActionsSlice';
-import { MultilineInput } from '@uikit';
+import { FooterDialog, MultilineInput } from '@uikit';
 
 const RuleCreateDialog: React.FC = () => {
   const dispatch = useDispatch();

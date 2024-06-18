@@ -20,6 +20,8 @@ import Button from '@uikit/Button/Button';
 import Checkbox from './Checkbox/Checkbox';
 import ConditionalWrapper from '@uikit/ConditionalWrapper/ConditionalWrapper';
 import Dialog from './Dialog/Dialog';
+import FlexGroup from '@uikit/FlexGroup/FlexGroup';
+import FooterDialog from '@uikit/FooterDialog/FooterDialog';
 import Icon from '@uikit/Icon/Icon';
 import IconButton from '@uikit/IconButton/IconButton';
 import type { IconsNames } from '@uikit/Icon/sprite';
@@ -40,9 +42,11 @@ import Tooltip from './Tooltip/Tooltip';
 export {
   //
   Button,
-  Dialog,
   Checkbox,
   ConditionalWrapper,
+  Dialog,
+  FlexGroup,
+  FooterDialog,
   Icon,
   IconButton,
   IconsNames,

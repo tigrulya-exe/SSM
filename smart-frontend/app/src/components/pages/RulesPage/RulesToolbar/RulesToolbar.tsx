@@ -17,12 +17,12 @@
  */
 import React from 'react';
 import RulesResetFilter from '../RulesResetFilter/RulesResetFilter';
-import FlexGroup from '@uikit/FlexGroup/FlexGroup';
 import Pagination from '@uikit/Pagination/Pagination';
 import { useDispatch, useStore } from '@hooks';
 import type { PaginationParams } from '@models/table';
 import { setRulesPaginationParams } from '@store/adh/rules/rulesTableSlice';
 import s from './RulesToolbar.module.scss';
+import { FlexGroup } from '@uikit';
 
 const RulesToolbar: React.FC = () => {
   const dispatch = useDispatch();
