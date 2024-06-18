@@ -19,18 +19,19 @@ Where to run Maven from?
 ----------------------------------------------------------------------------------
 Maven build goals:
 
- * Clean                     : mvn clean [-Preleasedocs]
- * Compile                   : mvn compile [-Pnative]
- * Run tests                 : mvn test [-Pnative]
- * Create JAR                : mvn package
- * Run findbugs              : mvn compile findbugs:findbugs
- * Run checkstyle            : mvn compile checkstyle:checkstyle
- * Install JAR in M2 cache   : mvn install
- * Deploy JAR to Maven repo  : mvn deploy
- * Run Rat                   : mvn apache-rat:check
- * Build javadocs            : mvn javadoc:javadoc
- * Build distribution        : mvn package [-Pdist][-Psrc][-Pnative][-Dtar]
- * Change Hadoop version     : mvn versions:set -DnewVersion=NEWVERSION
+ * Clean                       : mvn clean [-Preleasedocs]
+ * Compile                     : mvn compile [-Pnative]
+ * Run tests                   : mvn test [-Pnative]
+ * Create JAR                  : mvn package
+ * Run findbugs                : mvn compile findbugs:findbugs
+ * Run checkstyle              : mvn compile checkstyle:checkstyle
+ * Install JAR in M2 cache     : mvn install
+ * Deploy JAR to Maven repo    : mvn deploy
+ * Run Rat                     : mvn apache-rat:check
+ * Build javadocs              : mvn javadoc:javadoc
+ * Build distribution          : mvn package [-Pdist][-Psrc][-Pnative][-Dtar]
+ * Change Hadoop version       : mvn versions:set -DnewVersion=NEWVERSION
+ * Update file license headers : mvn com.mycila:license-maven-plugin:format -DskipTests
 
  Build options:
 
@@ -38,3 +39,7 @@ Maven build goals:
   * Use -Pnative to compile/bundle native code
   * Use -Psrc to create a project source TAR.GZ
   * Use -Dtar to create a TAR with the distribution (using -Pdist)
+
+ For each build goal you should define the version of Hadoop by providing one of the following profiles:
+  * -Phadoop-3.1
+  * -Phadoop-3.2
