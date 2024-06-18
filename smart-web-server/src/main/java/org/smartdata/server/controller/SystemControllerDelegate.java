@@ -17,16 +17,21 @@
  */
 package org.smartdata.server.controller;
 
-import org.smartdata.security.SmartPrincipalHolder;
+import lombok.RequiredArgsConstructor;
+import org.smartdata.security.SmartPrincipalManager;
 import org.smartdata.server.generated.api.SystemApiDelegate;
 import org.smartdata.server.generated.model.UserInfoDto;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class SystemControllerDelegate implements SystemApiDelegate {
+
+  private final SmartPrincipalManager smartPrincipalManager;
+
   @Override
   public UserInfoDto getCurrentUser() {
-    String username = SmartPrincipalHolder.getCurrentPrincipal().getName();
+    String username = smartPrincipalManager.getCurrentPrincipal().getName();
     return new UserInfoDto(username);
   }
 }

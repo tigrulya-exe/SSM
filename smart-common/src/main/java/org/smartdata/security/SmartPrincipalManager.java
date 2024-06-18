@@ -15,11 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.server.engine.audit;
+package org.smartdata.security;
 
-import org.smartdata.security.SmartPrincipalManager;
+public interface SmartPrincipalManager {
+  SmartPrincipal getCurrentPrincipal();
 
-public interface Auditable {
-  AuditService getAuditService();
-  SmartPrincipalManager getPrincipalService();
+  void setCurrentPrincipal(SmartPrincipal principal);
+
+  void unsetCurrentPrincipal();
 }

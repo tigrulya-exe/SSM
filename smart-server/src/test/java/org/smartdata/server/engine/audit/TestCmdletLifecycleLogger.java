@@ -26,11 +26,16 @@ import org.smartdata.metastore.SqliteTestDaoBase;
 import org.smartdata.model.CmdletInfo;
 import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
+import org.smartdata.security.AnonymousDefaultPrincipalProvider;
+import org.smartdata.security.SmartPrincipal;
+import org.smartdata.security.SmartPrincipalManager;
+import org.smartdata.security.ThreadScopeSmartPrincipalManager;
 import org.smartdata.server.engine.CmdletManager;
 import org.smartdata.server.engine.ServerContext;
 import org.smartdata.server.engine.ServiceMode;
 import org.smartdata.server.engine.cmdlet.CmdletDispatcherHelper;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,6 +49,7 @@ import static org.smartdata.model.audit.UserActivityResult.SUCCESS;
 public class TestCmdletLifecycleLogger extends SqliteTestDaoBase {
   private CmdletManager cmdletManager;
   private AuditService auditService;
+  private SmartPrincipalManager principalManager;
 
   @Before
   public void init() throws Exception {
@@ -52,9 +58,11 @@ public class TestCmdletLifecycleLogger extends SqliteTestDaoBase {
     serverContext.setServiceMode(ServiceMode.HDFS);
 
     auditService = new AuditService(metaStore.userActivityDao());
+    principalManager = new ThreadScopeSmartPrincipalManager(
+        new AnonymousDefaultPrincipalProvider());
 
     CmdletDispatcherHelper.init();
-    cmdletManager = new CmdletManager(serverContext, auditService);
+    cmdletManager = new CmdletManager(serverContext, auditService, principalManager);
     cmdletManager.init();
     cmdletManager.start();
   }
@@ -153,6 +161,28 @@ public class TestCmdletLifecycleLogger extends SqliteTestDaoBase {
     UserActivityEvent event = cmdletEvents.get(0);
     Assert.assertEquals(DELETE, event.getOperation());
     Assert.assertEquals(FAILURE, event.getResult());
+  }
+
+  @Test
+  public void testLogCurrentUser() throws Exception {
+    assertEventUsername(AnonymousDefaultPrincipalProvider.anonymousPrincipal());
+
+    SmartPrincipal currentPrincipal = new SmartPrincipal("user1");
+    principalManager.setCurrentPrincipal(currentPrincipal);
+    assertEventUsername(currentPrincipal);
+
+    principalManager.unsetCurrentPrincipal();
+    assertEventUsername(AnonymousDefaultPrincipalProvider.anonymousPrincipal());
+  }
+
+  private void assertEventUsername(SmartPrincipal expectedPrincipal) throws IOException {
+    CmdletInfo cmdletInfo = cmdletManager.submitCmdlet("read -file /test.txt");
+
+    List<UserActivityEvent> cmdletEvents = findCmdletEvents(cmdletInfo.getCid());
+    Assert.assertEquals(1, cmdletEvents.size());
+    Assert.assertEquals(
+        expectedPrincipal.getName(),
+        cmdletEvents.get(0).getUsername());
   }
 
   private List<UserActivityEvent> findCmdletEvents(long cmdletId) {

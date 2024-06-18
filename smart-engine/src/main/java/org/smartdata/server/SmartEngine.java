@@ -24,6 +24,9 @@ import org.smartdata.AbstractService;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.model.StorageCapacity;
 import org.smartdata.model.Utilization;
+import org.smartdata.security.AnonymousDefaultPrincipalProvider;
+import org.smartdata.security.SmartPrincipalManager;
+import org.smartdata.security.ThreadScopeSmartPrincipalManager;
 import org.smartdata.server.cluster.ClusterNodesManager;
 import org.smartdata.server.engine.CmdletManager;
 import org.smartdata.server.engine.RuleManager;
@@ -51,6 +54,8 @@ public class SmartEngine extends AbstractService {
   private AuditService auditService;
   @Getter
   private ClusterNodesManager clusterNodesManager;
+  @Getter
+  private SmartPrincipalManager smartPrincipalManager;
   private final List<AbstractService> services;
 
   public SmartEngine(ServerContext context) {
@@ -63,13 +68,15 @@ public class SmartEngine extends AbstractService {
   @Override
   public void init() throws IOException {
     statesManager = new StatesManager(serverContext);
+    smartPrincipalManager = new ThreadScopeSmartPrincipalManager(
+        new AnonymousDefaultPrincipalProvider());
     services.add(statesManager);
     auditService = new AuditService(serverContext.getMetaStore().userActivityDao());
-    cmdletManager = new CmdletManager(serverContext, auditService);
+    cmdletManager = new CmdletManager(serverContext, auditService, smartPrincipalManager);
     services.add(cmdletManager);
     clusterNodesManager = new ClusterNodesManager(conf, cmdletManager);
     ruleManager = new RuleManager(
-        serverContext, statesManager, cmdletManager, auditService);
+        serverContext, statesManager, cmdletManager, auditService, smartPrincipalManager);
     services.add(ruleManager);
 
     for (AbstractService s : services) {

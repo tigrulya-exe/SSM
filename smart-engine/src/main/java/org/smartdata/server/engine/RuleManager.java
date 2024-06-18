@@ -42,6 +42,7 @@ import org.smartdata.model.rule.RulePluginManager;
 import org.smartdata.model.rule.RuleTranslationResult;
 import org.smartdata.model.rule.TimeBasedScheduleInfo;
 import org.smartdata.rule.parser.SmartRuleStringParser;
+import org.smartdata.security.SmartPrincipalManager;
 import org.smartdata.server.engine.audit.AuditService;
 import org.smartdata.server.engine.audit.Auditable;
 import org.smartdata.server.engine.audit.aspect.Audit;
@@ -87,6 +88,7 @@ public class RuleManager
   private final PathChecker pathChecker;
 
   private final AuditService auditService;
+  private final SmartPrincipalManager smartPrincipalManager;
   private final RuleDao ruleDao;
 
   private boolean isClosed = false;
@@ -99,7 +101,8 @@ public class RuleManager
       ServerContext context,
       StatesManager statesManager,
       CmdletManager cmdletManager,
-      AuditService auditService) {
+      AuditService auditService,
+      SmartPrincipalManager smartPrincipalManager) {
     super(context);
 
     int numExecutors =
@@ -114,6 +117,7 @@ public class RuleManager
     this.cmdletManager = cmdletManager;
     this.serverContext = context;
     this.auditService = auditService;
+    this.smartPrincipalManager = smartPrincipalManager;
     this.metaStore = context.getMetaStore();
     this.ruleDao = metaStore.ruleDao();
     this.pathChecker = new PathChecker(context.getConf());
@@ -379,6 +383,11 @@ public class RuleManager
   @Override
   public AuditService getAuditService() {
     return auditService;
+  }
+
+  @Override
+  public SmartPrincipalManager getPrincipalService() {
+    return smartPrincipalManager;
   }
 
   @Override
