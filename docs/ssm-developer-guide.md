@@ -63,6 +63,11 @@ the post-compile weaving should be enabled after each import or update of maven 
 by enabling `File > Project Structure > Facets > AspectJ > Post-compile weave mode` checkbox to be able to start tests from IDE.
 
 Also, `/supports/tools/checkstyle.xml` and `/supports/tools/suppressions.xml` Checkstyle configuration files can be imported to the IDE.
+If, for some reason, the indentation settings are not applied after importing the Checkstyle settings, 
+consider setting the following configurations manually:
+- Tab size: 2
+- Indent: 2
+- Continuation indent: 4
 
 ## **License header update**
 
