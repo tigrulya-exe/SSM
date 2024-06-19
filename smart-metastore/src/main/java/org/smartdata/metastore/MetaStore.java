@@ -19,6 +19,7 @@ package org.smartdata.metastore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.smartdata.exception.NotFoundException;
 import org.smartdata.metaservice.BackupMetaService;
 import org.smartdata.metaservice.CmdletMetaService;
 import org.smartdata.metaservice.CopyMetaService;
@@ -191,6 +192,10 @@ public class MetaStore implements CopyMetaService,
 
   public RuleDao ruleDao() {
     return ruleDao;
+  }
+
+  public CacheFileDao cacheFileDao() {
+    return cacheFileDao;
   }
 
   public Long queryForLong(String sql) throws MetaStoreException {
@@ -690,7 +695,7 @@ public class MetaStore implements CopyMetaService,
       long fid) throws MetaStoreException {
     try {
       return cacheFileDao.getById(fid);
-    } catch (EmptyResultDataAccessException e) {
+    } catch (NotFoundException e) {
       return null;
     } catch (Exception e) {
       throw new MetaStoreException(e);

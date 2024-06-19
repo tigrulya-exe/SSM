@@ -15,22 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model;
+package org.smartdata.metastore.queries.sort;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-/**
- * Information maintained for a file cached in hdfs.
- */
-@Data
-@Builder
+@Getter
 @RequiredArgsConstructor
-public class CachedFileStatus {
-  private final long fid;
-  private final String path;
-  private final long fromTime;
-  private final long lastAccessTime;
-  private final int numAccessed;
+public enum CachedFilesSortField implements SortField {
+  FILE_ID("fid"),
+  PATH("path"),
+  CACHED_TIME("from_time"),
+  LAST_ACCESSED_TIME("last_access_time"),
+  ACCESS_COUNT("accessed_num");
+
+  private final String fieldName;
 }

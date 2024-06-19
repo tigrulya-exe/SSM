@@ -17,6 +17,7 @@
  */
 package org.smartdata.server;
 
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.AbstractService;
@@ -40,10 +41,15 @@ public class SmartEngine extends AbstractService {
 
   private final SmartConf conf;
   private final ServerContext serverContext;
+  @Getter
   private StatesManager statesManager;
+  @Getter
   private RuleManager ruleManager;
+  @Getter
   private CmdletManager cmdletManager;
+  @Getter
   private AuditService auditService;
+  @Getter
   private ClusterNodesManager clusterNodesManager;
   private final List<AbstractService> services;
 
@@ -113,30 +119,11 @@ public class SmartEngine extends AbstractService {
     return serverContext.getConf();
   }
 
-  public StatesManager getStatesManager() {
-    return statesManager;
-  }
-
-  public RuleManager getRuleManager() {
-    return ruleManager;
-  }
-
-  public AuditService getAuditService() {
-    return auditService;
-  }
-
-  public CmdletManager getCmdletManager() {
-    return cmdletManager;
-  }
-
-  public ClusterNodesManager getClusterNodesManager() {
-    return clusterNodesManager;
-  }
-
   public Utilization getUtilization(String resourceName) throws IOException {
     return getStatesManager().getStorageUtilization(resourceName);
   }
 
+  // todo remove after zeppelin removal
   public List<Utilization> getHistUtilization(String resourceName, long granularity,
                                               long begin, long end) throws IOException {
     long now = System.currentTimeMillis();

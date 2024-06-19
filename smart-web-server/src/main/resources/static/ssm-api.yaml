@@ -1369,7 +1369,7 @@ components:
           type: integer
         lastAccessTime:
           description: UNIX timestamp (UTC) of the last file access
-          format: int32
+          format: int64
           type: integer
       required:
       - accessCount
@@ -1414,11 +1414,11 @@ components:
           type: integer
         cachedTime:
           description: UNIX timestamp (UTC) when the file was cached
-          format: int32
+          format: int64
           type: integer
         lastAccessTime:
           description: UNIX timestamp (UTC) of the last file access
-          format: int32
+          format: int64
           type: integer
       required:
       - accessCount

@@ -20,9 +20,11 @@ package org.smartdata.server.generated.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.Objects;
+
 import javax.annotation.Generated;
 import javax.validation.constraints.NotNull;
+
+import java.util.Objects;
 
 /**
  * FileAccessInfoDto
@@ -38,7 +40,7 @@ public class FileAccessInfoDto {
 
   private Integer accessCount;
 
-  private Integer lastAccessTime;
+  private Long lastAccessTime;
 
   public FileAccessInfoDto() {
     super();
@@ -47,7 +49,7 @@ public class FileAccessInfoDto {
   /**
    * Constructor with only required parameters
    */
-  public FileAccessInfoDto(Long id, String path, Integer accessCount, Integer lastAccessTime) {
+  public FileAccessInfoDto(Long id, String path, Integer accessCount, Long lastAccessTime) {
     this.id = id;
     this.path = path;
     this.accessCount = accessCount;
@@ -62,8 +64,8 @@ public class FileAccessInfoDto {
   /**
    * Id of the file
    * @return id
-  */
-  @NotNull 
+   */
+  @NotNull
   @Schema(name = "id", description = "Id of the file", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("id")
   public Long getId() {
@@ -82,8 +84,8 @@ public class FileAccessInfoDto {
   /**
    * Path of the file
    * @return path
-  */
-  @NotNull 
+   */
+  @NotNull
   @Schema(name = "path", description = "Path of the file", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("path")
   public String getPath() {
@@ -102,8 +104,8 @@ public class FileAccessInfoDto {
   /**
    * Number of accesses to the file
    * @return accessCount
-  */
-  @NotNull 
+   */
+  @NotNull
   @Schema(name = "accessCount", description = "Number of accesses to the file", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("accessCount")
   public Integer getAccessCount() {
@@ -114,7 +116,7 @@ public class FileAccessInfoDto {
     this.accessCount = accessCount;
   }
 
-  public FileAccessInfoDto lastAccessTime(Integer lastAccessTime) {
+  public FileAccessInfoDto lastAccessTime(Long lastAccessTime) {
     this.lastAccessTime = lastAccessTime;
     return this;
   }
@@ -122,15 +124,15 @@ public class FileAccessInfoDto {
   /**
    * UNIX timestamp (UTC) of the last file access
    * @return lastAccessTime
-  */
-  @NotNull 
+   */
+  @NotNull
   @Schema(name = "lastAccessTime", description = "UNIX timestamp (UTC) of the last file access", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("lastAccessTime")
-  public Integer getLastAccessTime() {
+  public Long getLastAccessTime() {
     return lastAccessTime;
   }
 
-  public void setLastAccessTime(Integer lastAccessTime) {
+  public void setLastAccessTime(Long lastAccessTime) {
     this.lastAccessTime = lastAccessTime;
   }
 

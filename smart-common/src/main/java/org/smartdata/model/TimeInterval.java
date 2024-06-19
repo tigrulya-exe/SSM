@@ -29,4 +29,10 @@ import java.time.Instant;
 public class TimeInterval {
   private final Instant from;
   private final Instant to;
+
+  public static TimeInterval ofEpochMillis(long from, long to) {
+    return new TimeInterval(
+        Instant.ofEpochMilli(from),
+        Instant.ofEpochMilli(to));
+  }
 }

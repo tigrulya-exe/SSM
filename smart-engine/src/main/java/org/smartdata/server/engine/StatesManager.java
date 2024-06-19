@@ -17,6 +17,7 @@
  */
 package org.smartdata.server.engine;
 
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.AbstractService;
@@ -34,8 +35,8 @@ import org.smartdata.model.CachedFileStatus;
 import org.smartdata.model.FileAccessInfo;
 import org.smartdata.model.FileInfo;
 import org.smartdata.model.PathChecker;
-import org.smartdata.model.StorageCapacity;
 import org.smartdata.model.Utilization;
+import org.smartdata.model.request.CachedFileSearchRequest;
 import org.smartdata.server.engine.data.AccessEventFetcher;
 
 import java.io.IOException;
@@ -54,6 +55,8 @@ public class StatesManager extends AbstractService implements Reconfigurable {
   private AccessCountTableManager accessCountTableManager;
   private AccessEventFetcher accessEventFetcher;
   private FileAccessEventSource fileAccessEventSource;
+  @Getter
+  private CachedFilesManager cachedFilesManager;
   private AbstractService statesUpdaterService;
   private PathChecker pathChecker;
   private volatile boolean working = false;
@@ -82,6 +85,8 @@ public class StatesManager extends AbstractService implements Reconfigurable {
             serverContext.getConf(), accessCountTableManager,
             executorService, fileAccessEventSource.getCollector());
     this.pathChecker = new PathChecker(serverContext.getConf());
+    this.cachedFilesManager =
+        new CachedFilesManager(serverContext.getMetaStore());
 
     initStatesUpdaterService();
     if (statesUpdaterService == null) {
@@ -131,10 +136,6 @@ public class StatesManager extends AbstractService implements Reconfigurable {
     LOG.info("Stopped.");
   }
 
-  public List<CachedFileStatus> getCachedList() throws MetaStoreException {
-    return serverContext.getMetaStore().getCachedFileStatus();
-  }
-
   public List<AccessCountTable> getTablesForLast(long timeInMills) throws MetaStoreException {
     return accessCountTableManager.getTables(timeInMills);
   }
@@ -176,28 +177,22 @@ public class StatesManager extends AbstractService implements Reconfigurable {
     }
   }
 
-  public List<CachedFileStatus> getCachedFileStatus() throws IOException {
-    try {
-      return serverContext.getMetaStore().getCachedFileStatus();
-    } catch (MetaStoreException e) {
-      throw new IOException(e);
-    }
+  // todo remove after zeppelin removal
+  public List<CachedFileStatus> getCachedFileStatus() {
+      return cachedFilesManager.search(CachedFileSearchRequest.noFilters());
   }
 
+  // todo remove after zeppelin removal
   public Utilization getStorageUtilization(String resourceName) throws IOException {
     try {
-      long now = System.currentTimeMillis();
-      if (!resourceName.equals("cache")) {
-        long capacity =
-            serverContext.getMetaStore().getStoreCapacityOfDifferentStorageType(resourceName);
-        long free = serverContext.getMetaStore().getStoreFreeOfDifferentStorageType(resourceName);
-        return new Utilization(now, capacity, capacity - free);
-      } else {
-        StorageCapacity storageCapacity = serverContext.getMetaStore().getStorageCapacity("cache");
-        return new Utilization(now,
-            storageCapacity.getCapacity(),
-            storageCapacity.getCapacity() - storageCapacity.getFree());
+      if (resourceName.equals("cache")) {
+        return cachedFilesManager.getCacheStorageUtilization();
       }
+      long now = System.currentTimeMillis();
+      long capacity =
+          serverContext.getMetaStore().getStoreCapacityOfDifferentStorageType(resourceName);
+      long free = serverContext.getMetaStore().getStoreFreeOfDifferentStorageType(resourceName);
+      return new Utilization(now, capacity, capacity - free);
     } catch (MetaStoreException e) {
       throw new IOException(e);
     }

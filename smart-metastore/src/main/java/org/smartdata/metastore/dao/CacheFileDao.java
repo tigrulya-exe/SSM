@@ -17,16 +17,20 @@
  */
 package org.smartdata.metastore.dao;
 
+import org.smartdata.exception.NotFoundException;
+import org.smartdata.metastore.queries.sort.CachedFilesSortField;
 import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.model.CachedFileStatus;
+import org.smartdata.model.request.CachedFileSearchRequest;
 
 import java.util.List;
 import java.util.Map;
 
-public interface CacheFileDao {
+public interface CacheFileDao
+    extends Searchable<CachedFileSearchRequest, CachedFileStatus, CachedFilesSortField> {
   List<CachedFileStatus> getAll();
 
-  CachedFileStatus getById(long fid);
+  CachedFileStatus getById(long fid) throws NotFoundException;
 
   List<Long> getFids();
 

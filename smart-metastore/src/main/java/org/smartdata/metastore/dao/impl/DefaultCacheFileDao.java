@@ -18,11 +18,15 @@
 package org.smartdata.metastore.dao.impl;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.smartdata.metastore.dao.AbstractDao;
+import org.smartdata.exception.NotFoundException;
+import org.smartdata.metastore.SearchableAbstractDao;
 import org.smartdata.metastore.dao.CacheFileDao;
+import org.smartdata.metastore.queries.MetastoreQuery;
+import org.smartdata.metastore.queries.sort.CachedFilesSortField;
 import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.model.CachedFileStatus;
-import org.springframework.jdbc.core.RowMapper;
+import org.smartdata.model.request.CachedFileSearchRequest;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
@@ -33,23 +37,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DefaultCacheFileDao extends AbstractDao implements CacheFileDao {
+import static org.smartdata.metastore.queries.MetastoreQuery.selectAll;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.betweenEpochInclusive;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.equal;
+import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.like;
+
+public class DefaultCacheFileDao extends SearchableAbstractDao<
+    CachedFileSearchRequest, CachedFileStatus, CachedFilesSortField>
+    implements CacheFileDao {
   private static final String TABLE_NAME = "cached_file";
 
-  public DefaultCacheFileDao(DataSource dataSource) {
-    super(dataSource, TABLE_NAME);
+  public DefaultCacheFileDao(
+      DataSource dataSource, PlatformTransactionManager transactionManager) {
+    super(dataSource, transactionManager, TABLE_NAME);
   }
 
   @Override
   public List<CachedFileStatus> getAll() {
-    return jdbcTemplate.query("SELECT * FROM cached_file",
-        new CacheFileRowMapper());
+    MetastoreQuery query = selectAll().from(TABLE_NAME);
+    return executeQuery(query);
   }
 
   @Override
-  public CachedFileStatus getById(long fid) {
-    return jdbcTemplate.queryForObject("SELECT * FROM cached_file WHERE fid = ?",
-        new Object[]{fid}, new CacheFileRowMapper());
+  public CachedFileStatus getById(long fid) throws NotFoundException {
+    MetastoreQuery query = selectAll()
+        .from(TABLE_NAME)
+        .where(
+            equal("fid", fid)
+        );
+    return executeSingle(query)
+        .orElseThrow(
+            () -> new NotFoundException("Cached file status not found for id: " + fid));
   }
 
   @Override
@@ -137,18 +155,26 @@ public class DefaultCacheFileDao extends AbstractDao implements CacheFileDao {
     return parameters;
   }
 
+  @Override
+  protected MetastoreQuery searchQuery(CachedFileSearchRequest searchRequest) {
+    return selectAll()
+        .from(TABLE_NAME)
+        .where(
+            like("path", searchRequest.getPathLike()),
+            betweenEpochInclusive("from_time", searchRequest.getCachedTime()),
+            betweenEpochInclusive("last_access_time",
+                searchRequest.getLastAccessedTime())
+        );
+  }
 
-  private static class CacheFileRowMapper implements RowMapper<CachedFileStatus> {
-
-    @Override
-    public CachedFileStatus mapRow(ResultSet resultSet, int i) throws SQLException {
-      CachedFileStatus cachedFileStatus = new CachedFileStatus();
-      cachedFileStatus.setFid(resultSet.getLong("fid"));
-      cachedFileStatus.setPath(resultSet.getString("path"));
-      cachedFileStatus.setFromTime(resultSet.getLong("from_time"));
-      cachedFileStatus.setLastAccessTime(resultSet.getLong("last_access_time"));
-      cachedFileStatus.setNumAccessed(resultSet.getInt("accessed_num"));
-      return cachedFileStatus;
-    }
+  @Override
+  protected CachedFileStatus mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+    return CachedFileStatus.builder()
+        .fid(resultSet.getLong("fid"))
+        .path(resultSet.getString("path"))
+        .fromTime(resultSet.getLong("from_time"))
+        .lastAccessTime(resultSet.getLong("last_access_time"))
+        .numAccessed(resultSet.getInt("accessed_num"))
+        .build();
   }
 }
