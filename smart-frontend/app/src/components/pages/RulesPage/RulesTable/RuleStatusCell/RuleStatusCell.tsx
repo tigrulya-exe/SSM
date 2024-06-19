@@ -24,8 +24,8 @@ import type { CommonStatus } from '@commonComponents/StatusMarker/StatusMarker.t
 import { FlexGroup } from '@uikit';
 
 const roleStateToStatus: Record<AdhRuleState, CommonStatus> = {
-  ACTIVE: 'online',
-  DISABLED: 'offline',
+  ACTIVE: 'green',
+  DISABLED: 'gray',
 };
 
 interface RuleStatusCellProps {

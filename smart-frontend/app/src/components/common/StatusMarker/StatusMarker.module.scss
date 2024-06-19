@@ -1,18 +1,15 @@
-/** 'offline' | 'running' | 'online' | 'failed';
-*/
-
 :global {
   body.theme-dark {
-    --statusMarker-offline: var(--color-grayDisabled);
-    --statusMarker-running: var(--color-blue);
-    --statusMarker-online: var(--color-greenSaturated);
-    --statusMarker-failed: var(--color-red);
+    --statusMarker-gray: var(--color-grayDisabled);
+    --statusMarker-blue: var(--color-blue);
+    --statusMarker-green: var(--color-greenSaturated);
+    --statusMarker-red: var(--color-red);
   }
   body.theme-light {
-    --statusMarker-offline: var(--color-popupLightDarker);
-    --statusMarker-running: var(--color-blue);
-    --statusMarker-online: var(--color-greenLogo);
-    --statusMarker-failed: var(--color-red);
+    --statusMarker-gray: var(--color-popupLightDarker);
+    --statusMarker-blue: var(--color-blue);
+    --statusMarker-green: var(--color-greenLogo);
+    --statusMarker-red: var(--color-red);
   }
 }
 
@@ -22,16 +19,16 @@
   display: inline-flex;
   border-radius: 50%;
 
-  &_offline {
-    background-color: var(--statusMarker-offline);
+  &_gray {
+    background-color: var(--statusMarker-gray);
   }
-  &_running {
-    background-color: var(--statusMarker-running);
+  &_blue {
+    background-color: var(--statusMarker-blue);
   }
-  &_online {
-    background-color: var(--statusMarker-online);
+  &_green {
+    background-color: var(--statusMarker-green);
   }
-  &_failed {
-    background-color: var(--statusMarker-failed);
+  &_red {
+    background-color: var(--statusMarker-red);
   }
 }

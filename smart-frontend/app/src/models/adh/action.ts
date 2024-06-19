@@ -17,18 +17,16 @@
  */
 import type { DateRange, SerializedDate } from '@models/dateRange';
 
-export const AdhActionSource = {
-  Rule: 'RULE',
-  User: 'USER',
-} as const;
-export type AdhActionSource = (typeof AdhActionSource)[keyof typeof AdhActionSource];
+export enum AdhActionSource {
+  Rule = 'RULE',
+  User = 'USER',
+}
 
-export const AdhActionState = {
-  Running: 'RUNNING',
-  Successful: 'SUCCESSFUL',
-  Failed: 'FAILED',
-} as const;
-export type AdhActionState = (typeof AdhActionState)[keyof typeof AdhActionState];
+export enum AdhActionState {
+  Running = 'RUNNING',
+  Successful = 'SUCCESSFUL',
+  Failed = 'FAILED',
+}
 
 export interface AdhAction {
   id: number;

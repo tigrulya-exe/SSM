@@ -27,12 +27,10 @@ export interface AdhRule {
   lastActivationTime?: number | null;
 }
 
-export const AdhRuleState = {
-  Active: 'ACTIVE',
-  Disabled: 'DISABLED',
-} as const;
-
-export type AdhRuleState = (typeof AdhRuleState)[keyof typeof AdhRuleState];
+export enum AdhRuleState {
+  Active = 'ACTIVE',
+  Disabled = 'DISABLED',
+}
 
 export interface AdhRuleFilter {
   textRepresentationLike?: string;
