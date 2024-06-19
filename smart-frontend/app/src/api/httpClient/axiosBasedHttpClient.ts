@@ -31,8 +31,6 @@ export class AxiosBasedHttpClient implements HttpClient {
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
       },
-      // xsrfCookieName: 'csrftoken',
-      // xsrfHeaderName: 'X-CSRFToken',
     });
   }
 
