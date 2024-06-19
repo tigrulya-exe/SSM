@@ -22,11 +22,10 @@ import s from './Button.module.scss';
 type ButtonVariant = 'primary' | 'secondary' | 'tertiary';
 type ButtonSize = 'medium' | 'small';
 
-interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'title'> {
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   hasError?: boolean;
   size?: ButtonSize;
-  title?: string;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -39,7 +38,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       size = 'medium',
       hasError = false,
       type = 'button',
-      title,
       ...props
     },
     ref,

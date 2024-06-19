@@ -1,0 +1,24 @@
+:global {
+  body.theme-dark {
+    --multilineInput-background: var(--color-ADHnew);
+  }
+  body.theme-light {
+    --multilineInput-background: var(--color-colourful50);
+  }
+}
+
+.multilineInput {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--multilineInput-background);
+  color: var(--text-default-color);
+  font-size: 15px;
+  line-height: normal;
+  font-family: 'JetBrains Mono', monospace;
+  border: none;
+  resize: none;
+  min-height: 150px;
+}

@@ -16,11 +16,25 @@
  * limitations under the License.
  */
 import React from 'react';
+import { FlexGroup, Title } from '@uikit';
+import RulesToolbar from './RulesToolbar/RulesToolbar';
+import RuleCreateBtn from './RuleCreateBtn/RuleCreateBtn';
+import RulesTable from './RulesTable/RulesTable';
+import { useRequestRules } from './useRequestRules';
+import RulesDialogs from './RulesDialogs/RulesDialogs';
 
 const RulesPage: React.FC = () => {
+  useRequestRules();
+
   return (
     <div>
-      <div>Rules page</div>
+      <FlexGroup gap="20px">
+        <Title variant="h1">Rules page</Title>
+        <RuleCreateBtn />
+      </FlexGroup>
+      <RulesToolbar />
+      <RulesTable />
+      <RulesDialogs />
     </div>
   );
 };

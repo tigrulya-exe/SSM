@@ -15,19 +15,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export type SortDirection = 'asc' | 'desc';
-
-export interface SortParams {
-  sortBy: string;
-  sortDirection: SortDirection;
-}
-
-export interface PaginationParams {
-  pageNumber: number;
-  perPage: number;
-}
-
-export interface SortingProps {
-  sortParams: SortParams;
-  onSorting: (sortParams: SortParams) => void;
-}
+export * from './action';
+export * from './rule';

@@ -20,33 +20,40 @@ import Button from '@uikit/Button/Button';
 import Checkbox from './Checkbox/Checkbox';
 import ConditionalWrapper from '@uikit/ConditionalWrapper/ConditionalWrapper';
 import Dialog from './Dialog/Dialog';
+import FlexGroup from '@uikit/FlexGroup/FlexGroup';
+import FooterDialog from '@uikit/FooterDialog/FooterDialog';
 import Icon from '@uikit/Icon/Icon';
 import IconButton from '@uikit/IconButton/IconButton';
 import type { IconsNames } from '@uikit/Icon/sprite';
 import Input from '@uikit/Input/Input';
 import InputNumber from './InputNumber/InputNumber';
-import MultiSelect from './Select/MultiSelect/MultiSelect';
 import InputPassword from '@uikit/InputPassword/InputPassword';
+import MultilineInput from '@uikit/MultilineInput/MultilineInput';
+import MultiSelect from './Select/MultiSelect/MultiSelect';
 import Panel from './Panel/Panel';
 import Popover from './Popover/Popover';
 import PopoverPanelDefault from './Popover/PopoverPanelDefault/PopoverPanelDefault';
 import SearchInput from './SearchInput/SearchInput';
 import Select from './Select/SingleSelect/Select/Select';
 import Text from './Text/Text';
+import Title from './Title/Title';
 import Tooltip from './Tooltip/Tooltip';
 
 export {
   //
   Button,
-  Dialog,
   Checkbox,
   ConditionalWrapper,
+  Dialog,
+  FlexGroup,
+  FooterDialog,
   Icon,
   IconButton,
   IconsNames,
   Input,
   InputNumber,
   InputPassword,
+  MultilineInput,
   MultiSelect,
   Panel,
   Popover,
@@ -54,5 +61,6 @@ export {
   Select,
   SearchInput,
   Text,
+  Title,
   Tooltip,
 };
