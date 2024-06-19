@@ -165,18 +165,19 @@ public class TestCmdletLifecycleLogger extends SqliteTestDaoBase {
 
   @Test
   public void testLogCurrentUser() throws Exception {
-    assertEventUsername(AnonymousDefaultPrincipalProvider.anonymousPrincipal());
+    assertEventUsername(AnonymousDefaultPrincipalProvider.anonymousPrincipal(), "file1");
 
     SmartPrincipal currentPrincipal = new SmartPrincipal("user1");
     principalManager.setCurrentPrincipal(currentPrincipal);
-    assertEventUsername(currentPrincipal);
+    assertEventUsername(currentPrincipal, "file2");
 
     principalManager.unsetCurrentPrincipal();
-    assertEventUsername(AnonymousDefaultPrincipalProvider.anonymousPrincipal());
+    assertEventUsername(AnonymousDefaultPrincipalProvider.anonymousPrincipal(), "file3");
   }
 
-  private void assertEventUsername(SmartPrincipal expectedPrincipal) throws IOException {
-    CmdletInfo cmdletInfo = cmdletManager.submitCmdlet("read -file /test.txt");
+  private void assertEventUsername(
+      SmartPrincipal expectedPrincipal, String file) throws IOException {
+    CmdletInfo cmdletInfo = cmdletManager.submitCmdlet("read -file" + file);
 
     List<UserActivityEvent> cmdletEvents = findCmdletEvents(cmdletInfo.getCid());
     Assert.assertEquals(1, cmdletEvents.size());

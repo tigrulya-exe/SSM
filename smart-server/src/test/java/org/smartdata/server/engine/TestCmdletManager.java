@@ -36,7 +36,9 @@ import org.smartdata.model.request.ActionSearchRequest;
 import org.smartdata.protocol.message.ActionStatus;
 import org.smartdata.protocol.message.CmdletStatusUpdate;
 import org.smartdata.protocol.message.StatusReport;
+import org.smartdata.security.AnonymousDefaultPrincipalProvider;
 import org.smartdata.security.SmartPrincipalManager;
+import org.smartdata.security.ThreadScopeSmartPrincipalManager;
 import org.smartdata.server.MiniSmartClusterHarness;
 import org.smartdata.server.engine.action.ActionInfoHandler;
 import org.smartdata.server.engine.audit.AuditService;
@@ -170,7 +172,8 @@ public class TestCmdletManager extends MiniSmartClusterHarness {
     long actionId = 101;
     MetaStore metaStore = mock(MetaStore.class);
     AuditService auditService = mock(AuditService.class);
-    SmartPrincipalManager principalManager = mock(SmartPrincipalManager.class);
+    SmartPrincipalManager principalManager = new ThreadScopeSmartPrincipalManager(
+        new AnonymousDefaultPrincipalProvider());
 
     Assert.assertNotNull(metaStore);
     when(metaStore.getMaxCmdletId()).thenReturn(cmdletId);
