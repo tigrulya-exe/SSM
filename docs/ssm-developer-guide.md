@@ -51,6 +51,24 @@ server host name with your local computer's host name .
 
   `ssh -L 8008:{REMOTE_SERVER}:8008 {USER}@{PROXY_HOST} -N`
 
+## Building project
+
+Building instructions are provided in the [BUILDING.txt](../BUILDING.txt) file. 
+
+## **IDE setup (IntelliJ IDEA)**
+
+There's an [IDE open issue](https://youtrack.jetbrains.com/issue/IDEA-184921/AspectJ-CTW-Lombok-project-not-building) with using
+Lombok and AspectJ in the same maven module, so before the issue will be resolved,
+the post-compile weaving should be enabled after each import or update of maven project
+by enabling `File > Project Structure > Facets > AspectJ > Post-compile weave mode` checkbox to be able to start tests from IDE.
+
+Also, `/supports/tools/checkstyle.xml` and `/supports/tools/suppressions.xml` Checkstyle configuration files can be imported to the IDE.
+If, for some reason, the indentation settings are not applied after importing the Checkstyle settings, 
+consider setting the following configurations manually:
+- Tab size: 2
+- Indent: 2
+- Continuation indent: 4
+
 ## **License header update**
 
 After adding new source code files to the project, call the following command
