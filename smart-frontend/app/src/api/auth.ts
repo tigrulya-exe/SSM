@@ -16,24 +16,30 @@
  * limitations under the License.
  */
 import { httpClient } from './httpClient';
+import { encode } from 'js-base64';
+
+interface CheckSessionSuccess {
+  name: string;
+}
 
 export class AuthApi {
   public static async login(username: string, password: string) {
-    const response = await httpClient.post('/api/v1/login', {
-      username,
-      password,
+    const response = await httpClient.get<CheckSessionSuccess>('/api/v2/system/current-user', {
+      headers: {
+        Authorization: `Basic ${encode(`${username}:${password}`)}`,
+      },
     });
 
     return response.data;
   }
 
   public static async logout() {
-    const response = await httpClient.post('/api/v1/logout');
+    const response = await httpClient.post('/api/v2/logout');
     return response.data;
   }
 
   public static async checkSession() {
-    const response = await httpClient.post<{ name: string }>('/api/v1/currentUser');
+    const response = await httpClient.get<CheckSessionSuccess>('/api/v2/system/current-user');
 
     return response.data;
   }

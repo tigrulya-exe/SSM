@@ -38,8 +38,8 @@ type UserState = {
 
 const login = createAsyncThunk('auth/login', async (arg: LoginActionPayload, thunkAPI) => {
   try {
-    await AuthApi.login(arg.username, arg.password);
-    return AuthApi.checkSession();
+    const userInfo = await AuthApi.login(arg.username, arg.password);
+    return userInfo;
   } catch (error) {
     thunkAPI.dispatch(showError({ message: getErrorMessage(error as RequestError) }));
     return thunkAPI.rejectWithValue(error);
