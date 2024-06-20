@@ -51,6 +51,7 @@ import org.smartdata.protocol.message.CmdletStatusUpdate;
 import org.smartdata.protocol.message.LaunchCmdlet;
 import org.smartdata.protocol.message.StatusMessage;
 import org.smartdata.protocol.message.StatusReport;
+import org.smartdata.security.SmartPrincipalManager;
 import org.smartdata.server.cluster.ActiveServerNodeCmdletMetrics;
 import org.smartdata.server.cluster.ClusterNodeMetricsProvider;
 import org.smartdata.server.cluster.NodeCmdletMetrics;
@@ -127,13 +128,15 @@ public class CmdletManager extends AbstractService
   private final CmdletParser cmdletParser;
   private final ListMultimap<String, ActionScheduler> schedulers;
   private final AuditService auditService;
+  private final SmartPrincipalManager smartPrincipalManager;
   private final PathChecker pathChecker;
   private List<ActionSchedulerService> schedulerServices;
   private CmdletDispatcher dispatcher;
 
   public CmdletManager(
       ServerContext context,
-      AuditService auditService) throws IOException {
+      AuditService auditService,
+      SmartPrincipalManager smartPrincipalManager) throws IOException {
     super(context);
 
     this.metaStore = context.getMetaStore();
@@ -154,6 +157,7 @@ public class CmdletManager extends AbstractService
         .getInt(SmartConfKeys.SMART_CMDLET_MAX_NUM_PENDING_KEY,
             SmartConfKeys.SMART_CMDLET_MAX_NUM_PENDING_DEFAULT);
     this.auditService = auditService;
+    this.smartPrincipalManager = smartPrincipalManager;
 
     this.cmdletPurgeTask = new DeleteTerminatedCmdletsTask(getContext().getConf(), metaStore);
     this.inMemoryRegistry = new InMemoryRegistry(context, tracker, executorService);
@@ -183,6 +187,11 @@ public class CmdletManager extends AbstractService
   @Override
   public AuditService getAuditService() {
     return auditService;
+  }
+
+  @Override
+  public SmartPrincipalManager getPrincipalService() {
+    return smartPrincipalManager;
   }
 
   @Override

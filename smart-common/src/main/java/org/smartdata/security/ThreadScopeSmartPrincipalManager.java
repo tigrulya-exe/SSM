@@ -15,11 +15,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.server.engine.audit;
+package org.smartdata.security;
 
-import org.smartdata.security.SmartPrincipalManager;
+import lombok.RequiredArgsConstructor;
 
-public interface Auditable {
-  AuditService getAuditService();
-  SmartPrincipalManager getPrincipalService();
+import java.util.Optional;
+
+@RequiredArgsConstructor
+public class ThreadScopeSmartPrincipalManager implements SmartPrincipalManager {
+  private static final ThreadLocal<SmartPrincipal> CURRENT_PRINCIPAL_CONTAINER =
+      new ThreadLocal<>();
+
+  private final DefaultPrincipalProvider defaultPrincipalProvider;
+
+  @Override
+  public SmartPrincipal getCurrentPrincipal() {
+    return Optional.ofNullable(CURRENT_PRINCIPAL_CONTAINER.get())
+        .orElseGet(defaultPrincipalProvider::provide);
+  }
+
+  @Override
+  public void setCurrentPrincipal(SmartPrincipal principal) {
+    CURRENT_PRINCIPAL_CONTAINER.set(principal);
+  }
+
+  @Override
+  public void unsetCurrentPrincipal() {
+    CURRENT_PRINCIPAL_CONTAINER.remove();
+  }
 }

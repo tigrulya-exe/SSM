@@ -17,28 +17,6 @@
  */
 package org.smartdata.security;
 
-import java.util.Optional;
-
-public class SmartPrincipalHolder {
-  private static final SmartPrincipal ANONYMOUS = new SmartPrincipal("anonymous");
-
-  private static final ThreadLocal<SmartPrincipal> CURRENT_PRINCIPAL_THREAD_LOCAL =
-      new ThreadLocal<>();
-
-  public static void setCurrentPrincipal(SmartPrincipal principal) {
-    CURRENT_PRINCIPAL_THREAD_LOCAL.set(principal);
-  }
-
-  public static void unsetCurrentPrincipal() {
-    CURRENT_PRINCIPAL_THREAD_LOCAL.remove();
-  }
-
-  public static SmartPrincipal getCurrentPrincipal() {
-    return Optional.ofNullable(CURRENT_PRINCIPAL_THREAD_LOCAL.get())
-        .orElse(ANONYMOUS);
-  }
-
-  public static SmartPrincipal anonymous() {
-    return ANONYMOUS;
-  }
+public interface DefaultPrincipalProvider {
+  SmartPrincipal provide();
 }

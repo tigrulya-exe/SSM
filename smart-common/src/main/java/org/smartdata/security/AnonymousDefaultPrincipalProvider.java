@@ -15,11 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.server.engine.audit;
+package org.smartdata.security;
 
-import org.smartdata.security.SmartPrincipalManager;
+public class AnonymousDefaultPrincipalProvider implements DefaultPrincipalProvider {
+  private static final SmartPrincipal ANONYMOUS_PRINCIPAL =
+      new SmartPrincipal("anonymous");
 
-public interface Auditable {
-  AuditService getAuditService();
-  SmartPrincipalManager getPrincipalService();
+  @Override
+  public SmartPrincipal provide() {
+    return ANONYMOUS_PRINCIPAL;
+  }
+
+  public static SmartPrincipal anonymousPrincipal() {
+    return ANONYMOUS_PRINCIPAL;
+  }
 }

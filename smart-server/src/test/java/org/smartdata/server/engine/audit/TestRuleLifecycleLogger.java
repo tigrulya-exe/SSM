@@ -27,10 +27,15 @@ import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
 import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
+import org.smartdata.security.AnonymousDefaultPrincipalProvider;
+import org.smartdata.security.SmartPrincipal;
+import org.smartdata.security.SmartPrincipalManager;
+import org.smartdata.security.ThreadScopeSmartPrincipalManager;
 import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.engine.ServerContext;
 import org.smartdata.server.engine.ServiceMode;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,6 +50,7 @@ import static org.smartdata.model.audit.UserActivityResult.SUCCESS;
 public class TestRuleLifecycleLogger extends SqliteTestDaoBase {
   private RuleManager ruleManager;
   private AuditService auditService;
+  private SmartPrincipalManager principalManager;
 
   @Before
   public void init() throws Exception {
@@ -53,8 +59,11 @@ public class TestRuleLifecycleLogger extends SqliteTestDaoBase {
     serverContext.setServiceMode(ServiceMode.HDFS);
 
     auditService = new AuditService(metaStore.userActivityDao());
+    principalManager = new ThreadScopeSmartPrincipalManager(
+        new AnonymousDefaultPrincipalProvider());
 
-    ruleManager = new RuleManager(serverContext, null, null, auditService);
+    ruleManager = new RuleManager(
+        serverContext, null, null, auditService, principalManager);
     ruleManager.init();
     ruleManager.start();
   }
@@ -171,6 +180,30 @@ public class TestRuleLifecycleLogger extends SqliteTestDaoBase {
     UserActivityEvent event = ruleEvents.get(0);
     Assert.assertEquals(DELETE, event.getOperation());
     Assert.assertEquals(FAILURE, event.getResult());
+  }
+
+  @Test
+  public void testLogCurrentUser() throws Exception {
+    assertEventUsername(AnonymousDefaultPrincipalProvider.anonymousPrincipal());
+
+    SmartPrincipal currentPrincipal = new SmartPrincipal("user1");
+    principalManager.setCurrentPrincipal(currentPrincipal);
+    assertEventUsername(currentPrincipal);
+
+    principalManager.unsetCurrentPrincipal();
+    assertEventUsername(AnonymousDefaultPrincipalProvider.anonymousPrincipal());
+  }
+
+  private void assertEventUsername(SmartPrincipal expectedPrincipal) throws IOException {
+    String rule = "file: every 1s \n | accessCount(5s) > 3 | cache";
+    long id = ruleManager.submitRule(rule, RuleState.DISABLED);
+    RuleInfo ruleInfo = ruleManager.getRuleInfo(id);
+
+    List<UserActivityEvent> cmdletEvents = findRuleEvents(ruleInfo.getId());
+    Assert.assertEquals(1, cmdletEvents.size());
+    Assert.assertEquals(
+        expectedPrincipal.getName(),
+        cmdletEvents.get(0).getUsername());
   }
 
   private List<UserActivityEvent> findRuleEvents(long ruleId) {

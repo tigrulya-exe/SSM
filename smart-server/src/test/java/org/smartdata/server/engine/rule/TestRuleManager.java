@@ -31,6 +31,9 @@ import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
 import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.request.AuditSearchRequest;
+import org.smartdata.security.AnonymousDefaultPrincipalProvider;
+import org.smartdata.security.SmartPrincipalManager;
+import org.smartdata.security.ThreadScopeSmartPrincipalManager;
 import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.engine.ServerContext;
 import org.smartdata.server.engine.ServiceMode;
@@ -51,8 +54,10 @@ public class TestRuleManager extends TestDaoBase {
     SmartConf smartConf = new SmartConf();
     ServerContext serverContext = new ServerContext(smartConf, metaStore);
     serverContext.setServiceMode(ServiceMode.HDFS);
+    SmartPrincipalManager principalManager = new ThreadScopeSmartPrincipalManager(
+        new AnonymousDefaultPrincipalProvider());
     ruleManager = new RuleManager(serverContext, null,
-        null, new NoOpAuditService());
+        null, new NoOpAuditService(), principalManager);
     ruleManager.init();
     ruleManager.start();
   }
