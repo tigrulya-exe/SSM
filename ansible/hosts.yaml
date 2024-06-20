@@ -1,0 +1,11 @@
+ssm_servers:
+  hosts:
+    ssm_host_1:
+      ansible_host: hdfs-kafka-tiered-storage-test-1.ru-central1-a.internal
+    ssm_host_2:
+      ansible_host: free-ipa-ssm-1.ru-central1-a.internal
+
+ssm_agents:
+  hosts:
+    ssm_agent_host_1:
+      ansible_host: hdfs-kafka-tiered-storage-test-1.ru-central1-a.internal
