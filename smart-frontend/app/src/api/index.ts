@@ -19,4 +19,5 @@
 export type { RequestError } from './httpClient';
 
 export { AuthApi } from './auth';
+export { AdhAuditEventsApi } from './adh/auditEvents';
 export { AdhRulesApi } from './adh/rules';

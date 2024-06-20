@@ -15,6 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './action';
-export * from './auditEvent';
-export * from './rule';
+import React from 'react';
+import { Button } from '@uikit';
+import { useDispatch } from '@hooks';
+import { resetAuditEventsFilter } from '@store/adh/auditEvents/auditEventsTableSlice';
+
+const AuditEventsResetFilter: React.FC = () => {
+  const dispatch = useDispatch();
+
+  const handleClick = () => {
+    dispatch(resetAuditEventsFilter());
+  };
+
+  return (
+    <Button onClick={handleClick} variant="secondary">
+      Reset filter
+    </Button>
+  );
+};
+
+export default AuditEventsResetFilter;
