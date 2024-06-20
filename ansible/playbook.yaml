@@ -1,0 +1,30 @@
+- name: Gather facts
+  remote_user: ansible
+  hosts: all
+
+- name: Update SSM Agents
+  hosts: ssm_agents
+  gather_facts: no
+  remote_user: ansible
+  tasks:
+    - include_tasks: restart_service_tasks.yaml
+      vars:
+        ssm_service_name: smart-storage-manager-agent
+
+- name: Update SSM Servers
+  hosts: ssm_servers
+  gather_facts: no
+  remote_user: ansible
+  tasks:
+    - include_tasks: restart_service_tasks.yaml
+      vars:
+        ssm_service_name: smart-storage-manager-server
+
+    # restore postgresql driver jar symlink created by adcm
+    # to be able to correctly run adcm actions from web ui
+    - name: Create PostgreSQL driver symbolic link
+      become: yes
+      ansible.builtin.file:
+        src: /usr/share/java/jdbc-postgresql.jar
+        dest: /usr/lib/ssm/lib/postgresql-jdbc.jar
+        state: link
