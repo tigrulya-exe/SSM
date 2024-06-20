@@ -24,6 +24,7 @@ import org.smartdata.exception.NotFoundException;
 import org.smartdata.exception.SsmParseException;
 import org.smartdata.metastore.MetaStoreException;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import javax.validation.ConstraintViolationException;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class SmartExceptionHandler extends ResponseEntityExceptionHandler {
@@ -84,6 +86,7 @@ public class SmartExceptionHandler extends ResponseEntityExceptionHandler {
     return handleValidationExceptions(exception, request);
   }
 
+  @Override
   protected ResponseEntity<Object> handleTypeMismatch(
       TypeMismatchException exception,
       HttpHeaders headers,
@@ -98,24 +101,43 @@ public class SmartExceptionHandler extends ResponseEntityExceptionHandler {
       HttpHeaders headers,
       HttpStatus status,
       WebRequest request) {
-    return handleValidationExceptions(exception, request);
+      String errorMessage = exception.getBindingResult().getAllErrors().stream()
+              .map(DefaultMessageSourceResolvable::getDefaultMessage)
+              .collect(Collectors.joining(";"));
+      return handleExceptionInternal(
+            exception,
+            request,
+            HttpStatus.BAD_REQUEST,
+            new ErrorDto<>(
+                    SsmErrorCode.VALIDATION_ERROR.toString(),
+                    errorMessage,
+                    ExceptionUtils.getStackTrace(exception))
+            );
   }
 
   private ResponseEntity<Object> handleExceptionInternal(
       Exception exception, WebRequest request, SsmErrorCode errorCode, HttpStatus status) {
-    LOG.error("Exception during handling request on {}",
-        request.getDescription(false), exception);
-
     ErrorDto<String> errorBody = new ErrorDto<>(
         errorCode.toString(),
         exception.getMessage(),
         ExceptionUtils.getStackTrace(exception));
 
+    return handleExceptionInternal(exception,
+            request,
+            status,
+            errorBody);
+  }
+
+  private ResponseEntity<Object> handleExceptionInternal(
+          Exception exception, WebRequest request, HttpStatus status, ErrorDto<String> errorBody) {
+    LOG.error("Exception during handling request on {}",
+            request.getDescription(false), exception);
+
     return handleExceptionInternal(
-        exception,
-        errorBody,
-        new HttpHeaders(),
-        status,
-        request);
+            exception,
+            errorBody,
+            new HttpHeaders(),
+            status,
+            request);
   }
 }
