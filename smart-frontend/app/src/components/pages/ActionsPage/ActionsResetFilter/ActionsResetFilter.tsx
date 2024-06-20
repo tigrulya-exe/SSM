@@ -16,27 +16,22 @@
  * limitations under the License.
  */
 import React from 'react';
-import { FlexGroup, Title } from '@uikit';
-import ActionCreateBtn from './ActionCreateBtn/ActionCreateBtn';
-import ActionsToolbar from './ActionsToolbar/ActionsToolbar';
-import ActionsTable from './ActionsTable/ActionsTable';
-import { useRequestActions } from '@pages/ActionsPage/useRequestActions';
-import ActionsDialogs from './ActionsDialogs/ActionsDialogs';
+import { Button } from '@uikit';
+import { useDispatch } from '@hooks';
+import { resetActionsFilter } from '@store/adh/actions/actionsTableSlice';
 
-const ActionsPage: React.FC = () => {
-  useRequestActions();
+const ActionsResetFilter: React.FC = () => {
+  const dispatch = useDispatch();
+
+  const handleClick = () => {
+    dispatch(resetActionsFilter());
+  };
 
   return (
-    <div>
-      <FlexGroup gap="20px">
-        <Title variant="h1">Actions page</Title>
-        <ActionCreateBtn />
-      </FlexGroup>
-      <ActionsToolbar />
-      <ActionsTable />
-      <ActionsDialogs />
-    </div>
+    <Button onClick={handleClick} variant="secondary">
+      Reset filter
+    </Button>
   );
 };
 
-export default ActionsPage;
+export default ActionsResetFilter;

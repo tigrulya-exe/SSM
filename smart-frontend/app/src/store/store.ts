@@ -19,6 +19,10 @@ import { combineReducers } from 'redux';
 import { configureStore } from '@reduxjs/toolkit';
 import notificationsSlice from './notificationsSlice';
 import authSlice from '@store/authSlice';
+import actionsSlice from '@store/adh/actions/actionsSlice';
+import actionsTableSlice from '@store/adh/actions/actionsTableSlice';
+import actionsActionsSlice from '@store/adh/actions/actionsActionsSlice';
+
 import rulesSlice from '@store/adh/rules/rulesSlice';
 import rulesTableSlice from '@store/adh/rules/rulesTableSlice';
 import rulesActionsSlice from '@store/adh/rules/rulesActionsSlice';
@@ -27,6 +31,9 @@ const rootReducer = combineReducers({
   auth: authSlice,
   notifications: notificationsSlice,
   adh: combineReducers({
+    actions: actionsSlice,
+    actionsTable: actionsTableSlice,
+    actionsActions: actionsActionsSlice,
     rules: rulesSlice,
     rulesTable: rulesTableSlice,
     rulesActions: rulesActionsSlice,
