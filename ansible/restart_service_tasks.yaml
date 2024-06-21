@@ -1,0 +1,69 @@
+- name: Check if jars are already copied for this host
+  set_fact:
+    jars_copied: "{{ hostvars[inventory_hostname].jars_copied | default(false) }}"
+
+#- name: "Stop {{ ssm_service_name }}"
+#  ansible.builtin.systemd_service:
+#    name: "{{ ssm_service_name }}.service"
+#    state: stopped
+
+- name: Ensures /usr/lib/ssm/lib/ dir exists
+  become: yes
+  file:
+    path: "/usr/lib/ssm/lib/"
+    state: directory
+    recurse: yes
+
+# we have to clean all jars to support commits
+# with dependency version upgrades
+- name: Find old SSM jars to delete
+  find:
+    paths: /usr/lib/ssm/lib
+    patterns: "*.jar"
+    recurse: yes
+  register: old_ssm_jars_to_delete
+  when: not jars_copied
+
+- name: Remove old SSM jars
+  become: yes
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  when:
+    - not jars_copied
+    # don't delete postgresql driver jar symlink created by adcm
+    - item.path != '/usr/lib/ssm/lib/postgresql-jdbc.jar'
+  with_items:
+    - "{{ old_ssm_jars_to_delete.files }}"
+
+#- name: Unarchive SSM distribution
+#  become: yes
+#  unarchive:
+#    # todo move version to variables
+#    src: "../smart-dist/target/smart-data-1.6.0-SNAPSHOT.tar.gz"
+#    dest: "/usr/lib/ssm/lib/"
+#    include:
+#      - "./lib/*"
+#  when: not jars_copied
+#
+- name: Unarchive SSM distribution
+  become: yes
+  unarchive:
+    # todo move version to variables
+    src: "../smart-dist/target/smart-data-{{ ssm_version }}.tar.gz"
+    dest: "/usr/lib/ssm/lib/"
+    include:
+      - "smart-data-{{ ssm_version }}/lib"
+    extra_opts:
+     - --strip-components=2
+  when: not jars_copied
+
+#- name: "Start {{ ssm_service_name }}"
+#  ansible.builtin.systemd_service:
+#    name: "{{ ssm_service_name }}.service"
+#    state: started
+
+- name: Mark jars already copied for this host
+  set_fact:
+    jars_copied: true
+  when: not jars_copied
