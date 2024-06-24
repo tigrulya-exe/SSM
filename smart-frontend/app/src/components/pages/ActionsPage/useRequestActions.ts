@@ -18,7 +18,7 @@
 import { useDebounce, useDispatch, useRequestTimer, useStore } from '@hooks';
 import { useCallback, useEffect } from 'react';
 import { cleanupActions, getActions, refreshActions } from '@store/adh/actions/actionsSlice';
-import { cleanupActionsTable } from '@store/adh/actions/actionsTableSlice';
+import { cleanupActionsTable, loadHosts } from '@store/adh/actions/actionsTableSlice';
 import { defaultDebounceDelay } from '@constants';
 
 export const useRequestActions = () => {
@@ -29,13 +29,13 @@ export const useRequestActions = () => {
   const filter = useStore(({ adh }) => adh.actionsTable.filter);
   const requestFrequency = useStore(({ adh }) => adh.actionsTable.requestFrequency);
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    dispatch(loadHosts());
+    return () => {
       dispatch(cleanupActions());
       dispatch(cleanupActionsTable());
-    },
-    [dispatch],
-  );
+    };
+  }, [dispatch]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debounceGetData = useCallback(

@@ -15,10 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { Collection } from '@models/collection';
+import { httpClient } from '@api/httpClient';
+import type { ClusterNode } from '@models/adh';
 
-export type { RequestError } from './httpClient';
+export class AdhClustersApi {
+  public static async getNodes(): Promise<Collection<ClusterNode>> {
+    const response = await httpClient.get<Collection<ClusterNode>>('/api/v2/cluster/nodes');
 
-export { AuthApi } from './auth';
-export { AdhActionsApi } from './adh/actions';
-export { AdhClustersApi } from './adh/clusters';
-export { AdhRulesApi } from './adh/rules';
+    return response.data;
+  }
+}

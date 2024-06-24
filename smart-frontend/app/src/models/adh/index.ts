@@ -16,4 +16,5 @@
  * limitations under the License.
  */
 export * from './action';
+export * from './cluster';
 export * from './rule';

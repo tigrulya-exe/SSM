@@ -24,6 +24,7 @@ import { getOptionsFromEnum } from '@uikit/Select/Select.utils';
 import ActionActionsCell from './ActionActionsCell/ActionActionsCell';
 import ActionStatusCell from './ActionStatusCell/ActionStatusCell';
 import ActionSourceCell from './ActionSourceCell/ActionSourceCell';
+import ActionsHostsFilter from '@pages/ActionsPage/ActionsTable/ActionsHostsFilter/ActionsHostsFilter';
 
 const actionStatesOptions = getOptionsFromEnum(AdhActionState);
 const actionSourcesOptions = getOptionsFromEnum(AdhActionSource);
@@ -49,10 +50,10 @@ export const actionsColumns: TableColumnSchema[] = [
     name: 'execHost',
     label: 'Host',
     isSortable: true,
-    // filterRenderer: (closeFilter) => {
-    //   return <TableDateRangePickerFilter<AdhActionsFilter> filterName="submissionTime" closeFilter={closeFilter} />;
-    // },
-    // filterName: 'hosts',
+    filterRenderer: () => {
+      return <ActionsHostsFilter />;
+    },
+    filterName: 'hosts',
   },
   {
     name: 'submissionTime',

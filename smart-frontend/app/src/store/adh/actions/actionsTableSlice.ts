@@ -16,10 +16,33 @@
  * limitations under the License.
  */
 import type { TableState } from '@models/table';
-import { createTableSlice } from '@store/redux';
-import type { AdhActionsFilter } from '@models/adh';
+import { createAsyncThunk, createTableSlice } from '@store/redux';
+import type { AdhActionsFilter, ClusterNode } from '@models/adh';
+import { AdhClustersApi, type RequestError } from '@api';
+import { showError } from '@store/notificationsSlice';
+import { getErrorMessage } from '@utils/responseUtils';
 
-type AdhTablesTableState = TableState<AdhActionsFilter>;
+export const loadHosts = createAsyncThunk('adh/actionsTable/loadHosts', async (_, thunkAPI) => {
+  try {
+    const collection = await AdhClustersApi.getNodes();
+
+    return collection;
+  } catch (error) {
+    thunkAPI.dispatch(
+      showError({
+        message: getErrorMessage(error as RequestError),
+      }),
+    );
+    return thunkAPI.rejectWithValue(error);
+  }
+});
+
+type AdhTablesTableState = TableState<AdhActionsFilter> & {
+  relatedData: {
+    hosts: ClusterNode[];
+    isHostsLoaded: boolean;
+  };
+};
 
 const createInitialState = (): AdhTablesTableState => ({
   filter: {
@@ -39,13 +62,26 @@ const createInitialState = (): AdhTablesTableState => ({
     sortBy: 'id',
     sortDirection: 'asc',
   },
+  relatedData: {
+    hosts: [],
+    isHostsLoaded: false,
+  },
 });
 
 const actionsTableSlice = createTableSlice({
   name: 'adh/actionsTable',
   createInitialState,
   reducers: {},
-  extraReducers: () => {},
+  extraReducers: (builder) => {
+    builder.addCase(loadHosts.fulfilled, (state, action) => {
+      state.relatedData.hosts = action.payload.items;
+      state.relatedData.isHostsLoaded = true;
+    });
+    builder.addCase(loadHosts.rejected, (state) => {
+      state.relatedData.hosts = [];
+      state.relatedData.isHostsLoaded = true;
+    });
+  },
 });
 
 const {
