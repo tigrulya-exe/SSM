@@ -22,7 +22,8 @@ import authSlice from '@store/authSlice';
 import actionsSlice from '@store/adh/actions/actionsSlice';
 import actionsTableSlice from '@store/adh/actions/actionsTableSlice';
 import actionsActionsSlice from '@store/adh/actions/actionsActionsSlice';
-
+import auditEventsSlice from '@store/adh/auditEvents/auditEventsSlice';
+import auditEventsTableSlice from '@store/adh/auditEvents/auditEventsTableSlice';
 import rulesSlice from '@store/adh/rules/rulesSlice';
 import rulesTableSlice from '@store/adh/rules/rulesTableSlice';
 import rulesActionsSlice from '@store/adh/rules/rulesActionsSlice';
@@ -34,6 +35,8 @@ const rootReducer = combineReducers({
     actions: actionsSlice,
     actionsTable: actionsTableSlice,
     actionsActions: actionsActionsSlice,
+    auditEvents: auditEventsSlice,
+    auditEventsTable: auditEventsTableSlice,
     rules: rulesSlice,
     rulesTable: rulesTableSlice,
     rulesActions: rulesActionsSlice,
