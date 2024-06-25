@@ -188,14 +188,15 @@ function smart_start_daemon() {
 
   if [[ -f "${pidfile}" ]]; then
     pid=$(cat "$pidfile")
-    if ps -p "${pid}" > /dev/null 2>&1; then
-      echo "ERROR: Another instance is running, please stop it first."
+    if ps -p "${pid}" -o args= | grep -q "$SMART_CLASSNAME"; then
+      echo "ERROR: Another instance of ssm is running, please stop it first."
       return 1
     fi
     rm -f "${pidfile}" >/dev/null 2>&1
   fi
 
   start_daemon "${pidfile}" >>${SMART_LOG_FILE} 2>&1 < /dev/null &
+  daemon_pid=$!
 
   (( counter=0 ))
   while [[ ! -f ${pidfile} && ${counter} -le 5 ]]; do
@@ -203,7 +204,7 @@ function smart_start_daemon() {
     (( counter++ ))
   done
 
-  echo $! > "${pidfile}" 2>/dev/null
+  echo ${daemon_pid} > "${pidfile}" 2>/dev/null
   if [[ $? -gt 0 ]]; then
     echo "ERROR:  Can NOT write pid file ${pidfile}."
   fi
