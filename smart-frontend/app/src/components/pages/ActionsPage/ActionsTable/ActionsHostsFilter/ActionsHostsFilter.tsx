@@ -25,7 +25,7 @@ const ActionsHostsFilter: React.FC = () => {
   const hostsOption = useMemo(() => {
     return hosts.map((host) => ({
       value: host.id,
-      label: host.host,
+      label: host.id,
     }));
   }, [hosts]);
 

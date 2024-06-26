@@ -17,11 +17,13 @@
  */
 import React from 'react';
 import ActionCreateDialog from './ActionCreateDialog';
+import ActionRepeatDialog from './ActionRepeatDialog';
 
 const ActionsDialogs: React.FC = () => {
   return (
     <>
       <ActionCreateDialog />
+      <ActionRepeatDialog />
     </>
   );
 };

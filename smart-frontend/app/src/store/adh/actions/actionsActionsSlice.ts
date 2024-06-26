@@ -24,7 +24,6 @@ import { showError, showSuccess } from '@store/notificationsSlice';
 import { getErrorMessage } from '@utils/responseUtils';
 import type { RequestError } from '@api';
 import { AdhActionsApi } from '@api';
-import type { PayloadAction } from '@reduxjs/toolkit';
 
 const createAction = createAsyncThunk('adh/actionsActions/createAction', async (text: string, thunkAPI) => {
   thunkAPI.dispatch(setIsActionInProgress(true));
@@ -40,12 +39,13 @@ const createAction = createAsyncThunk('adh/actionsActions/createAction', async (
   }
 });
 
-const deleteAction = createAsyncThunk('adh/actionsActions/deleteAction', async (actionId: number, thunkAPI) => {
+const repeatAction = createAsyncThunk('adh/actionsActions/repeatAction', async (text: string, thunkAPI) => {
   thunkAPI.dispatch(setIsActionInProgress(true));
-  thunkAPI.dispatch(closeDeleteActionDialog());
+  thunkAPI.dispatch(closeUpdateActionDialog());
   try {
-    await AdhActionsApi.deleteAction(actionId);
-    thunkAPI.dispatch(showSuccess({ message: `Action #${actionId} was deleted` }));
+    // in really, repeat action is recreate new action
+    await AdhActionsApi.createAction(text);
+    thunkAPI.dispatch(showSuccess({ message: 'Action was repeated successfully' }));
   } catch (error) {
     thunkAPI.dispatch(showError({ message: getErrorMessage(error as RequestError) }));
     return thunkAPI.rejectWithValue(error);
@@ -66,19 +66,12 @@ const createActionWithUpdate = withUpdate(
   createAction as ReturnType<typeof createAsyncThunk>,
 );
 
-const deleteActionWithUpdate = withUpdate(
-  'adh/actionsActions/deleteActionWithUpdate',
-  deleteAction as ReturnType<typeof createAsyncThunk>,
+const repeatActionWithUpdate = withUpdate(
+  'adh/actionsActions/repeatActionWithUpdate',
+  repeatAction as ReturnType<typeof createAsyncThunk>,
 );
 
-interface AdhActionsActions extends ModalState<AdhAction, 'action'> {
-  startDialog: {
-    action: AdhAction | null;
-  };
-  stopDialog: {
-    action: AdhAction | null;
-  };
-}
+type AdhActionsActions = ModalState<AdhAction, 'action'>;
 
 const createInitialState = (): AdhActionsActions => ({
   createDialog: {
@@ -90,12 +83,6 @@ const createInitialState = (): AdhActionsActions => ({
   updateDialog: {
     action: null,
   },
-  startDialog: {
-    action: null,
-  },
-  stopDialog: {
-    action: null,
-  },
   isActionInProgress: false,
 });
 
@@ -103,42 +90,25 @@ const actionsActionsSlice = createCrudSlice({
   name: 'adh/actionsActions',
   entityName: 'action',
   createInitialState,
-  reducers: {
-    openStartActionDialog(state, action: PayloadAction<AdhAction>) {
-      state.startDialog.action = action.payload;
-    },
-    openStopActionDialog(state, action: PayloadAction<AdhAction>) {
-      state.stopDialog.action = action.payload;
-    },
-    closeStartActionDialog(state) {
-      state.startDialog.action = null;
-    },
-    closeStopActionDialog(state) {
-      state.stopDialog.action = null;
-    },
-  },
+  reducers: {},
   extraReducers: () => {},
 });
 
 const {
   openCreateDialog: openCreateActionDialog,
   openUpdateDialog: openUpdateActionDialog,
-  openDeleteDialog: openDeleteActionDialog,
   closeCreateDialog: closeCreateActionDialog,
   closeUpdateDialog: closeUpdateActionDialog,
-  closeDeleteDialog: closeDeleteActionDialog,
   setIsActionInProgress,
 } = actionsActionsSlice.actions;
 
 export {
   openCreateActionDialog,
   openUpdateActionDialog,
-  openDeleteActionDialog,
   closeCreateActionDialog,
   closeUpdateActionDialog,
-  closeDeleteActionDialog,
   createActionWithUpdate,
-  deleteActionWithUpdate,
+  repeatActionWithUpdate,
 };
 
 export default actionsActionsSlice.reducer;

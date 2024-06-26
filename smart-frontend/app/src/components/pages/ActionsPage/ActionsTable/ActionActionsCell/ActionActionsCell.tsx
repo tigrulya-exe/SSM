@@ -20,23 +20,23 @@ import { FlexGroup, IconButton } from '@uikit';
 import TableCell from '@uikit/Table/TableCell/TableCell';
 import { useDispatch } from '@hooks';
 import type { AdhAction } from '@models/adh';
+import { openUpdateActionDialog } from '@store/adh/actions/actionsActionsSlice';
 
 interface ActionActionsCellProps {
   action: AdhAction;
 }
 
 const ActionActionsCell: React.FC<ActionActionsCellProps> = ({ action }) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const dispatch = useDispatch();
 
-  const handleDelete = () => {
-    console.info(action);
+  const handleReset = () => {
+    dispatch(openUpdateActionDialog(action));
   };
 
   return (
     <TableCell align="center" data-qa="actions">
       <FlexGroup gap="4px">
-        <IconButton icon="refresh" title="Delete action" onClick={handleDelete} data-qa="action-refresh" />
+        <IconButton icon="refresh" title="Delete action" onClick={handleReset} data-qa="action-refresh" />
       </FlexGroup>
     </TableCell>
   );

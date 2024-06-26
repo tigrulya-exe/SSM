@@ -55,10 +55,4 @@ export class AdhActionsApi {
 
     return response.data;
   }
-
-  public static async deleteAction(id: number) {
-    const response = await httpClient.delete(`/api/v2/actions/${id}`);
-
-    return response.data;
-  }
 }
