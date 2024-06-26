@@ -26,7 +26,7 @@ jobs:
           maven-version: 3.8.2
 
       - name: Set up Ansible
-        uses: alex-oleshkevich/setup-ansible@1.0.1
+        uses: alex-oleshkevich/setup-ansible@v1.0.1
         with:
           version: "9.3.0"
 
