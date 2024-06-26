@@ -1,13 +1,13 @@
 ssm_servers:
   hosts:
     ssm_host_1:
-      ansible_host: tmanasyan-hdfs-ssm-1.ru-central1-a.internal
+      ansible_host: 10.92.38.118
 
 ssm_agents:
   hosts:
     ssm_host_1:
-      ansible_host: tmanasyan-hdfs-ssm-1.ru-central1-a.internal
+      ansible_host: 10.92.38.118
     ssm_host_2:
-      ansible_host: tmanasyan-hdfs-ssm-2.ru-central1-a.internal
+      ansible_host: 10.92.38.237
     ssm_host_3:
-      ansible_host: tmanasyan-hdfs-ssm-3.ru-central1-a.internal
+      ansible_host: 10.92.38.201

@@ -1,0 +1,39 @@
+name: Deploy to test stand
+
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+
+jobs:
+  build:
+    runs-on: [self-hosted, front-deployer]
+    name: Update SSM test stand
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn clean install -Pdist,web,hadoop-3.2 -DskipTests
+
+      - name: Determine project maven version
+        run: |
+          echo "ssm_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> "$GITHUB_ENV"
+
+      - name: Run playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: playbook.yaml
+          directory: ./ansible/
+          key: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
+          options: |
+            --inventory hosts-front-stand.yaml
+            --extra-vars ssm_version=$ssm_version
+            --v
