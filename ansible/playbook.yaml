@@ -8,7 +8,6 @@
     - include_tasks: restart_service_tasks.yaml
       vars:
         ssm_service_name: smart-storage-manager-agent
-        ssm_version: 1.6.0-SNAPSHOT
 
 - name: Update SSM Servers
   hosts: ssm_servers
@@ -17,7 +16,6 @@
     - include_tasks: restart_service_tasks.yaml
       vars:
         ssm_service_name: smart-storage-manager-server
-        ssm_version: 1.6.0-SNAPSHOT
 
     # restore postgresql driver jar symlink created by adcm
     # to be able to correctly run adcm actions from web ui
