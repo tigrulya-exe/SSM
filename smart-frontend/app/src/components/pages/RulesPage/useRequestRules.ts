@@ -17,7 +17,13 @@
  */
 import { useDebounce, useDispatch, useRequestTimer, useStore } from '@hooks';
 import { useCallback, useEffect } from 'react';
-import { cleanupRules, getRules, refreshRules } from '@store/adh/rules/rulesSlice';
+import {
+  cleanupRules,
+  getRules,
+  getActiveRulesCount,
+  getAllRulesCount,
+  refreshRules,
+} from '@store/adh/rules/rulesSlice';
 import { cleanupRulesTable } from '@store/adh/rules/rulesTableSlice';
 import { defaultDebounceDelay } from '@constants';
 
@@ -41,6 +47,8 @@ export const useRequestRules = () => {
   const debounceGetData = useCallback(
     useDebounce(() => {
       dispatch(getRules());
+      dispatch(getAllRulesCount());
+      dispatch(getActiveRulesCount());
     }, defaultDebounceDelay),
     [],
   );

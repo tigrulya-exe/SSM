@@ -38,6 +38,7 @@ import Select from './Select/SingleSelect/Select/Select';
 import Text from './Text/Text';
 import Title from './Title/Title';
 import Tooltip from './Tooltip/Tooltip';
+import LegendCard from './LegendCard/LegendCard';
 
 export {
   //
@@ -53,6 +54,7 @@ export {
   Input,
   InputNumber,
   InputPassword,
+  LegendCard,
   MultilineInput,
   MultiSelect,
   Panel,

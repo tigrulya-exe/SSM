@@ -1,0 +1,62 @@
+:global {
+  body.theme-dark {
+    --icon-color: var(--color-grayUsual);
+    --icon-color-active: var(--color-dark1);
+    --text-color: var(--color-grayLighter);
+    --text-color-active: var(--color-ADQMblack);
+    --background-color: var(--color-newLight-50);
+    --background-color-active: var(--color-greenSaturated);
+  }
+  body.theme-light {
+    --icon-color: var(--color-ADCM);
+    --icon-color-active: var(--color-offWhite);
+    --text-color: var(--color-ADCM);
+    --text-color-active: var(--color-offWhite);
+    --background-color: var(--color-plateLight-70);
+    --background-color-active: var(--color-greenLogo);
+  }
+}
+
+.square {
+  width: 164px;
+  height: 152px;
+  background: var(--background-color);
+  box-sizing: border-box;
+  padding: 12px 0;
+  border-radius: 20px;
+  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+
+  svg {
+    color: var(--icon-color);
+  }
+
+  &__title {
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  &__count {
+    font-size: 60px;
+    line-height: 60px;
+  }
+
+  &_active {
+    background: var(--background-color-active);
+    color: var(--text-color-active);
+
+    svg {
+      color: var(--icon-color-active);
+    }
+  }
+
+  &_secondary {
+    color: inherit;
+    transition: color 250ms;
+  }
+}
