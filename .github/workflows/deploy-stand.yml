@@ -25,6 +25,14 @@ jobs:
         with:
           maven-version: 3.8.2
 
+      - name: Set up Ansible
+        uses: alex-oleshkevich/setup-ansible@1.0.1
+        with:
+          version: "9.3.0"
+
+      - name: Print Ansible version
+        run: ansible-playbook --version
+
       - name: Build with Maven
         run: mvn clean install -Pdist,web,hadoop-3.2 -DskipTests
 
