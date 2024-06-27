@@ -38,15 +38,15 @@ jobs:
 
       - name: Determine project maven version
         run: |
-          echo "ssm_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> "$GITHUB_ENV"
+          echo "SSM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: Run playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: playbook.yaml
           directory: ./ansible/
-          key: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
+          key: ${{secrets.ANSIBLE_SSH_PRIVATE_KEY}}
           options: |
             --inventory hosts-front-stand.yaml
-            --extra-vars ssm_version=$ssm_version
+            --extra-vars ssm_version=${{env.SSM_VERSION}}
             --verbose
