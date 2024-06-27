@@ -1,0 +1,14 @@
+title: RulesInfo
+type: object
+properties:
+  totalRules:
+    type: integer
+    format: int64
+    description: Total number of rules
+  activeRules:
+    type: integer
+    format: int64
+    description: Number of active rules
+required:
+  - totalRules
+  - activeRules

@@ -15,31 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.model;
 
-import org.smartdata.metastore.queries.sort.RuleSortField;
-import org.smartdata.model.RuleInfo;
-import org.smartdata.model.RulesInfo;
-import org.smartdata.model.request.RuleSearchRequest;
+import lombok.Data;
 
-import java.util.List;
-
-public interface RuleDao
-    extends Searchable<RuleSearchRequest, RuleInfo, RuleSortField> {
-
-  List<RuleInfo> getAll();
-
-  RuleInfo getById(long id);
-
-  RulesInfo getRulesInfo();
-
-  long insert(RuleInfo ruleInfo);
-
-  int update(long ruleId, long lastCheckTime, long checkedCount, int cmdletsGen);
-
-  int update(long ruleId, int rs, long lastCheckTime, long checkedCount, int cmdletsGen);
-
-  int update(long ruleId, int rs);
-
-  void delete(long id);
+@Data
+public class RulesInfo {
+  private final long totalRules;
+  private final long activeRules;
 }
