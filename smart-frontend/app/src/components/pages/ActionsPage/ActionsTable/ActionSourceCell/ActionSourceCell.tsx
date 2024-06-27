@@ -16,27 +16,21 @@
  * limitations under the License.
  */
 import React from 'react';
-import { FlexGroup, Title } from '@uikit';
-import ActionCreateBtn from './ActionCreateBtn/ActionCreateBtn';
-import ActionsToolbar from './ActionsToolbar/ActionsToolbar';
-import ActionsTable from './ActionsTable/ActionsTable';
-import { useRequestActions } from '@pages/ActionsPage/useRequestActions';
-import ActionsDialogs from './ActionsDialogs/ActionsDialogs';
+import TableCell from '@uikit/Table/TableCell/TableCell';
+import { AdhActionSource } from '@models/adh';
+import type { AdhAction } from '@models/adh';
 
-const ActionsPage: React.FC = () => {
-  useRequestActions();
-
-  return (
-    <div>
-      <FlexGroup gap="20px">
-        <Title variant="h1">Actions page</Title>
-        <ActionCreateBtn />
-      </FlexGroup>
-      <ActionsToolbar />
-      <ActionsTable />
-      <ActionsDialogs />
-    </div>
-  );
+const actionSourceToStatus: Record<AdhActionSource, string> = {
+  [AdhActionSource.Rule]: 'Rule action',
+  [AdhActionSource.User]: 'User action',
 };
 
-export default ActionsPage;
+interface ActionStatusCellProps {
+  action: AdhAction;
+}
+
+const ActionSourceCell: React.FC<ActionStatusCellProps> = ({ action }) => {
+  return <TableCell data-qa="state">{actionSourceToStatus[action.source]}</TableCell>;
+};
+
+export default ActionSourceCell;

@@ -15,28 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { FlexGroup, Title } from '@uikit';
-import ActionCreateBtn from './ActionCreateBtn/ActionCreateBtn';
-import ActionsToolbar from './ActionsToolbar/ActionsToolbar';
-import ActionsTable from './ActionsTable/ActionsTable';
-import { useRequestActions } from '@pages/ActionsPage/useRequestActions';
-import ActionsDialogs from './ActionsDialogs/ActionsDialogs';
+import React, { useMemo } from 'react';
+import { TableMultiSelectFilter } from '@uikit/Table/TableFilter';
+import type { AdhActionsFilter } from '@models/adh';
+import { useStore } from '@hooks';
 
-const ActionsPage: React.FC = () => {
-  useRequestActions();
+const ActionsHostsFilter: React.FC = () => {
+  const hosts = useStore(({ adh }) => adh.actionsTable.relatedData.hosts);
+  const hostsOption = useMemo(() => {
+    return hosts.map((host) => ({
+      value: host.id,
+      label: host.id,
+    }));
+  }, [hosts]);
 
-  return (
-    <div>
-      <FlexGroup gap="20px">
-        <Title variant="h1">Actions page</Title>
-        <ActionCreateBtn />
-      </FlexGroup>
-      <ActionsToolbar />
-      <ActionsTable />
-      <ActionsDialogs />
-    </div>
-  );
+  return <TableMultiSelectFilter<AdhActionsFilter, string> filterName="hosts" options={hostsOption} />;
 };
 
-export default ActionsPage;
+export default ActionsHostsFilter;

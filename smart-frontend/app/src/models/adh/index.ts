@@ -17,4 +17,5 @@
  */
 export * from './action';
 export * from './auditEvent';
+export * from './cluster';
 export * from './rule';

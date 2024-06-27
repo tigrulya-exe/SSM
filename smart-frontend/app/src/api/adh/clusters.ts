@@ -15,28 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { FlexGroup, Title } from '@uikit';
-import ActionCreateBtn from './ActionCreateBtn/ActionCreateBtn';
-import ActionsToolbar from './ActionsToolbar/ActionsToolbar';
-import ActionsTable from './ActionsTable/ActionsTable';
-import { useRequestActions } from '@pages/ActionsPage/useRequestActions';
-import ActionsDialogs from './ActionsDialogs/ActionsDialogs';
+import type { Collection } from '@models/collection';
+import { httpClient } from '@api/httpClient';
+import type { ClusterNode } from '@models/adh';
 
-const ActionsPage: React.FC = () => {
-  useRequestActions();
+export class AdhClustersApi {
+  public static async getNodes(): Promise<Collection<ClusterNode>> {
+    const response = await httpClient.get<Collection<ClusterNode>>('/api/v2/cluster/nodes');
 
-  return (
-    <div>
-      <FlexGroup gap="20px">
-        <Title variant="h1">Actions page</Title>
-        <ActionCreateBtn />
-      </FlexGroup>
-      <ActionsToolbar />
-      <ActionsTable />
-      <ActionsDialogs />
-    </div>
-  );
-};
-
-export default ActionsPage;
+    return response.data;
+  }
+}

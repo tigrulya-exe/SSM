@@ -16,27 +16,30 @@
  * limitations under the License.
  */
 import React from 'react';
-import { FlexGroup, Title } from '@uikit';
-import ActionCreateBtn from './ActionCreateBtn/ActionCreateBtn';
-import ActionsToolbar from './ActionsToolbar/ActionsToolbar';
-import ActionsTable from './ActionsTable/ActionsTable';
-import { useRequestActions } from '@pages/ActionsPage/useRequestActions';
-import ActionsDialogs from './ActionsDialogs/ActionsDialogs';
+import { FlexGroup, IconButton } from '@uikit';
+import TableCell from '@uikit/Table/TableCell/TableCell';
+import { useDispatch } from '@hooks';
+import type { AdhAction } from '@models/adh';
+import { openUpdateActionDialog } from '@store/adh/actions/actionsActionsSlice';
 
-const ActionsPage: React.FC = () => {
-  useRequestActions();
+interface ActionActionsCellProps {
+  action: AdhAction;
+}
+
+const ActionActionsCell: React.FC<ActionActionsCellProps> = ({ action }) => {
+  const dispatch = useDispatch();
+
+  const handleReset = () => {
+    dispatch(openUpdateActionDialog(action));
+  };
 
   return (
-    <div>
-      <FlexGroup gap="20px">
-        <Title variant="h1">Actions page</Title>
-        <ActionCreateBtn />
+    <TableCell align="center" data-qa="actions">
+      <FlexGroup gap="4px">
+        <IconButton icon="refresh" title="Delete action" onClick={handleReset} data-qa="action-refresh" />
       </FlexGroup>
-      <ActionsToolbar />
-      <ActionsTable />
-      <ActionsDialogs />
-    </div>
+    </TableCell>
   );
 };
 
-export default ActionsPage;
+export default ActionActionsCell;
