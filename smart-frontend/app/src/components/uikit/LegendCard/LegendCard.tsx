@@ -19,23 +19,23 @@ import React from 'react';
 import cn from 'classnames';
 import Icon from '@uikit/Icon/Icon';
 import s from './LegendCard.module.scss';
+import type { IconsNames } from '@uikit/Icon/sprite';
 
 interface LegendCardProps {
   title: string;
   count: number;
-  isActive?: boolean;
+  icon: IconsNames;
+  variant?: 'primary' | 'secondary';
 }
 
-const LegendCard: React.FC<LegendCardProps> = ({ title, count = 0, isActive = false }) => {
-  const classes = cn(s.square, {
-    [s.square_active]: isActive,
-  });
+const LegendCard: React.FC<LegendCardProps> = ({ title, count = 0, icon, variant = 'primary' }) => {
+  const classes = cn(s.legendCard, s[`legendCard_${variant}`]);
 
   return (
     <div className={classes}>
-      <Icon name={isActive ? 'rules' : 'rules2'} size={32} />
-      <div className={s.square__title}>{title}</div>
-      <div className={s.square__count}>{count}</div>
+      <Icon name={icon} size={32} />
+      <div className={s.legendCard__title}>{title}</div>
+      <div className={s.legendCard__count}>{count}</div>
     </div>
   );
 };

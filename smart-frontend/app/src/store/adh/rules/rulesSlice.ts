@@ -77,26 +77,15 @@ const refreshRules = createAsyncThunk('adh/rules/refreshRules', async (_, thunkA
   thunkAPI.dispatch(loadRules());
 });
 
-const getActiveRulesCount = createAsyncThunk('adh/rules/getActiveRulesCount', async (_, thunkAPI) => {
+const getRulesMetaInfo = createAsyncThunk('adh/rules/getRulesMetaInfo', async (_, thunkAPI) => {
   try {
-    const collection = await AdhRulesApi.getRules({ ruleStates: [AdhRuleState.Active] });
+    const allCollection = await AdhRulesApi.getRules({});
+    const activeCollection = await AdhRulesApi.getRules({ ruleStates: [AdhRuleState.Active] });
 
-    return collection;
-  } catch (error) {
-    thunkAPI.dispatch(
-      showError({
-        message: getErrorMessage(error as RequestError),
-      }),
-    );
-    return thunkAPI.rejectWithValue(error);
-  }
-});
-
-const getAllRulesCount = createAsyncThunk('adh/rules/getAllRulesCount', async (_, thunkAPI) => {
-  try {
-    const collection = await AdhRulesApi.getRules({});
-
-    return collection;
+    return {
+      allCollection,
+      activeCollection,
+    };
   } catch (error) {
     thunkAPI.dispatch(
       showError({
@@ -149,21 +138,17 @@ const rulesSlice = createSlice({
         currentRule.state = AdhRuleState.Disabled;
       }
     });
-    builder.addCase(getActiveRulesCount.fulfilled, (state, action) => {
-      state.activeCount = action.payload.total;
+    builder.addCase(getRulesMetaInfo.fulfilled, (state, action) => {
+      state.allCount = action.payload.allCollection.total;
+      state.activeCount = action.payload.activeCollection.total;
     });
-    builder.addCase(getActiveRulesCount.rejected, (state) => {
-      state.activeCount = 0;
-    });
-    builder.addCase(getAllRulesCount.fulfilled, (state, action) => {
-      state.allCount = action.payload.total;
-    });
-    builder.addCase(getAllRulesCount.rejected, (state) => {
+    builder.addCase(getRulesMetaInfo.rejected, (state) => {
       state.allCount = 0;
+      state.activeCount = 0;
     });
   },
 });
 
 const { cleanupRules, setLoadState: setRulesLoadState } = rulesSlice.actions;
-export { cleanupRules, setRulesLoadState, getRules, refreshRules, getActiveRulesCount, getAllRulesCount };
+export { cleanupRules, setRulesLoadState, getRules, refreshRules, getRulesMetaInfo };
 export default rulesSlice.reducer;

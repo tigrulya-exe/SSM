@@ -26,8 +26,8 @@ const RulesCards: React.FC = () => {
 
   return (
     <FlexGroup gap="20px" className={s.rulesCards}>
-      <LegendCard title="Rules" count={allCount} />
-      <LegendCard title="Active rules" isActive={true} count={activeCount} />
+      <LegendCard title="Rules" count={allCount} icon="rules_all" />
+      <LegendCard title="Active rules" count={activeCount} icon="rules_active" variant="secondary" />
     </FlexGroup>
   );
 };

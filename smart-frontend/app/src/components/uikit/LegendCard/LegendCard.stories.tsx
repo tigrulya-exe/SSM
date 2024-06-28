@@ -22,12 +22,21 @@ type Story = StoryObj<typeof LegendCard>;
 export default {
   title: 'uikit/LegendCard',
   component: LegendCard,
+  argTypes: {
+    variant: {
+      description: 'Variant',
+      defaultValue: 'primary',
+      options: ['primary', 'secondary'],
+      control: { type: 'radio' },
+    },
+  },
 } as Meta<typeof LegendCard>;
 
 export const LegendCardElement: Story = {
   args: {
     title: 'Title',
     count: 8,
+    variant: 'primary',
   },
   render: (args) => <LegendCard {...args} />,
 };
