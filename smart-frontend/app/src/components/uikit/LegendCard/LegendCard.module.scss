@@ -1,19 +1,23 @@
 :global {
   body.theme-dark {
     --legendCard-icon-color: var(--color-grayUsual);
-    --legendCard-icon-color-active: var(--color-dark1);
+    --legendCard-icon-color-secondary: var(--color-dark1);
     --legendCard-text-color: var(--color-grayLighter);
-    --legendCard-text-color-active: var(--color-ADQMblack);
+    --legendCard-text-color-secondary: var(--color-ADQMblack);
     --legendCard-background-color: var(--color-newLight-50);
-    --legendCard-background-color-active: var(--color-greenSaturated);
+    --legendCard-background-color-secondary: var(--color-greenSaturated);
+    --legendCard-background-hover-color: var(--color-newLight);
+    --legendCard-background-secondary-hover-color: var(--color-mint);
   }
   body.theme-light {
     --legendCard-icon-color: var(--color-ADCM);
-    --legendCard-icon-color-active: var(--color-offWhite);
+    --legendCard-icon-color-secondary: var(--color-offWhite);
     --legendCard-text-color: var(--color-ADCM);
-    --legendCard-text-color-active: var(--color-offWhite);
+    --legendCard-text-color-secondary: var(--color-offWhite);
     --legendCard-background-color: var(--color-plateLight-70);
-    --legendCard-background-color-active: var(--color-greenLogo);
+    --legendCard-background-color-secondary: var(--color-greenLogo);
+    --legendCard-background-hover-color: var(--color-newLight);
+    --legendCard-background-secondary-hover-color: var(--color-greenLighter);
   }
 }
 
@@ -46,12 +50,20 @@
     line-height: 60px;
   }
 
+  &:hover {
+    background: var(--legendCard-background-hover-color);
+  }
+
   &_secondary {
-    background: var(--legendCard-background-color-active);
-    color: var(--legendCard-text-color-active);
+    background: var(--legendCard-background-color-secondary);
+    color: var(--legendCard-text-color-secondary);
 
     svg {
-      color: var(--legendCard-icon-color-active);
+      color: var(--legendCard-icon-color-secondary);
+    }
+
+    &:hover {
+      background: var(--legendCard-background-secondary-hover-color);
     }
   }
 }
