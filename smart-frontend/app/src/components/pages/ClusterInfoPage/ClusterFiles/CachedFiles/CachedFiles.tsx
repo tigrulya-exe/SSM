@@ -15,12 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import CachedFilesToolbar from './CachedFilesToolbar/CachedFilesToolbar';
+import CachedFilesTable from './CachedFilesTable/CachedFilesTable';
 
-export type { RequestError } from './httpClient';
+const CachedFiles = () => (
+  <>
+    <CachedFilesToolbar />
+    <CachedFilesTable />
+  </>
+);
 
-export { AuthApi } from './auth';
-export { AdhActionsApi } from './adh/actions';
-export { AdhAuditEventsApi } from './adh/auditEvents';
-export { AdhClustersApi } from './adh/clusters';
-export { AdhRulesApi } from './adh/rules';
-export { AdhFilesApi } from './adh/files';
+export default CachedFiles;

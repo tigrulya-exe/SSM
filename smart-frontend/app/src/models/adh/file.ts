@@ -15,12 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { DateRange, SerializedDate } from '@models/dateRange';
 
-export type { RequestError } from './httpClient';
+export interface AdhFileInfo {
+  id: number;
+  path: string;
+  accessCount: number;
+  lastAccessTime: number;
+}
 
-export { AuthApi } from './auth';
-export { AdhActionsApi } from './adh/actions';
-export { AdhAuditEventsApi } from './adh/auditEvents';
-export { AdhClustersApi } from './adh/clusters';
-export { AdhRulesApi } from './adh/rules';
-export { AdhFilesApi } from './adh/files';
+export interface AdhFileInfoFilter {
+  pathLike?: string;
+  lastAccessedTime?: DateRange<SerializedDate>;
+}
+
+export interface AdhCachedFileInfo extends AdhFileInfo {
+  cachedTime: number;
+}
+
+export interface AdhCachedFileInfoFilter extends AdhFileInfoFilter {
+  cachedTime?: DateRange<SerializedDate>;
+}

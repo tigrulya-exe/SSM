@@ -16,29 +16,17 @@
  * limitations under the License.
  */
 import React from 'react';
-import { Button, IconButton, Input } from '@uikit';
+import { Title } from '@uikit';
+import ClusterFiles from './ClusterFiles/ClusterFiles';
+import s from './ClusterInfoPage.module.scss';
 
 const ClusterInfoPage: React.FC = () => {
   return (
     <div>
-      <span>Cluster Info</span>
-      <div>
-        <div>
-          Button: <br /> <br />
-          <Button>Some label</Button>
-        </div>
-        <br />
-        <br />
-        <div>
-          IconButton: <br /> <br />
-          <IconButton icon="chevron" />
-        </div>
-        <br />
-        <br />
-        <div>
-          Input: <br /> <br />
-          <Input endAdornment={<IconButton icon="search" variant="secondary" size={16} />} />
-        </div>
+      <Title variant="h1">Cluster info</Title>
+      <div className={s.clusterInfoPageContent}>
+        <div>TODO</div>
+        <ClusterFiles />
       </div>
     </div>
   );
