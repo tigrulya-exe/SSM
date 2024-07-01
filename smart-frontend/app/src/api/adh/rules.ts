@@ -25,8 +25,8 @@ import qs from 'qs';
 export class AdhRulesApi {
   public static async getRules(
     { submissionTime, lastActivationTime, ...filter }: AdhRuleFilter,
-    sortParams: SortParams,
-    paginationParams: PaginationParams,
+    sortParams?: SortParams,
+    paginationParams?: PaginationParams,
   ): Promise<PaginateCollection<AdhRule>> {
     const { from: submissionTimeFrom, to: submissionTimeTo } = prepareDateRange(submissionTime);
     const { from: lastActivationTimeFrom, to: lastActivationTimeTo } = prepareDateRange(lastActivationTime);

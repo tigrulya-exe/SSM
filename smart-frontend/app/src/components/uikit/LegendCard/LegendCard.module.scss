@@ -1,0 +1,69 @@
+:global {
+  body.theme-dark {
+    --legendCard-icon-color: var(--color-grayUsual);
+    --legendCard-icon-color-secondary: var(--color-dark1);
+    --legendCard-text-color: var(--color-grayLighter);
+    --legendCard-text-color-secondary: var(--color-ADQMblack);
+    --legendCard-background-color: var(--color-newLight-50);
+    --legendCard-background-color-secondary: var(--color-greenSaturated);
+    --legendCard-background-hover-color: var(--color-newLight);
+    --legendCard-background-secondary-hover-color: var(--color-mint);
+  }
+  body.theme-light {
+    --legendCard-icon-color: var(--color-ADCM);
+    --legendCard-icon-color-secondary: var(--color-offWhite);
+    --legendCard-text-color: var(--color-ADCM);
+    --legendCard-text-color-secondary: var(--color-offWhite);
+    --legendCard-background-color: var(--color-plateLight-70);
+    --legendCard-background-color-secondary: var(--color-greenLogo);
+    --legendCard-background-hover-color: var(--color-newLight);
+    --legendCard-background-secondary-hover-color: var(--color-greenLighter);
+  }
+}
+
+.legendCard {
+  width: 164px;
+  height: 152px;
+  background: var(--legendCard-background-color);
+  box-sizing: border-box;
+  padding: 12px 0;
+  border-radius: 20px;
+  color: var(--legendCard-text-color);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+
+  svg {
+    color: var(--legendCard-icon-color);
+  }
+
+  &__title {
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  &__count {
+    font-size: 60px;
+    line-height: 60px;
+  }
+
+  &:hover {
+    background: var(--legendCard-background-hover-color);
+  }
+
+  &_secondary {
+    background: var(--legendCard-background-color-secondary);
+    color: var(--legendCard-text-color-secondary);
+
+    svg {
+      color: var(--legendCard-icon-color-secondary);
+    }
+
+    &:hover {
+      background: var(--legendCard-background-secondary-hover-color);
+    }
+  }
+}

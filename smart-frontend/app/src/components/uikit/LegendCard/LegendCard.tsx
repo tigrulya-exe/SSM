@@ -15,37 +15,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const allowIconsNames = [
-  //
-  'actions',
-  'audit',
-  'arrow-sorting',
-  'chevron-double',
-  'chevron',
-  'cluster-info',
-  'close',
-  'check',
-  'delete',
-  'documentation',
-  'edit',
-  'eye',
-  'eye-closed',
-  'logout',
-  'moon',
-  'pause',
-  'play',
-  'refresh',
-  'rules',
-  'rules_active',
-  'rules_all',
-  'sun',
-  'search',
-  'status-error',
-  'status-info',
-  'status-ok',
-  'status-warning',
-  'table-filter',
-  'user',
-] as const;
+import React from 'react';
+import cn from 'classnames';
+import Icon from '@uikit/Icon/Icon';
+import s from './LegendCard.module.scss';
+import type { IconsNames } from '@uikit/Icon/sprite';
 
-export type IconsNames = (typeof allowIconsNames)[number];
+interface LegendCardProps {
+  title: string;
+  count: number;
+  icon: IconsNames;
+  variant?: 'primary' | 'secondary';
+}
+
+const LegendCard: React.FC<LegendCardProps> = ({ title, count = 0, icon, variant = 'primary' }) => {
+  const classes = cn(s.legendCard, s[`legendCard_${variant}`]);
+
+  return (
+    <div className={classes}>
+      <Icon name={icon} size={32} />
+      <div className={s.legendCard__title}>{title}</div>
+      <div className={s.legendCard__count}>{count}</div>
+    </div>
+  );
+};
+
+LegendCard.displayName = 'LegendCard';
+
+export default LegendCard;

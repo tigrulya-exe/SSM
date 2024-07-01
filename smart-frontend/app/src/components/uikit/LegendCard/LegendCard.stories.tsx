@@ -15,37 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const allowIconsNames = [
-  //
-  'actions',
-  'audit',
-  'arrow-sorting',
-  'chevron-double',
-  'chevron',
-  'cluster-info',
-  'close',
-  'check',
-  'delete',
-  'documentation',
-  'edit',
-  'eye',
-  'eye-closed',
-  'logout',
-  'moon',
-  'pause',
-  'play',
-  'refresh',
-  'rules',
-  'rules_active',
-  'rules_all',
-  'sun',
-  'search',
-  'status-error',
-  'status-info',
-  'status-ok',
-  'status-warning',
-  'table-filter',
-  'user',
-] as const;
+import type { Meta, StoryObj } from '@storybook/react';
+import { LegendCard } from '@uikit';
 
-export type IconsNames = (typeof allowIconsNames)[number];
+type Story = StoryObj<typeof LegendCard>;
+export default {
+  title: 'uikit/LegendCard',
+  component: LegendCard,
+  argTypes: {
+    variant: {
+      description: 'Variant',
+      defaultValue: 'primary',
+      options: ['primary', 'secondary'],
+      control: { type: 'radio' },
+    },
+  },
+} as Meta<typeof LegendCard>;
+
+export const LegendCardElement: Story = {
+  args: {
+    title: 'Title',
+    count: 8,
+    variant: 'primary',
+  },
+  render: (args) => <LegendCard {...args} />,
+};

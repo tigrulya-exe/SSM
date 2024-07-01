@@ -33,6 +33,8 @@ interface AdhRulesSliceState {
   rules: AdhRule[];
   totalCount: number;
   loadState: LoadState;
+  activeCount: number;
+  allCount: number;
 }
 
 const loadRules = createAsyncThunk('adh/rules/loadRules', async (_, thunkAPI) => {
@@ -75,10 +77,31 @@ const refreshRules = createAsyncThunk('adh/rules/refreshRules', async (_, thunkA
   thunkAPI.dispatch(loadRules());
 });
 
+const getRulesMetaInfo = createAsyncThunk('adh/rules/getRulesMetaInfo', async (_, thunkAPI) => {
+  try {
+    const allCollection = await AdhRulesApi.getRules({});
+    const activeCollection = await AdhRulesApi.getRules({ ruleStates: [AdhRuleState.Active] });
+
+    return {
+      allCollection,
+      activeCollection,
+    };
+  } catch (error) {
+    thunkAPI.dispatch(
+      showError({
+        message: getErrorMessage(error as RequestError),
+      }),
+    );
+    return thunkAPI.rejectWithValue(error);
+  }
+});
+
 const createInitialState = (): AdhRulesSliceState => ({
   rules: [],
   totalCount: 0,
   loadState: LoadState.NotLoaded,
+  activeCount: 0,
+  allCount: 0,
 });
 
 const rulesSlice = createSlice({
@@ -115,9 +138,17 @@ const rulesSlice = createSlice({
         currentRule.state = AdhRuleState.Disabled;
       }
     });
+    builder.addCase(getRulesMetaInfo.fulfilled, (state, action) => {
+      state.allCount = action.payload.allCollection.total;
+      state.activeCount = action.payload.activeCollection.total;
+    });
+    builder.addCase(getRulesMetaInfo.rejected, (state) => {
+      state.allCount = 0;
+      state.activeCount = 0;
+    });
   },
 });
 
 const { cleanupRules, setLoadState: setRulesLoadState } = rulesSlice.actions;
-export { cleanupRules, setRulesLoadState, getRules, refreshRules };
+export { cleanupRules, setRulesLoadState, getRules, refreshRules, getRulesMetaInfo };
 export default rulesSlice.reducer;

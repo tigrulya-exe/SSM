@@ -15,37 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const allowIconsNames = [
-  //
-  'actions',
-  'audit',
-  'arrow-sorting',
-  'chevron-double',
-  'chevron',
-  'cluster-info',
-  'close',
-  'check',
-  'delete',
-  'documentation',
-  'edit',
-  'eye',
-  'eye-closed',
-  'logout',
-  'moon',
-  'pause',
-  'play',
-  'refresh',
-  'rules',
-  'rules_active',
-  'rules_all',
-  'sun',
-  'search',
-  'status-error',
-  'status-info',
-  'status-ok',
-  'status-warning',
-  'table-filter',
-  'user',
-] as const;
+import React from 'react';
+import { useStore } from '@hooks';
+import { FlexGroup, LegendCard } from '@uikit';
+import s from './RulesCards.module.scss';
 
-export type IconsNames = (typeof allowIconsNames)[number];
+const RulesCards: React.FC = () => {
+  const activeCount = useStore(({ adh }) => adh.rules.activeCount);
+  const allCount = useStore(({ adh }) => adh.rules.allCount);
+
+  return (
+    <FlexGroup gap="20px" className={s.rulesCards}>
+      <LegendCard title="Rules" count={allCount} icon="rules_all" />
+      <LegendCard title="Active rules" count={activeCount} icon="rules_active" variant="secondary" />
+    </FlexGroup>
+  );
+};
+
+export default RulesCards;
