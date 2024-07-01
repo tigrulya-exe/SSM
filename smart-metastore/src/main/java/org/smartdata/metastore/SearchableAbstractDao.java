@@ -82,8 +82,7 @@ public abstract class SearchableAbstractDao<RequestT, EntityT, ColumnT extends S
   }
 
   protected <T> Optional<T> executeSingle(MetastoreQuery query, RowMapper<T> rowMapper) {
-    return Optional.ofNullable(queryExecutor.execute(query, rowMapper))
-        .flatMap(entities -> entities.stream().findFirst());
+    return queryExecutor.executeSingle(query, rowMapper);
   }
 
   public long count(RequestT searchRequest) {
