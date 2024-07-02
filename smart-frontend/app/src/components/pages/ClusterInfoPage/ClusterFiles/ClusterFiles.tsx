@@ -21,6 +21,7 @@ import HottestFiles from './HottestFiles/HottestFiles';
 import CachedFiles from './CachedFiles/CachedFiles';
 import { useRequestHottestFiles } from './useRequestHottestFiles';
 import { useRequestCachedFiles } from './useRequestCachedFiles';
+import s from './ClusterFiles.module.scss';
 
 const ClusterFiles = () => {
   const [activeTab, setActiveTab] = useState<'hottestFiles' | 'cachedFiles'>('hottestFiles');
@@ -38,7 +39,7 @@ const ClusterFiles = () => {
 
   return (
     <>
-      <TabsBlock>
+      <TabsBlock className={s.clusterFilesBlock}>
         <Tab id="hottestFiles" to="" isActive={activeTab === 'hottestFiles'} onClick={handleFilesClick}>
           Hottest files in last hour
         </Tab>

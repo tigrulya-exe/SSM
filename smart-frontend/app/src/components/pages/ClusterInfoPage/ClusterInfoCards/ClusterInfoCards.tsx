@@ -24,7 +24,7 @@ const ClusterInfoCards: React.FC = () => {
   const liveCount = useStore(({ adh }) => adh.cluster.liveCount);
 
   return (
-    <FlexGroup gap="20px" className={s.rulesCards}>
+    <FlexGroup gap="20px" className={s.clusterInfoCards}>
       <LegendCard title="Live nodes" count={liveCount} icon="nodes_live" variant="secondary" />
     </FlexGroup>
   );

@@ -19,10 +19,8 @@ import React from 'react';
 import ClusterInfoCards from './ClusterInfoCards/ClusterInfoCards';
 import ClusterInfoToolbar from './ClusterInfoToolbar/ClusterInfoToolbar';
 import ClusterInfoTable from './ClusterInfoTable/ClusterInfoTable';
-import ClusterInfoFilesTable from './ClusterInfoFilesTable/ClusterInfoFilesTable';
-import { FlexGroup, Title } from '@uikit';
-import { useRequestClusterInfo } from './useRequestClusterInfo';
 import { Title } from '@uikit';
+import { useRequestClusterInfo } from './useRequestClusterInfo';
 import ClusterFiles from './ClusterFiles/ClusterFiles';
 
 const ClusterInfoPage: React.FC = () => {
@@ -30,13 +28,10 @@ const ClusterInfoPage: React.FC = () => {
 
   return (
     <div>
-      <FlexGroup gap="20px">
-        <Title variant="h1">Cluster Info</Title>
-      </FlexGroup>
+      <Title variant="h1">Cluster Info</Title>
       <ClusterInfoCards />
       <ClusterInfoToolbar />
       <ClusterInfoTable />
-      <ClusterInfoFilesTable />
       <ClusterFiles />
     </div>
   );
