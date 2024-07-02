@@ -15,18 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { Title } from '@uikit';
-import ClusterFiles from './ClusterFiles/ClusterFiles';
+import type { DateRange, SerializedDate } from '@models/dateRange';
 
-const ClusterInfoPage: React.FC = () => {
-  return (
-    <div>
-      <Title variant="h1">Cluster info</Title>
-      <div>TODO</div>
-      <ClusterFiles />
-    </div>
-  );
-};
+export interface AdhFileInfo {
+  id: number;
+  path: string;
+  accessCount: number;
+  lastAccessTime: number;
+}
 
-export default ClusterInfoPage;
+export interface AdhFileInfoFilter {
+  pathLike?: string;
+  lastAccessedTime?: DateRange<SerializedDate>;
+}
+
+export interface AdhCachedFileInfo extends AdhFileInfo {
+  cachedTime: number;
+}
+
+export interface AdhCachedFileInfoFilter extends AdhFileInfoFilter {
+  cachedTime?: DateRange<SerializedDate>;
+}

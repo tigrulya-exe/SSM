@@ -15,18 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { Title } from '@uikit';
-import ClusterFiles from './ClusterFiles/ClusterFiles';
+import HottestFilesToolbar from './HottestFilesToolbar/HottestFilesToolbar';
+import HottestFilesTable from './HottestFilesTable/HottestFilesTable';
 
-const ClusterInfoPage: React.FC = () => {
-  return (
-    <div>
-      <Title variant="h1">Cluster info</Title>
-      <div>TODO</div>
-      <ClusterFiles />
-    </div>
-  );
-};
+const HottestFiles = () => (
+  <>
+    <HottestFilesToolbar />
+    <HottestFilesTable />
+  </>
+);
 
-export default ClusterInfoPage;
+export default HottestFiles;

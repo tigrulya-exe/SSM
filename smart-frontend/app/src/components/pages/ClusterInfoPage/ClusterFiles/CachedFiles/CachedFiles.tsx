@@ -15,18 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { Title } from '@uikit';
-import ClusterFiles from './ClusterFiles/ClusterFiles';
+import CachedFilesToolbar from './CachedFilesToolbar/CachedFilesToolbar';
+import CachedFilesTable from './CachedFilesTable/CachedFilesTable';
 
-const ClusterInfoPage: React.FC = () => {
-  return (
-    <div>
-      <Title variant="h1">Cluster info</Title>
-      <div>TODO</div>
-      <ClusterFiles />
-    </div>
-  );
-};
+const CachedFiles = () => (
+  <>
+    <CachedFilesToolbar />
+    <CachedFilesTable />
+  </>
+);
 
-export default ClusterInfoPage;
+export default CachedFiles;

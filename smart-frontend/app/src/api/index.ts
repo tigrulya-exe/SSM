@@ -23,3 +23,4 @@ export { AdhActionsApi } from './adh/actions';
 export { AdhAuditEventsApi } from './adh/auditEvents';
 export { AdhClustersApi } from './adh/clusters';
 export { AdhRulesApi } from './adh/rules';
+export { AdhFilesApi } from './adh/files';
