@@ -22,7 +22,7 @@ import { useDispatch, useStore } from '@hooks';
 import { isShowSpinner } from '@uikit/Table/Table.utils';
 import TableRow from '@uikit/Table/TableRow/TableRow';
 import TableCellsRenderer from '@uikit/Table/TableCell/TableCellsRenderer';
-import { setFilter, setSortParams } from '@store/adh/cachedFiles/cachedFilesTableSlice';
+import { setCachedFilesFilter, setCachedFilesSortParams } from '@store/adh/cachedFiles/cachedFilesTableSlice';
 import type { SortParams } from '@models/table';
 import type { AdhCachedFileInfoFilter } from '@models/adh';
 
@@ -35,10 +35,10 @@ const CachedFilesTable: React.FC = () => {
   const sortParams = useStore(({ adh }) => adh.cachedFilesTable.sortParams);
 
   const handleFiltering = (filter: Partial<AdhCachedFileInfoFilter>) => {
-    dispatch(setFilter(filter));
+    dispatch(setCachedFilesFilter(filter));
   };
   const handleSorting = (sortParams: SortParams) => {
-    dispatch(setSortParams(sortParams));
+    dispatch(setCachedFilesSortParams(sortParams));
   };
 
   return (

@@ -18,7 +18,7 @@
 import { useDebounce, useDispatch, useRequestTimer, useStore } from '@hooks';
 import { useCallback, useEffect } from 'react';
 import { cleanupCachedFiles, getCachedFiles } from '@store/adh/cachedFiles/cachedFilesSlice';
-import { cleanupTable } from '@store/adh/cachedFiles/cachedFilesTableSlice';
+import { cleanupCachedFilesTable } from '@store/adh/cachedFiles/cachedFilesTableSlice';
 import { defaultDebounceDelay } from '@constants';
 
 export const useRequestCachedFiles = () => {
@@ -32,7 +32,7 @@ export const useRequestCachedFiles = () => {
   useEffect(
     () => () => {
       dispatch(cleanupCachedFiles());
-      dispatch(cleanupTable());
+      dispatch(cleanupCachedFilesTable());
     },
     [dispatch],
   );

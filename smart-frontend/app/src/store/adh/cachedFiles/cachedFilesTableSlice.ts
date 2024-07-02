@@ -45,6 +45,11 @@ const cachedFilesTableSlice = createTableSlice({
   extraReducers: () => {},
 });
 
-export const { setPaginationParams, cleanupTable, setSortParams, setFilter, resetFilter } =
-  cachedFilesTableSlice.actions;
+export const {
+  setPaginationParams: setCachedFilesPaginationParams,
+  cleanupTable: cleanupCachedFilesTable,
+  setSortParams: setCachedFilesSortParams,
+  setFilter: setCachedFilesFilter,
+  resetFilter: resetCachedFilesFilter,
+} = cachedFilesTableSlice.actions;
 export default cachedFilesTableSlice.reducer;

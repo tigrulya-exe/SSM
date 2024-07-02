@@ -18,7 +18,7 @@
 import { useDebounce, useDispatch, useRequestTimer, useStore } from '@hooks';
 import { useCallback, useEffect } from 'react';
 import { cleanupHottestFiles, getHottestFiles } from '@store/adh/hottestFiles/hottestFilesSlice';
-import { cleanupTable } from '@store/adh/hottestFiles/hottestFilesTableSlice';
+import { cleanupHottestFilesTable } from '@store/adh/hottestFiles/hottestFilesTableSlice';
 import { defaultDebounceDelay } from '@constants';
 
 export const useRequestHottestFiles = () => {
@@ -32,7 +32,7 @@ export const useRequestHottestFiles = () => {
   useEffect(
     () => () => {
       dispatch(cleanupHottestFiles());
-      dispatch(cleanupTable());
+      dispatch(cleanupHottestFilesTable());
     },
     [dispatch],
   );

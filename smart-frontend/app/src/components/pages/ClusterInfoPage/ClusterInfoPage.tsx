@@ -18,16 +18,13 @@
 import React from 'react';
 import { Title } from '@uikit';
 import ClusterFiles from './ClusterFiles/ClusterFiles';
-import s from './ClusterInfoPage.module.scss';
 
 const ClusterInfoPage: React.FC = () => {
   return (
     <div>
       <Title variant="h1">Cluster info</Title>
-      <div className={s.clusterInfoPageContent}>
-        <div>TODO</div>
-        <ClusterFiles />
-      </div>
+      <div>TODO</div>
+      <ClusterFiles />
     </div>
   );
 };

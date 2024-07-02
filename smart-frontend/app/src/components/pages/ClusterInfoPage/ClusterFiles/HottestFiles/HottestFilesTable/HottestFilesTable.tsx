@@ -22,7 +22,7 @@ import { useDispatch, useStore } from '@hooks';
 import { isShowSpinner } from '@uikit/Table/Table.utils';
 import TableRow from '@uikit/Table/TableRow/TableRow';
 import TableCellsRenderer from '@uikit/Table/TableCell/TableCellsRenderer';
-import { setFilter, setSortParams } from '@store/adh/hottestFiles/hottestFilesTableSlice';
+import { setHottestFilesFilter, setHottestFilesSortParams } from '@store/adh/hottestFiles/hottestFilesTableSlice';
 import type { SortParams } from '@models/table';
 import type { AdhFileInfoFilter } from '@models/adh';
 
@@ -35,10 +35,10 @@ const HottestFilesTable: React.FC = () => {
   const sortParams = useStore(({ adh }) => adh.hottestFilesTable.sortParams);
 
   const handleFiltering = (filter: Partial<AdhFileInfoFilter>) => {
-    dispatch(setFilter(filter));
+    dispatch(setHottestFilesFilter(filter));
   };
   const handleSorting = (sortParams: SortParams) => {
-    dispatch(setSortParams(sortParams));
+    dispatch(setHottestFilesSortParams(sortParams));
   };
 
   return (

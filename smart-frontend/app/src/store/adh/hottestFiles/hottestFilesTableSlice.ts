@@ -44,5 +44,12 @@ const filesTableSlice = createTableSlice({
   extraReducers: () => {},
 });
 
-export const { setPaginationParams, cleanupTable, setSortParams, setFilter, resetFilter } = filesTableSlice.actions;
+export const {
+  setPaginationParams: setHottestFilesPaginationParams,
+  cleanupTable: cleanupHottestFilesTable,
+  setSortParams: setHottestFilesSortParams,
+  setFilter: setHottestFilesFilter,
+  resetFilter: resetHottestFilesFilter,
+} = filesTableSlice.actions;
+
 export default filesTableSlice.reducer;

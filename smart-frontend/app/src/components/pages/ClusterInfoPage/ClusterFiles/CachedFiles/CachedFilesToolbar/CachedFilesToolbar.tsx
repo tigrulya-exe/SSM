@@ -20,7 +20,7 @@ import { useDispatch, useStore } from '@hooks';
 import type { PaginationParams } from '@models/table';
 import { Button, FlexGroup } from '@uikit';
 import Pagination from '@uikit/Pagination/Pagination';
-import { setPaginationParams, resetFilter } from '@store/adh/cachedFiles/cachedFilesTableSlice';
+import { setCachedFilesPaginationParams, resetCachedFilesFilter } from '@store/adh/cachedFiles/cachedFilesTableSlice';
 import s from './CachedFilesToolbar.module.scss';
 
 const CachedFilesToolbar: React.FC = () => {
@@ -29,11 +29,11 @@ const CachedFilesToolbar: React.FC = () => {
   const paginationParams = useStore(({ adh }) => adh.cachedFilesTable.paginationParams);
 
   const handlePaginationChange = (params: PaginationParams) => {
-    dispatch(setPaginationParams(params));
+    dispatch(setCachedFilesPaginationParams(params));
   };
 
   const handleResetClick = () => {
-    dispatch(resetFilter());
+    dispatch(resetCachedFilesFilter());
   };
 
   return (

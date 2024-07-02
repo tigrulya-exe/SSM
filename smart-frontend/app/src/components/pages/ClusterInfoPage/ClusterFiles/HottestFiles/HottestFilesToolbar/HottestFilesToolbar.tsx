@@ -20,7 +20,10 @@ import Pagination from '@uikit/Pagination/Pagination';
 import { useDispatch, useStore } from '@hooks';
 import type { PaginationParams } from '@models/table';
 import { Button, FlexGroup } from '@uikit';
-import { setPaginationParams, resetFilter } from '@store/adh/hottestFiles/hottestFilesTableSlice';
+import {
+  setHottestFilesPaginationParams,
+  resetHottestFilesFilter,
+} from '@store/adh/hottestFiles/hottestFilesTableSlice';
 import s from './HottestFilesToolbar.module.scss';
 
 const HottestToolbar: React.FC = () => {
@@ -29,11 +32,11 @@ const HottestToolbar: React.FC = () => {
   const paginationParams = useStore(({ adh }) => adh.hottestFilesTable.paginationParams);
 
   const handlePaginationChange = (params: PaginationParams) => {
-    dispatch(setPaginationParams(params));
+    dispatch(setHottestFilesPaginationParams(params));
   };
 
   const handleResetClick = () => {
-    dispatch(resetFilter());
+    dispatch(resetHottestFilesFilter());
   };
 
   return (
