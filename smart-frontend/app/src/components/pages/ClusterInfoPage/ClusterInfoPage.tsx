@@ -22,6 +22,8 @@ import ClusterInfoTable from './ClusterInfoTable/ClusterInfoTable';
 import ClusterInfoFilesTable from './ClusterInfoFilesTable/ClusterInfoFilesTable';
 import { FlexGroup, Title } from '@uikit';
 import { useRequestClusterInfo } from './useRequestClusterInfo';
+import { Title } from '@uikit';
+import ClusterFiles from './ClusterFiles/ClusterFiles';
 
 const ClusterInfoPage: React.FC = () => {
   useRequestClusterInfo();
@@ -35,6 +37,7 @@ const ClusterInfoPage: React.FC = () => {
       <ClusterInfoToolbar />
       <ClusterInfoTable />
       <ClusterInfoFilesTable />
+      <ClusterFiles />
     </div>
   );
 };

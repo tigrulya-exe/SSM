@@ -15,8 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './action';
-export * from './auditEvent';
-export * from './cluster';
-export * from './rule';
-export * from './file';
+import HottestFilesToolbar from './HottestFilesToolbar/HottestFilesToolbar';
+import HottestFilesTable from './HottestFilesTable/HottestFilesTable';
+
+const HottestFiles = () => (
+  <>
+    <HottestFilesToolbar />
+    <HottestFilesTable />
+  </>
+);
+
+export default HottestFiles;

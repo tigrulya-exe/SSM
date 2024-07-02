@@ -29,6 +29,10 @@ import rulesTableSlice from '@store/adh/rules/rulesTableSlice';
 import rulesActionsSlice from '@store/adh/rules/rulesActionsSlice';
 import clusterSlice from './adh/cluster/clusterSlice';
 import clusterTableSlice from './adh/cluster/clusterTableSlice';
+import hottestFilesSlice from '@store/adh/hottestFiles/hottestFilesSlice';
+import hottestFilesTableSlice from '@store/adh/hottestFiles/hottestFilesTableSlice';
+import cachedFilesSlice from '@store/adh/cachedFiles/cachedFilesSlice';
+import cachedFilesTableSlice from '@store/adh/cachedFiles/cachedFilesTableSlice';
 
 const rootReducer = combineReducers({
   auth: authSlice,
@@ -44,6 +48,10 @@ const rootReducer = combineReducers({
     rules: rulesSlice,
     rulesTable: rulesTableSlice,
     rulesActions: rulesActionsSlice,
+    hottestFiles: hottestFilesSlice,
+    hottestFilesTable: hottestFilesTableSlice,
+    cachedFiles: cachedFilesSlice,
+    cachedFilesTable: cachedFilesTableSlice,
   }),
 });
 

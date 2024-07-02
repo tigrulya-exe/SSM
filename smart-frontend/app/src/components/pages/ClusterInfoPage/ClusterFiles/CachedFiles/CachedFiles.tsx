@@ -15,8 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './action';
-export * from './auditEvent';
-export * from './cluster';
-export * from './rule';
-export * from './file';
+import CachedFilesToolbar from './CachedFilesToolbar/CachedFilesToolbar';
+import CachedFilesTable from './CachedFilesTable/CachedFilesTable';
+
+const CachedFiles = () => (
+  <>
+    <CachedFilesToolbar />
+    <CachedFilesTable />
+  </>
+);
+
+export default CachedFiles;

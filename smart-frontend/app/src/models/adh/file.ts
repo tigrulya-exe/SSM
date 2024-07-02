@@ -15,8 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './action';
-export * from './auditEvent';
-export * from './cluster';
-export * from './rule';
-export * from './file';
+import type { DateRange, SerializedDate } from '@models/dateRange';
+
+export interface AdhFileInfo {
+  id: number;
+  path: string;
+  accessCount: number;
+  lastAccessTime: number;
+}
+
+export interface AdhFileInfoFilter {
+  pathLike?: string;
+  lastAccessedTime?: DateRange<SerializedDate>;
+}
+
+export interface AdhCachedFileInfo extends AdhFileInfo {
+  cachedTime: number;
+}
+
+export interface AdhCachedFileInfoFilter extends AdhFileInfoFilter {
+  cachedTime?: DateRange<SerializedDate>;
+}
