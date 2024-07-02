@@ -15,14 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { Collection } from '@models/collection';
-import { httpClient } from '@api/httpClient';
-import type { ClusterNode } from '@models/adh';
+import React, { useState } from 'react';
+import TabsBlock from '@uikit/Tabs/TabsBlock';
+import Tab from '@uikit/Tabs/Tab';
+import s from './ClusterInfoFilesTable.module.scss';
 
-export class AdhClustersApi {
-  public static async getNodes(): Promise<Collection<ClusterNode>> {
-    const response = await httpClient.get<Collection<ClusterNode>>('/api/v2/cluster/nodes');
+const ClusterInfoTabs: React.FC = () => {
+  const [activeTabId, setActiveTabId] = useState('hour');
 
-    return response.data;
-  }
-}
+  const handleTabClick = (tab: string) => {
+    setActiveTabId(tab);
+  };
+  return (
+    <TabsBlock className={s.clusterInfoTabs}>
+      <Tab to="" isActive={activeTabId === 'hour'} onClick={() => handleTabClick('hour')}>
+        Hottest files in last hour
+      </Tab>
+      <Tab to="" isActive={activeTabId === 'cache'} onClick={() => handleTabClick('cache')}>
+        Files in cache
+      </Tab>
+    </TabsBlock>
+  );
+};
+
+export default ClusterInfoTabs;

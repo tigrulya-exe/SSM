@@ -27,6 +27,8 @@ import auditEventsTableSlice from '@store/adh/auditEvents/auditEventsTableSlice'
 import rulesSlice from '@store/adh/rules/rulesSlice';
 import rulesTableSlice from '@store/adh/rules/rulesTableSlice';
 import rulesActionsSlice from '@store/adh/rules/rulesActionsSlice';
+import clusterSlice from './adh/cluster/clusterSlice';
+import clusterTableSlice from './adh/cluster/clusterTableSlice';
 
 const rootReducer = combineReducers({
   auth: authSlice,
@@ -37,6 +39,8 @@ const rootReducer = combineReducers({
     actionsActions: actionsActionsSlice,
     auditEvents: auditEventsSlice,
     auditEventsTable: auditEventsTableSlice,
+    cluster: clusterSlice,
+    clusterTable: clusterTableSlice,
     rules: rulesSlice,
     rulesTable: rulesTableSlice,
     rulesActions: rulesActionsSlice,

@@ -16,27 +16,31 @@
  * limitations under the License.
  */
 import React from 'react';
-import ClusterInfoCards from './ClusterInfoCards/ClusterInfoCards';
-import ClusterInfoToolbar from './ClusterInfoToolbar/ClusterInfoToolbar';
-import ClusterInfoTable from './ClusterInfoTable/ClusterInfoTable';
-import ClusterInfoFilesTable from './ClusterInfoFilesTable/ClusterInfoFilesTable';
-import { FlexGroup, Title } from '@uikit';
-import { useRequestClusterInfo } from './useRequestClusterInfo';
+import TableCell from '@uikit/Table/TableCell/TableCell';
+import StatusMarker from '@commonComponents/StatusMarker/StatusMarker';
+import type { AdhClusterNode, AdhClusterNodeStatus } from '@models/adh';
+import { getStatusLabel } from '@utils/humanisationUtils';
+import type { CommonStatus } from '@commonComponents/StatusMarker/StatusMarker.types';
+import { FlexGroup } from '@uikit';
 
-const ClusterInfoPage: React.FC = () => {
-  useRequestClusterInfo();
+const nodeStatusToColor: Record<AdhClusterNodeStatus, CommonStatus> = {
+  ACTIVE: 'green',
+  DISABLED: 'gray',
+};
 
+interface ClusterNodeStatusCellProps {
+  node: AdhClusterNode;
+}
+
+const ClusterNodeStatusCell: React.FC<ClusterNodeStatusCellProps> = ({ node }) => {
   return (
-    <div>
-      <FlexGroup gap="20px">
-        <Title variant="h1">Cluster Info</Title>
+    <TableCell data-qa="status">
+      <FlexGroup gap="6px">
+        <StatusMarker status={nodeStatusToColor[node.status]} />
+        {getStatusLabel(node.status)}
       </FlexGroup>
-      <ClusterInfoCards />
-      <ClusterInfoToolbar />
-      <ClusterInfoTable />
-      <ClusterInfoFilesTable />
-    </div>
+    </TableCell>
   );
 };
 
-export default ClusterInfoPage;
+export default ClusterNodeStatusCell;

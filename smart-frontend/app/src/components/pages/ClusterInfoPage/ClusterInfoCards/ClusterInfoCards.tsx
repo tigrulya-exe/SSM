@@ -15,38 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const allowIconsNames = [
-  //
-  'actions',
-  'audit',
-  'arrow-sorting',
-  'chevron-double',
-  'chevron',
-  'cluster-info',
-  'close',
-  'check',
-  'delete',
-  'documentation',
-  'edit',
-  'eye',
-  'eye-closed',
-  'logout',
-  'moon',
-  'nodes_live',
-  'pause',
-  'play',
-  'refresh',
-  'rules',
-  'rules_active',
-  'rules_all',
-  'sun',
-  'search',
-  'status-error',
-  'status-info',
-  'status-ok',
-  'status-warning',
-  'table-filter',
-  'user',
-] as const;
+import React from 'react';
+import { useStore } from '@hooks';
+import { FlexGroup, LegendCard } from '@uikit';
+import s from './ClusterInfoCards.module.scss';
 
-export type IconsNames = (typeof allowIconsNames)[number];
+const ClusterInfoCards: React.FC = () => {
+  const liveCount = useStore(({ adh }) => adh.cluster.liveCount);
+
+  return (
+    <FlexGroup gap="20px" className={s.rulesCards}>
+      <LegendCard title="Live nodes" count={liveCount} icon="nodes_live" variant="secondary" />
+    </FlexGroup>
+  );
+};
+
+export default ClusterInfoCards;

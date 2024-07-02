@@ -15,38 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const allowIconsNames = [
-  //
-  'actions',
-  'audit',
-  'arrow-sorting',
-  'chevron-double',
-  'chevron',
-  'cluster-info',
-  'close',
-  'check',
-  'delete',
-  'documentation',
-  'edit',
-  'eye',
-  'eye-closed',
-  'logout',
-  'moon',
-  'nodes_live',
-  'pause',
-  'play',
-  'refresh',
-  'rules',
-  'rules_active',
-  'rules_all',
-  'sun',
-  'search',
-  'status-error',
-  'status-info',
-  'status-ok',
-  'status-warning',
-  'table-filter',
-  'user',
-] as const;
+import React from 'react';
+import { TableSingleSelectFilter } from '@uikit/Table/TableFilter';
+import { getOptionsFromEnum } from '@uikit/Select/Select.utils';
+import { type AdhClusterNodesFilter, AdhClusterNodeStatus } from '@models/adh';
 
-export type IconsNames = (typeof allowIconsNames)[number];
+const statusesOptions = getOptionsFromEnum(AdhClusterNodeStatus);
+
+interface ClusterInfoStatusFilterProps {
+  closeFilter: () => void;
+}
+
+const ClusterInfoStatusFilter: React.FC<ClusterInfoStatusFilterProps> = ({ closeFilter }) => {
+  return (
+    <TableSingleSelectFilter<AdhClusterNodesFilter, AdhClusterNodeStatus>
+      filterName="status"
+      closeFilter={closeFilter}
+      options={statusesOptions}
+    />
+  );
+};
+
+export default ClusterInfoStatusFilter;

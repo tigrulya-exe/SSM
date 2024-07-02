@@ -17,14 +17,14 @@
  */
 import type { TableState } from '@models/table';
 import { createAsyncThunk, createTableSlice } from '@store/redux';
-import type { AdhActionsFilter, ClusterNode } from '@models/adh';
-import { AdhClustersApi, type RequestError } from '@api';
+import type { AdhActionsFilter, AdhClusterNode } from '@models/adh';
+import { AdhClusterInfoApi, type RequestError } from '@api';
 import { showError } from '@store/notificationsSlice';
 import { getErrorMessage } from '@utils/responseUtils';
 
 export const loadHosts = createAsyncThunk('adh/actionsTable/loadHosts', async (_, thunkAPI) => {
   try {
-    const collection = await AdhClustersApi.getNodes();
+    const collection = await AdhClusterInfoApi.getNodes({});
 
     return collection;
   } catch (error) {
@@ -39,7 +39,7 @@ export const loadHosts = createAsyncThunk('adh/actionsTable/loadHosts', async (_
 
 type AdhTablesTableState = TableState<AdhActionsFilter> & {
   relatedData: {
-    hosts: ClusterNode[];
+    hosts: AdhClusterNode[];
     isHostsLoaded: boolean;
   };
 };
