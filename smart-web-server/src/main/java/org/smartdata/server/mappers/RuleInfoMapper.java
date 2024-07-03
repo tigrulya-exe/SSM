@@ -24,12 +24,14 @@ import org.mapstruct.ReportingPolicy;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
+import org.smartdata.model.RulesInfo;
 import org.smartdata.model.TimeInterval;
 import org.smartdata.model.request.RuleSearchRequest;
 import org.smartdata.server.generated.model.LastActivationTimeIntervalDto;
 import org.smartdata.server.generated.model.RuleDto;
 import org.smartdata.server.generated.model.RuleStateDto;
 import org.smartdata.server.generated.model.RulesDto;
+import org.smartdata.server.generated.model.RulesInfoDto;
 import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
 
 import java.util.Collections;
@@ -58,6 +60,8 @@ public interface RuleInfoMapper extends SmartMapper {
       SubmissionTimeIntervalDto submissionTime,
       List<RuleStateDto> states,
       LastActivationTimeIntervalDto lastActivationTime);
+
+  RulesInfoDto toRulesInfoDto(RulesInfo rulesInfo);
 
   default List<RuleState> toRuleStates(List<RuleStateDto> states) {
     return states == null

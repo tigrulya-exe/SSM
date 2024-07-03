@@ -23,6 +23,7 @@ import org.smartdata.server.generated.model.RuleDto;
 import org.smartdata.server.generated.model.RuleSortDto;
 import org.smartdata.server.generated.model.RuleStateDto;
 import org.smartdata.server.generated.model.RulesDto;
+import org.smartdata.server.generated.model.RulesInfoDto;
 import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
 import org.smartdata.server.generated.model.SubmitRuleRequestDto;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -106,6 +107,18 @@ public interface RulesApiDelegate {
         SubmissionTimeIntervalDto submissionTime,
         List<@Valid RuleStateDto> ruleStates,
         LastActivationTimeIntervalDto lastActivationTime) throws Exception {
+        throw new IllegalArgumentException("Not implemented");
+
+    }
+
+    /**
+     * GET /api/v2/rules/info : Get information about rules
+     *
+     * @return OK (status code 200)
+     *         or Unauthorized (status code 401)
+     * @see RulesApi#getRulesInfo
+     */
+    default RulesInfoDto getRulesInfo() throws Exception {
         throw new IllegalArgumentException("Not implemented");
 
     }

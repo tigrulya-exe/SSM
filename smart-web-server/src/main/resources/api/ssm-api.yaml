@@ -26,6 +26,8 @@ paths:
     $ref: './resources/rule-start.yaml'
   /api/v2/rules/{id}/stop:
     $ref: './resources/rule-stop.yaml'
+  /api/v2/rules/info:
+    $ref: './resources/rules-info.yaml'
 
   # Cmdlets
   /api/v2/cmdlets:

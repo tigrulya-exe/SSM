@@ -26,6 +26,7 @@ import org.smartdata.metastore.queries.PageRequest;
 import org.smartdata.metastore.queries.expression.MetastoreQueryExpression;
 import org.smartdata.metastore.queries.sort.SortField;
 import org.smartdata.metastore.queries.sort.Sorting;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
@@ -77,8 +78,11 @@ public abstract class SearchableAbstractDao<RequestT, EntityT, ColumnT extends S
   }
 
   protected Optional<EntityT> executeSingle(MetastoreQuery query) {
-    return Optional.ofNullable(executeQuery(query))
-        .flatMap(entities -> entities.stream().findFirst());
+    return executeSingle(query, this::mapRow);
+  }
+
+  protected <T> Optional<T> executeSingle(MetastoreQuery query, RowMapper<T> rowMapper) {
+    return queryExecutor.executeSingle(query, rowMapper);
   }
 
   public long count(RequestT searchRequest) {

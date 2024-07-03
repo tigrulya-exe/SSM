@@ -209,6 +209,21 @@ paths:
       summary: Stop specified rule
       tags:
       - Rules
+  /api/v2/rules/info:
+    get:
+      operationId: getRulesInfo
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RulesInfo'
+          description: OK
+        "401":
+          description: Unauthorized
+      summary: Get information about rules
+      tags:
+      - Rules
   /api/v2/cmdlets:
     get:
       operationId: getCmdlets
@@ -1128,6 +1143,24 @@ components:
       required:
       - rule
       title: SubmitRuleRequest
+      type: object
+    RulesInfo:
+      example:
+        totalRules: 0
+        activeRules: 6
+      properties:
+        totalRules:
+          description: Total number of rules
+          format: int64
+          type: integer
+        activeRules:
+          description: Number of active rules
+          format: int64
+          type: integer
+      required:
+      - activeRules
+      - totalRules
+      title: RulesInfo
       type: object
     CmdletSort:
       description: Sort field names prefixed with '-' for descending order

@@ -51,6 +51,16 @@ public class MetastoreQueryExecutor {
         query.toSqlQuery(), query.getParameters(), rowMapper);
   }
 
+  public <T> Optional<T> executeSingle(MetastoreQuery query, RowMapper<T> rowMapper) {
+    try {
+      T result = namedJdbcTemplate.queryForObject(
+          query.limit(1L).toSqlQuery(), query.getParameters(), rowMapper);
+      return Optional.ofNullable(result);
+    } catch (EmptyResultDataAccessException exception) {
+      return Optional.empty();
+    }
+  }
+
   public long executeCount(MetastoreQuery query) {
     try {
       Long rowsCount = namedJdbcTemplate.queryForObject(
