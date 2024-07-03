@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -273,7 +273,96 @@ public class TestAccessCountTableManager extends TestDaoBase {
   @Test
   public void testGetAllHotFiles() throws MetaStoreException {
     createTestFiles();
-    submitAccessEvents();
+    DbAccessCountTableManager tableManager = accessCountTableManager.getDbTableManager();
+    AccessCountTable t1 = new AccessCountTable(0, 5 * ONE_SECOND_IN_MILLIS);
+    AccessCountTable t2 = new AccessCountTable(2 * ONE_MINUTE_IN_MILLIS,
+        2 * ONE_MINUTE_IN_MILLIS + 5 * ONE_SECOND_IN_MILLIS);
+    AccessCountTable t3 = new AccessCountTable(4 * ONE_MINUTE_IN_MILLIS + 10 * ONE_SECOND_IN_MILLIS,
+        4 * ONE_MINUTE_IN_MILLIS + 15 * ONE_SECOND_IN_MILLIS);
+    AccessCountTable t4 = new AccessCountTable(ONE_HOUR_IN_MILLIS + 5 * ONE_MINUTE_IN_MILLIS,
+        ONE_HOUR_IN_MILLIS + 5 * ONE_MINUTE_IN_MILLIS + 5 * ONE_SECOND_IN_MILLIS);
+    AccessCountTable t5 = new AccessCountTable(ONE_HOUR_IN_MILLIS + 9 * ONE_MINUTE_IN_MILLIS,
+        ONE_HOUR_IN_MILLIS + 9 * ONE_MINUTE_IN_MILLIS + 5 * ONE_SECOND_IN_MILLIS);
+    AccessCountTable t6 = new AccessCountTable(8 * ONE_HOUR_IN_MILLIS,
+        8 * ONE_HOUR_IN_MILLIS + 5 * ONE_SECOND_IN_MILLIS);
+    AccessCountTable t7 = new AccessCountTable(ONE_DAY_IN_MILLIS + 12 * ONE_HOUR_IN_MILLIS,
+        ONE_DAY_IN_MILLIS + 12 * ONE_HOUR_IN_MILLIS + 5 * ONE_SECOND_IN_MILLIS);
+    AccessCountTable t8 = new AccessCountTable(
+        ONE_DAY_IN_MILLIS + 13 * ONE_HOUR_IN_MILLIS + 10 * ONE_SECOND_IN_MILLIS,
+        ONE_DAY_IN_MILLIS + 13 * ONE_HOUR_IN_MILLIS + 15 * ONE_SECOND_IN_MILLIS);
+    AccessCountTable t9 = new AccessCountTable(ONE_DAY_IN_MILLIS + 17 * ONE_HOUR_IN_MILLIS,
+        ONE_DAY_IN_MILLIS + 17 * ONE_HOUR_IN_MILLIS + 5 * ONE_SECOND_IN_MILLIS);
+    AccessCountTable t10 = new AccessCountTable(
+        ONE_DAY_IN_MILLIS + 18 * ONE_HOUR_IN_MILLIS + 10 * ONE_SECOND_IN_MILLIS,
+        ONE_DAY_IN_MILLIS + 18 * ONE_HOUR_IN_MILLIS + 15 * ONE_SECOND_IN_MILLIS);
+    AccessCountTable t11 =
+        new AccessCountTable(ONE_DAY_IN_MILLIS + 23 * ONE_HOUR_IN_MILLIS + 59 * ONE_MINUTE_IN_MILLIS
+            + 58 * ONE_SECOND_IN_MILLIS, 2 * ONE_DAY_IN_MILLIS);
+    AccessCountTable t12 = new AccessCountTable(0, ONE_DAY_IN_MILLIS);
+    AccessCountTable t13 = new AccessCountTable(12 * ONE_HOUR_IN_MILLIS, 13 * ONE_HOUR_IN_MILLIS);
+    AccessCountTable t14 = new AccessCountTable(13 * ONE_HOUR_IN_MILLIS, 14 * ONE_HOUR_IN_MILLIS);
+    AccessCountTable t15 = new AccessCountTable(17 * ONE_HOUR_IN_MILLIS, 18 * ONE_HOUR_IN_MILLIS);
+    AccessCountTable t16 = new AccessCountTable(18 * ONE_HOUR_IN_MILLIS, 19 * ONE_HOUR_IN_MILLIS);
+
+    List<AccessCountTable> tables =
+        Arrays.asList(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15, t16);
+    tables.forEach(t -> {
+      try {
+        tableManager.createTable(t);
+      } catch (MetaStoreException e) {
+        throw new RuntimeException(e);
+      }
+    });
+    tableManager.handleAggregatedEvents(t1,
+        Arrays.asList(new AggregatedAccessCounts(0, 1, 0),
+            new AggregatedAccessCounts(1, 1, 1)));
+    tableManager.handleAggregatedEvents(t2,
+        Arrays.asList(new AggregatedAccessCounts(2, 1, 2 * ONE_MINUTE_IN_MILLIS + 1)));
+    tableManager.handleAggregatedEvents(t3, Arrays.asList(
+        new AggregatedAccessCounts(1, 1, 4 * ONE_MINUTE_IN_MILLIS + 10 * ONE_SECOND_IN_MILLIS)));
+    tableManager.handleAggregatedEvents(t4, Arrays.asList(
+        new AggregatedAccessCounts(2, 1, ONE_HOUR_IN_MILLIS + 5 * ONE_MINUTE_IN_MILLIS)));
+    tableManager.handleAggregatedEvents(t5, Arrays.asList(
+        new AggregatedAccessCounts(3, 1, ONE_HOUR_IN_MILLIS + 9 * ONE_MINUTE_IN_MILLIS)));
+    tableManager.handleAggregatedEvents(t6,
+        Arrays.asList(new AggregatedAccessCounts(3, 1, 8 * ONE_HOUR_IN_MILLIS)));
+    tableManager.handleAggregatedEvents(t7, Arrays.asList(
+        new AggregatedAccessCounts(3, 1, ONE_DAY_IN_MILLIS + 12 * ONE_HOUR_IN_MILLIS)));
+    tableManager.handleAggregatedEvents(t7, Arrays.asList(
+        new AggregatedAccessCounts(2, 1, ONE_DAY_IN_MILLIS + 12 * ONE_HOUR_IN_MILLIS + 1)));
+    tableManager.handleAggregatedEvents(t8, Arrays.asList(new AggregatedAccessCounts(1, 1,
+        ONE_DAY_IN_MILLIS + 13 * ONE_HOUR_IN_MILLIS + 10 * ONE_SECOND_IN_MILLIS)));
+    tableManager.handleAggregatedEvents(t9, Arrays.asList(
+        new AggregatedAccessCounts(4, 1, ONE_DAY_IN_MILLIS + 17 * ONE_HOUR_IN_MILLIS)));
+    tableManager.handleAggregatedEvents(t10, Arrays.asList(
+        new AggregatedAccessCounts(5, 1, ONE_DAY_IN_MILLIS + 18 * ONE_HOUR_IN_MILLIS + 10)));
+    tableManager.handleAggregatedEvents(t11, Arrays.asList(
+        new AggregatedAccessCounts(3, 1,
+            ONE_DAY_IN_MILLIS + 23 * ONE_HOUR_IN_MILLIS + 59 * ONE_MINUTE_IN_MILLIS
+                + 58 * ONE_SECOND_IN_MILLIS)));
+    tableManager.handleAggregatedEvents(t11, Arrays.asList(
+        new AggregatedAccessCounts(3, 1,
+            ONE_DAY_IN_MILLIS + 23 * ONE_HOUR_IN_MILLIS + 59 * ONE_MINUTE_IN_MILLIS
+                + 59 * ONE_SECOND_IN_MILLIS)));
+    tableManager.handleAggregatedEvents(t12,
+        Arrays.asList(
+            new AggregatedAccessCounts(0, 1, 0),
+            new AggregatedAccessCounts(1, 2, 4 * ONE_MINUTE_IN_MILLIS + 10 * ONE_SECOND_IN_MILLIS),
+            new AggregatedAccessCounts(2, 2, ONE_HOUR_IN_MILLIS + 5 * ONE_MINUTE_IN_MILLIS),
+            new AggregatedAccessCounts(3, 2, 8 * ONE_HOUR_IN_MILLIS)
+        ));
+    tableManager.handleAggregatedEvents(t13, Arrays.asList(
+        new AggregatedAccessCounts(3, 1, ONE_DAY_IN_MILLIS + 12 * ONE_HOUR_IN_MILLIS),
+        new AggregatedAccessCounts(2, 1, ONE_DAY_IN_MILLIS + 12 * ONE_HOUR_IN_MILLIS + 1)
+    ));
+    tableManager.handleAggregatedEvents(t14, Arrays.asList(new AggregatedAccessCounts(1, 1,
+        ONE_DAY_IN_MILLIS + 13 * ONE_HOUR_IN_MILLIS + 10 * ONE_SECOND_IN_MILLIS)));
+    tableManager.handleAggregatedEvents(t15, Arrays.asList(
+        new AggregatedAccessCounts(4, 1, ONE_DAY_IN_MILLIS + 17 * ONE_HOUR_IN_MILLIS)));
+    tableManager.handleAggregatedEvents(t16, Arrays.asList(
+        new AggregatedAccessCounts(5, 1, ONE_DAY_IN_MILLIS + 18 * ONE_HOUR_IN_MILLIS + 10)));
+
+    inMemoryTableManager.recoverTables(tables);
 
     List<FileAccessInfo> expectedFiles = Arrays.asList(
         new FileAccessInfo(0, TEST_FILES.get(0), 1, 0),
