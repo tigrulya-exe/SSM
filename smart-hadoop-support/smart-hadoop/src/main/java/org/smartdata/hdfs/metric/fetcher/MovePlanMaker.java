@@ -26,6 +26,7 @@ import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.hdfs.protocol.LocatedBlock;
 import org.apache.hadoop.hdfs.protocol.LocatedBlocks;
+import org.apache.hadoop.hdfs.protocol.LocatedStripedBlock;
 import org.apache.hadoop.hdfs.server.balancer.Matcher;
 import org.apache.hadoop.net.NetworkTopology;
 import org.slf4j.Logger;
@@ -189,7 +190,7 @@ public class MovePlanMaker {
    */
   void scheduleMoveBlock(StorageTypeDiff diff, LocatedBlock lb, HdfsFileStatus status) {
     final List<MLocation> locations = MLocation.toLocations(lb);
-    if (!CompatibilityHelperLoader.getHelper().isLocatedStripedBlock(lb)) {
+    if (!(lb instanceof LocatedStripedBlock)) {
       // Shuffle replica locations to make storage medium in balance.
       // E.g., if three replicas are under ALL_SSD policy and ONE_SSD is the target policy,
       // with shuffling locations, two randomly picked replicas will be moved to DISK.
@@ -298,9 +299,9 @@ public class MovePlanMaker {
     final List<String> expected;
     final List<String> existing;
 
-    StorageTypeDiff(List<String> expected, String[] existing) {
-      this.expected = new LinkedList<String>(expected);
-      this.existing = new LinkedList<String>(Arrays.asList(existing));
+    StorageTypeDiff(List<String> expected, List<String> existing) {
+      this.expected = new LinkedList<>(expected);
+      this.existing = new LinkedList<>(existing);
     }
 
     /**

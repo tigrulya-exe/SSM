@@ -20,10 +20,6 @@ Download SSM branch from Github https://github.com/arenadata/SSM/
 ###   For ADH 3.2.4_arenadata2 +
   
   	Included in the bundle
-   
-###   For Hadoop 2.7.3
-  	
-	mvn clean package -Pdist,web,hadoop-2.7 -DskipTests
 
 ###   For Hadoop 3.1.*
 
