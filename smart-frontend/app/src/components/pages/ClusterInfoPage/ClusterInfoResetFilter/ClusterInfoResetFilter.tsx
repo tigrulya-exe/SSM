@@ -16,25 +16,22 @@
  * limitations under the License.
  */
 import React from 'react';
-import ClusterInfoCards from './ClusterInfoCards/ClusterInfoCards';
-import ClusterInfoToolbar from './ClusterInfoToolbar/ClusterInfoToolbar';
-import ClusterInfoTable from './ClusterInfoTable/ClusterInfoTable';
-import { Title } from '@uikit';
-import { useRequestClusterInfo } from './useRequestClusterInfo';
-import ClusterFiles from './ClusterFiles/ClusterFiles';
+import { Button } from '@uikit';
+import { useDispatch } from '@hooks';
+import { resetClusterNodesFilter } from '@store/adh/cluster/clusterNodesTableSlice';
 
-const ClusterInfoPage: React.FC = () => {
-  useRequestClusterInfo();
+const ClusterInfoResetFilter: React.FC = () => {
+  const dispatch = useDispatch();
+
+  const handleClick = () => {
+    dispatch(resetClusterNodesFilter());
+  };
 
   return (
-    <div>
-      <Title variant="h1">Cluster Info</Title>
-      <ClusterInfoCards />
-      <ClusterInfoToolbar />
-      <ClusterInfoTable />
-      <ClusterFiles />
-    </div>
+    <Button onClick={handleClick} variant="secondary">
+      Reset filter
+    </Button>
   );
 };
 
-export default ClusterInfoPage;
+export default ClusterInfoResetFilter;

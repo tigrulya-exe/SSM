@@ -15,14 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { Collection } from '@models/collection';
-import { httpClient } from '@api/httpClient';
-import type { ClusterNode } from '@models/adh';
+import React from 'react';
+import { useStore } from '@hooks';
+import { FlexGroup, LegendCard } from '@uikit';
+import s from './ClusterInfoCards.module.scss';
 
-export class AdhClustersApi {
-  public static async getNodes(): Promise<Collection<ClusterNode>> {
-    const response = await httpClient.get<Collection<ClusterNode>>('/api/v2/cluster/nodes');
+const ClusterInfoCards: React.FC = () => {
+  const liveCount = useStore(({ adh }) => adh.clusterNodes.liveCount);
 
-    return response.data;
-  }
-}
+  return (
+    <FlexGroup gap="20px" className={s.clusterInfoCards}>
+      <LegendCard title="Live nodes" count={liveCount} icon="nodes_live" variant="secondary" />
+    </FlexGroup>
+  );
+};
+
+export default ClusterInfoCards;

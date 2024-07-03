@@ -16,25 +16,24 @@
  * limitations under the License.
  */
 import React from 'react';
-import ClusterInfoCards from './ClusterInfoCards/ClusterInfoCards';
-import ClusterInfoToolbar from './ClusterInfoToolbar/ClusterInfoToolbar';
-import ClusterInfoTable from './ClusterInfoTable/ClusterInfoTable';
-import { Title } from '@uikit';
-import { useRequestClusterInfo } from './useRequestClusterInfo';
-import ClusterFiles from './ClusterFiles/ClusterFiles';
+import { TableSingleSelectFilter } from '@uikit/Table/TableFilter';
+import { getOptionsFromEnum } from '@uikit/Select/Select.utils';
+import { type AdhClusterNodesFilter, AdhClusterNodeStatus } from '@models/adh';
 
-const ClusterInfoPage: React.FC = () => {
-  useRequestClusterInfo();
+const statusesOptions = getOptionsFromEnum(AdhClusterNodeStatus);
 
+interface ClusterInfoStatusFilterProps {
+  closeFilter: () => void;
+}
+
+const ClusterInfoStatusFilter: React.FC<ClusterInfoStatusFilterProps> = ({ closeFilter }) => {
   return (
-    <div>
-      <Title variant="h1">Cluster Info</Title>
-      <ClusterInfoCards />
-      <ClusterInfoToolbar />
-      <ClusterInfoTable />
-      <ClusterFiles />
-    </div>
+    <TableSingleSelectFilter<AdhClusterNodesFilter, AdhClusterNodeStatus>
+      filterName="status"
+      closeFilter={closeFilter}
+      options={statusesOptions}
+    />
   );
 };
 
-export default ClusterInfoPage;
+export default ClusterInfoStatusFilter;

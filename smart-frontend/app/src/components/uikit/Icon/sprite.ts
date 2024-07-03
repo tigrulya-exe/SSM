@@ -32,6 +32,7 @@ export const allowIconsNames = [
   'eye-closed',
   'logout',
   'moon',
+  'nodes_live',
   'pause',
   'play',
   'refresh',

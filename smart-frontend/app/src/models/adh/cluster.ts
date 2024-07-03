@@ -1,3 +1,5 @@
+import type { DateRange, SerializedDate } from '../dateRange';
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,7 +23,12 @@ export enum ExecutorType {
   Agent = 'AGENT',
 }
 
-export interface ClusterNode {
+export enum AdhClusterNodeStatus {
+  Active = 'ACTIVE',
+  Disabled = 'DISABLED',
+}
+
+export interface AdhClusterNode {
   id: string;
   host: string;
   port: number;
@@ -29,4 +36,12 @@ export interface ClusterNode {
   registrationTime: number;
   executorsCount: number;
   cmdletsExecuted: number;
+  status: AdhClusterNodeStatus;
+}
+
+export interface AdhClusterNodesFilter {
+  id?: string;
+  clusterStates?: AdhClusterNodeStatus[];
+  registrationTime?: DateRange<SerializedDate>;
+  status?: AdhClusterNodeStatus;
 }

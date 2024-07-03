@@ -27,6 +27,8 @@ import auditEventsTableSlice from '@store/adh/auditEvents/auditEventsTableSlice'
 import rulesSlice from '@store/adh/rules/rulesSlice';
 import rulesTableSlice from '@store/adh/rules/rulesTableSlice';
 import rulesActionsSlice from '@store/adh/rules/rulesActionsSlice';
+import clusterNodesSlice from './adh/cluster/clusterNodesSlice';
+import clusterNodesTableSlice from './adh/cluster/clusterNodesTableSlice';
 import hottestFilesSlice from '@store/adh/hottestFiles/hottestFilesSlice';
 import hottestFilesTableSlice from '@store/adh/hottestFiles/hottestFilesTableSlice';
 import cachedFilesSlice from '@store/adh/cachedFiles/cachedFilesSlice';
@@ -41,6 +43,8 @@ const rootReducer = combineReducers({
     actionsActions: actionsActionsSlice,
     auditEvents: auditEventsSlice,
     auditEventsTable: auditEventsTableSlice,
+    clusterNodes: clusterNodesSlice,
+    clusterNodesTable: clusterNodesTableSlice,
     rules: rulesSlice,
     rulesTable: rulesTableSlice,
     rulesActions: rulesActionsSlice,
