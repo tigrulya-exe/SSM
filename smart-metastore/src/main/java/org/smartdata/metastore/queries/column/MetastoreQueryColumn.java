@@ -15,31 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.metastore.queries.column;
 
-import org.smartdata.metastore.queries.sort.RuleSortField;
-import org.smartdata.model.RuleInfo;
-import org.smartdata.model.RulesInfo;
-import org.smartdata.model.request.RuleSearchRequest;
+import org.smartdata.metastore.queries.expression.MetastoreQueryExpression;
 
-import java.util.List;
+import java.util.Map;
 
-public interface RuleDao
-    extends Searchable<RuleSearchRequest, RuleInfo, RuleSortField> {
+public interface MetastoreQueryColumn extends MetastoreQueryExpression {
+  MetastoreQueryExpression expression();
 
-  List<RuleInfo> getAll();
+  String alias();
 
-  RuleInfo getById(long id);
+  @Override
+  default String build() {
+    return expression().build() + " AS " + alias();
+  }
 
-  RulesInfo getRulesInfo();
+  @Override
+  default void renameParameter(String oldName, String newName) {
+    expression().renameParameter(oldName, newName);
+  }
 
-  long insert(RuleInfo ruleInfo);
-
-  int update(long ruleId, long lastCheckTime, long checkedCount, int cmdletsGen);
-
-  int update(long ruleId, int rs, long lastCheckTime, long checkedCount, int cmdletsGen);
-
-  int update(long ruleId, int rs);
-
-  void delete(long id);
+  @Override
+  default Map<String, Object> getParameters() {
+    return expression().getParameters();
+  }
 }

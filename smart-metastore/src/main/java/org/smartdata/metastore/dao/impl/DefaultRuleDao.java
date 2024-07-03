@@ -24,6 +24,7 @@ import org.smartdata.metastore.queries.MetastoreQuery;
 import org.smartdata.metastore.queries.sort.RuleSortField;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
+import org.smartdata.model.RulesInfo;
 import org.smartdata.model.request.RuleSearchRequest;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -41,7 +42,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.smartdata.metastore.queries.MetastoreQuery.select;
 import static org.smartdata.metastore.queries.MetastoreQuery.selectAll;
+import static org.smartdata.metastore.queries.column.MetastoreQueryColumnDsl.countAll;
+import static org.smartdata.metastore.queries.column.MetastoreQueryColumnDsl.countFiltered;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.betweenEpochInclusive;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.equal;
 import static org.smartdata.metastore.queries.expression.MetastoreQueryDsl.in;
@@ -51,6 +55,10 @@ public class DefaultRuleDao
     extends SearchableAbstractDao<RuleSearchRequest, RuleInfo, RuleSortField>
     implements RuleDao {
   private static final String TABLE_NAME = "rule";
+
+  private static final String TOTAL_RULES_COUNT_COLUMN = "total_rules_count";
+  private static final String ACTIVE_RULES_COUNT_COLUMN = "active_rules_count";
+
   private static final List<RuleState> SEARCHABLE_STATES = Arrays.asList(
       RuleState.ACTIVE, RuleState.NEW, RuleState.DISABLED, RuleState.FINISHED);
 
@@ -76,6 +84,18 @@ public class DefaultRuleDao
     return executeSingle(query)
         .orElseThrow(() -> new EmptyResultDataAccessException(
             "Rule with following id not found: " + id, 1));
+  }
+
+  @Override
+  public RulesInfo getRulesInfo() {
+    MetastoreQuery query = select(
+        countAll(TOTAL_RULES_COUNT_COLUMN),
+        countFiltered(ACTIVE_RULES_COUNT_COLUMN,
+            equal("state", RuleState.ACTIVE.getValue()))
+    ).from(TABLE_NAME);
+
+    return executeSingle(query, this::mapRulesInfoRow)
+        .orElse(new RulesInfo(0L, 0L));
   }
 
   @Override
@@ -167,5 +187,11 @@ public class DefaultRuleDao
     return searchRequest.isIncludeDeletedRules()
         ? Collections.emptyList()
         : SEARCHABLE_STATES;
+  }
+
+  private RulesInfo mapRulesInfoRow(ResultSet resultSet, int row) throws SQLException {
+    return new RulesInfo(
+        resultSet.getLong(TOTAL_RULES_COUNT_COLUMN),
+        resultSet.getLong(ACTIVE_RULES_COUNT_COLUMN));
   }
 }

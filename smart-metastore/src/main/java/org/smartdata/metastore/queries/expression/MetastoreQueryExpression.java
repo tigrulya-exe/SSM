@@ -28,6 +28,6 @@ public interface MetastoreQueryExpression {
   }
 
   default Map<String, Object> getParameters() {
-     return Collections.emptyMap();
-   }
+    return Collections.emptyMap();
+  }
 }

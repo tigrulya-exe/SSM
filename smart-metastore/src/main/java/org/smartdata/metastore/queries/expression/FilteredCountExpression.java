@@ -15,31 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.metastore.queries.expression;
 
-import org.smartdata.metastore.queries.sort.RuleSortField;
-import org.smartdata.model.RuleInfo;
-import org.smartdata.model.RulesInfo;
-import org.smartdata.model.request.RuleSearchRequest;
+import lombok.RequiredArgsConstructor;
 
-import java.util.List;
+import java.util.Map;
 
-public interface RuleDao
-    extends Searchable<RuleSearchRequest, RuleInfo, RuleSortField> {
+@RequiredArgsConstructor
+public class FilteredCountExpression implements MetastoreQueryExpression {
 
-  List<RuleInfo> getAll();
+  private final MetastoreQueryExpression filterExpression;
 
-  RuleInfo getById(long id);
+  @Override
+  public String build() {
+    return "COUNT(CASE WHEN " + filterExpression.build() + " THEN 1 END)";
+  }
 
-  RulesInfo getRulesInfo();
-
-  long insert(RuleInfo ruleInfo);
-
-  int update(long ruleId, long lastCheckTime, long checkedCount, int cmdletsGen);
-
-  int update(long ruleId, int rs, long lastCheckTime, long checkedCount, int cmdletsGen);
-
-  int update(long ruleId, int rs);
-
-  void delete(long id);
+  @Override
+  public Map<String, Object> getParameters() {
+    return filterExpression.getParameters();
+  }
 }

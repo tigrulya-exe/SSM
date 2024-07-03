@@ -22,6 +22,7 @@ import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.PageRequest;
 import org.smartdata.metastore.queries.sort.RuleSortField;
 import org.smartdata.model.RuleInfo;
+import org.smartdata.model.RulesInfo;
 import org.smartdata.model.request.RuleSearchRequest;
 import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.generated.api.RulesApiDelegate;
@@ -31,6 +32,7 @@ import org.smartdata.server.generated.model.RuleDto;
 import org.smartdata.server.generated.model.RuleSortDto;
 import org.smartdata.server.generated.model.RuleStateDto;
 import org.smartdata.server.generated.model.RulesDto;
+import org.smartdata.server.generated.model.RulesInfoDto;
 import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
 import org.smartdata.server.generated.model.SubmitRuleRequestDto;
 import org.smartdata.server.mappers.RuleInfoMapper;
@@ -82,6 +84,12 @@ public class RulesControllerDelegate implements RulesApiDelegate {
 
     SearchResult<RuleInfo> searchResult = ruleManager.search(searchRequest, pageRequest);
     return ruleInfoMapper.toRulesDto(searchResult);
+  }
+
+  @Override
+  public RulesInfoDto getRulesInfo() throws Exception {
+    RulesInfo rulesInfo = ruleManager.getRulesInfo();
+    return ruleInfoMapper.toRulesInfoDto(rulesInfo);
   }
 
   @Override

@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.smartdata.metastore.queries.sort.RuleSortField;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
+import org.smartdata.model.RulesInfo;
 import org.smartdata.model.TimeInterval;
 import org.smartdata.model.request.RuleSearchRequest;
 
@@ -86,6 +87,27 @@ public class TestRuleDao
     ruleDao.update(rid, System.currentTimeMillis(), 100, 200);
     RuleInfo info2 = ruleDao.getById(rid);
     Assert.assertEquals(100L, info2.getNumChecked());
+  }
+
+  @Test
+  public void testGetRulesInfo() {
+    RulesInfo expectedRulesInfo = new RulesInfo(0, 0);
+    Assert.assertEquals(expectedRulesInfo, ruleDao.getRulesInfo());
+
+    insertTestRules();
+
+    expectedRulesInfo = new RulesInfo(4, 1);
+    Assert.assertEquals(expectedRulesInfo, ruleDao.getRulesInfo());
+
+    ruleDao.delete(FIRST_RULE_ID);
+
+    expectedRulesInfo = new RulesInfo(3, 1);
+    Assert.assertEquals(expectedRulesInfo, ruleDao.getRulesInfo());
+
+    ruleDao.delete(SECOND_RULE_ID);
+
+    expectedRulesInfo = new RulesInfo(2, 0);
+    Assert.assertEquals(expectedRulesInfo, ruleDao.getRulesInfo());
   }
 
   @Test

@@ -36,6 +36,7 @@ import org.smartdata.model.DetailedRuleInfo;
 import org.smartdata.model.PathChecker;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
+import org.smartdata.model.RulesInfo;
 import org.smartdata.model.request.RuleSearchRequest;
 import org.smartdata.model.rule.RuleExecutorPluginManager;
 import org.smartdata.model.rule.RulePluginManager;
@@ -247,6 +248,10 @@ public class RuleManager
     if (dropPendingCmdlets && getCmdletManager() != null) {
       getCmdletManager().deletePendingRuleCmdlets(ruleId);
     }
+  }
+
+  public RulesInfo getRulesInfo() {
+    return ruleDao.getRulesInfo();
   }
 
   private RuleInfoRepo checkIfExists(long ruleID) throws IOException {
