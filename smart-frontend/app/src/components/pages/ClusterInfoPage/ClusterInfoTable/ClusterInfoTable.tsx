@@ -21,7 +21,7 @@ import { useDispatch, useStore } from '@hooks';
 import { isShowSpinner } from '@uikit/Table/Table.utils';
 import TableRow from '@uikit/Table/TableRow/TableRow';
 import TableCellsRenderer from '@uikit/Table/TableCell/TableCellsRenderer';
-import { setClusterNodesFilter, setClusterNodesSortParams } from '@store/adh/cluster/clusterTableSlice';
+import { setClusterNodesFilter, setClusterNodesSortParams } from '@store/adh/cluster/clusterNodesTableSlice';
 import type { SortParams } from '@models/table';
 import type { AdhClusterNodesFilter } from '@models/adh';
 import { clusterNodesColumns } from './ClusterInfoTable.schema';
@@ -29,11 +29,11 @@ import { clusterNodesColumns } from './ClusterInfoTable.schema';
 const ClusterInfoTable: React.FC = () => {
   const dispatch = useDispatch();
 
-  const nodes = useStore(({ adh }) => adh.cluster.nodes);
-  const isLoading = useStore(({ adh }) => isShowSpinner(adh.cluster.loadState));
+  const nodes = useStore(({ adh }) => adh.clusterNodes.nodes);
+  const isLoading = useStore(({ adh }) => isShowSpinner(adh.clusterNodes.loadState));
 
-  const filter = useStore(({ adh }) => adh.clusterTable.filter);
-  const sortParams = useStore(({ adh }) => adh.clusterTable.sortParams);
+  const filter = useStore(({ adh }) => adh.clusterNodesTable.filter);
+  const sortParams = useStore(({ adh }) => adh.clusterNodesTable.sortParams);
 
   const handleFiltering = (filter: Partial<AdhClusterNodesFilter>) => {
     dispatch(setClusterNodesFilter(filter));

@@ -25,7 +25,7 @@ import { executeWithMinDelay } from '@utils/requestUtils';
 import { defaultSpinnerDelay } from '@constants';
 import { AdhClusterNodeStatus, type AdhClusterNode } from '@models/adh';
 
-interface AdhClustersSliceState {
+interface AdhClusterNodesSliceState {
   nodes: AdhClusterNode[];
   totalCount: number;
   loadState: LoadState;
@@ -35,7 +35,7 @@ interface AdhClustersSliceState {
 const loadClusterNodes = createAsyncThunk('adh/cluster/loadClusterNodes', async (_, thunkAPI) => {
   const {
     adh: {
-      clusterTable: { filter, paginationParams, sortParams },
+      clusterNodesTable: { filter, paginationParams, sortParams },
     },
   } = thunkAPI.getState();
 
@@ -87,14 +87,14 @@ const getClusterMetaInfo = createAsyncThunk('adh/cluster/getClusterMetaInfo', as
   }
 });
 
-const createInitialState = (): AdhClustersSliceState => ({
+const createInitialState = (): AdhClusterNodesSliceState => ({
   nodes: [],
   totalCount: 0,
   loadState: LoadState.NotLoaded,
   liveCount: 0,
 });
 
-const clustersSlice = createSlice({
+const clusterNodesSlice = createSlice({
   name: 'adh/cluster',
   initialState: createInitialState(),
   reducers: {
@@ -123,6 +123,6 @@ const clustersSlice = createSlice({
   },
 });
 
-const { cleanupClusterNodes, setLoadState: setClustersLoadState } = clustersSlice.actions;
+const { cleanupClusterNodes, setLoadState: setClustersLoadState } = clusterNodesSlice.actions;
 export { cleanupClusterNodes, setClustersLoadState, getClusterNodes, refreshClusterNodes, getClusterMetaInfo };
-export default clustersSlice.reducer;
+export default clusterNodesSlice.reducer;

@@ -21,7 +21,7 @@ import { FlexGroup, LegendCard } from '@uikit';
 import s from './ClusterInfoCards.module.scss';
 
 const ClusterInfoCards: React.FC = () => {
-  const liveCount = useStore(({ adh }) => adh.cluster.liveCount);
+  const liveCount = useStore(({ adh }) => adh.clusterNodes.liveCount);
 
   return (
     <FlexGroup gap="20px" className={s.clusterInfoCards}>

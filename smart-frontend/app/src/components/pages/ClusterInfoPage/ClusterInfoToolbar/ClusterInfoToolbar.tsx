@@ -19,7 +19,7 @@ import React from 'react';
 import Pagination from '@uikit/Pagination/Pagination';
 import { useDispatch, useStore } from '@hooks';
 import type { PaginationParams } from '@models/table';
-import { setClusterNodesPaginationParams } from '@store/adh/cluster/clusterTableSlice';
+import { setClusterNodesPaginationParams } from '@store/adh/cluster/clusterNodesTableSlice';
 import s from './ClusterInfoToolbar.module.scss';
 import { FlexGroup } from '@uikit';
 import ClusterInfoResetFilter from '../ClusterInfoResetFilter/ClusterInfoResetFilter';
@@ -27,8 +27,8 @@ import ClusterInfoResetFilter from '../ClusterInfoResetFilter/ClusterInfoResetFi
 const ClusterInfoToolbar: React.FC = () => {
   const dispatch = useDispatch();
 
-  const totalCount = useStore(({ adh }) => adh.cluster.totalCount);
-  const paginationParams = useStore(({ adh }) => adh.clusterTable.paginationParams);
+  const totalCount = useStore(({ adh }) => adh.clusterNodes.totalCount);
+  const paginationParams = useStore(({ adh }) => adh.clusterNodesTable.paginationParams);
 
   const handlePaginationChange = (params: PaginationParams) => {
     dispatch(setClusterNodesPaginationParams(params));

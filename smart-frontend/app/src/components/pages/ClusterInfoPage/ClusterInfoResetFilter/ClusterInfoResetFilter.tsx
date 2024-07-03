@@ -18,7 +18,7 @@
 import React from 'react';
 import { Button } from '@uikit';
 import { useDispatch } from '@hooks';
-import { resetClusterNodesFilter } from '@store/adh/cluster/clusterTableSlice';
+import { resetClusterNodesFilter } from '@store/adh/cluster/clusterNodesTableSlice';
 
 const ClusterInfoResetFilter: React.FC = () => {
   const dispatch = useDispatch();

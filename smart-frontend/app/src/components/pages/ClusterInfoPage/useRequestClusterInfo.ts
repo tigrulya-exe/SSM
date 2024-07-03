@@ -22,17 +22,17 @@ import {
   getClusterNodes,
   refreshClusterNodes,
   getClusterMetaInfo,
-} from '@store/adh/cluster/clusterSlice';
-import { cleanupClusterNodesTable } from '@store/adh/cluster/clusterTableSlice';
+} from '@store/adh/cluster/clusterNodesSlice';
+import { cleanupClusterNodesTable } from '@store/adh/cluster/clusterNodesTableSlice';
 import { defaultDebounceDelay } from '@constants';
 
 export const useRequestClusterInfo = () => {
   const dispatch = useDispatch();
 
-  const paginationParams = useStore(({ adh }) => adh.clusterTable.paginationParams);
-  const sortParams = useStore(({ adh }) => adh.clusterTable.sortParams);
-  const filter = useStore(({ adh }) => adh.clusterTable.filter);
-  const requestFrequency = useStore(({ adh }) => adh.clusterTable.requestFrequency);
+  const paginationParams = useStore(({ adh }) => adh.clusterNodesTable.paginationParams);
+  const sortParams = useStore(({ adh }) => adh.clusterNodesTable.sortParams);
+  const filter = useStore(({ adh }) => adh.clusterNodesTable.filter);
+  const requestFrequency = useStore(({ adh }) => adh.clusterNodesTable.requestFrequency);
 
   useEffect(
     () => () => {
