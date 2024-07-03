@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,26 +28,28 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class SsmContextInitializer implements
     ApplicationContextInitializer<ConfigurableApplicationContext> {
 
-    private final SmartEngine smartEngine;
+  private final SmartEngine smartEngine;
 
-    private final SmartConf conf;
+  private final SmartConf conf;
 
-    @Override
-    public void initialize(ConfigurableApplicationContext applicationContext) {
-      ConfigurableListableBeanFactory beanFactory = applicationContext.getBeanFactory();
-      beanFactory.registerSingleton("smartConfig", conf);
-      beanFactory.registerSingleton("smartEngine", smartEngine);
-      beanFactory.registerSingleton("statesManager", smartEngine.getStatesManager());
-      beanFactory.registerSingleton("cmdletManager", smartEngine.getCmdletManager());
-      beanFactory.registerSingleton("ruleManager", smartEngine.getRuleManager());
-      beanFactory.registerSingleton("auditService", smartEngine.getAuditService());
-      beanFactory.registerSingleton("clusterNodesManager",
-          smartEngine.getClusterNodesManager());
-      beanFactory.registerSingleton(
-          "cmdletInfoHandler", smartEngine.getCmdletManager().getCmdletInfoHandler());
-      beanFactory.registerSingleton(
-          "actionInfoHandler", smartEngine.getCmdletManager().getActionInfoHandler());
-      beanFactory.registerSingleton(
-          "cachedFilesManager", smartEngine.getStatesManager().getCachedFilesManager());
-    }
+  @Override
+  public void initialize(ConfigurableApplicationContext applicationContext) {
+    ConfigurableListableBeanFactory beanFactory = applicationContext.getBeanFactory();
+    beanFactory.registerSingleton("smartConfig", conf);
+    beanFactory.registerSingleton("smartEngine", smartEngine);
+    beanFactory.registerSingleton("statesManager", smartEngine.getStatesManager());
+    beanFactory.registerSingleton("cmdletManager", smartEngine.getCmdletManager());
+    beanFactory.registerSingleton("ruleManager", smartEngine.getRuleManager());
+    beanFactory.registerSingleton("auditService", smartEngine.getAuditService());
+    beanFactory.registerSingleton("clusterNodesManager",
+        smartEngine.getClusterNodesManager());
+    beanFactory.registerSingleton(
+        "cmdletInfoHandler", smartEngine.getCmdletManager().getCmdletInfoHandler());
+    beanFactory.registerSingleton(
+        "actionInfoHandler", smartEngine.getCmdletManager().getActionInfoHandler());
+    beanFactory.registerSingleton(
+        "cachedFilesManager", smartEngine.getStatesManager().getCachedFilesManager());
+    beanFactory.registerSingleton("accessCountTableManager",
+        smartEngine.getStatesManager().getAccessCountTableManager());
+  }
 }

@@ -61,7 +61,9 @@ public class TestDBUtil {
   public static String getUniqueSqliteUrl() {
     String dbFile = getUniqueDBFilePath();
     new File(dbFile).deleteOnExit();
-    return SQLITE_URL_PREFIX + getUniqueDBFilePath();
+    String url = SQLITE_URL_PREFIX + getUniqueDBFilePath();
+    System.out.println("sqlite url: " + url);
+    return url;
   }
 
   public static void addAccessCountTableToDeque(
