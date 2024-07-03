@@ -26,7 +26,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class TestErasureCodingActionBase extends TestErasureCodingMiniCluster {
+public class TestErasureCodingAction extends TestErasureCodingMiniCluster {
 
   @Test
   public void testEcActionForFile() throws Exception {
@@ -36,7 +36,7 @@ public abstract class TestErasureCodingActionBase extends TestErasureCodingMiniC
     dfsClient.setStoragePolicy(srcPath, "COLD");
     HdfsFileStatus srcFileStatus = dfsClient.getFileInfo(srcPath);
     // The file is expected to be stored in replication.
-    assertEquals(null, srcFileStatus.getErasureCodingPolicy());
+    assertNull(srcFileStatus.getErasureCodingPolicy());
 
     ErasureCodingAction ecAction = new ErasureCodingAction();
     ecAction.setContext(smartContext);
@@ -69,7 +69,7 @@ public abstract class TestErasureCodingActionBase extends TestErasureCodingMiniC
   public void testEcActionForDir() throws Exception {
     String srcDirPath = "/test_dir/";
     dfs.mkdirs(new Path(srcDirPath));
-    assertEquals(null, dfsClient.getErasureCodingPolicy(srcDirPath));
+    assertNull(dfsClient.getErasureCodingPolicy(srcDirPath));
 
     ErasureCodingAction ecAction = new ErasureCodingAction();
     ecAction.setContext(smartContext);

@@ -144,6 +144,25 @@
         </dependency>
         <dependency>
             <groupId>org.smartdata</groupId>
+            <artifactId>${smart.hadoop.artifact}</artifactId>
+            <version>1.6.0-SNAPSHOT</version>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.smartdata</groupId>
+            <artifactId>${smart.hadoop.artifact}</artifactId>
+            <version>1.6.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.smartdata</groupId>
+            <artifactId>${smart.hadoop.client.artifact}</artifactId>
+            <version>1.6.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.smartdata</groupId>
             <artifactId>smart-metastore</artifactId>
             <version>1.6.0-SNAPSHOT</version>
             <scope>test</scope>
@@ -155,60 +174,6 @@
             <version>${mockito.version}</version>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>hadoop-3.1</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.smartdata</groupId>
-                    <artifactId>smart-hadoop-3.1</artifactId>
-                    <version>1.6.0-SNAPSHOT</version>
-                    <scope>test</scope>
-                    <type>test-jar</type>
-                </dependency>
-                <dependency>
-                    <groupId>org.smartdata</groupId>
-                    <artifactId>smart-hadoop-3.1</artifactId>
-                    <version>1.6.0-SNAPSHOT</version>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.smartdata</groupId>
-                    <artifactId>smart-hadoop-client-3.1</artifactId>
-                    <version>1.6.0-SNAPSHOT</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>hadoop-3.2</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.smartdata</groupId>
-                    <artifactId>smart-hadoop-3.2</artifactId>
-                    <version>1.6.0-SNAPSHOT</version>
-                    <scope>test</scope>
-                    <type>test-jar</type>
-                </dependency>
-                <dependency>
-                    <groupId>org.smartdata</groupId>
-                    <artifactId>smart-hadoop-3.2</artifactId>
-                    <version>1.6.0-SNAPSHOT</version>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.smartdata</groupId>
-                    <artifactId>smart-hadoop-client-3.2</artifactId>
-                    <version>1.6.0-SNAPSHOT</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 
     <build>
         <plugins>

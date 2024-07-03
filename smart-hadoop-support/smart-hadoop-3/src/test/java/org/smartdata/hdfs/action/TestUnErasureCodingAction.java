@@ -26,7 +26,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class TestUnErasureCodingActionBase extends TestErasureCodingMiniCluster {
+public class TestUnErasureCodingAction extends TestErasureCodingMiniCluster {
 
   @Test
   public void testUnEcActionForFile() throws Exception {

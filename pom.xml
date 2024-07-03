@@ -56,6 +56,7 @@
     <module>smart-dist</module>
     <module>smart-integration</module>
     <module>smart-web-server</module>
+    <module>smart-hadoop-support</module>
   </modules>
 
   <properties>
@@ -105,42 +106,25 @@
     <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
     <skip-build-web-ui>true</skip-build-web-ui>
+    <smart.hadoop.artifact>smart-hadoop-3</smart.hadoop.artifact>
+    <smart.hadoop.client.artifact>smart-hadoop-client-3</smart.hadoop.client.artifact>
   </properties>
 
   <profiles>
     <profile>
       <id>hadoop-3.1</id>
-      <modules>
-        <module>smart-hadoop-support</module>
-      </modules>
       <properties>
         <hadoop.version>3.1.2</hadoop.version>
       </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-hdfs-client</artifactId>
-          <version>${hadoop.version}</version>
-        </dependency>
-      </dependencies>
     </profile>
+
     <profile>
       <id>hadoop-3.2</id>
-      <modules>
-        <module>smart-hadoop-support</module>
-      </modules>
       <properties>
         <hadoop.version>3.2.4</hadoop.version>
         <guava.version>27.0-jre</guava.version>
         <jetty.version>9.4.43.v20210629</jetty.version>
       </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-hdfs-client</artifactId>
-          <version>${hadoop.version}</version>
-        </dependency>
-      </dependencies>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
@@ -150,8 +134,6 @@
       <id>alluxio</id>
       <modules>
         <module>smart-alluxio-support</module>
-        <!-- TODO remove in future -->
-        <module>smart-hadoop-support</module>
       </modules>
       <activation>
         <activeByDefault>true</activeByDefault>
@@ -300,6 +282,26 @@
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-runtime</artifactId>
         <version>${antlr4.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-hdfs-client</artifactId>
+        <version>${hadoop.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>ch.qos.reload4j</groupId>
+            <artifactId>reload4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-reload4j</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <dependency>

@@ -33,15 +33,15 @@ public class CompatibilityHelperLoader {
   public static final String UNKNOWN_VERSION = "Unknown";
 
   private static class CompatibilityHelperHolder {
-    static final CompatibilityHelper INSTANCE = createCompatibilityHelper();
+    static final CompatibilityHelper INSTANCE = createCompatibilityHelper(
+        VersionInfo.getVersion());
   }
 
   public static CompatibilityHelper getHelper() {
     return CompatibilityHelperHolder.INSTANCE;
   }
 
-  private static CompatibilityHelper createCompatibilityHelper() {
-    String version = VersionInfo.getVersion();
+  static CompatibilityHelper createCompatibilityHelper(String version) {
     if (StringUtils.isBlank(version) || version.equalsIgnoreCase(UNKNOWN_VERSION)) {
       LOG.error("Cannot get Hadoop version. Using default version: " + DEFAULT_HDFS_VERSION);
       version = DEFAULT_HDFS_VERSION;

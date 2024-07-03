@@ -36,7 +36,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
 
-public abstract class TestSmartDFSClientReadECDataBase extends TestErasureCodingMiniCluster {
+public class TestSmartDFSClientReadECData extends TestErasureCodingMiniCluster {
   public static final String TEST_DIR = "/ec";
 
   @Test
@@ -48,7 +48,7 @@ public abstract class TestSmartDFSClientReadECDataBase extends TestErasureCoding
     dfsClient.setErasureCodingPolicy(TEST_DIR, ecPolicy.getName());
     String srcPath = "/ec/a.txt";
     createTestFile(srcPath, 300000);
-    Assert.assertTrue(ecPolicy == dfsClient.getErasureCodingPolicy(srcPath));
+    Assert.assertSame(ecPolicy, dfsClient.getErasureCodingPolicy(srcPath));
 
     SmartConf smartConf = smartContext.getConf();
     // The below single configuration is in order to make sure a SmartDFSClient can be created
@@ -92,7 +92,7 @@ public abstract class TestSmartDFSClientReadECDataBase extends TestErasureCoding
     ecAction.run();
 
     assertTrue(ecAction.getExpectedAfterRun());
-    Assert.assertTrue(ecPolicy == dfsClient.getErasureCodingPolicy(srcPath));
+    Assert.assertSame(ecPolicy, dfsClient.getErasureCodingPolicy(srcPath));
 
     DFSInputStream dfsInputStream = smartDFSClient.open(srcPath);
     // In unit test, a DFSInputStream can still be used to read EC data. But in real environment,
