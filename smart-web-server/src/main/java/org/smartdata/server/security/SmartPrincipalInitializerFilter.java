@@ -17,8 +17,9 @@
  */
 package org.smartdata.server.security;
 
+import lombok.RequiredArgsConstructor;
 import org.smartdata.security.SmartPrincipal;
-import org.smartdata.security.SmartPrincipalHolder;
+import org.smartdata.security.SmartPrincipalManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,24 +33,26 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class SmartPrincipalInitializerFilter extends OncePerRequestFilter {
+
+  private final SmartPrincipalManager smartPrincipalManager;
+
   @Override
   protected void doFilterInternal(
       HttpServletRequest request,
       HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
 
-    SmartPrincipal principal = Optional.ofNullable(SecurityContextHolder.getContext())
+    Optional.ofNullable(SecurityContextHolder.getContext())
         .map(SecurityContext::getAuthentication)
         .filter(Authentication::isAuthenticated)
         .map(Authentication::getName)
         .map(SmartPrincipal::new)
-        .orElseGet(SmartPrincipalHolder::anonymous);
-
-    SmartPrincipalHolder.setCurrentPrincipal(principal);
+        .ifPresent(smartPrincipalManager::setCurrentPrincipal);
 
     filterChain.doFilter(request, response);
 
-    SmartPrincipalHolder.unsetCurrentPrincipal();
+    smartPrincipalManager.unsetCurrentPrincipal();
   }
 }

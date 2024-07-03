@@ -16,6 +16,9 @@
  * limitations under the License.
  */
 import type { EmptyTableFilter, PaginationParams, SortParams } from '@models/table';
+import type { DateRange, SerializedDate, StaticDateRange } from '@models/dateRange';
+import { convertToStaticRange, deserializeDateRange, serializeDateRange } from '@utils/date/dateRangeUtils';
+import { utcDateToLocal } from '@utils/date/utcUtils';
 
 type ExecuteWithMinDelayArgs = {
   startDate: Date;
@@ -45,10 +48,10 @@ export const prepareLimitOffset = (paginationParams: PaginationParams) => {
   };
 };
 
-export const prepareSorting = ({ sortBy, sortDirection }: SortParams) => {
+export const prepareSorting = ({ sortBy: fieldName, sortDirection }: SortParams) => {
+  const sign = sortDirection === 'desc' ? '-' : '';
   return {
-    sortBy,
-    sortOrder: sortDirection.toUpperCase(),
+    sort: `${sign}${fieldName}`,
   };
 };
 
@@ -83,4 +86,21 @@ export const prepareQueryParams = <F extends EmptyTableFilter>(
   };
 };
 
-export const absFilter = <T>(list: T[]) => (list.length ? list : undefined);
+/**
+ * convert dynamicRange to staticRange, and convert result to General Timezone
+ */
+export const prepareDateRange = (
+  dateRange: DateRange<SerializedDate> | undefined,
+): StaticDateRange<SerializedDate | undefined> => {
+  if (dateRange === undefined) {
+    return { from: undefined, to: undefined } as StaticDateRange<undefined>;
+  }
+
+  const staticSubmitted = convertToStaticRange(dateRange, true);
+  const { from, to } = deserializeDateRange(staticSubmitted) as StaticDateRange;
+
+  return serializeDateRange({
+    from: utcDateToLocal(from),
+    to: utcDateToLocal(to),
+  }) as StaticDateRange<SerializedDate>;
+};

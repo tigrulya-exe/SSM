@@ -17,16 +17,15 @@
  */
 import React from 'react';
 import type { ModalOptions } from '@uikit/Modal/Modal.types';
-import Text from '@uikit/Text/Text';
 import type { DialogDefaultControlsProps } from '@uikit/FooterDialog/FooterDialogDefaultControls';
 import DialogDefaultControls from '@uikit/FooterDialog/FooterDialogDefaultControls';
-import Panel from '@uikit/Panel/Panel';
 import s from './FooterDialog.module.scss';
 import cn from 'classnames';
 import { FloatingPortal } from '@floating-ui/react';
+import FlexGroup from '@uikit/FlexGroup/FlexGroup';
+import Title from '@uikit/Title/Title';
 
 export interface FooterDialogProps extends ModalOptions, DialogDefaultControlsProps {
-  isShown: boolean;
   children: React.ReactNode;
   title?: React.ReactNode;
   dialogControls?: React.ReactNode;
@@ -34,7 +33,7 @@ export interface FooterDialogProps extends ModalOptions, DialogDefaultControlsPr
 }
 
 const FooterDialog: React.FC<FooterDialogProps> = ({
-  isShown,
+  isOpen,
   onOpenChange,
   children,
   title,
@@ -63,19 +62,15 @@ const FooterDialog: React.FC<FooterDialogProps> = ({
 
   return (
     <FloatingPortal>
-      <div className={cn(s.dialog, className, { [s.dialog__shown]: isShown })}>
-        <div className={s.dialog__header}>
+      <div className={cn(s.dialog, className, { [s.dialog__shown]: isOpen })}>
+        <FlexGroup gap="20px" className={s.dialog__header}>
           {title && (
-            <Text variant="h2" className={s.dialog__title}>
+            <Title variant="h1" component="div">
               {title}
-            </Text>
+            </Title>
           )}
-          {dialogControlsComponent && (
-            <Panel className={s.dialog__controls} variant="primary">
-              {dialogControlsComponent}
-            </Panel>
-          )}
-        </div>
+          {dialogControlsComponent && <div className={s.dialog__controls}>{dialogControlsComponent}</div>}
+        </FlexGroup>
         <div className={s.dialog__body}>{children}</div>
       </div>
     </FloatingPortal>

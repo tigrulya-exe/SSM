@@ -17,6 +17,7 @@
  */
 package org.smartdata.server.config;
 
+import org.smartdata.security.SmartPrincipalManager;
 import org.smartdata.server.security.SmartPrincipalInitializerFilter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -49,18 +50,17 @@ public class SecurityConfiguration {
   @Bean
   @ConditionalOnProperty(name = ConfigKeys.WEB_SECURITY_ENABLED, havingValue = "true")
   public SecurityFilterChain securityFilterChain(
-      HttpSecurity http, List<SsmAuthHttpConfigurer> authHttpConfigurers) throws Exception {
-    http.cors().disable()
-        .csrf().disable()
+      HttpSecurity http,
+      SmartPrincipalManager principalManager,
+      List<SsmAuthHttpConfigurer> authHttpConfigurers) throws Exception {
+    baseHttpSecurity(http)
         .authorizeRequests()
         .antMatchers("/api/**").authenticated()
         .and()
         .anonymous().disable()
         .addFilterAfter(
-            new SmartPrincipalInitializerFilter(), BasicAuthenticationFilter.class)
-        .logout(logout -> logout.deleteCookies(SESSION_COOKIE_NAME)
-            .logoutUrl("/api/v2/logout")
-            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()));
+            new SmartPrincipalInitializerFilter(principalManager),
+            BasicAuthenticationFilter.class);
 
     for (SsmAuthHttpConfigurer configurer : authHttpConfigurers) {
       http.apply(configurer);
@@ -75,12 +75,19 @@ public class SecurityConfiguration {
       havingValue = "false",
       matchIfMissing = true)
   public SecurityFilterChain disabledSecurityFilterChain(HttpSecurity http) throws Exception {
-    http.cors().disable()
-        .csrf().disable()
+    baseHttpSecurity(http)
         .authorizeRequests()
         .anyRequest()
         .permitAll();
     return http.build();
+  }
+
+  private HttpSecurity baseHttpSecurity(HttpSecurity http) throws Exception {
+    return http.cors().disable()
+        .csrf().disable()
+        .logout(logout -> logout.deleteCookies(SESSION_COOKIE_NAME)
+            .logoutUrl("/api/v2/logout")
+            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()));
   }
 
   public static class BasicAuthHttpConfigurer extends SsmAuthHttpConfigurer {

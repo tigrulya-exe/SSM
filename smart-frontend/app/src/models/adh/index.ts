@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -15,30 +15,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.security;
-
-import java.util.Optional;
-
-public class SmartPrincipalHolder {
-  private static final SmartPrincipal ANONYMOUS = new SmartPrincipal("anonymous");
-
-  private static final ThreadLocal<SmartPrincipal> CURRENT_PRINCIPAL_THREAD_LOCAL =
-      new ThreadLocal<>();
-
-  public static void setCurrentPrincipal(SmartPrincipal principal) {
-    CURRENT_PRINCIPAL_THREAD_LOCAL.set(principal);
-  }
-
-  public static void unsetCurrentPrincipal() {
-    CURRENT_PRINCIPAL_THREAD_LOCAL.remove();
-  }
-
-  public static SmartPrincipal getCurrentPrincipal() {
-    return Optional.ofNullable(CURRENT_PRINCIPAL_THREAD_LOCAL.get())
-        .orElse(ANONYMOUS);
-  }
-
-  public static SmartPrincipal anonymous() {
-    return ANONYMOUS;
-  }
-}
+export * from './action';
+export * from './rule';

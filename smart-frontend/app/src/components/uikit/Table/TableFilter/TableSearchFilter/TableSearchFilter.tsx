@@ -23,6 +23,7 @@ import type { EmptyTableFilter } from '@models/table';
 import PopoverPanelDefault from '@uikit/Popover/PopoverPanelDefault/PopoverPanelDefault';
 import type { SearchInputProps } from '@uikit/SearchInput/SearchInput';
 import SearchInput from '@uikit/SearchInput/SearchInput';
+import s from './TableSearchFilter.module.scss';
 
 export interface TableSearchFilterProps<FilterConfig extends EmptyTableFilter>
   extends Omit<SearchInputProps, 'value' | 'onChange'> {
@@ -48,7 +49,7 @@ const TableSearchFilter = <FilterConfig extends EmptyTableFilter>({
   };
 
   return (
-    <PopoverPanelDefault>
+    <PopoverPanelDefault className={s.tableSearchFilter}>
       <SearchInput {...props} value={localValue ?? ''} onChange={handleChange} denyCharsPattern={denyCharsPattern} />
     </PopoverPanelDefault>
   );

@@ -24,7 +24,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.smartdata.model.audit.UserActivityEvent;
 import org.smartdata.model.audit.UserActivityResult;
-import org.smartdata.security.SmartPrincipalHolder;
 import org.smartdata.server.engine.audit.AuditService;
 import org.smartdata.server.engine.audit.Auditable;
 
@@ -82,7 +81,7 @@ public class AuditAspect {
   }
 
   private void logSuccess(JoinPoint joinPoint, Audit audit, long objectId) {
-    UserActivityEvent event = eventBuilder(audit, objectId)
+    UserActivityEvent event = eventBuilder(joinPoint, audit, objectId)
         .result(UserActivityResult.SUCCESS)
         .build();
 
@@ -91,7 +90,7 @@ public class AuditAspect {
 
   private void logFailure(
       JoinPoint joinPoint, Audit audit, Long objectId, Exception exception) {
-    UserActivityEvent event = eventBuilder(audit, objectId)
+    UserActivityEvent event = eventBuilder(joinPoint, audit, objectId)
         .result(UserActivityResult.FAILURE)
         .additionalInfo(exception.getMessage())
         .build();
@@ -111,8 +110,10 @@ public class AuditAspect {
   }
 
   private UserActivityEvent.Builder eventBuilder(
-      Audit audit, Long objectId) {
-    String currentUserName = SmartPrincipalHolder
+      JoinPoint joinPoint, Audit audit, Long objectId) {
+    Auditable auditable = (Auditable) joinPoint.getThis();
+
+    String currentUserName = auditable.getPrincipalService()
         .getCurrentPrincipal()
         .getName();
 

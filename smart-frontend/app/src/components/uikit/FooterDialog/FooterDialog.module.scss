@@ -21,26 +21,19 @@
   color: var(--text-default-color);
 
   &__header {
-    display: flex;
-    justify-content: space-between;
-  }
-
-  &__title {
-    color: var(--text-title-color);
-    font-size: 31px;
+    margin-bottom: 24px;
   }
 
   &__controls {
-    margin-bottom: 24px;
-    background-color: transparent !important;
+    margin-left: auto;
 
     button {
-      width: 108px;
+      min-width: 110px;
     }
   }
 
   &__shown {
     transform: translateY(0);
-    transition: 1s;
+    transition: transform 500ms;
   }
 }

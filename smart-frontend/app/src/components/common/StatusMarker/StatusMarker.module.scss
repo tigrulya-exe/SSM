@@ -1,0 +1,34 @@
+:global {
+  body.theme-dark {
+    --statusMarker-gray: var(--color-grayDisabled);
+    --statusMarker-blue: var(--color-blue);
+    --statusMarker-green: var(--color-greenSaturated);
+    --statusMarker-red: var(--color-red);
+  }
+  body.theme-light {
+    --statusMarker-gray: var(--color-popupLightDarker);
+    --statusMarker-blue: var(--color-blue);
+    --statusMarker-green: var(--color-greenLogo);
+    --statusMarker-red: var(--color-red);
+  }
+}
+
+.statusMarker {
+  width: 6px;
+  height: 6px;
+  display: inline-flex;
+  border-radius: 50%;
+
+  &_gray {
+    background-color: var(--statusMarker-gray);
+  }
+  &_blue {
+    background-color: var(--statusMarker-blue);
+  }
+  &_green {
+    background-color: var(--statusMarker-green);
+  }
+  &_red {
+    background-color: var(--statusMarker-red);
+  }
+}

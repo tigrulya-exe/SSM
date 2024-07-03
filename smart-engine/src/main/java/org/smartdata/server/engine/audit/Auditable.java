@@ -17,6 +17,9 @@
  */
 package org.smartdata.server.engine.audit;
 
+import org.smartdata.security.SmartPrincipalManager;
+
 public interface Auditable {
   AuditService getAuditService();
+  SmartPrincipalManager getPrincipalService();
 }

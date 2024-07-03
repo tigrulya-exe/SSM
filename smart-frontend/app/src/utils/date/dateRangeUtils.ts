@@ -19,7 +19,7 @@ import { addHours, addDays, addMonths, getToday, addWeeks, addMinutes } from '@u
 import type { DateRange, DynamicDateRange, StaticDateRange, SerializedDate } from '@models/dateRange';
 import { isDynamicDateRange, isStaticDateRange } from '@models/dateRange';
 import { parseValueSegments } from '@utils/unitUtils';
-import { dateParse, dateStringify } from '@utils/date/dateConvertUtils';
+import { deserializeDate, serializeDate } from '@utils/date/dateConvertUtils';
 
 const allowDateTimeUnits = ['m', 'h', 'd', 'w', 'M'] as const;
 type DateTimeUnit = (typeof allowDateTimeUnits)[number];
@@ -87,7 +87,7 @@ export const convertToStaticRange = <T = Date>(dateRange: DateRange<T>, isString
   // in this place staticRange, always StaticDateRange<Date>
   const staticRange = getRangeFromNow(dateRange);
 
-  if (isStringify) return dateRangeStringify(staticRange) as StaticDateRange<T>;
+  if (isStringify) return serializeDateRange(staticRange) as StaticDateRange<T>;
 
   return staticRange as StaticDateRange<T>;
 };
@@ -97,7 +97,7 @@ export const convertToStaticRange = <T = Date>(dateRange: DateRange<T>, isString
  * to string (for dynamicRange - without changes)
  * and two numbers (for staticRange - from,to are seconds)
  */
-export const dateRangeStringify = (dateRange: DateRange): DateRange<SerializedDate> => {
+export const serializeDateRange = (dateRange: DateRange): DateRange<SerializedDate> => {
   if (isDynamicDateRange(dateRange)) return dateRange;
 
   if (!isStaticDateRange(dateRange)) {
@@ -105,15 +105,15 @@ export const dateRangeStringify = (dateRange: DateRange): DateRange<SerializedDa
   }
 
   return {
-    from: dateStringify(dateRange.from),
-    to: dateStringify(dateRange.to),
+    from: serializeDate(dateRange.from),
+    to: serializeDate(dateRange.to),
   };
 };
 
 /**
  * Converted dateRange with from,to as number (seconds) to instances of Date
  */
-export const dateRangeParse = (dateRange: DateRange<SerializedDate>): DateRange => {
+export const deserializeDateRange = (dateRange: DateRange<SerializedDate>): DateRange => {
   if (isDynamicDateRange<SerializedDate>(dateRange)) return dateRange;
 
   if (!isStaticDateRange<SerializedDate>(dateRange)) {
@@ -121,7 +121,7 @@ export const dateRangeParse = (dateRange: DateRange<SerializedDate>): DateRange 
   }
 
   return {
-    from: dateParse(dateRange.from),
-    to: dateParse(dateRange.to),
+    from: deserializeDate(dateRange.from),
+    to: deserializeDate(dateRange.to),
   };
 };

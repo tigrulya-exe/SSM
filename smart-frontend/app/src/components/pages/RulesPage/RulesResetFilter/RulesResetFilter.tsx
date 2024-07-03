@@ -15,19 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export type SortDirection = 'asc' | 'desc';
+import React from 'react';
+import { Button } from '@uikit';
+import { useDispatch } from '@hooks';
+import { resetRulesFilter } from '@store/adh/rules/rulesTableSlice';
 
-export interface SortParams {
-  sortBy: string;
-  sortDirection: SortDirection;
-}
+const RulesResetFilter: React.FC = () => {
+  const dispatch = useDispatch();
 
-export interface PaginationParams {
-  pageNumber: number;
-  perPage: number;
-}
+  const handleClick = () => {
+    dispatch(resetRulesFilter());
+  };
 
-export interface SortingProps {
-  sortParams: SortParams;
-  onSorting: (sortParams: SortParams) => void;
-}
+  return (
+    <Button onClick={handleClick} variant="secondary">
+      Reset filter
+    </Button>
+  );
+};
+
+export default RulesResetFilter;
