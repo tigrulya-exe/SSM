@@ -19,6 +19,7 @@ package org.smartdata.metastore.queries;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.smartdata.metastore.queries.column.MetastoreQueryColumn;
 import org.smartdata.metastore.queries.expression.MetastoreQueryExpression;
 import org.smartdata.metastore.queries.sort.Sorting;
 
@@ -41,9 +42,13 @@ public class MetastoreQuery {
   private String table;
 
   private MetastoreQuery(String baseQuery) {
+    this(baseQuery, new HashMap<>());
+  }
+
+  private MetastoreQuery(String baseQuery, Map<String, Object> parameters) {
     this.queryBuilder = new StringBuilder();
     this.filtersBuilder = new StringBuilder();
-    this.parameters = new HashMap<>();
+    this.parameters = parameters;
     this.table = null;
 
     queryBuilder.append(baseQuery).append("\n");
@@ -55,6 +60,17 @@ public class MetastoreQuery {
 
   public static MetastoreQuery select(String... fields) {
     return new MetastoreQuery("SELECT " + String.join(", ", fields));
+  }
+
+  public static MetastoreQuery select(MetastoreQueryColumn... fields) {
+    Map<String, Object> parameters = new HashMap<>();
+
+    String fieldsString = Arrays.stream(fields)
+        .peek(field -> parameters.putAll(field.getParameters()))
+        .map(MetastoreQueryColumn::build)
+        .collect(Collectors.joining(", "));
+
+    return new MetastoreQuery("SELECT " + fieldsString, parameters);
   }
 
   public MetastoreQuery from(String table) {

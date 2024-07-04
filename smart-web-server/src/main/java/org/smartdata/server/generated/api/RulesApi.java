@@ -37,6 +37,7 @@ import org.smartdata.server.generated.model.RuleDto;
 import org.smartdata.server.generated.model.RuleSortDto;
 import org.smartdata.server.generated.model.RuleStateDto;
 import org.smartdata.server.generated.model.RulesDto;
+import org.smartdata.server.generated.model.RulesInfoDto;
 import org.smartdata.server.generated.model.SubmissionTimeIntervalDto;
 import org.smartdata.server.generated.model.SubmitRuleRequestDto;
 import org.springframework.http.HttpStatus;
@@ -219,6 +220,40 @@ public interface RulesApi {
         @Parameter(name = "lastActivationTime", description = "Time interval in which the rule was activated", in = ParameterIn.QUERY) @Valid LastActivationTimeIntervalDto lastActivationTime
     ) throws Exception {
         return getDelegate().getRules(pageRequest, sort, textRepresentationLike, submissionTime, ruleStates, lastActivationTime);
+    }
+
+
+    /**
+     * GET /api/v2/rules/info : Get information about rules
+     *
+     * @return OK (status code 200)
+     *         or Unauthorized (status code 401)
+     */
+    @Operation(
+        operationId = "getRulesInfo",
+        summary = "Get information about rules",
+        tags = { "Rules" },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "OK", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = RulesInfoDto.class))
+            }),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+        },
+        security = {
+            @SecurityRequirement(name = "basicAuth")
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.GET,
+        value = "/api/v2/rules/info",
+        produces = { "application/json" }
+    )
+    @ResponseStatus(HttpStatus.OK)
+    
+    default RulesInfoDto getRulesInfo(
+        
+    ) throws Exception {
+        return getDelegate().getRulesInfo();
     }
 
 

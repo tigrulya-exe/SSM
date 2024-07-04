@@ -19,6 +19,7 @@ package org.smartdata.metastore.dao;
 
 import org.smartdata.metastore.queries.sort.RuleSortField;
 import org.smartdata.model.RuleInfo;
+import org.smartdata.model.RulesInfo;
 import org.smartdata.model.request.RuleSearchRequest;
 
 import java.util.List;
@@ -29,6 +30,8 @@ public interface RuleDao
   List<RuleInfo> getAll();
 
   RuleInfo getById(long id);
+
+  RulesInfo getRulesInfo();
 
   long insert(RuleInfo ruleInfo);
 

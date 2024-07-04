@@ -19,17 +19,39 @@ import { combineReducers } from 'redux';
 import { configureStore } from '@reduxjs/toolkit';
 import notificationsSlice from './notificationsSlice';
 import authSlice from '@store/authSlice';
+import actionsSlice from '@store/adh/actions/actionsSlice';
+import actionsTableSlice from '@store/adh/actions/actionsTableSlice';
+import actionsActionsSlice from '@store/adh/actions/actionsActionsSlice';
+import auditEventsSlice from '@store/adh/auditEvents/auditEventsSlice';
+import auditEventsTableSlice from '@store/adh/auditEvents/auditEventsTableSlice';
 import rulesSlice from '@store/adh/rules/rulesSlice';
 import rulesTableSlice from '@store/adh/rules/rulesTableSlice';
 import rulesActionsSlice from '@store/adh/rules/rulesActionsSlice';
+import clusterNodesSlice from './adh/cluster/clusterNodesSlice';
+import clusterNodesTableSlice from './adh/cluster/clusterNodesTableSlice';
+import hottestFilesSlice from '@store/adh/hottestFiles/hottestFilesSlice';
+import hottestFilesTableSlice from '@store/adh/hottestFiles/hottestFilesTableSlice';
+import cachedFilesSlice from '@store/adh/cachedFiles/cachedFilesSlice';
+import cachedFilesTableSlice from '@store/adh/cachedFiles/cachedFilesTableSlice';
 
 const rootReducer = combineReducers({
   auth: authSlice,
   notifications: notificationsSlice,
   adh: combineReducers({
+    actions: actionsSlice,
+    actionsTable: actionsTableSlice,
+    actionsActions: actionsActionsSlice,
+    auditEvents: auditEventsSlice,
+    auditEventsTable: auditEventsTableSlice,
+    clusterNodes: clusterNodesSlice,
+    clusterNodesTable: clusterNodesTableSlice,
     rules: rulesSlice,
     rulesTable: rulesTableSlice,
     rulesActions: rulesActionsSlice,
+    hottestFiles: hottestFilesSlice,
+    hottestFilesTable: hottestFilesTableSlice,
+    cachedFiles: cachedFilesSlice,
+    cachedFilesTable: cachedFilesTableSlice,
   }),
 });
 

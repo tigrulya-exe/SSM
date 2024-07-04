@@ -16,11 +16,25 @@
  * limitations under the License.
  */
 import React from 'react';
+import { FlexGroup, Title } from '@uikit';
+import ActionCreateBtn from './ActionCreateBtn/ActionCreateBtn';
+import ActionsToolbar from './ActionsToolbar/ActionsToolbar';
+import ActionsTable from './ActionsTable/ActionsTable';
+import { useRequestActions } from '@pages/ActionsPage/useRequestActions';
+import ActionsDialogs from './ActionsDialogs/ActionsDialogs';
 
 const ActionsPage: React.FC = () => {
+  useRequestActions();
+
   return (
     <div>
-      <div>Actions page</div>
+      <FlexGroup gap="20px">
+        <Title variant="h1">Actions page</Title>
+        <ActionCreateBtn />
+      </FlexGroup>
+      <ActionsToolbar />
+      <ActionsTable />
+      <ActionsDialogs />
     </div>
   );
 };

@@ -16,30 +16,23 @@
  * limitations under the License.
  */
 import React from 'react';
-import { Button, IconButton, Input } from '@uikit';
+import ClusterInfoCards from './ClusterInfoCards/ClusterInfoCards';
+import ClusterInfoToolbar from './ClusterInfoToolbar/ClusterInfoToolbar';
+import ClusterInfoTable from './ClusterInfoTable/ClusterInfoTable';
+import { Title } from '@uikit';
+import { useRequestClusterInfo } from './useRequestClusterInfo';
+import ClusterFiles from './ClusterFiles/ClusterFiles';
 
 const ClusterInfoPage: React.FC = () => {
+  useRequestClusterInfo();
+
   return (
     <div>
-      <span>Cluster Info</span>
-      <div>
-        <div>
-          Button: <br /> <br />
-          <Button>Some label</Button>
-        </div>
-        <br />
-        <br />
-        <div>
-          IconButton: <br /> <br />
-          <IconButton icon="chevron" />
-        </div>
-        <br />
-        <br />
-        <div>
-          Input: <br /> <br />
-          <Input endAdornment={<IconButton icon="search" variant="secondary" size={16} />} />
-        </div>
-      </div>
+      <Title variant="h1">Cluster Info</Title>
+      <ClusterInfoCards />
+      <ClusterInfoToolbar />
+      <ClusterInfoTable />
+      <ClusterFiles />
     </div>
   );
 };

@@ -16,11 +16,19 @@
  * limitations under the License.
  */
 import React from 'react';
+import { Title } from '@uikit';
+import AuditEventsToolbar from './AuditEventsToolbar/AuditEventsToolbar';
+import { useRequestAuditEvents } from './useRequestAuditEvents';
+import AuditEventsTable from './AuditEventsTable/AuditEventsTable';
 
 const AuditPage: React.FC = () => {
+  useRequestAuditEvents();
+
   return (
     <div>
-      <div>Audit page</div>
+      <Title variant="h1">Audit</Title>
+      <AuditEventsToolbar />
+      <AuditEventsTable />
     </div>
   );
 };

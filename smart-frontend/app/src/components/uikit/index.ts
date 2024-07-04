@@ -35,9 +35,12 @@ import Popover from './Popover/Popover';
 import PopoverPanelDefault from './Popover/PopoverPanelDefault/PopoverPanelDefault';
 import SearchInput from './SearchInput/SearchInput';
 import Select from './Select/SingleSelect/Select/Select';
+import Tab from './Tabs/Tab';
+import TabsBlock from './Tabs/TabsBlock';
 import Text from './Text/Text';
 import Title from './Title/Title';
 import Tooltip from './Tooltip/Tooltip';
+import LegendCard from './LegendCard/LegendCard';
 
 export {
   //
@@ -53,6 +56,7 @@ export {
   Input,
   InputNumber,
   InputPassword,
+  LegendCard,
   MultilineInput,
   MultiSelect,
   Panel,
@@ -60,6 +64,8 @@ export {
   PopoverPanelDefault,
   Select,
   SearchInput,
+  Tab,
+  TabsBlock,
   Text,
   Title,
   Tooltip,

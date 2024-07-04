@@ -1,0 +1,14 @@
+get:
+  tags:
+    - Rules
+  summary: Get information about rules
+  operationId: getRulesInfo
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/rules/RulesInfo.yaml'
+    '401':
+      description: Unauthorized

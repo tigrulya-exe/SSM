@@ -22,6 +22,7 @@ import RuleCreateBtn from './RuleCreateBtn/RuleCreateBtn';
 import RulesTable from './RulesTable/RulesTable';
 import { useRequestRules } from './useRequestRules';
 import RulesDialogs from './RulesDialogs/RulesDialogs';
+import RulesCards from './RulesCards/RulesCards';
 
 const RulesPage: React.FC = () => {
   useRequestRules();
@@ -32,6 +33,7 @@ const RulesPage: React.FC = () => {
         <Title variant="h1">Rules page</Title>
         <RuleCreateBtn />
       </FlexGroup>
+      <RulesCards />
       <RulesToolbar />
       <RulesTable />
       <RulesDialogs />

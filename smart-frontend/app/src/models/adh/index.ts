@@ -16,4 +16,7 @@
  * limitations under the License.
  */
 export * from './action';
+export * from './auditEvent';
+export * from './cluster';
 export * from './rule';
+export * from './file';
