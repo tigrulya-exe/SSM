@@ -23,8 +23,6 @@ import org.smartdata.exception.NotFoundException;
 import org.smartdata.metaservice.BackupMetaService;
 import org.smartdata.metaservice.CmdletMetaService;
 import org.smartdata.metaservice.CopyMetaService;
-import org.smartdata.metastore.dao.AccessCountDao;
-import org.smartdata.metastore.dao.AccessCountTable;
 import org.smartdata.metastore.dao.ActionDao;
 import org.smartdata.metastore.dao.BackUpInfoDao;
 import org.smartdata.metastore.dao.CacheFileDao;
@@ -51,11 +49,15 @@ import org.smartdata.metastore.dao.UserActivityDao;
 import org.smartdata.metastore.dao.UserInfoDao;
 import org.smartdata.metastore.dao.WhitelistDao;
 import org.smartdata.metastore.dao.XattrDao;
+import org.smartdata.metastore.dao.accesscount.AccessCountEventDao;
+import org.smartdata.metastore.dao.accesscount.AccessCountTableDao;
 import org.smartdata.metastore.db.DbSchemaManager;
 import org.smartdata.metastore.db.metadata.DbMetadataProvider;
+import org.smartdata.metastore.model.AccessCountTable;
+import org.smartdata.metastore.model.AggregatedAccessCounts;
 import org.smartdata.metastore.model.SearchResult;
+import org.smartdata.metastore.transaction.TransactionRunner;
 import org.smartdata.metastore.utils.MetaStoreUtils;
-import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.model.ActionInfo;
 import org.smartdata.model.BackUpInfo;
 import org.smartdata.model.CachedFileStatus;
@@ -70,7 +72,6 @@ import org.smartdata.model.DataNodeStorageInfo;
 import org.smartdata.model.DetailedFileAction;
 import org.smartdata.model.DetailedRuleInfo;
 import org.smartdata.model.ErasureCodingPolicyInfo;
-import org.smartdata.model.FileAccessInfo;
 import org.smartdata.model.FileDiff;
 import org.smartdata.model.FileDiffState;
 import org.smartdata.model.FileInfo;
@@ -87,15 +88,16 @@ import org.smartdata.model.SystemInfo;
 import org.smartdata.model.UserInfo;
 import org.smartdata.model.XAttribute;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.transaction.PlatformTransactionManager;
+
+import javax.sql.DataSource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
 /**
@@ -108,6 +110,7 @@ public class MetaStore implements CopyMetaService,
   private final DbSchemaManager dbSchemaManager;
 
   private final DbMetadataProvider dbMetadataProvider;
+  private final TransactionRunner defaultTransactionRunner;
 
   private Map<Integer, String> mapStoragePolicyIdName = null;
   private Map<String, Integer> mapStoragePolicyNameId = null;
@@ -122,7 +125,8 @@ public class MetaStore implements CopyMetaService,
   private final StorageHistoryDao storageHistoryDao;
   private final XattrDao xattrDao;
   private final FileDiffDao fileDiffDao;
-  private final AccessCountDao accessCountDao;
+  private final AccessCountTableDao accessCountTableDao;
+  private final AccessCountEventDao accessCountEventDao;
   private final MetaStoreHelper metaStoreHelper;
   private final ClusterConfigDao clusterConfigDao;
   private final GlobalConfigDao globalConfigDao;
@@ -139,16 +143,17 @@ public class MetaStore implements CopyMetaService,
   private final ErasureCodingPolicyDao ecDao;
   private final WhitelistDao whitelistDao;
   private final UserActivityDao userActivityDao;
-  private final ReentrantLock accessCountLock;
   private final DBPool dbPool;
 
   public MetaStore(DBPool pool,
                    DbSchemaManager dbSchemaManager,
                    DaoProvider daoProvider,
-                   DbMetadataProvider dbMetadataProvider) throws MetaStoreException {
+                   DbMetadataProvider dbMetadataProvider,
+                   PlatformTransactionManager transactionManager) throws MetaStoreException {
     this.dbPool = pool;
     this.dbSchemaManager = dbSchemaManager;
     this.dbMetadataProvider = dbMetadataProvider;
+    this.defaultTransactionRunner = new TransactionRunner(transactionManager);
     ruleDao = daoProvider.ruleDao();
     cmdletDao = daoProvider.cmdletDao();
     actionDao = daoProvider.actionDao();
@@ -157,7 +162,8 @@ public class MetaStore implements CopyMetaService,
     cacheFileDao = daoProvider.cacheFileDao();
     storageDao = daoProvider.storageDao();
     storageHistoryDao = daoProvider.storageHistoryDao();
-    accessCountDao = daoProvider.accessCountDao();
+    accessCountTableDao = daoProvider.accessCountDao();
+    accessCountEventDao = daoProvider.accessCountEventDao();
     fileDiffDao = daoProvider.fileDiffDao();
     metaStoreHelper = new MetaStoreHelper(pool.getDataSource());
     clusterConfigDao = daoProvider.clusterConfigDao();
@@ -175,7 +181,10 @@ public class MetaStore implements CopyMetaService,
     ecDao = daoProvider.ecDao();
     whitelistDao = daoProvider.whitelistDao();
     userActivityDao = daoProvider.userActivityDao();
-    accessCountLock = new ReentrantLock();
+  }
+
+  public DbMetadataProvider dbMetadataProvider() {
+    return dbMetadataProvider;
   }
 
   public UserActivityDao userActivityDao() {
@@ -194,8 +203,29 @@ public class MetaStore implements CopyMetaService,
     return ruleDao;
   }
 
+  public AccessCountTableDao accessCountTableDao() {
+    return accessCountTableDao;
+  }
+
+  public AccessCountEventDao accessCountEventDao() {
+    return accessCountEventDao;
+  }
+
   public CacheFileDao cacheFileDao() {
     return cacheFileDao;
+  }
+
+  public FileInfoDao fileInfoDao() {
+    return fileInfoDao;
+  }
+
+
+  public PlatformTransactionManager transactionManager() {
+    return defaultTransactionRunner.getTransactionManager();
+  }
+
+  public DataSource getDataSource() {
+    return dbPool.getDataSource();
   }
 
   public Long queryForLong(String sql) throws MetaStoreException {
@@ -356,67 +386,25 @@ public class MetaStore implements CopyMetaService,
     }
   }
 
-  public List<FileAccessInfo> getHotFiles(
-      List<AccessCountTable> tables,
-      int topNum) throws MetaStoreException {
-    Iterator<AccessCountTable> tableIterator = tables.iterator();
-    if (tableIterator.hasNext()) {
-      try {
-        Map<Long, Integer> accessCounts =
-            accessCountDao.getHotFiles(tables, topNum);
-        if (accessCounts.isEmpty()) {
-          return new ArrayList<>();
-        }
-        Map<Long, String> idToPath = getFilePaths(accessCounts.keySet());
-        List<FileAccessInfo> result = new ArrayList<>();
-        for (Map.Entry<Long, Integer> entry : accessCounts.entrySet()) {
-          Long fid = entry.getKey();
-          if (idToPath.containsKey(fid) && entry.getValue() > 0) {
-            result.add(
-                new FileAccessInfo(fid, idToPath.get(fid), entry.getValue()));
-          }
-        }
-        return result;
-      } catch (EmptyResultDataAccessException e) {
-        return new ArrayList<>();
-      } catch (Exception e) {
-        throw new MetaStoreException(e);
-      } finally {
-        for (AccessCountTable accessCountTable : tables) {
-          if (accessCountTable.isEphemeral()) {
-            this.dropTable(accessCountTable.getTableName());
-          }
-        }
-      }
-    } else {
-      return new ArrayList<>();
-    }
-  }
-
-  public ReentrantLock getAccessCountLock() {
-    return accessCountLock;
-  }
-
   /**
-   * @param fidSrc the fid of old file.
-   * @param fidDest the fid of new file that will take over the access
+   * @param srcFileId the fid of old file.
+   * @param destFileId the fid of new file that will take over the access
    *                count of old file.
-   * @throws MetaStoreException
    */
-  public void updateAccessCountTableFid(long fidSrc, long fidDest)
+  public void updateAccessCountTableFileIds(long srcFileId, long destFileId)
       throws MetaStoreException {
-    if (fidSrc == fidDest) {
-      LOG.warn("No need to update fid for access count table "
-          + "with same fid: " + fidDest);
+    if (srcFileId == destFileId) {
       return;
     }
-    accessCountLock.lock();
+
     try {
-      accessCountDao.updateFid(fidSrc, fidDest);
+      defaultTransactionRunner.inTransaction(() -> {
+        List<AccessCountTable> accessCountTables =
+            accessCountTableDao.getAllSortedTables();
+        accessCountEventDao.updateFileIds(accessCountTables, srcFileId, destFileId);
+      });
     } catch (Exception e) {
       throw new MetaStoreException(e);
-    } finally {
-      accessCountLock.unlock();
     }
   }
 
@@ -460,37 +448,6 @@ public class MetaStore implements CopyMetaService,
     }
   }
 
-  public List<AccessCountTable> getAllSortedTables() throws MetaStoreException {
-    try {
-      return accessCountDao.getAllSortedTables();
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
-  public void deleteAccessCountTable(
-      AccessCountTable table) throws MetaStoreException {
-    accessCountLock.lock();
-    try {
-      accessCountDao.delete(table);
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    } finally {
-      accessCountLock.unlock();
-    }
-  }
-
-  public void insertAccessCountTable(
-      AccessCountTable accessCountTable) throws MetaStoreException {
-    try {
-      if (accessCountDao.getAccessCountTableByName(accessCountTable.getTableName()).isEmpty()) {
-        accessCountDao.insert(accessCountTable);
-      }
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
   public void insertUpdateStoragesTable(StorageCapacity[] storages)
       throws MetaStoreException {
     mapStorageCapacity = null;
@@ -514,7 +471,7 @@ public class MetaStore implements CopyMetaService,
 
   public void insertUpdateStoragesTable(StorageCapacity storage)
       throws MetaStoreException {
-    insertUpdateStoragesTable(new StorageCapacity[]{storage});
+    insertUpdateStoragesTable(new StorageCapacity[] {storage});
   }
 
   public Map<String, StorageCapacity> getStorageCapacity() throws MetaStoreException {
@@ -653,11 +610,10 @@ public class MetaStore implements CopyMetaService,
     }
   }
 
-  public void updateCachedFiles(Map<String, Long> pathToIds,
-                                List<FileAccessEvent> events)
+  public void updateCachedFiles(Collection<AggregatedAccessCounts> accessCounts)
       throws MetaStoreException {
     try {
-      cacheFileDao.update(pathToIds, events);
+      cacheFileDao.update(accessCounts);
     } catch (Exception e) {
       throw new MetaStoreException(e);
     }
@@ -697,16 +653,6 @@ public class MetaStore implements CopyMetaService,
       return cacheFileDao.getById(fid);
     } catch (NotFoundException e) {
       return null;
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
-  }
-
-  public void createProportionTable(AccessCountTable dest,
-                                    AccessCountTable source)
-      throws MetaStoreException {
-    try {
-      accessCountDao.createProportionTable(dest, source);
     } catch (Exception e) {
       throw new MetaStoreException(e);
     }
@@ -1620,15 +1566,6 @@ public class MetaStore implements CopyMetaService,
   public void formatDataBase() throws MetaStoreException {
     dropAllTables();
     initializeDataBase();
-  }
-
-  public void aggregateTables(AccessCountTable destinationTable
-      , List<AccessCountTable> tablesToAggregate) throws MetaStoreException {
-    try {
-      accessCountDao.aggregateTables(destinationTable, tablesToAggregate);
-    } catch (Exception e) {
-      throw new MetaStoreException(e);
-    }
   }
 
   public void setClusterConfig(

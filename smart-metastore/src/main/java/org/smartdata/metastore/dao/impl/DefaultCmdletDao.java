@@ -147,7 +147,7 @@ public class DefaultCmdletDao
     MetastoreQuery query = selectAll()
         .from(TABLE_NAME)
         .where(
-            in("state", CmdletState.getTerminalStates())
+            in("state", getTerminalStateValues())
         );
 
     return queryExecutor.executeCount(query);
@@ -316,11 +316,17 @@ public class DefaultCmdletDao
   }
 
   private String getTerminatedStatesString() {
+    return getTerminalStateValues()
+        .stream()
+        .map(Objects::toString)
+        .collect(Collectors.joining(","));
+  }
+
+  private List<Integer> getTerminalStateValues() {
     return CmdletState.getTerminalStates()
         .stream()
         .map(CmdletState::getValue)
-        .map(Objects::toString)
-        .collect(Collectors.joining(","));
+        .collect(Collectors.toList());
   }
 
   @Override

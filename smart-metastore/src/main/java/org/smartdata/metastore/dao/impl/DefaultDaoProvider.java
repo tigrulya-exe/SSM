@@ -18,7 +18,6 @@
 package org.smartdata.metastore.dao.impl;
 
 import org.smartdata.metastore.DBPool;
-import org.smartdata.metastore.dao.AccessCountDao;
 import org.smartdata.metastore.dao.ActionDao;
 import org.smartdata.metastore.dao.BackUpInfoDao;
 import org.smartdata.metastore.dao.CacheFileDao;
@@ -45,7 +44,8 @@ import org.smartdata.metastore.dao.UserActivityDao;
 import org.smartdata.metastore.dao.UserInfoDao;
 import org.smartdata.metastore.dao.WhitelistDao;
 import org.smartdata.metastore.dao.XattrDao;
-import org.springframework.jdbc.support.JdbcTransactionManager;
+import org.smartdata.metastore.dao.accesscount.AccessCountEventDao;
+import org.smartdata.metastore.dao.accesscount.AccessCountTableDao;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
@@ -54,9 +54,9 @@ public class DefaultDaoProvider implements DaoProvider {
   protected final DataSource dataSource;
   protected final PlatformTransactionManager transactionManager;
 
-  public DefaultDaoProvider(DBPool dbPool) {
+  public DefaultDaoProvider(DBPool dbPool, PlatformTransactionManager transactionManager) {
     this.dataSource = dbPool.getDataSource();
-    this.transactionManager = new JdbcTransactionManager(dataSource);
+    this.transactionManager = transactionManager;
   }
 
   @Override
@@ -105,8 +105,13 @@ public class DefaultDaoProvider implements DaoProvider {
   }
 
   @Override
-  public AccessCountDao accessCountDao() {
-    return new DefaultAccessCountDao(dataSource);
+  public AccessCountTableDao accessCountDao() {
+    return new DefaultAccessCountTableDao(dataSource, transactionManager);
+  }
+
+  @Override
+  public AccessCountEventDao accessCountEventDao() {
+    return new DefaultAccessCountEventDao(dataSource, transactionManager);
   }
 
   @Override

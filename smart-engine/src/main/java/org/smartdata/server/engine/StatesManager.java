@@ -26,8 +26,8 @@ import org.smartdata.conf.ReconfigurableRegistry;
 import org.smartdata.conf.ReconfigureException;
 import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.metastore.MetaStoreException;
-import org.smartdata.metastore.dao.AccessCountTable;
-import org.smartdata.metastore.dao.AccessCountTableManager;
+import org.smartdata.metastore.dao.accesscount.AccessCountTableManager;
+import org.smartdata.metastore.model.AccessCountTable;
 import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.metrics.FileAccessEventSource;
 import org.smartdata.metrics.impl.MetricsFactory;
@@ -40,7 +40,7 @@ import org.smartdata.model.request.CachedFileSearchRequest;
 import org.smartdata.server.engine.data.AccessEventFetcher;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -49,7 +49,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * Polls metrics and events from NameNode.
  */
 public class StatesManager extends AbstractService implements Reconfigurable {
-  private ServerContext serverContext;
+  private final ServerContext serverContext;
 
   private ScheduledExecutorService executorService;
   private AccessCountTableManager accessCountTableManager;
@@ -70,8 +70,6 @@ public class StatesManager extends AbstractService implements Reconfigurable {
 
   /**
    * Load configure/data to initialize.
-   *
-   * @return true if initialized successfully
    */
   @Override
   public void init() throws IOException {
@@ -80,10 +78,11 @@ public class StatesManager extends AbstractService implements Reconfigurable {
     this.accessCountTableManager = new AccessCountTableManager(
         serverContext.getMetaStore(), executorService, serverContext.getConf());
     this.fileAccessEventSource = MetricsFactory.createAccessEventSource(serverContext.getConf());
-    this.accessEventFetcher =
-        new AccessEventFetcher(
-            serverContext.getConf(), accessCountTableManager,
-            executorService, fileAccessEventSource.getCollector());
+    this.accessEventFetcher = new AccessEventFetcher(
+        serverContext.getConf(),
+        accessCountTableManager.getAccessEventAggregator(),
+        executorService,
+        fileAccessEventSource.getCollector());
     this.pathChecker = new PathChecker(serverContext.getConf());
     this.cachedFilesManager =
         new CachedFilesManager(serverContext.getMetaStore());
@@ -125,19 +124,23 @@ public class StatesManager extends AbstractService implements Reconfigurable {
     LOG.info("Stopping ...");
 
     if (accessEventFetcher != null) {
-      this.accessEventFetcher.stop();
+      accessEventFetcher.stop();
     }
     if (this.fileAccessEventSource != null) {
-      this.fileAccessEventSource.close();
+      fileAccessEventSource.close();
     }
     if (statesUpdaterService != null) {
       statesUpdaterService.stop();
     }
+    if (executorService != null) {
+      executorService.shutdownNow();
+    }
+
     LOG.info("Stopped.");
   }
 
   public List<AccessCountTable> getTablesForLast(long timeInMills) throws MetaStoreException {
-    return accessCountTableManager.getTables(timeInMills);
+    return accessCountTableManager.getTablesForLast(timeInMills);
   }
 
   public void reportFileAccessEvent(FileAccessEvent event) {
@@ -158,23 +161,8 @@ public class StatesManager extends AbstractService implements Reconfigurable {
   }
 
   public List<FileAccessInfo> getHotFilesForLast(long timeInMills, int fileLimit)
-      throws IOException, MetaStoreException {
-    List<AccessCountTable> tables = getTablesForLast(timeInMills);
-    return getHotFiles(tables, fileLimit);
-  }
-
-  public List<FileAccessInfo> getHotFiles(List<AccessCountTable> tables,
-      int topNum) throws IOException {
-    try {
-      if (topNum == 0) {
-        topNum = serverContext.getConf().getInt(SmartConfKeys.SMART_TOP_HOT_FILES_NUM_KEY,
-            SmartConfKeys.SMART_TOP_HOT_FILES_NUM_DEFAULT);
-        return serverContext.getMetaStore().getHotFiles(tables, topNum);
-      }
-      return serverContext.getMetaStore().getHotFiles(tables, topNum);
-    } catch (MetaStoreException e) {
-      throw new IOException(e);
-    }
+      throws MetaStoreException {
+    return accessCountTableManager.getHotFiles(timeInMills, fileLimit);
   }
 
   // todo remove after zeppelin removal
@@ -223,7 +211,7 @@ public class StatesManager extends AbstractService implements Reconfigurable {
   }
 
   public List<String> getReconfigurableProperties() {
-    return Arrays.asList(
+    return Collections.singletonList(
         SmartConfKeys.SMART_DFS_NAMENODE_RPCSERVER_KEY);
   }
 

@@ -20,7 +20,7 @@ package org.smartdata.server.engine.data;
 import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smartdata.metastore.dao.AccessCountTableManager;
+import org.smartdata.metastore.dao.accesscount.AccessEventAggregator;
 import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.metrics.FileAccessEventCollector;
 
@@ -43,14 +43,14 @@ public class AccessEventFetcher {
 
   public AccessEventFetcher(
       Configuration conf,
-      AccessCountTableManager manager,
+      AccessEventAggregator accessEventAggregator,
       ScheduledExecutorService service,
       FileAccessEventCollector collector) {
     this.fetchInterval = conf.getLong(
         SMART_ACCESS_EVENT_FETCH_INTERVAL_MS_KEY,
         SMART_ACCESS_EVENT_FETCH_INTERVAL_MS_DEFAULT
     );
-    this.fetchTask = new FetchTask(manager, collector);
+    this.fetchTask = new FetchTask(accessEventAggregator, collector);
     this.scheduledExecutorService = service;
   }
 
@@ -68,12 +68,12 @@ public class AccessEventFetcher {
   }
 
   private static class FetchTask implements Runnable {
-    private final AccessCountTableManager manager;
+    private final AccessEventAggregator accessEventAggregator;
     private final FileAccessEventCollector collector;
 
     public FetchTask(
-        AccessCountTableManager manager, FileAccessEventCollector collector) {
-      this.manager = manager;
+        AccessEventAggregator accessEventAggregator, FileAccessEventCollector collector) {
+      this.accessEventAggregator = accessEventAggregator;
       this.collector = collector;
     }
 
@@ -82,7 +82,7 @@ public class AccessEventFetcher {
       try {
         List<FileAccessEvent> events = this.collector.collect();
         if (!events.isEmpty()) {
-          this.manager.onAccessEventsArrived(events);
+          accessEventAggregator.aggregate(events);
         }
       } catch (IOException e) {
         LOG.error("IngestionTask onAccessEventsArrived error", e);

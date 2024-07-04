@@ -15,38 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.metastore.dao.accesscount;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
+import org.smartdata.metastore.model.AccessCountTable;
 
-import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
+public abstract class AccessCountTableEvictor {
+  public static final Logger LOG = LoggerFactory.getLogger(AccessCountTableEvictor.class);
+  private final AccessCountTableHandler tableDeleter;
 
-public class AccessCountTableAggregator {
-  private final MetaStore metaStore;
-  public static final Logger LOG =
-      LoggerFactory.getLogger(AccessCountTableAggregator.class);
-
-  public AccessCountTableAggregator(MetaStore metaStore) {
-    this.metaStore = metaStore;
+  public AccessCountTableEvictor(AccessCountTableHandler tableDeleter) {
+    this.tableDeleter = tableDeleter;
   }
 
-  public void aggregate(AccessCountTable destinationTable,
-                        List<AccessCountTable> tablesToAggregate) throws MetaStoreException {
-    if (tablesToAggregate.isEmpty()) {
-      return;
-    }
-
-    ReentrantLock accessCountLock = metaStore.getAccessCountLock();
-    accessCountLock.lock();
+  public void dropTable(AccessCountTable accessCountTable) {
     try {
-      metaStore.aggregateTables(destinationTable, tablesToAggregate);
-      metaStore.insertAccessCountTable(destinationTable);
-    } finally {
-      accessCountLock.unlock();
+      tableDeleter.dropTable(accessCountTable);
+      LOG.debug("Dropped access count table " + accessCountTable.getTableName());
+    } catch (MetaStoreException e) {
+      LOG.error("Drop access count table {} failed", accessCountTable.getTableName(), e);
     }
   }
+
+  abstract void evictTables(AccessCountTableDeque tables, long lastAggregatedIntervalEndTimestamp);
 }

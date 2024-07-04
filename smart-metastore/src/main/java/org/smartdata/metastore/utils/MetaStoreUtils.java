@@ -33,6 +33,8 @@ import org.smartdata.metastore.dao.DaoProviderFactory;
 import org.smartdata.metastore.db.DBHandlersFactory;
 import org.smartdata.metastore.db.DbSchemaManager;
 import org.smartdata.metastore.db.metadata.DbMetadataProvider;
+import org.springframework.jdbc.support.JdbcTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -122,12 +124,17 @@ public class MetaStoreUtils {
     DruidPool druidPool = new DruidPool(properties);
     DBType dbType = getDbType(druidPool);
 
-    DaoProvider daoProvider = daoProviderFactory.createDaoProvider(druidPool, dbType);
+    PlatformTransactionManager transactionManager =
+        new JdbcTransactionManager(druidPool.getDataSource());
+
+    DaoProvider daoProvider = daoProviderFactory
+        .createDaoProvider(druidPool, transactionManager, dbType);
     DbSchemaManager dbSchemaManager = dbHandlersFactory.createDbManager(druidPool, conf);
     DbMetadataProvider dbMetadataProvider = dbHandlersFactory
         .createDbMetadataProvider(druidPool, dbType);
 
-    return new MetaStore(druidPool, dbSchemaManager, daoProvider, dbMetadataProvider);
+    return new MetaStore(druidPool, dbSchemaManager, daoProvider, dbMetadataProvider,
+        transactionManager);
   }
 
   /**

@@ -15,7 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.metastore.dao.accesscount;
+
+import org.smartdata.metastore.model.AccessCountTable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,13 +32,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class AccessCountTableDeque extends ConcurrentLinkedDeque<AccessCountTable> {
   private final TableAddOpListener listener;
-  private final TableEvictor tableEvictor;
+  private final AccessCountTableEvictor tableEvictor;
 
-  public AccessCountTableDeque(TableEvictor tableEvictor) {
+  public AccessCountTableDeque(AccessCountTableEvictor tableEvictor) {
     this(tableEvictor, TableAddOpListener.noOp());
   }
 
-  public AccessCountTableDeque(TableEvictor tableEvictor, TableAddOpListener listener) {
+  public AccessCountTableDeque(AccessCountTableEvictor tableEvictor, TableAddOpListener listener) {
     super();
     this.listener = checkNotNull(
         listener, "listener should not be null");

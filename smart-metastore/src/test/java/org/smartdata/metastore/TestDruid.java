@@ -29,6 +29,8 @@ import org.smartdata.metastore.db.metadata.SqliteDbMetadataProvider;
 import org.smartdata.metastore.utils.MetaStoreUtils;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
+import org.springframework.jdbc.support.JdbcTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import java.io.InputStream;
 import java.util.Properties;
@@ -49,10 +51,13 @@ public class TestDruid {
     DruidPool druidPool = new DruidPool(p);
     DbSchemaManager dbSchemaManager = new DBHandlersFactory()
         .createDbManager(druidPool, new Configuration());
-    DaoProvider daoProvider = new SqliteDaoProvider(druidPool);
+    PlatformTransactionManager transactionManager =
+        new JdbcTransactionManager(druidPool.getDataSource());
+    DaoProvider daoProvider = new SqliteDaoProvider(druidPool, transactionManager);
     DbMetadataProvider dbMetadataProvider = new SqliteDbMetadataProvider(
         druidPool.getDataSource());
-    MetaStore adapter = new MetaStore(druidPool, dbSchemaManager, daoProvider, dbMetadataProvider);
+    MetaStore adapter = new MetaStore(
+        druidPool, dbSchemaManager, daoProvider, dbMetadataProvider, transactionManager);
 
     String rule = "file : accessCount(10m) > 20 \n\n"
         + "and length() > 3 | cache";
@@ -61,12 +66,12 @@ public class TestDruid {
         rule, RuleState.ACTIVE, 0, 0, 0);
     Assert.assertTrue(adapter.insertNewRule(info1));
     RuleInfo info11 = adapter.getRuleInfo(info1.getId());
-    Assert.assertTrue(info1.equals(info11));
+    Assert.assertEquals(info1, info11);
 
     long now = System.currentTimeMillis();
     adapter.updateRuleInfo(info1.getId(), RuleState.DELETED, now, 1, 1);
     RuleInfo info12 = adapter.getRuleInfo(info1.getId());
-    Assert.assertTrue(info12.getLastCheckTime() == now);
+    Assert.assertEquals(info12.getLastCheckTime(), now);
 
     druidPool.close();
   }

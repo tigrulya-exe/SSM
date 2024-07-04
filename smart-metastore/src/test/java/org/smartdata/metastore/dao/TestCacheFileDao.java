@@ -20,8 +20,9 @@ package org.smartdata.metastore.dao;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.smartdata.exception.NotFoundException;
+import org.smartdata.metastore.model.AggregatedAccessCounts;
 import org.smartdata.metastore.queries.sort.CachedFilesSortField;
-import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.model.CachedFileStatus;
 import org.smartdata.model.TimeInterval;
 import org.smartdata.model.request.CachedFileSearchRequest;
@@ -53,24 +54,18 @@ public class TestCacheFileDao extends TestSearchableDao<
     CachedFileStatus second = new CachedFileStatus(90L,
         "testPath2", 2000L, 3000L, 200);
     cacheFileDao.insert(second);
-    Map<String, Long> pathToId = new HashMap<>();
-    pathToId.put("testPath", 80L);
-    pathToId.put("testPath2", 90L);
-    pathToId.put("testPath3", 100L);
-    List<FileAccessEvent> events = new ArrayList<>();
-    events.add(new FileAccessEvent("testPath", 3000L));
-    events.add(new FileAccessEvent("testPath", 4000L));
-    events.add(new FileAccessEvent("testPath2", 4000L));
-    events.add(new FileAccessEvent("testPath2", 5000L));
-    events.add(new FileAccessEvent("testPath3", 8000L));
-    events.add(new FileAccessEvent("testPath3", 9000L));
+    List<AggregatedAccessCounts> accessCounts = new ArrayList<>();
+    accessCounts.add(new AggregatedAccessCounts(80L, 2, 4000L));
+    accessCounts.add(new AggregatedAccessCounts(90L, 2, 5000L));
+    accessCounts.add(new AggregatedAccessCounts(100L, 2, 9000L));
+
     // Sync status
     first = new CachedFileStatus(80L,
         "testPath", 1000L, 4000L, first.getNumAccessed() + 2);
     second = new CachedFileStatus(90L,
         "testPath2", 2000L, 5000L, second.getNumAccessed() + 2);
 
-    cacheFileDao.update(pathToId, events);
+    cacheFileDao.update(accessCounts);
     List<CachedFileStatus> statuses = cacheFileDao.getAll();
     Assert.assertEquals(2, statuses.size());
     Map<Long, CachedFileStatus> statusMap = new HashMap<>();
@@ -86,7 +81,7 @@ public class TestCacheFileDao extends TestSearchableDao<
   }
 
   @Test
-  public void testInsertDeleteCachedFiles() throws Exception {
+  public void testInsertDeleteCachedFiles() throws NotFoundException {
     cacheFileDao
         .insert(80L,
             "testPath", 123456L, 234567L, 456);
@@ -113,7 +108,7 @@ public class TestCacheFileDao extends TestSearchableDao<
   }
 
   @Test
-  public void testGetCachedFileStatus() throws Exception {
+  public void testGetCachedFileStatus() throws NotFoundException {
     cacheFileDao.insert(6L, "testPath", 1490918400000L,
         234567L, 456);
     CachedFileStatus cachedFileStatus = new CachedFileStatus(6L, "testPath", 1490918400000L,

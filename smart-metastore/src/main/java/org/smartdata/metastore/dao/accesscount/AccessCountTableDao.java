@@ -15,14 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model;
+package org.smartdata.metastore.dao.accesscount;
 
-import lombok.Data;
+import org.smartdata.metastore.model.AccessCountTable;
 
-@Data
-public class FileAccessInfo {
-  private final long fid;
-  private final String path;
-  private final int accessCount;
-  private final long lastAccessedTime;
+import java.util.List;
+
+public interface AccessCountTableDao {
+  String TABLE_NAME = "access_count_table";
+
+  void insert(AccessCountTable accessCountTable);
+
+  void delete(AccessCountTable table);
+
+  List<AccessCountTable> getAllSortedTables();
+
+  boolean tableExists(String name);
 }

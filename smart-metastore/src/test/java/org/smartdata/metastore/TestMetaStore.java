@@ -19,7 +19,7 @@ package org.smartdata.metastore;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.smartdata.metrics.FileAccessEvent;
+import org.smartdata.metastore.model.AggregatedAccessCounts;
 import org.smartdata.model.ActionInfo;
 import org.smartdata.model.BackUpInfo;
 import org.smartdata.model.CachedFileStatus;
@@ -332,20 +332,13 @@ public class TestMetaStore extends TestDaoBase {
   public void testUpdateCachedFiles() throws Exception {
     metaStore.insertCachedFiles(80L, "testPath", 1000L, 2000L, 100);
     metaStore.insertCachedFiles(90L, "testPath2", 2000L, 3000L, 200);
-    Map<String, Long> pathToId = new HashMap<>();
-    pathToId.put("testPath", 80L);
-    pathToId.put("testPath2", 90L);
-    pathToId.put("testPath3", 100L);
-    List<FileAccessEvent> events = new ArrayList<>();
-    events.add(new FileAccessEvent("testPath", 3000L));
-    events.add(new FileAccessEvent("testPath", 4000L));
-    events.add(new FileAccessEvent("testPath2", 4000L));
-    events.add(new FileAccessEvent("testPath2", 5000L));
 
-    events.add(new FileAccessEvent("testPath3", 8000L));
-    events.add(new FileAccessEvent("testPath3", 9000L));
+    List<AggregatedAccessCounts> accessCounts = new ArrayList<>();
+    accessCounts.add(new AggregatedAccessCounts(80L, 2, 4000L));
+    accessCounts.add(new AggregatedAccessCounts(90L, 2, 5000L));
+    accessCounts.add(new AggregatedAccessCounts(100L, 2, 9000L));
 
-    metaStore.updateCachedFiles(pathToId, events);
+    metaStore.updateCachedFiles(accessCounts);
     List<CachedFileStatus> statuses = metaStore.getCachedFileStatus();
     Assert.assertEquals(2, statuses.size());
     Map<Long, CachedFileStatus> statusMap = new HashMap<>();
@@ -537,7 +530,7 @@ public class TestMetaStore extends TestDaoBase {
         .search(ActionSearchRequest.noFilters());
     Assert.assertEquals(1, actionInfos.size());
     actionInfo.setResult("Finished");
-    metaStore.updateActions(new ActionInfo[]{actionInfo});
+    metaStore.updateActions(new ActionInfo[] {actionInfo});
     actionInfos = metaStore.actionDao().search(ActionSearchRequest.noFilters());
     Assert.assertEquals(actionInfo, actionInfos.get(0));
   }
@@ -632,7 +625,7 @@ public class TestMetaStore extends TestDaoBase {
 
     DataNodeInfo insertInfo2 = new DataNodeInfo("UUID2", "HOSTNAME", "www.ssm.com", 0, 0, null);
     DataNodeInfo insertInfo3 = new DataNodeInfo("UUID3", "HOSTNAME", "www.ssm.com", 0, 0, null);
-    metaStore.insertDataNodeInfos(new DataNodeInfo[]{insertInfo2, insertInfo3});
+    metaStore.insertDataNodeInfos(new DataNodeInfo[] {insertInfo2, insertInfo3});
     List<DataNodeInfo> getInfo2 = metaStore.getDataNodeInfoByUuid("UUID2");
     Assert.assertEquals(insertInfo2, getInfo2.get(0));
     List<DataNodeInfo> getInfo3 = metaStore.getDataNodeInfoByUuid("UUID3");
@@ -644,7 +637,7 @@ public class TestMetaStore extends TestDaoBase {
     DataNodeInfo insertInfo1 = new DataNodeInfo("UUID1", "hostname", "www.ssm.com", 100, 50, "lab");
     DataNodeInfo insertInfo2 = new DataNodeInfo("UUID2", "HOSTNAME", "www.ssm.com", 0, 0, null);
     DataNodeInfo insertInfo3 = new DataNodeInfo("UUID3", "HOSTNAME", "www.ssm.com", 0, 0, null);
-    metaStore.insertDataNodeInfos(new DataNodeInfo[]{insertInfo1, insertInfo2, insertInfo3});
+    metaStore.insertDataNodeInfos(new DataNodeInfo[] {insertInfo1, insertInfo2, insertInfo3});
 
     List<DataNodeInfo> infos = metaStore.getAllDataNodeInfo();
     Assert.assertEquals(3, infos.size());
@@ -670,7 +663,7 @@ public class TestMetaStore extends TestDaoBase {
         new DataNodeStorageInfo("UUID2", 10, 10, "storageid2", false, 0, 0, 0, 0);
     DataNodeStorageInfo insertInfo3 =
         new DataNodeStorageInfo("UUID3", 10, 10, "storageid2", false, 0, 0, 0, 0);
-    metaStore.insertDataNodeStorageInfos(new DataNodeStorageInfo[]{insertInfo2, insertInfo3});
+    metaStore.insertDataNodeStorageInfos(new DataNodeStorageInfo[] {insertInfo2, insertInfo3});
     List<DataNodeStorageInfo> getInfo2 = metaStore.getDataNodeStorageInfoByUuid("UUID2");
     Assert.assertEquals(insertInfo2, getInfo2.get(0));
     List<DataNodeStorageInfo> getInfo3 = metaStore.getDataNodeStorageInfoByUuid("UUID3");
@@ -686,7 +679,7 @@ public class TestMetaStore extends TestDaoBase {
     DataNodeStorageInfo insertInfo3 =
         new DataNodeStorageInfo("UUID3", 10, 10, "storageid3", false, 0, 0, 0, 0);
     metaStore.insertDataNodeStorageInfos(
-        new DataNodeStorageInfo[]{insertInfo1, insertInfo2, insertInfo3});
+        new DataNodeStorageInfo[] {insertInfo1, insertInfo2, insertInfo3});
 
     List<DataNodeStorageInfo> infos = metaStore.getAllDataNodeStorageInfo();
     Assert.assertEquals(3, infos.size());

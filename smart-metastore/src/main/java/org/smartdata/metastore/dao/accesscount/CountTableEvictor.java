@@ -15,17 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.metastore.dao;
+package org.smartdata.metastore.dao.accesscount;
 
-import org.smartdata.metastore.MetaStore;
+import org.smartdata.metastore.model.AccessCountTable;
 
 import java.util.Iterator;
 
-public class CountEvictor extends TableEvictor {
+public class CountTableEvictor extends AccessCountTableEvictor {
   private final int maxCount;
 
-  public CountEvictor(MetaStore adapter, int count) {
-    super(adapter);
+  public CountTableEvictor(AccessCountTableHandler tableDeleter, int count) {
+    super(tableDeleter);
     this.maxCount = count;
   }
 
@@ -34,7 +34,7 @@ public class CountEvictor extends TableEvictor {
     int elementsToRemove = tables.size() - maxCount;
 
     for (Iterator<AccessCountTable> iterator = tables.iterator();
-         iterator.hasNext() && elementsToRemove-- > 0;) {
+         iterator.hasNext() && elementsToRemove-- > 0; ) {
       AccessCountTable table = iterator.next();
 
       if (table.getEndTime() > lastAggregatedIntervalEndTimestamp) {

@@ -25,10 +25,11 @@ import org.smartdata.metastore.dao.FileStateDao;
 import org.smartdata.metastore.dao.SmallFileDao;
 import org.smartdata.metastore.dao.StorageDao;
 import org.smartdata.metastore.dao.impl.DefaultDaoProvider;
+import org.springframework.transaction.PlatformTransactionManager;
 
 public class PostgresDaoProvider extends DefaultDaoProvider {
-  public PostgresDaoProvider(DBPool dbPool) {
-    super(dbPool);
+  public PostgresDaoProvider(DBPool dbPool, PlatformTransactionManager transactionManager) {
+    super(dbPool, transactionManager);
   }
 
   @Override

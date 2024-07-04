@@ -18,13 +18,13 @@
 package org.smartdata.metastore.dao;
 
 import org.smartdata.exception.NotFoundException;
+import org.smartdata.metastore.model.AggregatedAccessCounts;
 import org.smartdata.metastore.queries.sort.CachedFilesSortField;
-import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.model.CachedFileStatus;
 import org.smartdata.model.request.CachedFileSearchRequest;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 public interface CacheFileDao
     extends Searchable<CachedFileSearchRequest, CachedFileStatus, CachedFilesSortField> {
@@ -43,8 +43,7 @@ public interface CacheFileDao
 
   int update(Long fid, Long lastAccessTime, Integer numAccessed);
 
-  void update(Map<String, Long> pathToIds,
-              List<FileAccessEvent> events);
+  void update(Collection<AggregatedAccessCounts> events);
 
   void deleteById(long fid);
 
