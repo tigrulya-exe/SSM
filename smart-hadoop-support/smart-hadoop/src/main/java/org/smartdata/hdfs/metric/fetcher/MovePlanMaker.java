@@ -18,6 +18,7 @@
 package org.smartdata.hdfs.metric.fetcher;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.StorageType;
 import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.hdfs.protocol.BlockStoragePolicy;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
@@ -312,26 +313,16 @@ public class MovePlanMaker {
      * @returns the remaining number of replications to move.
      */
     int removeOverlap(boolean ignoreNonMovable) {
-      for(Iterator<String> i = existing.iterator(); i.hasNext(); ) {
-        final String t = i.next();
-        if (expected.remove(t)) {
-          i.remove();
-        }
-      }
+      existing.removeIf(expected::remove);
       if (ignoreNonMovable) {
         removeNonMovable(existing);
         removeNonMovable(expected);
       }
-      return existing.size() < expected.size() ? existing.size() : expected.size();
+      return Math.min(existing.size(), expected.size());
     }
 
     void removeNonMovable(List<String> types) {
-      for (Iterator<String> i = types.iterator(); i.hasNext(); ) {
-        final String t = i.next();
-        if (!CompatibilityHelperLoader.getHelper().isMovable(t)) {
-          i.remove();
-        }
-      }
+      types.removeIf(type -> !StorageType.valueOf(type).isMovable());
     }
 
     @Override

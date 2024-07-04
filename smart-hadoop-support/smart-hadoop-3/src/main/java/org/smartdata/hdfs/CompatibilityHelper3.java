@@ -95,29 +95,10 @@ public class CompatibilityHelper3 implements CompatibilityHelper {
   }
 
   @Override
-  public boolean isMovable(String type) {
-    return StorageType.valueOf(type).isMovable();
-  }
-
-  @Override
   public DatanodeInfo newDatanodeInfo(String ipAddress, int xferPort) {
     DatanodeID datanodeID = new DatanodeID(ipAddress, null, null,
         xferPort, 0, 0, 0);
     return new DatanodeDescriptor(datanodeID);
-  }
-
-  @Override
-  public InotifyProtos.AppendEventProto getAppendEventProto(Event.AppendEvent event) {
-    return InotifyProtos.AppendEventProto.newBuilder()
-        .setPath(event.getPath())
-        .setNewBlock(event.toNewBlock()).build();
-  }
-
-  @Override
-  public Event.AppendEvent getAppendEvent(InotifyProtos.AppendEventProto proto) {
-    return new Event.AppendEvent.Builder().path(proto.getPath())
-        .newBlock(proto.hasNewBlock() && proto.getNewBlock())
-        .build();
   }
 
   @Override

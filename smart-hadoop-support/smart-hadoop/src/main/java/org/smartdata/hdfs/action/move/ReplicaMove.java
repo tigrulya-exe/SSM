@@ -105,7 +105,8 @@ class ReplicaMove {
       unbufOut = saslStreams.out;
       unbufIn = saslStreams.in;
 
-      int ioFileBufferSize = conf.getInt(CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_KEY,
+      int ioFileBufferSize = conf.getInt(
+          CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_KEY,
           CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_DEFAULT);
 
       out = new DataOutputStream(new BufferedOutputStream(unbufOut, ioFileBufferSize));

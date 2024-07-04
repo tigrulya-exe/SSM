@@ -48,7 +48,7 @@ public class CompatibilityHelperLoader {
     }
     String[] parts = version.split("\\.");
     if (parts.length < 2) {
-      throw new RuntimeException(
+      throw new IllegalArgumentException(
           "Illegal Hadoop Version, expected 'Major.Minor.*' format: " + version);
     }
 
@@ -56,7 +56,7 @@ public class CompatibilityHelperLoader {
     int minorVersion = Integer.parseInt(parts[1]);
 
     if (majorVersion < 3 || minorVersion < 2) {
-      throw new RuntimeException("Hadoop versions below 3.2.X are not supported");
+      throw new IllegalArgumentException("Hadoop versions below 3.2.X are not supported");
     }
 
     return create(HADOOP_3_HELPER_CLASS);

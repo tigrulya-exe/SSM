@@ -37,7 +37,24 @@
         <module>smart-hadoop</module>
         <module>smart-hadoop-common</module>
         <module>smart-inputstream</module>
-        <module>${smart.hadoop.artifact}</module>
-        <module>${smart.hadoop.client.artifact}</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>hadoop-3.2</id>
+            <modules>
+                <module>smart-hadoop-3</module>
+                <module>smart-hadoop-3.2</module>
+                <module>smart-hadoop-client-3</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>hadoop-3.3</id>
+            <modules>
+                <module>smart-hadoop-3</module>
+                <module>smart-hadoop-3.3</module>
+                <module>smart-hadoop-client-3</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

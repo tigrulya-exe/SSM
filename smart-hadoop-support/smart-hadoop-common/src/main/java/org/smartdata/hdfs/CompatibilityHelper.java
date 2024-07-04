@@ -64,13 +64,7 @@ public interface CompatibilityHelper {
 
   List<String> chooseStorageTypes(BlockStoragePolicy policy, short replication);
 
-  boolean isMovable(String type);
-
   DatanodeInfo newDatanodeInfo(String ipAddress, int xferPort);
-
-  InotifyProtos.AppendEventProto getAppendEventProto(Event.AppendEvent event);
-
-  Event.AppendEvent getAppendEvent(InotifyProtos.AppendEventProto proto);
 
   int getSidInDatanodeStorageReport(DatanodeStorage datanodeStorage);
 
