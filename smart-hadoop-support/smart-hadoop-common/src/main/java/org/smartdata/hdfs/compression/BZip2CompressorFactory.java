@@ -28,7 +28,7 @@ import java.io.IOException;
 
 
 public class BZip2CompressorFactory implements CompressorFactory, DecompressorFactory {
-  public static final String BZIP2_CODEC = "Zlib";
+  public static final String BZIP2_CODEC = "Bzip2";
 
   @Override
   public String codec() {
