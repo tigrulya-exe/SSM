@@ -236,7 +236,7 @@ public class SmartDFSClient extends DFSClient {
     } else if (fileState instanceof CompressionFileState) {
       // To make SmartDFSClient return the original length of compressed file.
       long len = ((CompressionFileState) fileState).getOriginalLength();
-      withNewLength(oldStatus, len);
+      return withNewLength(oldStatus, len);
     }
 
     return oldStatus;
