@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,7 @@
  */
 package org.smartdata.metastore.dao.impl;
 
+import com.google.common.collect.ImmutableMap;
 import org.smartdata.metastore.MetaStoreException;
 import org.smartdata.metastore.SearchableAbstractDao;
 import org.smartdata.metastore.dao.FileInfoDao;
@@ -128,9 +129,7 @@ public class DefaultAccessCountEventDao
         "file.path as path")
         .fromSubQuery(AccessCountEventDao.unionTablesQuery(searchRequest.getAccessCountTables()),
             "access_counts")
-        .join("file", new HashMap<String, String>() {{
-          put("access_counts.fid", "file.fid");
-        }})
+        .join("file", ImmutableMap.of("access_counts.fid", "file.fid"))
         .where(
             in("access_counts.fid", searchRequest.getIds()),
             like("file.path", searchRequest.getPathLike()),

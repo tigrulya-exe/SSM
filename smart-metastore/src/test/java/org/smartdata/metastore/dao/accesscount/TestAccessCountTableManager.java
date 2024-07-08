@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -273,6 +273,13 @@ public class TestAccessCountTableManager extends TestDaoBase {
   @Test
   public void testGetAllHotFiles() throws MetaStoreException {
     createTestFiles();
+    /*
+    create access count tables for seconds, day and hours intervals
+    |-------------------------------------interval-----------------------------------------------|
+    |-s-| |-s-| |-s-| |-s-| |-s-| |-s-| |-s-|       |-s-|   |-s-|      |-s-|   |-s-|     |-s-|
+                                                  |---h---|---h----| |---h---|---h---|
+    |-----------------------d-----------------|
+     */
     DbAccessCountTableManager tableManager = accessCountTableManager.getDbTableManager();
     AccessCountTable t1 = new AccessCountTable(0, 5 * ONE_SECOND_IN_MILLIS);
     AccessCountTable t2 = new AccessCountTable(2 * ONE_MINUTE_IN_MILLIS,
@@ -299,20 +306,21 @@ public class TestAccessCountTableManager extends TestDaoBase {
         new AccessCountTable(ONE_DAY_IN_MILLIS + 23 * ONE_HOUR_IN_MILLIS + 59 * ONE_MINUTE_IN_MILLIS
             + 58 * ONE_SECOND_IN_MILLIS, 2 * ONE_DAY_IN_MILLIS);
     AccessCountTable t12 = new AccessCountTable(0, ONE_DAY_IN_MILLIS);
-    AccessCountTable t13 = new AccessCountTable(12 * ONE_HOUR_IN_MILLIS, 13 * ONE_HOUR_IN_MILLIS);
-    AccessCountTable t14 = new AccessCountTable(13 * ONE_HOUR_IN_MILLIS, 14 * ONE_HOUR_IN_MILLIS);
-    AccessCountTable t15 = new AccessCountTable(17 * ONE_HOUR_IN_MILLIS, 18 * ONE_HOUR_IN_MILLIS);
-    AccessCountTable t16 = new AccessCountTable(18 * ONE_HOUR_IN_MILLIS, 19 * ONE_HOUR_IN_MILLIS);
+    AccessCountTable t13 = new AccessCountTable(ONE_DAY_IN_MILLIS + 12 * ONE_HOUR_IN_MILLIS,
+        ONE_DAY_IN_MILLIS + 13 * ONE_HOUR_IN_MILLIS);
+    AccessCountTable t14 = new AccessCountTable(ONE_DAY_IN_MILLIS + 13 * ONE_HOUR_IN_MILLIS,
+        ONE_DAY_IN_MILLIS + 14 * ONE_HOUR_IN_MILLIS);
+    AccessCountTable t15 = new AccessCountTable(ONE_DAY_IN_MILLIS + 17 * ONE_HOUR_IN_MILLIS,
+        ONE_DAY_IN_MILLIS + 18 * ONE_HOUR_IN_MILLIS);
+    AccessCountTable t16 = new AccessCountTable(ONE_DAY_IN_MILLIS + 18 * ONE_HOUR_IN_MILLIS,
+        ONE_DAY_IN_MILLIS + 19 * ONE_HOUR_IN_MILLIS);
 
     List<AccessCountTable> tables =
         Arrays.asList(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15, t16);
-    tables.forEach(t -> {
-      try {
-        tableManager.createTable(t);
-      } catch (MetaStoreException e) {
-        throw new RuntimeException(e);
-      }
-    });
+
+    for (AccessCountTable t : tables) {
+      tableManager.createTable(t);
+    }
     tableManager.handleAggregatedEvents(t1,
         Arrays.asList(new AggregatedAccessCounts(0, 1, 0),
             new AggregatedAccessCounts(1, 1, 1)));

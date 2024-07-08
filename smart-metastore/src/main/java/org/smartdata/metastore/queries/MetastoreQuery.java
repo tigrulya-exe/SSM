@@ -83,11 +83,7 @@ public class MetastoreQuery {
 
   public MetastoreQuery fromSubQuery(String subQuery, String alias) {
     subQuery = "(" + subQuery + ") AS " + alias;
-    queryBuilder.append("FROM ")
-        .append(subQuery)
-        .append("\n");
-    this.table = subQuery;
-    return this;
+    return from(subQuery);
   }
 
   public MetastoreQuery join(String joinedTable, Map<String, String> joinConditions) {
@@ -103,7 +99,7 @@ public class MetastoreQuery {
 
   public MetastoreQuery groupBy(String... fields) {
     queryBuilder.append("GROUP BY ")
-        .append(String.join(", ", Arrays.asList(fields)))
+        .append(String.join(", ", fields))
         .append("\n");
     return this;
   }

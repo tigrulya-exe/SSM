@@ -17,6 +17,7 @@
  */
 package org.smartdata.metastore;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.smartdata.metastore.dao.accesscount.AccessCountTableDeque;
 import org.smartdata.metastore.db.DBHandlersFactory;
@@ -43,6 +44,7 @@ import static org.smartdata.metastore.utils.MetaStoreUtils.SQLITE_URL_PREFIX;
 /**
  * Utilities for accessing the testing database.
  */
+@Slf4j
 public class TestDBUtil {
   public static String getTestDir() {
     String testdir = System.getProperty("testdir",
@@ -62,7 +64,7 @@ public class TestDBUtil {
     String dbFile = getUniqueDBFilePath();
     new File(dbFile).deleteOnExit();
     String url = SQLITE_URL_PREFIX + getUniqueDBFilePath();
-    System.out.println("sqlite url: " + url);
+    log.info("sqlite url: {}", url);
     return url;
   }
 
@@ -96,7 +98,7 @@ public class TestDBUtil {
     boolean flag = false;
     File src = new File(srcPath);
     if (!src.exists()) {
-      System.out.println("source file:" + srcPath + "not exist");
+      log.info("source file:{} not exist", srcPath);
       return false;
     }
     File dest = new File(destPath);
@@ -127,7 +129,7 @@ public class TestDBUtil {
       dest.deleteOnExit();
       return true;
     } catch (Exception e) {
-      System.out.println("copying failed" + e.getMessage());
+      log.error("copying failed " + e.getMessage());
       flag = true;
       return false;
     } finally {

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,6 +35,7 @@ import org.smartdata.metastore.utils.TimeGranularity;
 import org.smartdata.model.FileAccessInfo;
 import org.smartdata.model.TimeInterval;
 import org.smartdata.model.request.FileAccessInfoSearchRequest;
+import org.smartdata.utils.DateTimeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -158,6 +159,32 @@ public class AccessCountTableManager implements
     return getAccessCountTables(startTime, endTime, null);
   }
 
+  /**
+   * Getting access count tables by interval:
+   * 1. get current granularity by searching interval
+   * 2. get access count tables by current granularity with startTime less or equals searching endTime
+   * 3. If parentTable is null and decreaseOnly == false we have to find access count tables,
+   *  if we have not found it yet, with bigger granularity and with startTime < searching startTime
+   * 4. Filter tables by endTime > searching startTime and if parentTable != null,
+   * also filter by endTime <= parentTable.endTime. It is needed because we are getting all tables of
+   * some granularity
+   * 5. For all found tables from the list we should add corresponding tables to the result
+   * according to their intervals and search granularity. For non-second granularity we get child
+   * tables recursively. If we have case when on of the searching border (startTime or endTime)
+   * bigger (less) than table startTime (endTime), we have to create partial table, which is based
+   * on table. In some cases we create partial table base on parentTable, when prentTable != null
+   * and there are no tables of small granularity between parentTable.startTime and table.startTime
+   * or between searching startTime and parentTable.endTime. Add corresponding tables to the result
+   * and update searching startTime and
+   * 6. Decrease search granularity update currentGranularity and check that searching
+   * startTime = endTime, if no, repeat from p.2
+   *
+   * @param startTime start time of the search interval
+   * @param endTime - end time of the search interval
+   * @param parentTable - access count table as a parent interval of bigger granularity
+   * @return List of access count tables
+   * @throws MetaStoreException
+   */
   private List<AccessCountTable> getAccessCountTables(long startTime,
                                                       long endTime,
                                                       AccessCountTable parentTable)
@@ -207,10 +234,6 @@ public class AccessCountTableManager implements
       int n = 0;
       for (AccessCountTable table : tables) {
         n++;
-        // skip tables if it ends before specified search start time
-        if (table.getEndTime() < startTime) {
-          continue;
-        }
         //skip tables if it starts after specified startTime
         if (table.getStartTime() > endTime) {
           continue;
@@ -339,10 +362,10 @@ public class AccessCountTableManager implements
   }
 
   private Set<String> getAccessCountTables(TimeInterval timeInterval) throws MetaStoreException {
-    long startTime = (timeInterval != null && timeInterval.getFrom() != null)
-        ? timeInterval.getFrom().toEpochMilli() : 0L;
-    long endTime = (timeInterval != null && timeInterval.getTo() != null)
-        ? timeInterval.getTo().toEpochMilli() : System.currentTimeMillis();
+    long startTime = Optional.ofNullable(DateTimeUtils.intervalStartToEpoch(timeInterval))
+        .orElse(0L);
+    long endTime = Optional.ofNullable(DateTimeUtils.intervalEndToEpoch(timeInterval))
+        .orElse(System.currentTimeMillis());
     return getAccessCountTables(startTime, endTime).stream()
         .map(AccessCountTable::getTableName)
         .collect(Collectors.toSet());
