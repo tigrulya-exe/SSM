@@ -31,8 +31,10 @@ public class Lz4CompressorFactory implements CompressorFactory, DecompressorFact
     return LZ4_CODEC;
   }
 
+  // TODO what does these magic numbers mean?
   @Override
   public int compressionOverhead(int bufferSize) {
+    // taken from Hadoop 3.3.6 org.apache.hadoop.io.compress.Lz4Codec sources
     return bufferSize / 255 + 16;
   }
 

@@ -32,10 +32,11 @@ public interface CompressorFactory extends LoadableService {
 
   Compressor createCompressor(Configuration config, int bufferSize) throws IOException;
 
-  // TODO where did they get this magic number from?
-  // According to Hadoop 3.0
+  // TODO what do these magic numbers mean?
+  /** Compression overhead of given codec. */
   default int compressionOverhead(int bufferSize) {
-    return 18;
+    // taken from Hadoop 3.3.6 sources
+    return bufferSize / 100 + 12;
   }
 
   static Map<String, CompressorFactory> loadAll() {

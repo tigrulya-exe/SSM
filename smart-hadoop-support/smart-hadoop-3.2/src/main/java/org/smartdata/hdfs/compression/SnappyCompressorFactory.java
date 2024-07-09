@@ -34,8 +34,10 @@ public class SnappyCompressorFactory implements CompressorFactory, DecompressorF
     return SNAPPY_CODEC;
   }
 
+  // TODO what does these magic numbers mean?
   @Override
   public int compressionOverhead(int bufferSize) {
+    // taken from Hadoop 3.2.4 org.apache.hadoop.io.compress.SnappyCodec sources
     return bufferSize / 6 + 32;
   }
 
