@@ -154,74 +154,75 @@ public class AccessCountTableManager implements
     }
   }
 
-  private List<AccessCountTable> getAccessCountTables(long startTime,
-                                                      long endTime) throws MetaStoreException {
-    return getAccessCountTables(startTime, endTime, null);
-  }
-
   /**
    * Getting access count tables by interval:
-   * 1. get current granularity by searching interval
-   * 2. get access count tables by current granularity with startTime less or equals searching endTime
-   * 3. If parentTable is null and decreaseOnly == false we have to find access count tables,
-   *  if we have not found it yet, with bigger granularity and with startTime < searching startTime
+   * 1. found base granularity by searching interval, if tables are not exist, increase granularity
+   * 2. get access count tables by base granularity with startTime less or equals searching endTime
+   * 3. Filter tables by starTime less or equals searching endTime.
    * 4. Filter tables by endTime > searching startTime and if parentTable != null,
    * also filter by endTime <= parentTable.endTime. It is needed because we are getting all tables of
-   * some granularity
+   * some granularity.
    * 5. For all found tables from the list we should add corresponding tables to the result
    * according to their intervals and search granularity. For non-second granularity we get child
-   * tables recursively. If we have case when on of the searching border (startTime or endTime)
+   * tables recursively. If we have case when one of the searching border (startTime or endTime)
    * bigger (less) than table startTime (endTime), we have to create partial table, which is based
-   * on table. In some cases we create partial table base on parentTable, when prentTable != null
-   * and there are no tables of small granularity between parentTable.startTime and table.startTime
-   * or between searching startTime and parentTable.endTime. Add corresponding tables to the result
-   * and update searching startTime and
-   * 6. Decrease search granularity update currentGranularity and check that searching
+   * on current table (in some cases we create partial table base on parentTable,
+   * when prentTable != null and there are no tables of small granularity between
+   * parentTable.startTime and table.startTime or between searching startTime and
+   * parentTable.endTime). Add corresponding tables to the result and update searching startTime and
+   * 6. Decrease searching granularity and update it, check that searching
    * startTime = endTime, if no, repeat from p.2
    *
    * @param startTime start time of the search interval
-   * @param endTime - end time of the search interval
-   * @param parentTable - access count table as a parent interval of bigger granularity
+   * @param endTime   end time of the search interval
    * @return List of access count tables
-   * @throws MetaStoreException
+   * @throws MetaStoreException error
    */
   private List<AccessCountTable> getAccessCountTables(long startTime,
-                                                      long endTime,
-                                                      AccessCountTable parentTable)
-      throws MetaStoreException {
-    List<AccessCountTable> result = new ArrayList<>();
+                                                      long endTime) throws MetaStoreException {
     final TimeGranularity startGranularity = TimeGranularity.of(endTime - startTime);
     TimeGranularity searchIntervalGranularity = startGranularity;
-    boolean decreaseOnly = false;
+    Collection<AccessCountTable> tables = inMemoryTableManager.getTablesOfGranularity(
+            searchIntervalGranularity).stream()
+        .filter(t -> t.getStartTime() <= endTime)
+        .collect(Collectors.toList());
+    boolean foundTables = !tables.isEmpty();
+    while (!foundTables) {
+      searchIntervalGranularity = increaseGranularity(searchIntervalGranularity);
+      if (searchIntervalGranularity == null) {
+        searchIntervalGranularity = startGranularity;
+        foundTables = true;
+      } else {
+        tables = inMemoryTableManager.getTablesOfGranularity(
+            searchIntervalGranularity);
+        Long accessCountTableStartTime = tables.stream()
+            .findFirst()
+            .map(AccessCountTable::getStartTime)
+            .orElse(Long.MAX_VALUE);
+        foundTables = accessCountTableStartTime <= startTime;
+      }
+    }
+    return getAccessCountTables(startTime, endTime, null, searchIntervalGranularity);
+  }
+
+  private List<AccessCountTable> getAccessCountTables(long startTime,
+                                                      long endTime,
+                                                      AccessCountTable parentTable,
+                                                      TimeGranularity baseGranularity)
+      throws MetaStoreException {
+    final TimeGranularity startGranularity = TimeGranularity.of(endTime - startTime);
+    final List<AccessCountTable> result = new ArrayList<>();
+    TimeGranularity searchIntervalGranularity;
+    if (baseGranularity != null) {
+      searchIntervalGranularity = baseGranularity;
+    } else {
+      searchIntervalGranularity = startGranularity;
+    }
     do {
       long finalStartTime = startTime;
       Collection<AccessCountTable> tables = inMemoryTableManager.getTablesOfGranularity(
               searchIntervalGranularity).stream()
           .filter(t -> t.getStartTime() <= endTime)
-          .collect(Collectors.toList());
-      boolean foundTables = !tables.isEmpty();
-      if (parentTable == null && !decreaseOnly) {
-        //when we didn't find any tables of current granularity,
-        // we have to try to find tables of bigger granularity
-        while (!foundTables) {
-          searchIntervalGranularity = increaseGranularity(searchIntervalGranularity);
-          if (searchIntervalGranularity == null) {
-            tables = Collections.emptyList();
-            searchIntervalGranularity = startGranularity;
-            foundTables = true;
-          } else {
-            tables = inMemoryTableManager.getTablesOfGranularity(
-                searchIntervalGranularity);
-            Long accessCountTableStartTime = tables.stream()
-                .findFirst()
-                .map(AccessCountTable::getStartTime)
-                .orElse(Long.MAX_VALUE);
-            foundTables = accessCountTableStartTime < startTime;
-          }
-        }
-        decreaseOnly = true;
-      }
-      tables = tables.stream()
           .filter(t -> {
             if (parentTable != null) {
               //include child tables which has endTime after startTime
@@ -245,36 +246,18 @@ public class AccessCountTableManager implements
               startTime = table.getEndTime();
             } else {
               //table.endTime > endTime
-              if (searchIntervalGranularity != TimeGranularity.SECOND) {
-                List<AccessCountTable> childTables =
-                    getAccessCountTables(startTime, endTime, table);
-                result.addAll(childTables);
-              } else {
-                addPartialTable(table, table.getStartTime(), endTime)
-                    .ifPresent(result::add);
-              }
+              result.addAll(getChildOrCreatePartialTables(searchIntervalGranularity,
+                  table, startTime, endTime));
               startTime = endTime;
             }
           } else {
             if (table.getEndTime() <= endTime) {
-              if (searchIntervalGranularity != TimeGranularity.SECOND) {
-                List<AccessCountTable> childTables =
-                    getAccessCountTables(startTime, table.getEndTime(), table);
-                result.addAll(childTables);
-              } else {
-                addPartialTable(table, startTime, table.getEndTime())
-                    .ifPresent(result::add);
-              }
+              result.addAll(getChildOrCreatePartialTables(searchIntervalGranularity,
+                  table, startTime, table.getEndTime()));
               startTime = table.getEndTime();
             } else {
-              if (searchIntervalGranularity != TimeGranularity.SECOND) {
-                List<AccessCountTable> childTables =
-                    getAccessCountTables(startTime, endTime, table);
-                result.addAll(childTables);
-              } else {
-                addPartialTable(table, startTime, endTime)
-                    .ifPresent(result::add);
-              }
+              result.addAll(getChildOrCreatePartialTables(searchIntervalGranularity,
+                  table, startTime, endTime));
               startTime = endTime;
             }
           }
@@ -307,6 +290,21 @@ public class AccessCountTableManager implements
       }
     } while (startTime != endTime);
     return result;
+  }
+
+  private List<AccessCountTable> getChildOrCreatePartialTables(
+      TimeGranularity searchIntervalGranularity,
+      AccessCountTable table,
+      long startTime,
+      long endTime)
+      throws MetaStoreException {
+    if (searchIntervalGranularity != TimeGranularity.SECOND) {
+      return getAccessCountTables(startTime, endTime, table, null);
+    } else {
+      return addPartialTable(table, startTime, endTime)
+          .map(Collections::singletonList)
+          .orElse(Collections.emptyList());
+    }
   }
 
   private Optional<AccessCountTable> addPartialTable(AccessCountTable sourceTable,
