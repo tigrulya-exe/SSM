@@ -41,6 +41,7 @@
   <packaging>pom</packaging>
 
   <modules>
+    <module>smart-frontend</module>
     <module>smart-maven-plugins</module>
     <module>smart-common</module>
     <module>smart-metrics</module>
@@ -102,6 +103,9 @@
     <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
     <aspectj.version>1.9.22</aspectj.version>
     <lombok.version>1.18.32</lombok.version>
+    <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
+    <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+    <skip-build-web-ui>true</skip-build-web-ui>
   </properties>
 
   <profiles>
@@ -182,6 +186,13 @@
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
+    </profile>
+
+    <profile>
+      <id>web-ui</id>
+      <properties>
+        <skip-build-web-ui>false</skip-build-web-ui>
+      </properties>
     </profile>
   </profiles>
 
@@ -714,6 +725,7 @@
                 <exclude>**/dist/**/*.js</exclude>
                 <exclude>**/local-repo/**/*.js</exclude>
                 <exclude>**/.tmp/**</exclude>
+                <exclude>**/build/assets/**</exclude>
               </excludes>
             </licenseSet>
           </licenseSets>
