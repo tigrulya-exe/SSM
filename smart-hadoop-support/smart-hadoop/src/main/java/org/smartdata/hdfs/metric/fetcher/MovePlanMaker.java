@@ -173,7 +173,7 @@ public class MovePlanMaker {
       }
       final StorageTypeDiff diff =
           new StorageTypeDiff(types, CompatibilityHelperLoader.getHelper().getStorageTypes(lb));
-      int remainingReplications = diff.removeOverlap(true);
+      int remainingReplications = diff.removeOverlap();
       long toMove = lb.getBlockSize() * remainingReplications;
       schedulePlan.addSizeToMove(toMove);
       schedulePlan.incBlocksToMove();
@@ -296,7 +296,7 @@ public class MovePlanMaker {
    * Record and process the difference of storage types between source and
    * destination during Mover.
    */
-  class StorageTypeDiff {
+  static class StorageTypeDiff {
     final List<String> expected;
     final List<String> existing;
 
@@ -307,17 +307,17 @@ public class MovePlanMaker {
 
     /**
      * Remove the overlap between the expected types and the existing types.
-     * @param  ignoreNonMovable ignore non-movable storage types
-     *         by removing them from both expected and existing storage type list
-     *         to prevent non-movable storage from being moved.
+     *
      * @returns the remaining number of replications to move.
      */
-    int removeOverlap(boolean ignoreNonMovable) {
+    int removeOverlap() {
       existing.removeIf(expected::remove);
-      if (ignoreNonMovable) {
-        removeNonMovable(existing);
-        removeNonMovable(expected);
-      }
+
+      // ignore non-movable storage types by removing them
+      // from both expected and existing storage type list
+      // to prevent non-movable storage from being moved
+      removeNonMovable(existing);
+      removeNonMovable(expected);
       return Math.min(existing.size(), expected.size());
     }
 

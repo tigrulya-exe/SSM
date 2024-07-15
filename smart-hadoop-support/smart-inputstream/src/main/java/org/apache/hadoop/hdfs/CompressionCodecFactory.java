@@ -77,7 +77,7 @@ public class CompressionCodecFactory {
   }
 
   /**
-   *  Create a Decompressor
+   *  Create a decompressor
    */
   public Decompressor creatDecompressor(int bufferSize, String codec) throws IOException {
     return getOrThrow(registeredDecompressors, codec)
