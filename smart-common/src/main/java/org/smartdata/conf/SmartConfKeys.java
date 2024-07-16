@@ -146,9 +146,6 @@ public class SmartConfKeys {
     public static final String SMART_SYNC_SCHEDULE_STRATEGY_KEY = "smart.sync.schedule.strategy";
     public static final String SMART_SYNC_SCHEDULE_STRATEGY_DEFAULT = "UNORDERED";
 
-    // Keep it only for test
-    public static final String SMART_ENABLE_ZEPPELIN_WEB = "smart.zeppelin.web.enable";
-    public static final boolean SMART_ENABLE_ZEPPELIN_WEB_DEFAULT = true;
 
     public static final String SMART_SYNC_FILE_EQUALITY_STRATEGY =
             "smart.sync.file.equality.strategy";
@@ -266,10 +263,6 @@ public class SmartConfKeys {
     public static final String SMART_STORAGE_INFO_UPDATE_INTERVAL_KEY =
             "smart.storage.info.update.interval";
     public static final int SMART_STORAGE_INFO_UPDATE_INTERVAL_DEFAULT = 60;
-    public static final String SMART_STORAGE_INFO_SAMPLING_INTERVALS_KEY =
-            "smart.storage.info.sampling.intervals";
-    public static final String SMART_STORAGE_INFO_SAMPLING_INTERVALS_DEFAULT =
-            "60s,60;1hour,60;1day";
     public static final String SMART_TOP_HOT_FILES_NUM_KEY = "smart.top.hot.files.num";
     public static final int SMART_TOP_HOT_FILES_NUM_DEFAULT = 200;
 
