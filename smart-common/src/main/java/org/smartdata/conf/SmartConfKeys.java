@@ -28,8 +28,6 @@ public class SmartConfKeys {
     public static final String SMART_CONF_DIR_KEY = "smart.conf.dir";
     public static final String SMART_HADOOP_CONF_DIR_KEY = "smart.hadoop.conf.path";
     public static final String SMART_CONF_DIR_DEFAULT = "conf";
-    public static final String SMART_LOG_DIR_KEY = "smart.log.dir";
-    public static final String SMART_LOG_DIR_DEFAULT = "logs";
 
     public static final String SMART_SERVICE_MODE_KEY = "smart.service.mode";
     public static final String SMART_SERVICE_MODE_DEFAULT = "HDFS";
@@ -81,10 +79,6 @@ public class SmartConfKeys {
     public static final String SMART_METASTORE_DB_URL_KEY = "smart.metastore.db.url";
     // Password which get from hadoop credentialProvider used for metastore connect
     public static final String SMART_METASTORE_PASSWORD = "smart.metastore.password";
-    // How many bytes that one character takes up, default value is 1.
-    public static final String SMART_METASTORE_CHARACTER_TAKEUP_BYTES_KEY =
-            "smart.metastore.character.takeup.bytes";
-    public static final int SMART_METASTORE_CHARACTER_TAKEUP_BYTES_DEFAULT = 1;
 
     public static final String SMART_METASTORE_MIGRATION_CHANGELOG_PATH_KEY =
             "smart.metastore.migration.liquibase.changelog.path";

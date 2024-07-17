@@ -35,7 +35,6 @@ import org.smartdata.model.PathChecker;
 import org.smartdata.server.engine.data.AccessEventFetcher;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -154,14 +153,6 @@ public class StatesManager extends AbstractService implements Reconfigurable {
     }
     event.setTimeStamp(System.currentTimeMillis());
     this.fileAccessEventSource.insertEventFromSmartClient(event);
-  }
-
-  public List<FileAccessInfo> getHotFilesForLast(long timeInMills) {
-    return accessCountTableManager.search(FileAccessInfoSearchRequest.builder()
-        .lastAccessedTime(TimeInterval.builder()
-            .from(Instant.ofEpochMilli(System.currentTimeMillis() - timeInMills))
-            .build())
-        .build());
   }
 
   public void reconfigureProperty(String property, String newVal)
