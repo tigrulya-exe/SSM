@@ -27,6 +27,7 @@ import org.smartdata.integration.cluster.SmartMiniCluster;
 
 /**
  * Integration test base.
+ * TODO: ADH-4721 - use new REST API.
  */
 public class IntegrationTestBase {
 

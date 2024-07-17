@@ -28,8 +28,6 @@ public class SmartConfKeys {
   public static final String SMART_CONF_DIR_KEY = "smart.conf.dir";
   public static final String SMART_HADOOP_CONF_DIR_KEY = "smart.hadoop.conf.path";
   public static final String SMART_CONF_DIR_DEFAULT = "conf";
-  public static final String SMART_LOG_DIR_KEY = "smart.log.dir";
-  public static final String SMART_LOG_DIR_DEFAULT = "logs";
 
   public static final String SMART_SERVICE_MODE_KEY = "smart.service.mode";
   public static final String SMART_SERVICE_MODE_DEFAULT = "HDFS";
@@ -57,8 +55,6 @@ public class SmartConfKeys {
       "smart.alluxio.master.journal.dir";
 
   // SSM
-  public static final String SMART_SERVER_VERSION_KEY = "smart.storage.manager.version";
-  public static final String SMART_SERVER_VERSION_CURRENT = "1.6.0-SNAPSHOT";
   public static final String SMART_SERVER_RPC_ADDRESS_KEY = "smart.server.rpc.address";
   public static final String SMART_SERVER_RPC_ADDRESS_DEFAULT = "0.0.0.0:7042";
   public static final String SMART_SERVER_RPC_HANDLER_COUNT_KEY = "smart.server.rpc.handler.count";
@@ -82,9 +78,6 @@ public class SmartConfKeys {
   // Password which get from hadoop credentialProvider used for metastore connect
   public static final String SMART_METASTORE_PASSWORD = "smart.metastore.password";
   // How many bytes that one character takes up, default value is 1.
-  public static final String SMART_METASTORE_CHARACTER_TAKEUP_BYTES_KEY =
-      "smart.metastore.character.takeup.bytes";
-  public static final int SMART_METASTORE_CHARACTER_TAKEUP_BYTES_DEFAULT = 1;
 
   public static final String SMART_METASTORE_MIGRATION_CHANGELOG_PATH_KEY =
       "smart.metastore.migration.liquibase.changelog.path";

@@ -24,7 +24,7 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: mvn clean install -Pdist,web,hadoop-${{ matrix.hdfs-version }} -DskipTests
+        run: mvn clean install -Pdist,web-ui,hadoop-${{ matrix.hdfs-version }} -DskipTests
 
       - name: Run tests
         # TODO unignore smart-integration module when ADH-4721 will be merged
