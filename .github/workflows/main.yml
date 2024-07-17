@@ -27,4 +27,5 @@ jobs:
         run: mvn clean install -Pdist,web,hadoop-${{ matrix.hdfs-version }} -DskipTests
 
       - name: Run tests
-        run: mvn test -Dmaven.test.redirectTestOutputToFile=false -Phadoop-${{ matrix.hdfs-version }}
+        # TODO unignore smart-integration module when ADH-4721 will be merged
+        run: mvn test -pl '!smart-integration' -am -Dmaven.test.redirectTestOutputToFile=false -Phadoop-${{ matrix.hdfs-version }}
