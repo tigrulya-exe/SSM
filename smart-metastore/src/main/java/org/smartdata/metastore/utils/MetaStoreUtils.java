@@ -56,11 +56,10 @@ public class MetaStoreUtils {
   static final Logger LOG = LoggerFactory.getLogger(MetaStoreUtils.class);
 
   public static final List<String> SSM_TABLES = Lists.newArrayList(
-      "access_count_table",
-      "blank_access_count_info",
       "cached_file",
       "ec_policy",
       "file",
+      "file_access",
       "storage",
       "storage_hist",
       "storage_policy",
@@ -170,13 +169,6 @@ public class MetaStoreUtils {
         p.setProperty("url", url);
       }
 
-      String purl = p.getProperty("url");
-      if (purl == null || purl.isEmpty()) {
-        purl = getDefaultSqliteDB(); // For testing
-        p.setProperty("url", purl);
-        LOG.warn("Database URL not specified, using " + purl);
-      }
-
       try {
         conf.getPasswordFromHadoop(SmartConfKeys.SMART_METASTORE_PASSWORD)
             .filter(password -> !StringUtils.isBlank(password))
@@ -221,24 +213,11 @@ public class MetaStoreUtils {
     return properties;
   }
 
-  /**
-   * This default behavior provided here is mainly for convenience.
-   */
-  private static String getDefaultSqliteDB() {
-    String absFilePath = System.getProperty("user.home")
-        + "/smart-test-default.db";
-    return MetaStoreUtils.SQLITE_URL_PREFIX + absFilePath;
-  }
-
   private static DBType getDbType(DBPool dbPool) throws MetaStoreException {
     try (Connection connection = dbPool.getConnection()) {
       String driver = connection.getMetaData().getDriverName();
       driver = driver.toLowerCase();
-      if (driver.contains("sqlite")) {
-        return DBType.SQLITE;
-      } else if (driver.contains("mysql")) {
-        return DBType.MYSQL;
-      } else if (driver.contains("postgres")) {
+      if (driver.contains("postgres")) {
         return DBType.POSTGRES;
       } else {
         throw new MetaStoreException("Unknown database: " + driver);

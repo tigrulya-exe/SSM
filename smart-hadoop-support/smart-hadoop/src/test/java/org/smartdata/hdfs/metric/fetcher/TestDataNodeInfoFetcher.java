@@ -28,13 +28,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.metastore.MetaStoreException;
-import org.smartdata.metastore.SqliteTestDaoBase;
+import org.smartdata.metastore.TestDaoBase;
 
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-public abstract class TestDataNodeInfoFetcher extends SqliteTestDaoBase {
+public abstract class TestDataNodeInfoFetcher extends TestDaoBase {
 
   protected MiniDFSCluster cluster;
   protected DistributedFileSystem dfs;
