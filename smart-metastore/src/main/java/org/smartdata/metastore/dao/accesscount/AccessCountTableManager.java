@@ -160,8 +160,8 @@ public class AccessCountTableManager implements
    * 2. get access count tables by base granularity with startTime less or equals searching endTime
    * 3. Filter tables by starTime less or equals searching endTime.
    * 4. Filter tables by endTime > searching startTime and if parentTable != null,
-   * also filter by endTime <= parentTable.endTime. It is needed because we are getting all tables of
-   * some granularity.
+   * also filter by endTime <= parentTable.endTime. It is needed because we are getting
+   * all tables of some granularity.
    * 5. For all found tables from the list we should add corresponding tables to the result
    * according to their intervals and search granularity. For non-second granularity we get child
    * tables recursively. If we have case when one of the searching border (startTime or endTime)
