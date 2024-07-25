@@ -84,7 +84,7 @@ public class ClusterRestApi {
   public Response hotFiles() {
     try {
       List<FileAccessInfo> hotFilesInLastHour =
-          smartEngine.getStatesManager().getHotFilesForLast(Constants.ONE_HOUR_IN_MILLIS, 0);
+          smartEngine.getStatesManager().getHotFilesForLast(Constants.ONE_HOUR_IN_MILLIS);
       return new JsonResponse<>(Response.Status.OK, hotFilesInLastHour).build();
     } catch (Exception e) {
       logger.error("Exception in ClusterRestApi while listing hot files", e);

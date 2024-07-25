@@ -81,6 +81,29 @@ public class MetastoreQuery {
     return this;
   }
 
+  public MetastoreQuery fromSubQuery(String subQuery, String alias) {
+    subQuery = "(" + subQuery + ") AS " + alias;
+    return from(subQuery);
+  }
+
+  public MetastoreQuery join(String joinedTable, Map<String, String> joinConditions) {
+    queryBuilder.append("JOIN ")
+        .append(joinedTable)
+        .append(" ON ")
+        .append(joinConditions.entrySet().stream()
+            .map(jc -> jc.getKey() + " = " + jc.getValue())
+            .collect(Collectors.joining(" AND ")))
+        .append("\n");
+    return this;
+  }
+
+  public MetastoreQuery groupBy(String... fields) {
+    queryBuilder.append("GROUP BY ")
+        .append(String.join(", ", fields))
+        .append("\n");
+    return this;
+  }
+
   public MetastoreQuery where(MetastoreQueryExpression operator) {
     where(operator.build(), operator.getParameters());
     return this;

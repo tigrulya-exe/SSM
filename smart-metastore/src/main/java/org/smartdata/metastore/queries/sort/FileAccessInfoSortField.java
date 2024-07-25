@@ -15,18 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model;
+package org.smartdata.metastore.queries.sort;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-@Data
-@AllArgsConstructor
-@Builder(setterPrefix = "set")
-public class FileAccessInfo {
-  private final long fid;
-  private final String path;
-  private final int accessCount;
-  private final long lastAccessedTime;
+@Getter
+@RequiredArgsConstructor
+public enum FileAccessInfoSortField implements SortField {
+  FID("fid"),
+  PATH("path"),
+  ACCESS_COUNT("count"),
+  LAST_ACCESSED_TIME("last_accessed_time");
+
+  private final String fieldName;
 }
