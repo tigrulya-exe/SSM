@@ -35,11 +35,14 @@ import org.smartdata.model.CachedFileStatus;
 import org.smartdata.model.FileAccessInfo;
 import org.smartdata.model.FileInfo;
 import org.smartdata.model.PathChecker;
+import org.smartdata.model.TimeInterval;
 import org.smartdata.model.Utilization;
 import org.smartdata.model.request.CachedFileSearchRequest;
+import org.smartdata.model.request.FileAccessInfoSearchRequest;
 import org.smartdata.server.engine.data.AccessEventFetcher;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -58,9 +61,9 @@ public class StatesManager extends AbstractService implements Reconfigurable {
   @Getter
   private CachedFilesManager cachedFilesManager;
   private AbstractService statesUpdaterService;
+
   private PathChecker pathChecker;
   private volatile boolean working = false;
-
   public static final Logger LOG = LoggerFactory.getLogger(StatesManager.class);
 
   public StatesManager(ServerContext context) {
@@ -160,9 +163,12 @@ public class StatesManager extends AbstractService implements Reconfigurable {
     this.fileAccessEventSource.insertEventFromSmartClient(event);
   }
 
-  public List<FileAccessInfo> getHotFilesForLast(long timeInMills, int fileLimit)
-      throws MetaStoreException {
-    return accessCountTableManager.getHotFiles(timeInMills, fileLimit);
+  public List<FileAccessInfo> getHotFilesForLast(long timeInMills) {
+    return accessCountTableManager.search(FileAccessInfoSearchRequest.builder()
+            .lastAccessedTime(TimeInterval.builder()
+                .from(Instant.ofEpochMilli(System.currentTimeMillis() - timeInMills))
+                .build())
+        .build());
   }
 
   // todo remove after zeppelin removal
@@ -241,5 +247,9 @@ public class StatesManager extends AbstractService implements Reconfigurable {
     } catch (Throwable t) {
       LOG.info("", t);
     }
+  }
+
+  public AccessCountTableManager getAccessCountTableManager() {
+    return accessCountTableManager;
   }
 }

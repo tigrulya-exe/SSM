@@ -15,18 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model;
+package org.smartdata.model.request;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Singular;
+import lombok.With;
+import org.smartdata.model.TimeInterval;
+
+import java.util.List;
+import java.util.Set;
 
 @Data
-@AllArgsConstructor
-@Builder(setterPrefix = "set")
-public class FileAccessInfo {
-  private final long fid;
-  private final String path;
-  private final int accessCount;
-  private final long lastAccessedTime;
+@Builder
+@With
+public class FileAccessInfoSearchRequest {
+  @Singular(ignoreNullCollections = true)
+  private final List<Long> ids;
+  private final String pathLike;
+  private final TimeInterval lastAccessedTime;
+  private final Set<String> accessCountTables;
+
+  public static FileAccessInfoSearchRequest noFilters() {
+    return builder().build();
+  }
 }
