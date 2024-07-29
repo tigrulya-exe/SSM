@@ -34,8 +34,7 @@ import javax.ws.rs.core.Response;
 @Produces("application/json")
 public class SystemRestApi {
   SmartEngine smartEngine;
-  private static final Logger logger =
-      LoggerFactory.getLogger(SystemRestApi.class);
+  private static final Logger logger = LoggerFactory.getLogger(SystemRestApi.class);
 
   public SystemRestApi(SmartEngine smartEngine) {
     this.smartEngine = smartEngine;
@@ -44,7 +43,7 @@ public class SystemRestApi {
   @GET
   @Path("/version")
   public Response version() {
-    return new JsonResponse<>(Response.Status.OK, "SSM version", "1.6.0-SNAPSHOT").build();
+    return new JsonResponse<>(Response.Status.OK, "SSM version", "2.0.0-SNAPSHOT").build();
   }
 
   @GET
@@ -53,8 +52,7 @@ public class SystemRestApi {
     // return list of SmartServers and their states
     return new JsonResponse<>(
         Response.Status.OK,
-        smartEngine.getClusterNodesManager().getStandbyServers()
-    ).build();
+        smartEngine.getClusterNodesManager().getStandbyServers()).build();
   }
 
   @GET
@@ -63,8 +61,7 @@ public class SystemRestApi {
     // return list of agents and their states
     return new JsonResponse<>(
         Response.Status.OK,
-        smartEngine.getClusterNodesManager().getAgents()
-    ).build();
+        smartEngine.getClusterNodesManager().getAgents()).build();
   }
 
   @GET
@@ -72,8 +69,7 @@ public class SystemRestApi {
   public Response allAgentHosts() {
     return new JsonResponse<>(
         Response.Status.OK,
-        smartEngine.getClusterNodesManager().getAgentHosts()
-    ).build();
+        smartEngine.getClusterNodesManager().getAgentHosts()).build();
   }
 
   @GET
@@ -81,7 +77,6 @@ public class SystemRestApi {
   public Response allMasterHosts() {
     return new JsonResponse<>(
         Response.Status.OK,
-        smartEngine.getClusterNodesManager().getServerHosts()
-    ).build();
+        smartEngine.getClusterNodesManager().getServerHosts()).build();
   }
 }
