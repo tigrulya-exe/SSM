@@ -22,6 +22,7 @@ local-repo
 dependency-reduced-pom.xml
 logs
 .vscode
+*.xml.versionsBackup
 
 # Filesystem contract test options and credentials
 auth-keys.xml
