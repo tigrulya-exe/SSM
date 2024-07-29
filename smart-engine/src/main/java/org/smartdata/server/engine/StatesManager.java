@@ -31,18 +31,10 @@ import org.smartdata.metastore.model.AccessCountTable;
 import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.metrics.FileAccessEventSource;
 import org.smartdata.metrics.impl.MetricsFactory;
-import org.smartdata.model.CachedFileStatus;
-import org.smartdata.model.FileAccessInfo;
-import org.smartdata.model.FileInfo;
 import org.smartdata.model.PathChecker;
-import org.smartdata.model.TimeInterval;
-import org.smartdata.model.Utilization;
-import org.smartdata.model.request.CachedFileSearchRequest;
-import org.smartdata.model.request.FileAccessInfoSearchRequest;
 import org.smartdata.server.engine.data.AccessEventFetcher;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -61,9 +53,9 @@ public class StatesManager extends AbstractService implements Reconfigurable {
   @Getter
   private CachedFilesManager cachedFilesManager;
   private AbstractService statesUpdaterService;
-
   private PathChecker pathChecker;
   private volatile boolean working = false;
+
   public static final Logger LOG = LoggerFactory.getLogger(StatesManager.class);
 
   public StatesManager(ServerContext context) {
@@ -88,7 +80,7 @@ public class StatesManager extends AbstractService implements Reconfigurable {
         fileAccessEventSource.getCollector());
     this.pathChecker = new PathChecker(serverContext.getConf());
     this.cachedFilesManager =
-        new CachedFilesManager(serverContext.getMetaStore());
+        new CachedFilesManager(serverContext.getMetaStore().cacheFileDao());
 
     initStatesUpdaterService();
     if (statesUpdaterService == null) {
@@ -161,43 +153,6 @@ public class StatesManager extends AbstractService implements Reconfigurable {
     }
     event.setTimeStamp(System.currentTimeMillis());
     this.fileAccessEventSource.insertEventFromSmartClient(event);
-  }
-
-  public List<FileAccessInfo> getHotFilesForLast(long timeInMills) {
-    return accessCountTableManager.search(FileAccessInfoSearchRequest.builder()
-            .lastAccessedTime(TimeInterval.builder()
-                .from(Instant.ofEpochMilli(System.currentTimeMillis() - timeInMills))
-                .build())
-        .build());
-  }
-
-  // todo remove after zeppelin removal
-  public List<CachedFileStatus> getCachedFileStatus() {
-      return cachedFilesManager.search(CachedFileSearchRequest.noFilters());
-  }
-
-  // todo remove after zeppelin removal
-  public Utilization getStorageUtilization(String resourceName) throws IOException {
-    try {
-      if (resourceName.equals("cache")) {
-        return cachedFilesManager.getCacheStorageUtilization();
-      }
-      long now = System.currentTimeMillis();
-      long capacity =
-          serverContext.getMetaStore().getStoreCapacityOfDifferentStorageType(resourceName);
-      long free = serverContext.getMetaStore().getStoreFreeOfDifferentStorageType(resourceName);
-      return new Utilization(now, capacity, capacity - free);
-    } catch (MetaStoreException e) {
-      throw new IOException(e);
-    }
-  }
-
-  public FileInfo getFileInfo(String path) throws IOException {
-    try {
-      return serverContext.getMetaStore().getFile(path);
-    } catch (MetaStoreException e) {
-      throw new IOException(e);
-    }
   }
 
   public void reconfigureProperty(String property, String newVal)
