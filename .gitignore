@@ -21,6 +21,7 @@ local-repo
 **/interpreter.json
 dependency-reduced-pom.xml
 logs
+.vscode
 
 # Filesystem contract test options and credentials
 auth-keys.xml
