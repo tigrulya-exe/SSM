@@ -23,7 +23,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.metastore.MetaStoreException;
-import org.smartdata.metastore.TestDaoBase;
+import org.smartdata.metastore.dao.Searchable;
+import org.smartdata.metastore.dao.TestSearchableDao;
 import org.smartdata.metastore.model.AccessCountTable;
 import org.smartdata.metastore.model.AggregatedAccessCounts;
 import org.smartdata.metastore.queries.PageRequest;
@@ -57,7 +58,8 @@ import static org.smartdata.metastore.utils.Constants.ONE_MINUTE_IN_MILLIS;
 import static org.smartdata.metastore.utils.Constants.ONE_SECOND_IN_MILLIS;
 
 
-public class TestAccessCountTableManager extends TestDaoBase {
+public class TestAccessCountTableManager
+    extends TestSearchableDao<FileAccessInfoSearchRequest, FileAccessInfo, FileAccessInfoSortField, Long> {
 
   private static final List<String> TEST_FILES = Arrays.asList(
       "/file0",
@@ -84,6 +86,53 @@ public class TestAccessCountTableManager extends TestDaoBase {
   @After
   public void shutDown() {
     executorService.shutdownNow();
+  }
+
+  @Override
+  protected Searchable<FileAccessInfoSearchRequest, FileAccessInfo, FileAccessInfoSortField> searchable() {
+    return accessCountTableManager;
+  }
+
+  @Override
+  protected Long getIdentifier(FileAccessInfo fileAccessInfo) {
+    return fileAccessInfo.getFid();
+  }
+
+  @Override
+  protected FileAccessInfoSortField defaultSortField() {
+    return FileAccessInfoSortField.FID;
+  }
+
+  @Test
+  public void testSearchByFilePath() throws MetaStoreException {
+    createTestFiles();
+
+    List<FileAccessEvent> accessEvents = Arrays.asList(
+        new FileAccessEvent("/file1", 1),
+        new FileAccessEvent("/file2", 3),
+        new FileAccessEvent("/file4", 4),
+        new FileAccessEvent("/file2", 5),
+        new FileAccessEvent("", 5001)
+    );
+    accessCountTableManager.getAccessEventAggregator().aggregate(accessEvents);
+
+    FileAccessInfoSearchRequest searchRequest = FileAccessInfoSearchRequest.builder()
+        .pathLike("/file")
+        .build();
+
+    testSearch(searchRequest, 1L, 2L, 4L);
+
+    searchRequest = FileAccessInfoSearchRequest.builder()
+        .pathLike("/file2")
+        .build();
+
+    testSearch(searchRequest, 2L);
+
+    searchRequest = FileAccessInfoSearchRequest.builder()
+        .pathLike("another_path")
+        .build();
+
+    testSearch(searchRequest);
   }
 
   @Test
