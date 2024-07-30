@@ -23,6 +23,7 @@ import org.smartdata.metastore.queries.column.MetastoreQueryColumn;
 import org.smartdata.metastore.queries.expression.MetastoreQueryExpression;
 import org.smartdata.metastore.queries.sort.Sorting;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +40,7 @@ public class MetastoreQuery {
   private final StringBuilder queryBuilder;
   private final StringBuilder filtersBuilder;
   private final Map<String, Object> parameters;
+  private final List<JoinedTable> joinedTables;
   private String table;
 
   private MetastoreQuery(String baseQuery) {
@@ -50,6 +52,7 @@ public class MetastoreQuery {
     this.filtersBuilder = new StringBuilder();
     this.parameters = parameters;
     this.table = null;
+    this.joinedTables = new ArrayList<>();
 
     queryBuilder.append(baseQuery).append("\n");
   }
@@ -86,7 +89,13 @@ public class MetastoreQuery {
     return from(subQuery);
   }
 
+  public MetastoreQuery join(JoinedTable joinedTable) {
+    return join(joinedTable.getTable(), joinedTable.getJoinColumns());
+  }
+
   public MetastoreQuery join(String joinedTable, Map<String, String> joinConditions) {
+    joinedTables.add(new JoinedTable(joinedTable, joinConditions));
+
     queryBuilder.append("JOIN ")
         .append(joinedTable)
         .append(" ON ")
@@ -182,8 +191,9 @@ public class MetastoreQuery {
 
   public String toSqlCountQuery() {
     checkTableSet();
-    return select("COUNT(*)")
-        .from(table)
+    MetastoreQuery query = select("COUNT(*)").from(table);
+    joinedTables.forEach(query::join);
+    return query
         .where(filtersBuilder.toString(), parameters)
         .toSqlQuery();
   }
