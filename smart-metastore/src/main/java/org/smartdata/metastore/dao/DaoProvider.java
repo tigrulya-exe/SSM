@@ -30,10 +30,6 @@ public interface DaoProvider {
 
   StorageDao storageDao();
 
-  StorageHistoryDao storageHistoryDao();
-
-  XattrDao xattrDao();
-
   FileDiffDao fileDiffDao();
 
   FileAccessDao accessCountEventDao();
@@ -42,17 +38,11 @@ public interface DaoProvider {
 
   GlobalConfigDao globalConfigDao();
 
-  DataNodeInfoDao dataNodeInfoDao();
-
-  DataNodeStorageInfoDao dataNodeStorageInfoDao();
-
   BackUpInfoDao backUpInfoDao();
 
   ClusterInfoDao clusterInfoDao();
 
   SystemInfoDao systemInfoDao();
-
-  UserInfoDao userInfoDao();
 
   FileStateDao fileStateDao();
 

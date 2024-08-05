@@ -22,7 +22,6 @@ import org.smartdata.server.config.SsmContextInitializer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.hazelcast.HazelcastAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.embedded.EmbeddedWebServerFactoryCustomizerAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.HashMap;
@@ -68,8 +67,6 @@ public class SmartRestServer {
   }
 
   @SpringBootApplication(exclude = {
-      // todo remove exclusion after zeppelin removal
-      EmbeddedWebServerFactoryCustomizerAutoConfiguration.class,
       // it's needed to prevent auto-registration of spring hazelcast node
       // in the SSM hazelcast workers cluster
       HazelcastAutoConfiguration.class

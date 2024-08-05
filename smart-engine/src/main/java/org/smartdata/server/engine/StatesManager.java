@@ -36,18 +36,10 @@ import org.smartdata.metastore.transaction.TransactionRunner;
 import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.metrics.FileAccessEventSource;
 import org.smartdata.metrics.impl.MetricsFactory;
-import org.smartdata.model.CachedFileStatus;
-import org.smartdata.model.FileAccessInfo;
-import org.smartdata.model.FileInfo;
 import org.smartdata.model.PathChecker;
-import org.smartdata.model.TimeInterval;
-import org.smartdata.model.Utilization;
-import org.smartdata.model.request.CachedFileSearchRequest;
-import org.smartdata.model.request.FileAccessInfoSearchRequest;
 import org.smartdata.server.engine.data.AccessEventFetcher;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -72,6 +64,7 @@ public class StatesManager extends AbstractService implements Reconfigurable {
   private FileAccessPartitionService fileAccessPartitionService;
   private PathChecker pathChecker;
   private volatile boolean working = false;
+
   public static final Logger LOG = LoggerFactory.getLogger(StatesManager.class);
 
   public StatesManager(ServerContext context) {
@@ -107,7 +100,7 @@ public class StatesManager extends AbstractService implements Reconfigurable {
         fileAccessEventSource.getCollector());
     this.pathChecker = new PathChecker(serverContext.getConf());
     this.cachedFilesManager =
-        new CachedFilesManager(serverContext.getMetaStore());
+        new CachedFilesManager(serverContext.getMetaStore().cacheFileDao());
     FileAccessPartitionRetentionPolicyExecutorFactory
         fileAccessPartitionRetentionPolicyExecutorFactory =
         new FileAccessPartitionRetentionPolicyExecutorFactory(
