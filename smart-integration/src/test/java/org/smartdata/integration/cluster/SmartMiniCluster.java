@@ -18,6 +18,7 @@
 package org.smartdata.integration.cluster;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSUtil;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
@@ -39,6 +40,7 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_HTTP_ADDRESS_KEY
 public class SmartMiniCluster implements SmartCluster {
   private SmartConf conf;
   private MiniDFSCluster cluster;
+  private FileSystem fileSystem;
 
   private static final int DEFAULT_BLOCK_SIZE = 100;
 
@@ -51,6 +53,7 @@ public class SmartMiniCluster implements SmartCluster {
     conf.setInt(DFSConfigKeys.DFS_BYTES_PER_CHECKSUM_KEY, DEFAULT_BLOCK_SIZE);
     conf.setLong(DFSConfigKeys.DFS_HEARTBEAT_INTERVAL_KEY, 1L);
     conf.setLong(DFSConfigKeys.DFS_BALANCER_MOVEDWINWIDTH_KEY, 2000L);
+    conf.set("fs.hdfs.impl", "org.smartdata.hadoop.filesystem.SmartFileSystem");
   }
 
   @Override
@@ -64,6 +67,7 @@ public class SmartMiniCluster implements SmartCluster {
     conf.set(DFS_NAMENODE_HTTP_ADDRESS_KEY, uriList.get(0).toString());
     conf.set(SmartConfKeys.SMART_DFS_NAMENODE_RPCSERVER_KEY,
         uriList.get(0).toString());
+    fileSystem = cluster.getFileSystem();
   }
 
   @Override
@@ -76,5 +80,10 @@ public class SmartMiniCluster implements SmartCluster {
     if (cluster != null) {
       cluster.shutdown();
     }
+  }
+
+  @Override
+  public FileSystem getFileSystem() {
+    return fileSystem;
   }
 }
