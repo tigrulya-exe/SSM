@@ -25,6 +25,8 @@ import org.smartdata.metastore.dao.Searchable;
 import org.smartdata.metastore.dao.TestSearchableDao;
 import org.smartdata.metastore.model.AggregatedAccessCounts;
 import org.smartdata.metastore.model.SearchResult;
+import org.smartdata.metastore.partition.FileAccessPartitionManager;
+import org.smartdata.metastore.partition.FileAccessPartitionManagerImpl;
 import org.smartdata.metastore.queries.PageRequest;
 import org.smartdata.metastore.queries.sort.FileAccessInfoSortField;
 import org.smartdata.metastore.queries.sort.Sorting;
@@ -58,6 +60,9 @@ public class TestFileAccessManager extends
 
   @Before
   public void setUp() {
+    FileAccessPartitionManager fileAccessPartitionManager =
+        new FileAccessPartitionManagerImpl(metaStore);
+    fileAccessPartitionManager.createNewPartitions();
     fileAccessManager = new FileAccessManager(
         new TransactionRunner(metaStore.transactionManager()),
         metaStore.accessCountEventDao(),
