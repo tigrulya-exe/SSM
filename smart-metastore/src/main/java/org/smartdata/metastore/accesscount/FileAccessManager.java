@@ -31,15 +31,11 @@ import org.smartdata.model.FileAccessInfo;
 import org.smartdata.model.request.FileAccessInfoSearchRequest;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
-import java.util.LongSummaryStatistics;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.collectingAndThen;
 
 @Slf4j
 public class FileAccessManager implements
@@ -107,21 +103,13 @@ public class FileAccessManager implements
 
   private Collection<AggregatedAccessCounts> getAggregatedAccessCounts(
       Collection<AggregatedAccessCounts> accessCounts) {
-    Map<Long, AggregatedAccessCounts> aggregatedAccessCounts = accessCounts.stream()
-        .collect(Collectors.groupingBy(AggregatedAccessCounts::getFileId,
-            collectingAndThen(Collectors.toList(), list -> {
-              AggregatedAccessCounts maxAccessTime = list.stream()
-                  .max(Comparator.comparingLong(AggregatedAccessCounts::getAccessTimestamp))
-                  .orElse(null);
-              LongSummaryStatistics accessCount = list.stream()
-                  .collect(Collectors.summarizingLong(AggregatedAccessCounts::getAccessCount));
-              return Optional.ofNullable(maxAccessTime)
-                  .map(maxAggAccessCount ->
-                      new AggregatedAccessCounts(maxAggAccessCount.getFileId(),
-                          accessCount.getSum(),
-                          maxAggAccessCount.getAccessTimestamp()))
-                  .orElse(null);
-            })));
+    Map<Long, AggregatedAccessCounts> aggregatedAccessCounts =
+        accessCounts.stream()
+            .collect(Collectors.toMap(
+                AggregatedAccessCounts::getFileId,
+                Function.identity(),
+                AggregatedAccessCounts::merge
+            ));
     return aggregatedAccessCounts.values().stream()
         .filter(Objects::nonNull)
         .collect(Collectors.toList());

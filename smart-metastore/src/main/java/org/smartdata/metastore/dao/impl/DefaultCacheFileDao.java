@@ -135,7 +135,7 @@ public class DefaultCacheFileDao extends SearchableAbstractDao<
       CachedFileStatus cachedFileStatus) {
     long lastAccessTime = Math.max(
         cachedFileStatus.getLastAccessTime(),
-        aggregatedAccessCounts.getAccessTimestamp());
+        aggregatedAccessCounts.getLastAccessedTimestamp());
     long accessCounts = cachedFileStatus.getNumAccessed()
         + aggregatedAccessCounts.getAccessCount();
 

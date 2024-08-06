@@ -25,7 +25,6 @@ import org.smartdata.conf.Reconfigurable;
 import org.smartdata.conf.ReconfigurableRegistry;
 import org.smartdata.conf.ReconfigureException;
 import org.smartdata.conf.SmartConfKeys;
-import org.smartdata.metastore.MetaStoreException;
 import org.smartdata.metastore.accesscount.DbAccessEventAggregator;
 import org.smartdata.metastore.accesscount.FileAccessManager;
 import org.smartdata.metastore.accesscount.failover.AccessCountFailoverFactory;
@@ -107,9 +106,9 @@ public class StatesManager extends AbstractService implements Reconfigurable {
             serverContext.getMetaStore());
     this.fileAccessPartitionService = new FileAccessPartitionService(serverContext.getConf(),
         executorService,
-        new FileAccessPartitionManagerImpl(serverContext.getMetaStore(),
-            fileAccessPartitionRetentionPolicyExecutorFactory.createPolicyExecutor(
-                serverContext.getConf()))
+        new FileAccessPartitionManagerImpl(serverContext.getMetaStore()),
+        fileAccessPartitionRetentionPolicyExecutorFactory.createPolicyExecutor(
+            serverContext.getConf())
     );
 
     initStatesUpdaterService();
@@ -183,43 +182,6 @@ public class StatesManager extends AbstractService implements Reconfigurable {
     }
     event.setTimeStamp(System.currentTimeMillis());
     this.fileAccessEventSource.insertEventFromSmartClient(event);
-  }
-
-  public List<FileAccessInfo> getHotFilesForLast(long timeInMills) {
-    return fileAccessManager.search(FileAccessInfoSearchRequest.builder()
-        .lastAccessedTime(TimeInterval.builder()
-            .from(Instant.ofEpochMilli(System.currentTimeMillis() - timeInMills))
-            .build())
-        .build());
-  }
-
-  // todo remove after zeppelin removal
-  public List<CachedFileStatus> getCachedFileStatus() {
-    return cachedFilesManager.search(CachedFileSearchRequest.noFilters());
-  }
-
-  // todo remove after zeppelin removal
-  public Utilization getStorageUtilization(String resourceName) throws IOException {
-    try {
-      if (resourceName.equals("cache")) {
-        return cachedFilesManager.getCacheStorageUtilization();
-      }
-      long now = System.currentTimeMillis();
-      long capacity =
-          serverContext.getMetaStore().getStoreCapacityOfDifferentStorageType(resourceName);
-      long free = serverContext.getMetaStore().getStoreFreeOfDifferentStorageType(resourceName);
-      return new Utilization(now, capacity, capacity - free);
-    } catch (MetaStoreException e) {
-      throw new IOException(e);
-    }
-  }
-
-  public FileInfo getFileInfo(String path) throws IOException {
-    try {
-      return serverContext.getMetaStore().getFile(path);
-    } catch (MetaStoreException e) {
-      throw new IOException(e);
-    }
   }
 
   public void reconfigureProperty(String property, String newVal)

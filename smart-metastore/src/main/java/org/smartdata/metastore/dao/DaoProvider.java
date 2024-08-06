@@ -32,7 +32,7 @@ public interface DaoProvider {
 
   FileDiffDao fileDiffDao();
 
-  FileAccessDao accessCountEventDao();
+  FileAccessDao fileAccessDao();
 
   ClusterConfigDao clusterConfigDao();
 

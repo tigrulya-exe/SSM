@@ -57,9 +57,4 @@ public class RetryAccessCountFailover implements Failover<AccessCountContext> {
     retryCount = 0;
     failedAccessCounts.clear();
   }
-
-  @Override
-  public Strategy getStrategy() {
-    return Strategy.SAVE_FAILED_WITH_RETRY;
-  }
 }

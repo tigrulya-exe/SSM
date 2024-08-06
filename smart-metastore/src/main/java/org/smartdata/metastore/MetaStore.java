@@ -47,9 +47,6 @@ import org.smartdata.metastore.dao.StorageDao;
 import org.smartdata.metastore.dao.SystemInfoDao;
 import org.smartdata.metastore.dao.UserActivityDao;
 import org.smartdata.metastore.dao.WhitelistDao;
-import org.smartdata.metastore.dao.XattrDao;
-import org.smartdata.metastore.dao.accesscount.AccessCountEventDao;
-import org.smartdata.metastore.dao.accesscount.AccessCountTableDao;
 import org.smartdata.metastore.db.DbSchemaManager;
 import org.smartdata.metastore.db.metadata.DbMetadataProvider;
 import org.smartdata.metastore.model.AggregatedAccessCounts;
@@ -161,6 +158,7 @@ public class MetaStore implements CopyMetaService,
     whitelistDao = daoProvider.whitelistDao();
     userActivityDao = daoProvider.userActivityDao();
     fileAccessPartitionDao = daoProvider.fileAccessPartitionDao();
+    fileAccessDao = daoProvider.fileAccessDao();
   }
 
   public DbMetadataProvider dbMetadataProvider() {

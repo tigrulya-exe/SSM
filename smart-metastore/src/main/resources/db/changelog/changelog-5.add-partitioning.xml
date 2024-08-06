@@ -31,7 +31,7 @@
         </modifySql>
     </changeSet>
 
-    <changeSet id="2024.07.09_003" author="VArkhipov">
+    <changeSet id="2024.07.09_003" author="VArkhipov" dbms="postgresql">
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">
                 select count(*) from pg_proc where proname = 'create_file_access_partition'

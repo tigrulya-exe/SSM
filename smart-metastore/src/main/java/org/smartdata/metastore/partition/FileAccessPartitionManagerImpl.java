@@ -21,20 +21,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
 import org.smartdata.metastore.dao.FileAccessPartitionDao;
-import org.smartdata.metastore.partition.cleanup.FileAccessPartitionRetentionPolicyExecutor;
 
 import java.time.LocalDateTime;
 
 @Slf4j
 public class FileAccessPartitionManagerImpl implements FileAccessPartitionManager {
 
-  private final FileAccessPartitionRetentionPolicyExecutor retentionPolicyExecutor;
   private final FileAccessPartitionDao fileAccessPartitionDao;
 
-  public FileAccessPartitionManagerImpl(
-      MetaStore metaStore,
-      FileAccessPartitionRetentionPolicyExecutor retentionPolicyExecutor) {
-    this.retentionPolicyExecutor = retentionPolicyExecutor;
+  public FileAccessPartitionManagerImpl(MetaStore metaStore) {
     this.fileAccessPartitionDao = metaStore.fileAccessPartitionDao();
   }
 
@@ -47,16 +42,6 @@ public class FileAccessPartitionManagerImpl implements FileAccessPartitionManage
       fileAccessPartitionDao.create(currentDate.plusMonths(1));
     } catch (MetaStoreException e) {
       log.error("Failed to create partitions", e);
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public void removeOldPartitions() {
-    try {
-      retentionPolicyExecutor.cleanup();
-    } catch (Exception e) {
-      log.error("Failed to cleanup file access partitions by policy");
       throw new RuntimeException(e);
     }
   }

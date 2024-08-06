@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.metastore.accesscount.DbAccessEventAggregator;
 import org.smartdata.metastore.accesscount.FileAccessManager;
+import org.smartdata.metastore.accesscount.failover.AccessCountContext;
 import org.smartdata.metastore.accesscount.failover.Failover;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.PageRequest;
@@ -59,7 +60,7 @@ public class TestAccessEventAggregator extends TestDaoBase {
             metaStore.cacheFileDao());
     aggregator =
         new DbAccessEventAggregator(metaStore.fileInfoDao(),
-            dbTableManager, () -> Failover.Strategy.FAIL);
+            dbTableManager, new Failover<AccessCountContext>(){});
     metaStore.fileInfoDao().insert(testFileInfos());
   }
 

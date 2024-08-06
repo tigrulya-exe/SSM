@@ -19,14 +19,10 @@ package org.smartdata.metastore.partition;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.smartdata.metastore.MetaStoreException;
 import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.metastore.model.FileAccessPartition;
-import org.smartdata.metastore.partition.cleanup.FileAccessPartitionRetentionPolicyExecutor;
-import org.smartdata.metastore.partition.cleanup.impl.MonthCountFileAccessPartitionRetentionPolicyExecutor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
@@ -42,12 +38,7 @@ public class FileAccessPartitionManagerImplTest extends TestDaoBase {
 
   @Before
   public void setUp() throws Exception {
-    int retentionCount = 2;
-    FileAccessPartitionRetentionPolicyExecutor retentionPolicyExecutor =
-        new MonthCountFileAccessPartitionRetentionPolicyExecutor(metaStore.fileAccessPartitionDao(),
-            retentionCount);
-    fileAccessPartitionManager =
-        new FileAccessPartitionManagerImpl(metaStore, retentionPolicyExecutor);
+    fileAccessPartitionManager = new FileAccessPartitionManagerImpl(metaStore);
   }
 
   @Test
@@ -62,21 +53,5 @@ public class FileAccessPartitionManagerImplTest extends TestDaoBase {
     List<FileAccessPartition> partitions = metaStore.fileAccessPartitionDao().getAll();
     assertEquals(Arrays.asList(currentMonthPartition, nextMonthPartition), partitions.stream().map(
         FileAccessPartition::getName).collect(Collectors.toList()));
-  }
-
-  @Test
-  public void testRemovePartitions() throws MetaStoreException {
-    LocalDateTime currentDateTime = LocalDateTime.now().withDayOfMonth(1);
-    List<LocalDateTime> months = Arrays.asList(currentDateTime.plusMonths(2).withDayOfMonth(1),
-        currentDateTime.plusMonths(3).withDayOfMonth(1),
-        currentDateTime.plusMonths(4).withDayOfMonth(1));
-    fileAccessPartitionManager.createNewPartitions();
-    List<FileAccessPartition> expectedPartitions = metaStore.fileAccessPartitionDao().getAll();
-    for (LocalDateTime month : months) {
-      metaStore.fileAccessPartitionDao().create(month);
-    }
-    fileAccessPartitionManager.removeOldPartitions();
-    List<FileAccessPartition> partitions = metaStore.fileAccessPartitionDao().getAll();
-    assertEquals(expectedPartitions, partitions);
   }
 }

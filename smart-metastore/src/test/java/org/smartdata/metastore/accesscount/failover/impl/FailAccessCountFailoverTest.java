@@ -34,7 +34,7 @@ public class FailAccessCountFailoverTest {
   @Test
   public void testExecuteWithoutExceedingOverMaxRetries() {
     long currentTimeMillis = System.currentTimeMillis();
-    accessCountFailover = () -> Failover.Strategy.FAIL;
+    accessCountFailover = new Failover<AccessCountContext>() {};
     List<AggregatedAccessCounts> accessCounts = new ArrayList<>(Collections.singletonList(
         new AggregatedAccessCounts(1, 1, currentTimeMillis)));
     AccessCountContext context = new AccessCountContext(accessCounts);

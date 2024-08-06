@@ -34,7 +34,8 @@ public class AccessCountFailoverFactory {
         conf.getEnum(SMART_ACCESS_COUNT_AGGREGATOR_FAILOVER_KEY, Failover.Strategy.FAIL);
     switch (failoverStrategy) {
       case FAIL:
-          return () -> Failover.Strategy.FAIL;
+        return new Failover<AccessCountContext>() {
+        };
       case SAVE_FAILED_WITH_RETRY:
       default:
         int maxRetries = conf.getInt(SMART_ACCESS_COUNT_AGGREGATOR_FAILOVER_MAX_RETRIES_KEY,

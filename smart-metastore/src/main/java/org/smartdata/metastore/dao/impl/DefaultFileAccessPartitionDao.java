@@ -44,13 +44,7 @@ public class DefaultFileAccessPartitionDao extends AbstractDao implements FileAc
   public void create(LocalDateTime date) throws MetaStoreException {
     try {
       Integer result =
-          jdbcTemplate.query("select create_file_access_partition(?);",
-              rs -> {
-                if (rs.next()) {
-                  return rs.getInt(1);
-                }
-                return null;
-              },
+          jdbcTemplate.queryForObject("select create_file_access_partition(?);", Integer.class,
               date);
       if (result == null) {
         throw new MetaStoreException(CREATE_NEW_PARTITION_ERR_MSG);

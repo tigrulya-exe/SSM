@@ -41,7 +41,6 @@ import org.smartdata.metastore.dao.StoragePolicyDao;
 import org.smartdata.metastore.dao.SystemInfoDao;
 import org.smartdata.metastore.dao.UserActivityDao;
 import org.smartdata.metastore.dao.WhitelistDao;
-import org.smartdata.metastore.dao.XattrDao;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
@@ -91,7 +90,7 @@ public class DefaultDaoProvider implements DaoProvider {
   }
 
   @Override
-  public FileAccessDao accessCountEventDao() {
+  public FileAccessDao fileAccessDao() {
     return new DefaultFileAccessDao(dataSource, transactionManager);
   }
 

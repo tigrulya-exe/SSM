@@ -20,6 +20,4 @@ package org.smartdata.metastore.partition;
 public interface FileAccessPartitionManager {
 
   void createNewPartitions();
-
-  void removeOldPartitions();
 }

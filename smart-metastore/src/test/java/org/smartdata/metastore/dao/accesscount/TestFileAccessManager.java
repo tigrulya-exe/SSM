@@ -20,8 +20,9 @@ package org.smartdata.metastore.dao.accesscount;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartdata.metastore.MetaStoreException;
-import org.smartdata.metastore.TestDaoBase;
 import org.smartdata.metastore.accesscount.FileAccessManager;
+import org.smartdata.metastore.dao.Searchable;
+import org.smartdata.metastore.dao.TestSearchableDao;
 import org.smartdata.metastore.model.AggregatedAccessCounts;
 import org.smartdata.metastore.model.SearchResult;
 import org.smartdata.metastore.queries.PageRequest;
@@ -30,16 +31,20 @@ import org.smartdata.metastore.queries.sort.Sorting;
 import org.smartdata.metastore.transaction.TransactionRunner;
 import org.smartdata.model.FileAccessInfo;
 import org.smartdata.model.FileInfo;
+import org.smartdata.model.TimeInterval;
 import org.smartdata.model.request.FileAccessInfoSearchRequest;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestFileAccessManager extends TestDaoBase {
+public class TestFileAccessManager extends
+    TestSearchableDao<FileAccessInfoSearchRequest, FileAccessInfo, FileAccessInfoSortField, Long> {
 
   private static final List<String> TEST_FILES = Arrays.asList(
       "/file0",
@@ -59,19 +64,26 @@ public class TestFileAccessManager extends TestDaoBase {
         metaStore.cacheFileDao());
   }
 
+  @Override
+  protected Searchable<FileAccessInfoSearchRequest, FileAccessInfo, FileAccessInfoSortField> searchable() {
+    return fileAccessManager;
+  }
+
+  @Override
+  protected Long getIdentifier(FileAccessInfo fileAccessInfo) {
+    return fileAccessInfo.getFid();
+  }
+
+  @Override
+  protected FileAccessInfoSortField defaultSortField() {
+    return FileAccessInfoSortField.FID;
+  }
+
   @Test
   public void testSaveAccessCounts() throws MetaStoreException {
-    createTestFiles();
     long currentTimeMillis = System.currentTimeMillis();
-    Collection<AggregatedAccessCounts> accessCounts = Arrays.asList(
-        new AggregatedAccessCounts(1, 1, currentTimeMillis),
-        new AggregatedAccessCounts(1, 1, currentTimeMillis + 1),
-        new AggregatedAccessCounts(1, 1, currentTimeMillis + 2),
-        new AggregatedAccessCounts(2, 1, currentTimeMillis + 2),
-        new AggregatedAccessCounts(3, 1, currentTimeMillis + 2),
-        new AggregatedAccessCounts(3, 1, currentTimeMillis + 3)
-    );
-    fileAccessManager.save(accessCounts);
+    insertFileAccessCounts(currentTimeMillis);
+
     SearchResult<FileAccessInfo> fileAccessInfos =
         fileAccessManager.search(FileAccessInfoSearchRequest.noFilters(),
             PageRequest.<FileAccessInfoSortField>builder()
@@ -81,6 +93,55 @@ public class TestFileAccessManager extends TestDaoBase {
             new FileAccessInfo(2, TEST_FILES.get(2), 1, currentTimeMillis + 2),
             new FileAccessInfo(3, TEST_FILES.get(3), 2, currentTimeMillis + 3)),
         fileAccessInfos.getItems());
+  }
+
+  @Test
+  public void testSearchByIds() throws MetaStoreException {
+    List<Long> ids = Arrays.asList(1L, 2L);
+    long currentTimeMillis = System.currentTimeMillis();
+    insertFileAccessCounts(currentTimeMillis);
+    testSearch(FileAccessInfoSearchRequest.builder().ids(ids).build(), ids.toArray(new Long[0]));
+  }
+
+  @Test
+  public void testSearchByPath() throws MetaStoreException {
+    long currentTimeMillis = System.currentTimeMillis();
+    insertFileAccessCounts(currentTimeMillis);
+    testSearch(FileAccessInfoSearchRequest.builder()
+            .pathLike("/file3")
+            .build(),
+        Collections.singletonList(3L).toArray(new Long[0]));
+    testSearch(FileAccessInfoSearchRequest.builder()
+            .pathLike("/file")
+            .build(),
+        Arrays.asList(1L, 2L, 3L).toArray(new Long[0]));
+  }
+
+  @Test
+  public void testSearchByLastAccessTime() throws MetaStoreException {
+    long currentTimeMillis = System.currentTimeMillis();
+    insertFileAccessCounts(currentTimeMillis);
+
+    testSearch(FileAccessInfoSearchRequest.builder()
+            .lastAccessedTime(TimeInterval.builder()
+                .from(Instant.ofEpochMilli(currentTimeMillis))
+                .to(Instant.ofEpochMilli(currentTimeMillis + 2))
+                .build())
+            .build(),
+        Arrays.asList(1L, 2L).toArray(new Long[0]));
+  }
+
+  private void insertFileAccessCounts(long currentTimeMillis) throws MetaStoreException {
+    createTestFiles();
+    Collection<AggregatedAccessCounts> accessCounts = Arrays.asList(
+        new AggregatedAccessCounts(1, 1, currentTimeMillis),
+        new AggregatedAccessCounts(1, 1, currentTimeMillis + 1),
+        new AggregatedAccessCounts(1, 1, currentTimeMillis + 2),
+        new AggregatedAccessCounts(2, 1, currentTimeMillis + 2),
+        new AggregatedAccessCounts(3, 1, currentTimeMillis + 2),
+        new AggregatedAccessCounts(3, 1, currentTimeMillis + 3)
+    );
+    metaStore.accessCountEventDao().insert(accessCounts);
   }
 
   private void createTestFiles() throws MetaStoreException {

@@ -31,6 +31,4 @@ public interface Failover<T> {
       throw new RuntimeException(e);
     }
   }
-
-  Strategy getStrategy();
 }

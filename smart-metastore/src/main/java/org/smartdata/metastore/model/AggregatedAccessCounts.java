@@ -28,7 +28,14 @@ import org.smartdata.metrics.FileAccessEvent;
 public class AggregatedAccessCounts {
   private long fileId;
   private final long accessCount;
-  private final long accessTimestamp;
+  private final long lastAccessedTimestamp;
+
+  public AggregatedAccessCounts merge(AggregatedAccessCounts other) {
+    return new AggregatedAccessCounts(
+        fileId,
+        accessCount + other.accessCount,
+        Math.max(lastAccessedTimestamp, other.lastAccessedTimestamp));
+  }
 
   public AggregatedAccessCounts withFileId(long fileId) {
     this.fileId = fileId;

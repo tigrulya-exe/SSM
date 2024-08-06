@@ -17,7 +17,6 @@
  */
 package org.smartdata.metastore.dao.impl;
 
-import com.google.common.collect.ImmutableMap;
 import org.smartdata.metastore.MetaStoreException;
 import org.smartdata.metastore.SearchableAbstractDao;
 import org.smartdata.metastore.dao.FileAccessDao;
@@ -63,7 +62,7 @@ public class DefaultFileAccessDao
     Map<String, Object> parameters = new HashMap<>();
     parameters.put(FileAccessDao.FILE_ID_FIELD, accessCounts.getFileId());
     parameters.put(FileAccessDao.ACCESS_TIME_FIELD,
-        accessCounts.getAccessTimestamp());
+        accessCounts.getLastAccessedTimestamp());
     return parameters;
   }
 
@@ -81,19 +80,21 @@ public class DefaultFileAccessDao
 
   @Override
   protected MetastoreQuery searchQuery(FileAccessInfoSearchRequest searchRequest) {
-    return select("file.fid",
-        "count(*) AS count",
-        "MAX(file_access.access_time) as access_time",
-        "file.path as path")
-        .from("file_access")
-        .join("file", ImmutableMap.of("file_access.fid", "file.fid"))
+    return select("fid",
+        "count",
+        "access_time",
+        "path")
+        .fromSubQuery("SELECT file.fid, count(*) AS count,\n"
+            + "MAX(file_access.access_time) as access_time, file.path as path\n"
+            + "FROM file_access\n"
+            + "    JOIN file ON file_access.fid = file.fid\n"
+            + "GROUP BY file.fid, file.path", "f")
         .where(
-            in("file_access.fid", searchRequest.getIds()),
-            like("file.path", searchRequest.getPathLike()),
-            betweenEpochInclusive("file_access.access_time",
+            in("fid", searchRequest.getIds()),
+            like("path", searchRequest.getPathLike()),
+            betweenEpochInclusive("access_time",
                 searchRequest.getLastAccessedTime())
-        )
-        .groupBy("file.fid", "file.path");
+        );
   }
 
   @Override

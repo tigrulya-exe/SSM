@@ -19,6 +19,7 @@ package org.smartdata.metastore.partition;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
+import org.smartdata.metastore.partition.cleanup.FileAccessPartitionRetentionPolicyExecutor;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -33,13 +34,15 @@ public class FileAccessPartitionService {
   private final CleanupPartitionTask cleanupPartitionTask;
   private ScheduledFuture<?> createPartitionFuture;
   private ScheduledFuture<?> removePartitionFuture;
+  private FileAccessPartitionRetentionPolicyExecutor retentionPolicyExecutor;
 
   public FileAccessPartitionService(Configuration conf,
                                     ScheduledExecutorService service,
-                                    FileAccessPartitionManager fileAccessPartitionManager) {
+                                    FileAccessPartitionManager fileAccessPartitionManager,
+                                    FileAccessPartitionRetentionPolicyExecutor retentionPolicyExecutor) {
     this.scheduledExecutorService = service;
     this.createPartitionTask = new CreatePartitionTask(fileAccessPartitionManager);
-    this.cleanupPartitionTask = new CleanupPartitionTask(fileAccessPartitionManager);
+    this.cleanupPartitionTask = new CleanupPartitionTask(retentionPolicyExecutor);
   }
 
   public void start() {
@@ -76,16 +79,16 @@ public class FileAccessPartitionService {
   }
 
   private static class CleanupPartitionTask implements Runnable {
-    private final FileAccessPartitionManager partitionManager;
+    private final FileAccessPartitionRetentionPolicyExecutor retentionPolicyExecutor;
 
-    public CleanupPartitionTask(FileAccessPartitionManager partitionManager) {
-      this.partitionManager = partitionManager;
+    public CleanupPartitionTask(FileAccessPartitionRetentionPolicyExecutor retentionPolicyExecutor) {
+      this.retentionPolicyExecutor = retentionPolicyExecutor;
     }
 
     @Override
     public void run() {
       try {
-        partitionManager.removeOldPartitions();
+        retentionPolicyExecutor.cleanup();
       } catch (Exception e) {
         log.error("CleanupPartitionTask failed", e);
       }
