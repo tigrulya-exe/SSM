@@ -84,18 +84,6 @@ public class CmdletFactory {
         throw new ActionException(e);
       }
     }
-    /*
-    else if (smartAction instanceof AlluxioAction) {
-      FileSystem fs;
-      try {
-        fs =  AlluxioUtil.getAlluxioFs(smartContext);
-      } catch (Exception e) {
-        LOG.error("smartAction aid={} alluxio filesystem error", launchAction.getActionId(), e);
-        throw new ActionException(e);
-      }
-      ((AlluxioAction) smartAction).setFileSystem(fs);
-    }
-    */
     return smartAction;
   }
 

@@ -18,8 +18,7 @@
 package org.smartdata.server.engine;
 
 public enum ServiceMode {
-  HDFS(1),
-  ALLUXIO(2);
+  HDFS(1);
 
   private int value;
 

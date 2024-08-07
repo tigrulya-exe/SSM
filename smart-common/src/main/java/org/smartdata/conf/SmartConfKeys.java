@@ -48,12 +48,6 @@ public class SmartConfKeys {
             "smart.namespace.fetcher.consumers.num";
     public static final int SMART_NAMESPACE_FETCHER_CONSUMERS_NUM_DEFAULT = 3;
 
-    // Configure keys for Alluxio
-    public static final String SMART_ALLUXIO_MASTER_HOSTNAME_KEY = "smart.alluxio.master.hostname";
-    public static final String SMART_ALLUXIO_CONF_DIR_KEY = "smart.alluxio.conf.dir";
-    public static final String SMART_ALLUXIO_MASTER_JOURNAL_DIR_KEY =
-            "smart.alluxio.master.journal.dir";
-
     // SSM
     public static final String SMART_SERVER_VERSION_KEY = "smart.storage.manager.version";
     public static final String SMART_SERVER_VERSION_CURRENT = "2.0.0-SNAPSHOT";

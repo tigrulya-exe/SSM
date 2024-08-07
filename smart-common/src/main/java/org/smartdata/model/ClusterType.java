@@ -18,6 +18,5 @@
 package org.smartdata.model;
 
 public enum ClusterType {
-  HDFS,
-  ALLUXIO
+  HDFS
 }
