@@ -58,8 +58,7 @@ public class SmartServer {
   private final SmartConf conf;
   private SmartEngine engine;
   private ServerContext context;
-  private boolean enabled;
-
+  private volatile boolean enabled;
   private SmartRpcServer rpcServer;
   private SmartRestServer restServer;
 
@@ -371,5 +370,9 @@ public class SmartServer {
     } finally {
       System.exit(errorCode);
     }
+  }
+
+  public SmartRpcServer getRpcServer() {
+    return rpcServer;
   }
 }

@@ -47,7 +47,6 @@
     <module>smart-action</module>
     <module>smart-metastore</module>
     <module>smart-client</module>
-    <module>smart-admin</module>
     <module>smart-engine</module>
     <module>smart-server</module>
     <module>smart-rule</module>

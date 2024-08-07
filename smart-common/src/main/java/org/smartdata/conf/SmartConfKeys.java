@@ -74,8 +74,6 @@ public class SmartConfKeys {
             "smart.agent.kerberos.principal";
     public static final String SMART_SECURITY_CLIENT_PROTOCOL_ACL =
             "smart.security.client.protocol.acl";
-    public static final String SMART_SECURITY_ADMIN_PROTOCOL_ACL =
-            "smart.security.admin.protocol.acl";
     public static final String SMART_METASTORE_DB_URL_KEY = "smart.metastore.db.url";
     // Password which get from hadoop credentialProvider used for metastore connect
     public static final String SMART_METASTORE_PASSWORD = "smart.metastore.password";

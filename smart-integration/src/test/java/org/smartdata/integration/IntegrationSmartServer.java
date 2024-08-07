@@ -18,11 +18,11 @@
 package org.smartdata.integration;
 
 import org.smartdata.SmartServiceState;
-import org.smartdata.admin.SmartAdmin;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.metastore.TestDBUtil;
 import org.smartdata.metastore.utils.MetaStoreUtils;
+import org.smartdata.server.SmartRpcServer;
 import org.smartdata.server.SmartServer;
 
 /**
@@ -31,6 +31,7 @@ import org.smartdata.server.SmartServer;
 public class IntegrationSmartServer {
   private SmartConf conf;
   private SmartServer ssm;
+  private SmartRpcServer smartRpcServer;
   private String dbFile;
   private String dbUrl;
 
@@ -50,12 +51,11 @@ public class IntegrationSmartServer {
   }
 
   private void waitTillSSMExitSafeMode() throws Exception {
-    SmartAdmin client = new SmartAdmin(conf);
     long start = System.currentTimeMillis();
     int retry = 5;
     while (true) {
       try {
-        SmartServiceState state = client.getServiceState();
+        SmartServiceState state = ssm.getSSMServiceState();
         if (state != SmartServiceState.SAFEMODE) {
           break;
         }
