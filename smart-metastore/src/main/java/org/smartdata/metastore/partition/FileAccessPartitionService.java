@@ -17,14 +17,15 @@
  */
 package org.smartdata.metastore.partition;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.hadoop.conf.Configuration;
 import org.smartdata.metastore.partition.cleanup.FileAccessPartitionRetentionPolicyExecutor;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+@RequiredArgsConstructor
 @Slf4j
 public class FileAccessPartitionService {
   private static final int CREATE_PARTITION_INTERVAL_DAYS = 30;
@@ -34,10 +35,8 @@ public class FileAccessPartitionService {
   private final CleanupPartitionTask cleanupPartitionTask;
   private ScheduledFuture<?> createPartitionFuture;
   private ScheduledFuture<?> removePartitionFuture;
-  private FileAccessPartitionRetentionPolicyExecutor retentionPolicyExecutor;
 
-  public FileAccessPartitionService(Configuration conf,
-                                    ScheduledExecutorService service,
+  public FileAccessPartitionService(ScheduledExecutorService service,
                                     FileAccessPartitionManager fileAccessPartitionManager,
                                     FileAccessPartitionRetentionPolicyExecutor retentionPolicyExecutor) {
     this.scheduledExecutorService = service;
@@ -61,12 +60,9 @@ public class FileAccessPartitionService {
     }
   }
 
+  @RequiredArgsConstructor
   private static class CreatePartitionTask implements Runnable {
     private final FileAccessPartitionManager partitionManager;
-
-    public CreatePartitionTask(FileAccessPartitionManager partitionManager) {
-      this.partitionManager = partitionManager;
-    }
 
     @Override
     public void run() {
@@ -78,12 +74,9 @@ public class FileAccessPartitionService {
     }
   }
 
+  @RequiredArgsConstructor
   private static class CleanupPartitionTask implements Runnable {
     private final FileAccessPartitionRetentionPolicyExecutor retentionPolicyExecutor;
-
-    public CleanupPartitionTask(FileAccessPartitionRetentionPolicyExecutor retentionPolicyExecutor) {
-      this.retentionPolicyExecutor = retentionPolicyExecutor;
-    }
 
     @Override
     public void run() {

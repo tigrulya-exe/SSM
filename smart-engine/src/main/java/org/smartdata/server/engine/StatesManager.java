@@ -104,7 +104,7 @@ public class StatesManager extends AbstractService implements Reconfigurable {
         fileAccessPartitionRetentionPolicyExecutorFactory =
         new FileAccessPartitionRetentionPolicyExecutorFactory(
             serverContext.getMetaStore());
-    this.fileAccessPartitionService = new FileAccessPartitionService(serverContext.getConf(),
+    this.fileAccessPartitionService = new FileAccessPartitionService(
         executorService,
         new FileAccessPartitionManagerImpl(serverContext.getMetaStore()),
         fileAccessPartitionRetentionPolicyExecutorFactory.createPolicyExecutor(

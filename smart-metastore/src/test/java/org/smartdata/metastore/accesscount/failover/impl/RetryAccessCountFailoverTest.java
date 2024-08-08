@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 public class RetryAccessCountFailoverTest {
   private Failover<AccessCountContext> accessCountFailover;
@@ -35,6 +35,7 @@ public class RetryAccessCountFailoverTest {
   @Test
   public void testExecuteWithoutExceedingOverMaxRetries() {
     int maxRetries = 3;
+    int attemptsCount = 0;
     long currentTimeMillis = System.currentTimeMillis();
     accessCountFailover = new RetryAccessCountFailover(maxRetries);
     List<AggregatedAccessCounts> accessCounts = new ArrayList<>(Collections.singletonList(
@@ -44,8 +45,9 @@ public class RetryAccessCountFailoverTest {
       accessCountFailover.execute(ctx -> {
         throw new RuntimeException("error");
       }, context);
+      attemptsCount = i;
     }
-    assertTrue(true);
+    assertEquals(maxRetries, attemptsCount);
   }
 
   @Test

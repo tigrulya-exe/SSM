@@ -39,7 +39,6 @@ import org.smartdata.model.request.FileAccessInfoSearchRequest;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -105,7 +104,7 @@ public class TestFileAccessManager extends
     List<Long> ids = Arrays.asList(1L, 2L);
     long currentTimeMillis = System.currentTimeMillis();
     insertFileAccessCounts(currentTimeMillis);
-    testSearch(FileAccessInfoSearchRequest.builder().ids(ids).build(), ids.toArray(new Long[0]));
+    testSearch(FileAccessInfoSearchRequest.builder().ids(ids).build(), 1L, 2L);
   }
 
   @Test
@@ -115,11 +114,11 @@ public class TestFileAccessManager extends
     testSearch(FileAccessInfoSearchRequest.builder()
             .pathLike("/file3")
             .build(),
-        Collections.singletonList(3L).toArray(new Long[0]));
+        3L);
     testSearch(FileAccessInfoSearchRequest.builder()
             .pathLike("/file")
             .build(),
-        Arrays.asList(1L, 2L, 3L).toArray(new Long[0]));
+        1L, 2L, 3L);
   }
 
   @Test
@@ -133,7 +132,7 @@ public class TestFileAccessManager extends
                 .to(Instant.ofEpochMilli(currentTimeMillis + 2))
                 .build())
             .build(),
-        Arrays.asList(1L, 2L).toArray(new Long[0]));
+        1L, 2L);
   }
 
   private void insertFileAccessCounts(long currentTimeMillis) throws MetaStoreException {
