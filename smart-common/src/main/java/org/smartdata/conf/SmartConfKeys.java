@@ -29,8 +29,6 @@ public class SmartConfKeys {
     public static final String SMART_HADOOP_CONF_DIR_KEY = "smart.hadoop.conf.path";
     public static final String SMART_CONF_DIR_DEFAULT = "conf";
 
-    public static final String SMART_SERVICE_MODE_KEY = "smart.service.mode";
-    public static final String SMART_SERVICE_MODE_DEFAULT = "HDFS";
     public static final String SMART_NAMESPACE_FETCHER_BATCH_KEY = "smart.namespace.fetcher.batch";
     public static final int SMART_NAMESPACE_FETCHER_BATCH_DEFAULT = 500;
 

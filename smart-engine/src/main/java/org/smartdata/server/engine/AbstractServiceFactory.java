@@ -28,81 +28,59 @@ import org.smartdata.metastore.StatesUpdateService;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class AbstractServiceFactory {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractServiceFactory.class);
 
   public static AbstractService createStatesUpdaterService(
       ServerContext context, MetaStore metaStore) throws IOException {
-    String source = getStatesUpdaterName(context.getServiceMode());
-    try {
-      Class<?> clazz = Class.forName(source);
-      Constructor<?> c = clazz.getConstructor(SmartContext.class, MetaStore.class);
-      return (StatesUpdateService) c.newInstance(context, metaStore);
-    } catch (ClassNotFoundException | IllegalAccessException
-        | InstantiationException | NoSuchMethodException
-        | InvocationTargetException | NullPointerException e) {
-      throw new IOException(e);
-    }
-  }
-
-  public static String getStatesUpdaterName(ServiceMode mode)
-      throws IOException {
-    String template = "SMART_@@_STATES_UPDATE_SERVICE_IMPL";
-    try {
-      return getConstantValue(mode, template);
-    } catch (Exception e) {
-      throw new IOException("Can not get value of SmartConstants."
-          + getFieldName(mode, template), e);
-    }
+    return createNewInstance(context,
+        metaStore,
+        SmartConstants.SMART_STATES_UPDATE_SERVICE_IMPL,
+        true)
+        .map(service -> (StatesUpdateService) service)
+        .orElseThrow(() -> new IOException("Failed to create update states service instance"));
   }
 
   public static List<ActionSchedulerService> createActionSchedulerServices(
       ServerContext context, MetaStore metaStore, boolean allMustSuccess) throws IOException {
     List<ActionSchedulerService> services = new ArrayList<>();
-    String[] serviceNames = getActionSchedulerNames(context.getServiceMode());
+    String[] serviceNames = getActionSchedulerNames();
     for (String name : serviceNames) {
-      try {
-        Class<?> clazz = Class.forName(name);
-        Constructor<?> c = clazz.getConstructor(SmartContext.class, MetaStore.class);
-        services.add((ActionSchedulerService) c.newInstance(context, metaStore));
-      } catch (ClassNotFoundException | IllegalAccessException
-          | InstantiationException | NoSuchMethodException
-          | InvocationTargetException | NullPointerException e) {
-        if (allMustSuccess) {
-          throw new IOException(e);
-        } else {
-          LOG.warn("Error while create action scheduler service '" + name + "'.", e);
-        }
-      }
+      createNewInstance(context,
+          metaStore,
+          name,
+          allMustSuccess).ifPresent(service -> services.add((ActionSchedulerService) service));
     }
     return services;
   }
 
-  public static String[] getActionSchedulerNames(ServiceMode mode) {
-    String template = "SMART_@@_ACTION_SCHEDULER_SERVICE_IMPL";
+  public static String[] getActionSchedulerNames() {
+    return SmartConstants.SMART_ACTION_SCHEDULER_SERVICE_IMPL.trim().split("\\s*,\\s*");
+  }
+
+  private static Optional<Object> createNewInstance(ServerContext context,
+                                                    MetaStore metaStore,
+                                                    String serviceName,
+                                                    boolean allMustSuccess)
+      throws IOException {
     try {
-      return getConstantValue(mode, template).trim().split("\\s*,\\s*");
-    } catch (Exception e) {
-      LOG.warn("Can not get value of SmartConstants."
-          + getFieldName(mode, template), e);
+      Class<?> clazz = Class.forName(serviceName);
+      Constructor<?> c = clazz.getConstructor(SmartContext.class, MetaStore.class);
+      return Optional.of(c.newInstance(context, metaStore));
+    } catch (ClassNotFoundException | IllegalAccessException
+             | InstantiationException | NoSuchMethodException
+             | InvocationTargetException | NullPointerException e) {
+      if (allMustSuccess) {
+        throw new IOException(e);
+      } else {
+        LOG.warn("Error while create action scheduler service '" + serviceName + "'.", e);
+        return Optional.empty();
+      }
     }
-    return new String[0];
-  }
-
-  public static String getConstantValue(ServiceMode serviceMode, String template)
-      throws NoSuchFieldException, SecurityException,
-      IllegalArgumentException, IllegalAccessException {
-    String fieldName = getFieldName(serviceMode, template);
-    Field field = SmartConstants.class.getField(fieldName);
-    return (String) field.get(SmartConstants.class);
-  }
-
-  public static String getFieldName(ServiceMode serviceMode, String template) {
-    return template.replaceAll("@@", serviceMode.getName());
   }
 }

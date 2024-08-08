@@ -36,11 +36,9 @@ import org.smartdata.server.cluster.ClusterNodesManager;
 import org.smartdata.server.engine.CmdletManager;
 import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.engine.ServerContext;
-import org.smartdata.server.engine.ServiceMode;
 import org.smartdata.server.engine.StatesManager;
 import org.smartdata.server.engine.cmdlet.agent.AgentMaster;
 import org.smartdata.server.utils.GenericOptionsParser;
-import static org.smartdata.SmartConstants.NUMBER_OF_SMART_AGENT;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -48,6 +46,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+
+import static org.smartdata.SmartConstants.NUMBER_OF_SMART_AGENT;
 
 /**
  * From this Smart Storage Management begins.
@@ -79,7 +79,6 @@ public class SmartServer {
     HadoopUtil.setSmartConfByHadoop(conf);
     MetaStore metaStore = MetaStoreUtils.getDBAdapter(conf);
     context = new ServerContext(conf, metaStore);
-    initServiceMode(conf);
     engine = new SmartEngine(context);
     rpcServer = new SmartRpcServer(this, conf);
     restServer = new SmartRestServer(conf, engine);
@@ -307,24 +306,6 @@ public class SmartServer {
     public String getName() {
       return name;
     }
-  }
-
-  private void initServiceMode(SmartConf conf) {
-    String serviceModeStr = conf.get(SmartConfKeys.SMART_SERVICE_MODE_KEY,
-        SmartConfKeys.SMART_SERVICE_MODE_DEFAULT);
-    try {
-      context.setServiceMode(ServiceMode.valueOf(serviceModeStr.trim().toUpperCase()));
-    } catch (IllegalStateException e) {
-      String errorMsg =
-          "Illegal service mode '"
-              + serviceModeStr
-              + "' set in property: "
-              + SmartConfKeys.SMART_SERVICE_MODE_KEY
-              + "!";
-      LOG.error(errorMsg);
-      throw e;
-    }
-    LOG.info("Initialized service mode: " + context.getServiceMode().getName() + ".");
   }
 
   public static SmartServer launchWith(SmartConf conf) throws Exception {

@@ -32,7 +32,6 @@ import org.smartdata.security.SmartPrincipalManager;
 import org.smartdata.security.ThreadScopeSmartPrincipalManager;
 import org.smartdata.server.engine.CmdletManager;
 import org.smartdata.server.engine.ServerContext;
-import org.smartdata.server.engine.ServiceMode;
 import org.smartdata.server.engine.cmdlet.CmdletDispatcherHelper;
 
 import java.io.IOException;
@@ -55,7 +54,6 @@ public class TestCmdletLifecycleLogger extends SqliteTestDaoBase {
   public void init() throws Exception {
     SmartConf smartConf = new SmartConf();
     ServerContext serverContext = new ServerContext(smartConf, metaStore);
-    serverContext.setServiceMode(ServiceMode.HDFS);
 
     auditService = new AuditService(metaStore.userActivityDao());
     principalManager = new ThreadScopeSmartPrincipalManager(

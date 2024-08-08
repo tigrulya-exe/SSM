@@ -127,13 +127,11 @@ public class RuleManager
             SMART_SYNC_SCHEDULE_STRATEGY_KEY,
             SMART_SYNC_SCHEDULE_STRATEGY_DEFAULT));
 
-    if (serverContext.getServiceMode() == ServiceMode.HDFS) {
-      RuleExecutorPluginManager.addPlugin(new FileCopyDrPlugin(
-          context.getMetaStore(), copyScheduleStrategy));
-      RuleExecutorPluginManager.addPlugin(new FileCopy2S3Plugin());
-      RuleExecutorPluginManager.addPlugin(new SmallFilePlugin(context, cmdletManager));
-      RuleExecutorPluginManager.addPlugin(new ErasureCodingPlugin(context));
-    }
+    RuleExecutorPluginManager.addPlugin(new FileCopyDrPlugin(
+        context.getMetaStore(), copyScheduleStrategy));
+    RuleExecutorPluginManager.addPlugin(new FileCopy2S3Plugin());
+    RuleExecutorPluginManager.addPlugin(new SmallFilePlugin(context, cmdletManager));
+    RuleExecutorPluginManager.addPlugin(new ErasureCodingPlugin(context));
   }
 
   public RuleInfo submitRule(String rule) throws IOException {

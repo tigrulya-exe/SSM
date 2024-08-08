@@ -33,7 +33,6 @@ import org.smartdata.security.SmartPrincipalManager;
 import org.smartdata.security.ThreadScopeSmartPrincipalManager;
 import org.smartdata.server.engine.RuleManager;
 import org.smartdata.server.engine.ServerContext;
-import org.smartdata.server.engine.ServiceMode;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -56,7 +55,6 @@ public class TestRuleLifecycleLogger extends SqliteTestDaoBase {
   public void init() throws Exception {
     SmartConf smartConf = new SmartConf();
     ServerContext serverContext = new ServerContext(smartConf, metaStore);
-    serverContext.setServiceMode(ServiceMode.HDFS);
 
     auditService = new AuditService(metaStore.userActivityDao());
     principalManager = new ThreadScopeSmartPrincipalManager(
