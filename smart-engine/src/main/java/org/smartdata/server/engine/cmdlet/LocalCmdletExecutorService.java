@@ -42,11 +42,11 @@ import java.util.concurrent.TimeUnit;
 
 public class LocalCmdletExecutorService extends CmdletExecutorService implements StatusReporter {
   private static final Logger LOG = LoggerFactory.getLogger(LocalCmdletExecutorService.class);
-  private SmartConf conf;
+  private final SmartConf conf;
   private CmdletFactory cmdletFactory;
   private CmdletExecutor cmdletExecutor;
   private ScheduledExecutorService executorService;
-  private boolean disableLocalExec;
+  private final boolean disableLocalExec;
 
   public LocalCmdletExecutorService(SmartConf smartConf, CmdletManager cmdletManager) {
     super(cmdletManager, ExecutorType.LOCAL);
@@ -60,7 +60,7 @@ public class LocalCmdletExecutorService extends CmdletExecutorService implements
       return;
     }
 
-    this.cmdletFactory = new CmdletFactory(cmdletManager.getContext(), this);
+    this.cmdletFactory = new CmdletFactory(cmdletManager.getContext());
     this.cmdletExecutor = new CmdletExecutor(smartConf);
     this.executorService = Executors.newSingleThreadScheduledExecutor();
   }
@@ -109,13 +109,14 @@ public class LocalCmdletExecutorService extends CmdletExecutorService implements
 
   @Override
   public void stop(long cmdletId) {
-    this.cmdletExecutor.stop(cmdletId);
+    cmdletExecutor.stop(cmdletId);
   }
 
   @Override
   public void shutdown() {
-    this.executorService.shutdown();
-    this.cmdletExecutor.shutdown();
+    executorService.shutdown();
+    cmdletExecutor.shutdown();
+    cmdletFactory.close();
   }
 
   @Override
@@ -126,7 +127,7 @@ public class LocalCmdletExecutorService extends CmdletExecutorService implements
 
   private String getActiveServerAddress() {
     String srv = conf.get(SmartConfKeys.SMART_AGENT_MASTER_ADDRESS_KEY);
-    if (srv == null || srv.length() == 0) {
+    if (srv == null || srv.isEmpty()) {
       try {
         srv = InetAddress.getLocalHost().getHostName();
       } catch (UnknownHostException e) {

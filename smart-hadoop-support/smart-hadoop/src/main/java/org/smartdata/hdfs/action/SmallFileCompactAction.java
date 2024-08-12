@@ -20,7 +20,6 @@ package org.smartdata.hdfs.action;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang.SerializationUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.XAttrSetFlag;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.client.HdfsDataOutputStream;
@@ -31,7 +30,6 @@ import org.smartdata.SmartFilePermission;
 import org.smartdata.action.Utils;
 import org.smartdata.action.annotation.ActionSignature;
 import org.smartdata.hdfs.CompatibilityHelperLoader;
-import org.smartdata.hdfs.HadoopUtil;
 import org.smartdata.model.CompactFileState;
 import org.smartdata.model.FileContainerInfo;
 
@@ -54,7 +52,6 @@ import java.util.Map;
 )
 public class SmallFileCompactAction extends HdfsAction {
   private float status = 0f;
-  private Configuration conf = null;
   private String smallFiles = null;
   private String containerFile = null;
   private String containerFilePermission = null;
@@ -66,7 +63,6 @@ public class SmallFileCompactAction extends HdfsAction {
   @Override
   public void init(Map<String, String> args) {
     super.init(args);
-    this.conf = getContext().getConf();
     this.xAttrNameFileSate = SmartConstants.SMART_FILE_STATE_XATTR_NAME;
     this.xAttrNameCheckSum = SmartConstants.SMART_FILE_CHECKSUM_XATTR_NAME;
     this.smallFiles = args.get(FILE_PATH);
@@ -76,10 +72,6 @@ public class SmallFileCompactAction extends HdfsAction {
 
   @Override
   protected void execute() throws Exception {
-    // Set hdfs client by DFSClient rather than SmartDFSClient
-    this.setDfsClient(HadoopUtil.getDFSClient(
-        HadoopUtil.getNameNodeUri(conf), conf));
-
     // Get small file list
     if (smallFiles == null || smallFiles.isEmpty()) {
       throw new IllegalArgumentException(
@@ -232,5 +224,10 @@ public class SmallFileCompactAction extends HdfsAction {
   @Override
   public float getProgress() {
     return this.status;
+  }
+
+  @Override
+  public DfsClientType dfsClientType() {
+    return DfsClientType.DEFAULT_HDFS;
   }
 }

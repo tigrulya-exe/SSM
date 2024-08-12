@@ -549,4 +549,14 @@
     </description>
   </property>
 
+  <property>
+    <name>smart.action.client.cache.ttl</name>
+    <value>10m</value>
+    <description>
+      The minimum amount of time after the last access to the DFS client cache entry
+      that must pass in order for the entry to be evicted.
+      Should be in the format '[Amount][TimeUnit]', where TimeUnit is one
+      of 'day' or 'd', 'hour' or 'h', 'min' or 'm', 'sec' or 's'.
+    </description>
+  </property>
 </configuration>

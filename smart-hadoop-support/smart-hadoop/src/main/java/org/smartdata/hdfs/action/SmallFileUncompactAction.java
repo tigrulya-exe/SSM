@@ -19,7 +19,6 @@ package org.smartdata.hdfs.action;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.XAttrSetFlag;
 import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.hdfs.DFSInputStream;
@@ -28,7 +27,6 @@ import org.apache.hadoop.io.IOUtils;
 import org.smartdata.SmartConstants;
 import org.smartdata.action.Utils;
 import org.smartdata.action.annotation.ActionSignature;
-import org.smartdata.hdfs.HadoopUtil;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -46,7 +44,6 @@ import java.util.Map;
 )
 public class SmallFileUncompactAction extends HdfsAction {
   private float status = 0f;
-  private Configuration conf = null;
   private String smallFiles = null;
   private String xAttrNameFileState = null;
   private String xAttrNameCheckSum = null;
@@ -58,7 +55,6 @@ public class SmallFileUncompactAction extends HdfsAction {
   @Override
   public void init(Map<String, String> args) {
     super.init(args);
-    this.conf = getContext().getConf();
     this.smartDFSClient = dfsClient;
     this.xAttrNameFileState = SmartConstants.SMART_FILE_STATE_XATTR_NAME;
     this.xAttrNameCheckSum = SmartConstants.SMART_FILE_CHECKSUM_XATTR_NAME;
@@ -68,10 +64,6 @@ public class SmallFileUncompactAction extends HdfsAction {
 
   @Override
   protected void execute() throws Exception {
-    // Set hdfs client by DFSClient rather than SmartDFSClient
-    this.setDfsClient(HadoopUtil.getDFSClient(
-        HadoopUtil.getNameNodeUri(conf), conf));
-
     // Get small file list
     if (smallFiles == null || smallFiles.isEmpty()) {
       throw new IllegalArgumentException(
@@ -157,5 +149,10 @@ public class SmallFileUncompactAction extends HdfsAction {
   @Override
   public float getProgress() {
     return this.status;
+  }
+
+  @Override
+  public DfsClientType dfsClientType() {
+    return DfsClientType.DEFAULT_HDFS;
   }
 }
