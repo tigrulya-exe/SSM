@@ -60,7 +60,7 @@ const createInitialState = (): AdhTablesTableState => ({
   requestFrequency: 0,
   sortParams: {
     sortBy: 'id',
-    sortDirection: 'asc',
+    sortDirection: 'desc',
   },
   relatedData: {
     hosts: [],
