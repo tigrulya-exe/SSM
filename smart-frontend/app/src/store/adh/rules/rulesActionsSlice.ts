@@ -29,9 +29,9 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 
 const createRule = createAsyncThunk('adh/rulesActions/createRule', async (text: string, thunkAPI) => {
   thunkAPI.dispatch(setIsActionInProgress(true));
-  thunkAPI.dispatch(closeCreateRuleDialog());
   try {
     await AdhRulesApi.createRule(text);
+    thunkAPI.dispatch(closeCreateRuleDialog());
     thunkAPI.dispatch(showSuccess({ message: 'New rule was created and applied successfully' }));
   } catch (error) {
     thunkAPI.dispatch(showError({ message: getErrorMessage(error as RequestError) }));
