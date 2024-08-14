@@ -31,7 +31,6 @@ import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.hdfs.HadoopUtil;
 import org.smartdata.metastore.MetaStore;
-import org.smartdata.metastore.utils.MetaStoreUtils;
 import org.smartdata.server.cluster.ClusterNodesManager;
 import org.smartdata.server.engine.CmdletManager;
 import org.smartdata.server.engine.RuleManager;
@@ -48,6 +47,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import static org.smartdata.SmartConstants.NUMBER_OF_SMART_AGENT;
+import static org.smartdata.metastore.utils.MetaStoreUtils.getDBAdapter;
 
 /**
  * From this Smart Storage Management begins.
@@ -58,7 +58,7 @@ public class SmartServer {
   private final SmartConf conf;
   private SmartEngine engine;
   private ServerContext context;
-  private boolean enabled;
+  private volatile boolean enabled;
 
   private SmartRpcServer rpcServer;
   private SmartRestServer restServer;
@@ -73,11 +73,10 @@ public class SmartServer {
     this.enabled = false;
   }
 
-  public void initWith() throws Exception {
+  public void initWith(MetaStore metaStore) throws Exception {
     LOG.info("Start Init Smart Server");
 
     HadoopUtil.setSmartConfByHadoop(conf);
-    MetaStore metaStore = MetaStoreUtils.getDBAdapter(conf);
     context = new ServerContext(conf, metaStore);
     engine = new SmartEngine(context);
     rpcServer = new SmartRpcServer(this, conf);
@@ -124,7 +123,7 @@ public class SmartServer {
       } else if (StartupOption.REGULAR.getName().equalsIgnoreCase(arg)) {
         startOpt = StartupOption.REGULAR;
       } else if (arg.equals("-h") || arg.equals("-help")) {
-        if (parseHelpArgument(new String[]{arg}, USAGE, System.out)) {
+        if (parseHelpArgument(new String[] {arg}, USAGE, System.out)) {
           return null;
         }
       } else {
@@ -160,17 +159,18 @@ public class SmartServer {
     // New AgentMaster
     AgentMaster.getAgentMaster(conf);
 
+    MetaStore metaStore = getDBAdapter(conf);
     if (startOption == StartupOption.FORMAT) {
       LOG.info("Formatting DataBase ...");
-      MetaStoreUtils.formatDatabase(conf);
+      metaStore.formatDataBase();
       LOG.info("Formatting DataBase finished successfully!");
     } else {
-      MetaStoreUtils.checkTables(conf);
+      metaStore.checkTables();
     }
 
     SmartServer ssm = new SmartServer(conf);
     try {
-      ssm.initWith();
+      ssm.initWith(metaStore);
       ssm.run();
       return ssm;
     } catch (Exception e) {
@@ -196,7 +196,7 @@ public class SmartServer {
   }
 
   private static boolean parseHelpArgument(String[] args,
-    String helpDescription, PrintStream out) {
+                                           String helpDescription, PrintStream out) {
     try {
       CommandLineParser parser = new PosixParser();
       CommandLine cmdLine = parser.parse(helpOptions, args);
