@@ -52,7 +52,6 @@ public class SmartRpcServer implements SmartServerProtocols {
   public SmartRpcServer(SmartServer ssm, Configuration conf) throws IOException {
     this.ssm = ssm;
     this.conf = conf;
-    // TODO: implement ssm SmartAdminProtocol
     InetSocketAddress rpcAddr = getRpcServerAddress();
     RPC.setProtocolEngine(conf, ClientProtocolProtoBuffer.class, ProtobufRpcEngine.class);
 
@@ -66,8 +65,6 @@ public class SmartRpcServer implements SmartServerProtocols {
         SmartConfKeys.SMART_SERVER_RPC_HANDLER_COUNT_KEY,
         SmartConfKeys.SMART_SERVER_RPC_HANDLER_COUNT_DEFAULT);
 
-    // TODO: provide service for SmartClientProtocol and SmartAdminProtocol
-    // TODO: in different port and server
     clientRpcServer = new RPC.Builder(conf)
         .setProtocol(ClientProtocolProtoBuffer.class)
         .setInstance(clientSmartPbService)
