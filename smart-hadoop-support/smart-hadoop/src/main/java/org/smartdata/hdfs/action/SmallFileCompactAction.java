@@ -51,14 +51,15 @@ import java.util.Map;
         + SmallFileCompactAction.CONTAINER_FILE + " $container_file "
 )
 public class SmallFileCompactAction extends HdfsAction {
+  public static final String CONTAINER_FILE = "-containerFile";
+  public static final String CONTAINER_FILE_PERMISSION = "-containerFilePermission";
+
   private float status = 0f;
   private String smallFiles = null;
   private String containerFile = null;
   private String containerFilePermission = null;
   private String xAttrNameFileSate = null;
   private String xAttrNameCheckSum = null;
-  public static final String CONTAINER_FILE = "-containerFile";
-  public static final String CONTAINER_FILE_PERMISSION = "-containerFilePermission";
 
   @Override
   public void init(Map<String, String> args) {

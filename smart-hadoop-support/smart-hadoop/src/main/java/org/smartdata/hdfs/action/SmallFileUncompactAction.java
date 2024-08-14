@@ -43,14 +43,15 @@ import java.util.Map;
     usage = SmallFileUncompactAction.CONTAINER_FILE + " $container_file "
 )
 public class SmallFileUncompactAction extends HdfsAction {
+  public static final String CONTAINER_FILE =
+      SmallFileCompactAction.CONTAINER_FILE;
+
   private float status = 0f;
   private String smallFiles = null;
   private String xAttrNameFileState = null;
   private String xAttrNameCheckSum = null;
   private String containerFile = null;
   private DFSClient smartDFSClient = null;
-  public static final String CONTAINER_FILE =
-      SmallFileCompactAction.CONTAINER_FILE;
 
   @Override
   public void init(Map<String, String> args) {
