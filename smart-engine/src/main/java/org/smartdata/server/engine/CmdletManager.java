@@ -33,6 +33,13 @@ import org.smartdata.exception.NotFoundException;
 import org.smartdata.exception.QueueFullException;
 import org.smartdata.exception.SsmParseException;
 import org.smartdata.hdfs.scheduler.ActionSchedulerService;
+import org.smartdata.hdfs.scheduler.CacheScheduler;
+import org.smartdata.hdfs.scheduler.CompressionScheduler;
+import org.smartdata.hdfs.scheduler.Copy2S3Scheduler;
+import org.smartdata.hdfs.scheduler.CopyScheduler;
+import org.smartdata.hdfs.scheduler.ErasureCodingScheduler;
+import org.smartdata.hdfs.scheduler.MoverScheduler;
+import org.smartdata.hdfs.scheduler.SmallFileScheduler;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
 import org.smartdata.model.ActionInfo;
@@ -74,6 +81,7 @@ import org.smartdata.server.engine.cmdlet.TaskTracker;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -147,7 +155,15 @@ public class CmdletManager extends AbstractService
     this.scheduledCmdlets = new LinkedBlockingQueue<>();
     this.idToLaunchCmdlets = new ConcurrentHashMap<>();
     this.schedulers = ArrayListMultimap.create();
-    this.schedulerServices = new ArrayList<>();
+    this.schedulerServices = new ArrayList<>(Arrays.asList(
+        new MoverScheduler(getContext(), metaStore),
+        new CopyScheduler(getContext(), metaStore),
+        new Copy2S3Scheduler(getContext(), metaStore),
+        new SmallFileScheduler(getContext(), metaStore),
+        new CompressionScheduler(getContext(), metaStore),
+        new ErasureCodingScheduler(getContext(), metaStore),
+        new CacheScheduler(getContext(), metaStore)
+    ));
 
     this.tracker = new TaskTracker();
     this.dispatcher = new CmdletDispatcher(context, this, scheduledCmdlets,
@@ -201,9 +217,6 @@ public class CmdletManager extends AbstractService
       cmdletPurgeTask.init();
       cmdletInfoHandler.init();
       actionInfoHandler.init();
-
-      schedulerServices = AbstractServiceFactory.createActionSchedulerServices(
-          (ServerContext) getContext(), metaStore, false);
 
       for (ActionSchedulerService actionSchedulerService : schedulerServices) {
         actionSchedulerService.init();
