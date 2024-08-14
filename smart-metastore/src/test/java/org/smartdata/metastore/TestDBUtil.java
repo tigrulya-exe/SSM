@@ -57,14 +57,6 @@ public class TestDBUtil {
     return getUniqueFilePath() + ".db";
   }
 
-  public static String getUniqueSqliteUrl() {
-    String dbFile = getUniqueDBFilePath();
-    new File(dbFile).deleteOnExit();
-    String url = SQLITE_URL_PREFIX + getUniqueDBFilePath();
-    log.info("sqlite url: {}", url);
-    return url;
-  }
-
   /**
    * Get an initialized empty Sqlite database file path.
    *
