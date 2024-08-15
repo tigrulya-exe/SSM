@@ -20,6 +20,7 @@ package org.smartdata.server.engine;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -113,6 +114,7 @@ import static org.smartdata.model.audit.UserActivityOperation.STOP;
  * <p>The map idToCmdlets stores all the recent CmdletInfos, including pending and running Cmdlets.
  * After the Cmdlet is finished or cancelled or failed, it's status will be flush to DB.
  */
+@Slf4j
 public class CmdletManager extends AbstractService
     implements ActionStatusUpdateListener, ClusterNodeMetricsProvider, Auditable {
   private static final Logger LOG = LoggerFactory.getLogger(CmdletManager.class);
@@ -155,16 +157,17 @@ public class CmdletManager extends AbstractService
     this.scheduledCmdlets = new LinkedBlockingQueue<>();
     this.idToLaunchCmdlets = new ConcurrentHashMap<>();
     this.schedulers = ArrayListMultimap.create();
-    this.schedulerServices = new ArrayList<>(Arrays.asList(
-        new MoverScheduler(getContext(), metaStore),
-        new CopyScheduler(getContext(), metaStore),
-        new Copy2S3Scheduler(getContext(), metaStore),
-        new SmallFileScheduler(getContext(), metaStore),
-        new CompressionScheduler(getContext(), metaStore),
-        new ErasureCodingScheduler(getContext(), metaStore),
-        new CacheScheduler(getContext(), metaStore)
-    ));
-
+    //because we have to ignore exceptions while creating services,
+    //the better way to init them is reflection
+    this.schedulerServices = AbstractServiceFactory.createSchedulerServices(Arrays.asList(
+        MoverScheduler.class,
+        CopyScheduler.class,
+        Copy2S3Scheduler.class,
+        SmallFileScheduler.class,
+        CompressionScheduler.class,
+        ErasureCodingScheduler.class,
+        CacheScheduler.class
+    ), context, metaStore);
     this.tracker = new TaskTracker();
     this.dispatcher = new CmdletDispatcher(context, this, scheduledCmdlets,
         idToLaunchCmdlets, runningCmdlets, schedulers);
@@ -217,7 +220,6 @@ public class CmdletManager extends AbstractService
       cmdletPurgeTask.init();
       cmdletInfoHandler.init();
       actionInfoHandler.init();
-
       for (ActionSchedulerService actionSchedulerService : schedulerServices) {
         actionSchedulerService.init();
         List<String> actions = actionSchedulerService.getSupportedActions();
