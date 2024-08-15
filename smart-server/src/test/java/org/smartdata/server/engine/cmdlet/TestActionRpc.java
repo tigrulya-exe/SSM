@@ -34,10 +34,7 @@ public class TestActionRpc extends MiniSmartClusterHarness {
     long actId = cinfo.getActionIds().get(0);
     ActionInfo actionInfo;
     while (true) {
-      actionInfo = ssm.getMetaStore().getActionById(actId);
-      if (actionInfo == null) {
-        continue;
-      }
+      actionInfo = ssm.getCmdletManager().getActionInfoHandler().getActionInfo(actId);
       if (actionInfo.isFinished()) {
         Assert.fail("No intermediate progress observed.");
       }
