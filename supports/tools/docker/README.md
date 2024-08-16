@@ -12,13 +12,13 @@ There are two cluster types:
 Command to build docker images in singlehost cluster mode (from project root dir)
 
 ```shell
-build-image.sh singlehost
+/bin/bash build-images.sh singlehost
 ```
 
 Command to start docker containers 
 
 ```shell
-docker-compose -f ${project-dir}/supports/tools/docker/singlehost/docker-compose.yaml up -d
+docker compose -f ${project-dir}/supports/tools/docker/singlehost/docker-compose.yaml up -d
 ```
 
 ## Multihost configuration
@@ -31,17 +31,17 @@ docker-compose -f ${project-dir}/supports/tools/docker/singlehost/docker-compose
 Command to build docker images in multihost cluster mode (from project root dir)
 
 ```shell
-build-image.sh multihost
+/bin/bash build-images.sh multihost
 ```
 or without arg
 ```shell
-build-image.sh
+/bin/bash build-images.sh
 ```
 
 Command to start docker containers
 
 ```shell
-docker-compose -f ${project-dir}/supports/tools/docker/multihost/docker-compose.yaml up -d
+docker compose -f ${project-dir}/supports/tools/docker/multihost/docker-compose.yaml up -d
 ```
 
 # Run/Test SSM with Docker
