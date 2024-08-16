@@ -23,12 +23,12 @@ Download SSM branch from Github https://github.com/arenadata/SSM/
 
 ###   For Hadoop 3.2.*
 
-	mvn clean package -Pdist,web,hadoop-3.2 -DskipTests
+	mvn clean package -Pdist,web-ui,hadoop-3.2 -DskipTests
 
 
 ###   For Hadoop 3.3.*
 
-	mvn clean package -Pdist,web,hadoop-3.3 -DskipTests
+	mvn clean package -Pdist,web-ui,hadoop-3.3 -DskipTests
 
 A tar distribution package will be generated under 'smart-dist/target'. Unzip the tar distribution package to ${SMART_HOME} directory, and SSM configuration files are under '${SMART_HOME}/conf'.
 For more detailed information, please refer to BUILDING.txt file.
