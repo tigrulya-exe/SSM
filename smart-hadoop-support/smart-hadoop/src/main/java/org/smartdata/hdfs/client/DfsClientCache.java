@@ -15,37 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.hdfs.action;
+package org.smartdata.hdfs.client;
 
-import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyInfo;
-import org.smartdata.action.annotation.ActionSignature;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hdfs.DFSClient;
 
-import java.util.Map;
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 
-/**
- * An action to list the info for all EC policies in HDFS.
- */
-@ActionSignature(
-    actionId = "listec",
-    displayName = "listec",
-    usage = "No args"
-)
-public class ListErasureCodingPolicy extends HdfsAction {
-
-  @Override
-  public void init(Map<String, String> args) {
-    super.init(args);
-  }
-
-  @Override
-  public void execute() throws Exception {
-    for (ErasureCodingPolicyInfo policyInfo : dfsClient.getErasureCodingPolicies()) {
-      appendLog("{" + policyInfo.toString() + "}");
-    }
-  }
-
-  @Override
-  public DfsClientType dfsClientType() {
-    return DfsClientType.DEFAULT_HDFS;
-  }
+public interface DfsClientCache<T extends DFSClient> extends Closeable {
+  T get(Configuration config, InetSocketAddress ssmMasterAddress) throws IOException;
 }

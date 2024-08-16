@@ -263,4 +263,8 @@ public class SmartConfKeys {
             "smart.client.active.server.cache.path";
     public static final String SMART_CLIENT_ACTIVE_SERVER_CACHE_PATH_DEFAULT =
             "/tmp/active_smart_server";
+
+    public static final String SMART_ACTION_CLIENT_CACHE_TTL_KEY =
+        "smart.action.client.cache.ttl";
+    public static final String SMART_ACTION_CLIENT_CACHE_TTL_DEFAULT = "10m";
 }
