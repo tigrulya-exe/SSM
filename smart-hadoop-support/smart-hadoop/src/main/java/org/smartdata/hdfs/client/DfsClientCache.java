@@ -15,32 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.server.engine;
+package org.smartdata.hdfs.client;
 
-public enum ServiceMode {
-  HDFS(1),
-  ALLUXIO(2);
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hdfs.DFSClient;
 
-  private int value;
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 
-  ServiceMode(int value) {
-    this.value = value;
-  }
-
-  public static ServiceMode fromValue(int v) {
-    for (ServiceMode s : values()) {
-      if (s.getValue() == v) {
-        return s;
-      }
-    }
-    return null;
-  }
-
-  public int getValue() {
-    return value;
-  }
-
-  public String getName() {
-    return toString();
-  }
+public interface DfsClientCache<T extends DFSClient> extends Closeable {
+  T get(Configuration config, InetSocketAddress ssmMasterAddress) throws IOException;
 }

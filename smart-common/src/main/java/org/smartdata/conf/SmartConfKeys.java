@@ -29,8 +29,6 @@ public class SmartConfKeys {
     public static final String SMART_HADOOP_CONF_DIR_KEY = "smart.hadoop.conf.path";
     public static final String SMART_CONF_DIR_DEFAULT = "conf";
 
-    public static final String SMART_SERVICE_MODE_KEY = "smart.service.mode";
-    public static final String SMART_SERVICE_MODE_DEFAULT = "HDFS";
     public static final String SMART_NAMESPACE_FETCHER_BATCH_KEY = "smart.namespace.fetcher.batch";
     public static final int SMART_NAMESPACE_FETCHER_BATCH_DEFAULT = 500;
 
@@ -47,12 +45,6 @@ public class SmartConfKeys {
     public static final String SMART_NAMESPACE_FETCHER_CONSUMERS_NUM_KEY =
             "smart.namespace.fetcher.consumers.num";
     public static final int SMART_NAMESPACE_FETCHER_CONSUMERS_NUM_DEFAULT = 3;
-
-    // Configure keys for Alluxio
-    public static final String SMART_ALLUXIO_MASTER_HOSTNAME_KEY = "smart.alluxio.master.hostname";
-    public static final String SMART_ALLUXIO_CONF_DIR_KEY = "smart.alluxio.conf.dir";
-    public static final String SMART_ALLUXIO_MASTER_JOURNAL_DIR_KEY =
-            "smart.alluxio.master.journal.dir";
 
     // SSM
     public static final String SMART_SERVER_VERSION_KEY = "smart.storage.manager.version";
@@ -73,8 +65,6 @@ public class SmartConfKeys {
             "smart.agent.kerberos.principal";
     public static final String SMART_SECURITY_CLIENT_PROTOCOL_ACL =
             "smart.security.client.protocol.acl";
-    public static final String SMART_SECURITY_ADMIN_PROTOCOL_ACL =
-            "smart.security.admin.protocol.acl";
     public static final String SMART_METASTORE_DB_URL_KEY = "smart.metastore.db.url";
     // Password which get from hadoop credentialProvider used for metastore connect
     public static final String SMART_METASTORE_PASSWORD = "smart.metastore.password";
@@ -273,4 +263,8 @@ public class SmartConfKeys {
             "smart.client.active.server.cache.path";
     public static final String SMART_CLIENT_ACTIVE_SERVER_CACHE_PATH_DEFAULT =
             "/tmp/active_smart_server";
+
+    public static final String SMART_ACTION_CLIENT_CACHE_TTL_KEY =
+        "smart.action.client.cache.ttl";
+    public static final String SMART_ACTION_CLIENT_CACHE_TTL_DEFAULT = "10m";
 }

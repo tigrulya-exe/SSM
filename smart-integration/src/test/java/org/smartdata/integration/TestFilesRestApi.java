@@ -74,7 +74,7 @@ public class TestFilesRestApi extends IntegrationTestBase {
         apiClient::getAccessCounts,
         actualAccessCounts -> accessCountsEquals(actualAccessCounts, expectedAccessCounts),
         Duration.ofMillis(100),
-        Duration.ofSeconds(60)
+        Duration.ofMinutes(1)
     );
   }
 

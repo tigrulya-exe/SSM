@@ -15,32 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.alluxio.action;
+package org.smartdata.hdfs.client;
 
-import java.util.Map;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hdfs.DFSClient;
+import org.smartdata.hdfs.action.HdfsAction;
 
-import org.smartdata.action.annotation.ActionSignature;
+import java.io.Closeable;
+import java.io.IOException;
 
-import alluxio.client.file.options.SetAttributeOptions;
-
-@ActionSignature(
-    actionId = "pin",
-    displayName = "pin",
-    usage = AlluxioAction.FILE_PATH + " $file "
-)
-public class PinAction extends AlluxioAction {
-
-  @Override
-  public void init(Map<String, String> args) {
-    super.init(args);
-    this.actionType = AlluxioActionType.PIN;
-  }
-
-  @Override
-  protected void execute() throws Exception {
-    LOG.info("Executing Alluxio action: PinAction, path:" + uri.toString());
-    SetAttributeOptions options = SetAttributeOptions.defaults().setPinned(true);
-    alluxioFs.setAttribute(uri, options);
-    LOG.info("File " + uri + " was successfully pinned.");
-  }
+public interface DfsClientProvider extends Closeable {
+  DFSClient provide(
+      Configuration config, HdfsAction.DfsClientType clientType) throws IOException;
 }
