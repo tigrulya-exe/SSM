@@ -3,10 +3,42 @@ set -e
 
 SSM_APP_VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
 SSM_APP_VERSION=$(echo "${SSM_APP_VERSION}" | head -1)
-SSM_SERVER_IMAGE_VERSION=${SSM_APP_VERSION%-*}
-HADOOP_VERSION=3.2.4
-HADOOP_PROFILE=3.2
-CLUSTER_TYPE=$1
+SSM_SERVER_IMAGE_VERSION=${SSM_APP_VERSION:-*}
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --cluster=*)
+      CLUSTER_TYPE="${1#*=}"
+      ;;
+    --hadoop=*)
+      HADOOP_PROFILE="${1#*=}"
+      ;;
+    *)
+      echo "==============================================="
+      echo " Error: Invalid argument. Supported arguments:"
+      echo "    -cluster: multihost (default) | singlehost"
+      echo "    -hadoop: 3.2 (default) | 3.3"
+      echo "==============================================="
+      exit 1
+  esac
+  shift
+done
+
+CLUSTER_TYPE=${CLUSTER_TYPE:-multihost}
+HADOOP_PROFILE=${HADOOP_PROFILE:-3.2}
+
+case $HADOOP_PROFILE in
+  3.2)
+  HADOOP_VERSION=3.2.4
+  ;;
+  3.3)
+  HADOOP_VERSION=3.3.6
+  ;;
+  *)
+    echo "Unknown Hadoop profile ${HADOOP_PROFILE}"
+    exit 1;
+  ;;
+esac
 
 if type -p java; then
     echo found java executable in PATH
@@ -28,15 +60,10 @@ if [[ "$_java" ]]; then
     fi
 fi
 
-if [ -z "$CLUSTER_TYPE" ]
-then
-  CLUSTER_TYPE=multihost
-fi
-
 echo "=============================="
 echo "      Rebuild the project     "
 echo "=============================="
-mvn clean package -Pdist,web-ui,hadoop-${HADOOP_PROFILE} -DskipTests
+#mvn clean package -Pdist,web-ui,hadoop-${HADOOP_PROFILE} -DskipTests
 
 echo "========================================================"
 echo "      Build Hadoop ${HADOOP_VERSION} with SSM image     "
@@ -44,7 +71,9 @@ echo "========================================================"
 
 case $CLUSTER_TYPE in
   singlehost)
-    docker build -f ./supports/tools/docker/singlehost/Dockerfile -t cloud-hub.adsw.io/library/ssm-hadoop:${HADOOP_VERSION} --build-arg="SSM_APP_VERSION=${SSM_APP_VERSION}" .
+    docker build -f ./supports/tools/docker/singlehost/Dockerfile -t cloud-hub.adsw.io/library/ssm-hadoop:${HADOOP_VERSION} \
+    --build-arg="SSM_APP_VERSION=${SSM_APP_VERSION}" \
+    --build-arg="HADOOP_VERSION=${HADOOP_VERSION}" .
   ;;
   multihost)
     docker build -f ./supports/tools/docker/multihost/Dockerfile-hadoop-base -t cloud-hub.adsw.io/library/hadoop-base:${HADOOP_VERSION} \

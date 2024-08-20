@@ -21,7 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.SmartContext;
@@ -93,7 +93,7 @@ public abstract class SmartAction {
     } catch (Throwable t) {
       LOG.error("SmartAction execute error ", t);
       setThrowable(t);
-      appendLog(ExceptionUtils.getFullStackTrace(t));
+      appendLog(ExceptionUtils.getStackTrace(t));
     } finally {
       setFinishTime();
       finished = true;
