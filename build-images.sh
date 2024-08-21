@@ -17,7 +17,7 @@ while [ $# -gt 0 ]; do
       echo "==============================================="
       echo " Error: Invalid argument. Supported arguments:"
       echo "    -cluster: multihost (default) | singlehost"
-      echo "    -hadoop: 3.2 (default) | 3.3"
+      echo "    -hadoop: 3.3 (default)"
       echo "==============================================="
       exit 1
   esac
@@ -25,12 +25,9 @@ while [ $# -gt 0 ]; do
 done
 
 CLUSTER_TYPE=${CLUSTER_TYPE:-multihost}
-HADOOP_PROFILE=${HADOOP_PROFILE:-3.2}
+HADOOP_PROFILE=${HADOOP_PROFILE:-3.3}
 
 case $HADOOP_PROFILE in
-  3.2)
-  HADOOP_VERSION=3.2.4
-  ;;
   3.3)
   HADOOP_VERSION=3.3.6
   ;;

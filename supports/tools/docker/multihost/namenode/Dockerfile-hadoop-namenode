@@ -1,4 +1,4 @@
-FROM cloud-hub.adsw.io/library/hadoop-base:${HADOOP_VERSION:-3.2.4}
+FROM cloud-hub.adsw.io/library/hadoop-base:${HADOOP_VERSION:-3.3.6}
 
 # Configure namenode
 ENV HDFS_PARENT_DATA_DIR=/hadoop/dfs
