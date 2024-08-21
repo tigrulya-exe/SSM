@@ -187,6 +187,32 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>${maven-replacer-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>replace-generated-sources</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <basedir>${project.build.directory}/generated-sources</basedir>
+                            <includes>
+                                <include>**/*.java</include>
+                            </includes>
+                            <replacements>
+                                <replacement>
+                                    <token>([^\.])com.google.protobuf</token>
+                                    <value>$1${hadoop-thirdparty-shaded.protobuf.prefix}</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.1.1</version>

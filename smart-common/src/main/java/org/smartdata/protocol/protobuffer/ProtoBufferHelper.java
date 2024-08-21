@@ -17,14 +17,15 @@
  */
 package org.smartdata.protocol.protobuffer;
 
-import com.google.protobuf.ServiceException;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.thirdparty.protobuf.ServiceException;
 import org.smartdata.metrics.FileAccessEvent;
 import org.smartdata.model.CompactFileState;
 import org.smartdata.model.CompressionFileState;
 import org.smartdata.model.FileContainerInfo;
 import org.smartdata.model.FileState;
 import org.smartdata.model.NormalFileState;
-import org.smartdata.model.RuleState;
 import org.smartdata.protocol.ClientServerProto.CompactFileStateProto;
 import org.smartdata.protocol.ClientServerProto.CompressionFileStateProto;
 import org.smartdata.protocol.ClientServerProto.FileStateProto;
@@ -34,30 +35,57 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class ProtoBufferHelper {
-  private ProtoBufferHelper() {
+
+  @FunctionalInterface
+  public interface IpcCall<T> {
+    T call() throws ServiceException;
   }
 
+  /**
+   * Copied from HDFS 3.3.7+ sources.
+   *
+   * <p>Evaluate a protobuf call, converting any ServiceException to an IOException.
+   * @param call invocation to make
+   * @return the result of the call
+   * @param <T> type of the result
+   * @throws IOException any translated protobuf exception
+   */
+  public static <T> T ipc(IpcCall<T> call) throws IOException {
+    try {
+      return call.call();
+    } catch (ServiceException e) {
+      throw getRemoteException(e);
+    }
+  }
+
+  /**
+   * Copied from HDFS 3.3.7+ sources.
+   *
+   * <p>Return the IOException thrown by the remote server wrapped in
+   * ServiceException as cause.
+   * The signature of this method changes with updates to the hadoop-thirdparty
+   * shaded protobuf library.
+   * @param se ServiceException that wraps IO exception thrown by the server
+   * @return Exception wrapped in ServiceException or
+   * a new IOException that wraps the unexpected ServiceException.
+   */
+  @InterfaceAudience.Private
+  @InterfaceStability.Unstable
   public static IOException getRemoteException(ServiceException se) {
     Throwable e = se.getCause();
     if (e == null) {
       return new IOException(se);
     }
-    return e instanceof IOException ? (IOException) e : new IOException(se);
-  }
-
-  public static int convert(RuleState state) {
-    return state.getValue();
-  }
-
-  public static RuleState convert(int state) {
-    return RuleState.fromValue(state);
+    return e instanceof IOException
+        ? (IOException) e
+        : new IOException(se);
   }
 
   public static ReportFileAccessEventRequestProto convert(FileAccessEvent event) {
     return ReportFileAccessEventRequestProto.newBuilder()
         .setFilePath(event.getPath())
+        .setFileId(0)
         .setAccessedBy(event.getAccessedBy())
-        .setFileId(event.getFileId())
         .build();
   }
 
