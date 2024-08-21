@@ -25,9 +25,11 @@ import org.smartdata.exception.SsmParseException;
 import org.smartdata.metastore.MetaStoreException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.support.MetaDataAccessException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -44,7 +46,11 @@ import java.util.stream.Collectors;
 public class SmartExceptionHandler extends ResponseEntityExceptionHandler {
   private static final Logger LOG = LoggerFactory.getLogger(SmartExceptionHandler.class);
 
-  @ExceptionHandler(value = {MetaStoreException.class})
+  @ExceptionHandler(value = {
+      MetaStoreException.class,
+      MetaDataAccessException.class,
+      DataAccessException.class
+  })
   protected ResponseEntity<Object> handleDbExceptions(
       RuntimeException exception, WebRequest request) {
     return handleExceptionInternal(
