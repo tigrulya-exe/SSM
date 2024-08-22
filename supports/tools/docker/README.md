@@ -4,6 +4,10 @@ There are two cluster types:
 * singlehost
 * multihost
 
+And one currently supported HDFS version:
+
+* 3.3.*
+
 ## Singlehost configuration
 
 * Hadoop + SSM in one container
@@ -12,13 +16,14 @@ There are two cluster types:
 Command to build docker images in singlehost cluster mode (from project root dir)
 
 ```shell
-/bin/bash build-images.sh singlehost
+./build-images.sh --cluster=singlehost --hadoop=3.3
 ```
 
 Command to start docker containers 
 
 ```shell
-docker compose -f ${project-dir}/supports/tools/docker/singlehost/docker-compose.yaml up -d
+cd ./supports/tools/docker
+./start-demo.sh --cluster=singlehost --hadoop=3.3
 ```
 
 ## Multihost configuration
@@ -31,17 +36,14 @@ docker compose -f ${project-dir}/supports/tools/docker/singlehost/docker-compose
 Command to build docker images in multihost cluster mode (from project root dir)
 
 ```shell
-/bin/bash build-images.sh multihost
-```
-or without arg
-```shell
-/bin/bash build-images.sh
+./build-images.sh --cluster=multihost --hadoop=3.3
 ```
 
 Command to start docker containers
 
 ```shell
-docker compose -f ${project-dir}/supports/tools/docker/multihost/docker-compose.yaml up -d
+cd ./supports/tools/docker
+./start-demo.sh --cluster=multihost --hadoop=3.3
 ```
 
 # Run/Test SSM with Docker

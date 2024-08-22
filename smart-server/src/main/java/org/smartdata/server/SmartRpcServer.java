@@ -20,6 +20,7 @@ package org.smartdata.server;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.hdfs.DFSUtil;
+import org.apache.hadoop.ipc.ProtobufRpcEngine2;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.ipc.RetriableException;
 import org.apache.hadoop.thirdparty.protobuf.BlockingService;
@@ -51,6 +52,8 @@ public class SmartRpcServer implements SmartServerProtocols {
     this.ssm = ssm;
     this.conf = conf;
     InetSocketAddress rpcAddr = getRpcServerAddress();
+    RPC.setProtocolEngine(conf, ClientProtocolProtoBuffer.class,
+        ProtobufRpcEngine2.class);
 
     ServerProtocolsServerSideTranslator clientSSMProtocolServerSideTranslatorPB =
         new ServerProtocolsServerSideTranslator(this);

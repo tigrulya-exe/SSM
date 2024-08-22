@@ -14,11 +14,12 @@ while [ $# -gt 0 ]; do
       HADOOP_PROFILE="${1#*=}"
       ;;
     *)
-      echo "==============================================="
-      echo " Error: Invalid argument. Supported arguments:"
-      echo "    -cluster: multihost (default) | singlehost"
-      echo "    -hadoop: 3.3 (default)"
-      echo "==============================================="
+      echo "=========================================================="
+      echo " Error: Invalid argument. Should be in the form --key=arg."
+      echo " Supported arguments:"
+      echo "    --cluster: multihost (default) | singlehost"
+      echo "    --hadoop: 3.3 (default)"
+      echo "=========================================================="
       exit 1
   esac
   shift
@@ -60,7 +61,7 @@ fi
 echo "=============================="
 echo "      Rebuild the project     "
 echo "=============================="
-#mvn clean package -Pdist,web-ui,hadoop-${HADOOP_PROFILE} -DskipTests
+mvn clean package -Pdist,web-ui,hadoop-${HADOOP_PROFILE} -DskipTests
 
 echo "========================================================"
 echo "      Build Hadoop ${HADOOP_VERSION} with SSM image     "

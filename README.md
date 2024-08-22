@@ -102,7 +102,7 @@ Currently SSM supports ADH 3.3.6_arenadata1 (which is based on hadoop-3.3.6).
 So you can build SSM with the following commands accordingly.
 
 ```
-mvn package -D skipTests -P dist,web-ui,hadoop-3.3
+mvn package -DskipTests -Pdist,web-ui,hadoop-3.3
 ```
 
 Then a package named as `smart-data-${version}.tar.gz` will be generated under `smart-dist/target`.
