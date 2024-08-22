@@ -10,17 +10,18 @@ while [ $# -gt 0 ]; do
       HADOOP_PROFILE="${1#*=}"
       ;;
     *)
-      echo "==============================================="
-      echo " Error: Invalid argument. Supported arguments:"
-      echo "    -cluster: multihost (default) | singlehost"
-      echo "    -hadoop: 3.3 (default)"
-      echo "==============================================="
+      echo "=========================================================="
+      echo " Error: Invalid argument. Should be in the form --key=arg."
+      echo " Supported arguments:"
+      echo "    --cluster: multihost (default) | singlehost"
+      echo "    --hadoop: 3.3 (default)"
+      echo "=========================================================="
       exit 1
   esac
   shift
 done
 
-HADOOP_PROFILE=${HADOOP_PROFILE:-3.3.6}
+HADOOP_PROFILE=${HADOOP_PROFILE:-3.3}
 CLUSTER_TYPE=${CLUSTER_TYPE:-multihost}
 
 case $HADOOP_PROFILE in
