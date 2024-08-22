@@ -36,6 +36,7 @@ Maven build goals:
  Build options:
 
   * Use -Pnative to compile/bundle native code
+  * Use -Pweb-ui to compile/bundle frontend app
   * Use -Psrc to create a project source TAR.GZ
   * Use -Dtar to create a TAR with the distribution (using -Pdist)
 
