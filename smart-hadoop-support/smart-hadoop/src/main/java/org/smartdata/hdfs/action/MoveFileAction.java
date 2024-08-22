@@ -18,7 +18,7 @@
 package org.smartdata.hdfs.action;
 
 import com.google.gson.Gson;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.smartdata.action.Utils;
 import org.smartdata.hdfs.action.move.AbstractMoveFileAction;

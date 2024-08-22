@@ -10,7 +10,8 @@ RUN apt-get update \
     && ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa \
     && cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
 
-ENV HADOOP_VERSION=${HADOOP_VERSION:-3.2.4}
+ARG HADOOP_VERSION
+ENV HADOOP_VERSION=${HADOOP_VERSION:-3.3.6}
 
 ENV HADOOP_URL https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz
 

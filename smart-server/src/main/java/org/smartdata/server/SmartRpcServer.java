@@ -17,13 +17,13 @@
  */
 package org.smartdata.server;
 
-import com.google.protobuf.BlockingService;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.hdfs.DFSUtil;
-import org.apache.hadoop.ipc.ProtobufRpcEngine;
+import org.apache.hadoop.ipc.ProtobufRpcEngine2;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.ipc.RetriableException;
+import org.apache.hadoop.thirdparty.protobuf.BlockingService;
 import org.smartdata.SmartPolicyProvider;
 import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.metastore.MetaStoreException;
@@ -47,13 +47,13 @@ public class SmartRpcServer implements SmartServerProtocols {
   protected final InetSocketAddress clientRpcAddress;
   protected int serviceHandlerCount;
   protected final RPC.Server clientRpcServer;
-  private final boolean serviceAuthEnabled;
 
   public SmartRpcServer(SmartServer ssm, Configuration conf) throws IOException {
     this.ssm = ssm;
     this.conf = conf;
     InetSocketAddress rpcAddr = getRpcServerAddress();
-    RPC.setProtocolEngine(conf, ClientProtocolProtoBuffer.class, ProtobufRpcEngine.class);
+    RPC.setProtocolEngine(conf, ClientProtocolProtoBuffer.class,
+        ProtobufRpcEngine2.class);
 
     ServerProtocolsServerSideTranslator clientSSMProtocolServerSideTranslatorPB =
         new ServerProtocolsServerSideTranslator(this);
@@ -81,12 +81,11 @@ public class SmartRpcServer implements SmartServerProtocols {
     DFSUtil.addPBProtocol(conf, ClientProtocolProtoBuffer.class,
         clientSmartPbService, clientRpcServer);
 
+    boolean serviceAuthEnabled = conf.getBoolean(
+        CommonConfigurationKeys.HADOOP_SECURITY_AUTHORIZATION, false);
     // set service-level authorization security policy
-    if (serviceAuthEnabled = conf.getBoolean(
-        CommonConfigurationKeys.HADOOP_SECURITY_AUTHORIZATION, false)) {
-      if (clientRpcServer != null) {
-        clientRpcServer.refreshServiceAcl(conf, new SmartPolicyProvider());
-      }
+    if (serviceAuthEnabled) {
+      clientRpcServer.refreshServiceAcl(conf, new SmartPolicyProvider());
     }
   }
 

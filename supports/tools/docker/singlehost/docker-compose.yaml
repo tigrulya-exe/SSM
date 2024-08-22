@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   hadoop:
-    image: cloud-hub.adsw.io/library/ssm-hadoop:3.2.4
+    image: cloud-hub.adsw.io/library/ssm-hadoop:${HADOOP_VERSION:-3.3.6}
     restart: unless-stopped
     container_name: hadoop
     environment:
