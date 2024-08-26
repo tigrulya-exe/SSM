@@ -77,7 +77,9 @@ const stopRule = createAsyncThunk('adh/rulesActions/stopRule', async (ruleId: nu
   }
 });
 
-const withFullUpdate = (name: string, dialogAction: ReturnType<typeof createAsyncThunk>) => {
+type DialogActionType = ReturnType<typeof createAsyncThunk>;
+
+const withFullUpdate = (name: string, dialogAction: DialogActionType) => {
   return createAsyncThunk(name, async (payload: unknown, thunkAPI) => {
     await thunkAPI.dispatch(dialogAction(payload)).unwrap();
     thunkAPI.dispatch(getRulesMetaInfo());
@@ -85,32 +87,20 @@ const withFullUpdate = (name: string, dialogAction: ReturnType<typeof createAsyn
   });
 };
 
-const withMetaInfoUpdate = (name: string, dialogAction: ReturnType<typeof createAsyncThunk>) => {
+const withMetaInfoUpdate = (name: string, dialogAction: DialogActionType) => {
   return createAsyncThunk(name, async (payload: unknown, thunkAPI) => {
     await thunkAPI.dispatch(dialogAction(payload)).unwrap();
     thunkAPI.dispatch(getRulesMetaInfo());
   });
 };
 
-const createRuleWithUpdate = withFullUpdate(
-  'adh/rulesActions/createRuleWithUpdate',
-  createRule as ReturnType<typeof createAsyncThunk>,
-);
+const createRuleWithUpdate = withFullUpdate('adh/rulesActions/createRuleWithUpdate', createRule as DialogActionType);
 
-const deleteRuleWithUpdate = withFullUpdate(
-  'adh/rulesActions/deleteRuleWithUpdate',
-  deleteRule as ReturnType<typeof createAsyncThunk>,
-);
+const deleteRuleWithUpdate = withFullUpdate('adh/rulesActions/deleteRuleWithUpdate', deleteRule as DialogActionType);
 
-const startRuleWithUpdate = withMetaInfoUpdate(
-  'adh/rulesActions/startRuleWithUpdate',
-  startRule as ReturnType<typeof createAsyncThunk>,
-);
+const startRuleWithUpdate = withMetaInfoUpdate('adh/rulesActions/startRuleWithUpdate', startRule as DialogActionType);
 
-const stopRuleWithUpdate = withMetaInfoUpdate(
-  'adh/rulesActions/stopRuleWithUpdate',
-  stopRule as ReturnType<typeof createAsyncThunk>,
-);
+const stopRuleWithUpdate = withMetaInfoUpdate('adh/rulesActions/stopRuleWithUpdate', stopRule as DialogActionType);
 
 interface AdhRulesActions extends ModalState<AdhRule, 'rule'> {
   startDialog: {
