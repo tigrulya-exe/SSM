@@ -20,7 +20,7 @@ import type { AdhRule } from '@models/adh';
 import type { ModalState } from '@models/modal';
 import { createAsyncThunk } from '@store/redux';
 // eslint-disable-next-line import/no-cycle
-import { getRules } from './rulesSlice';
+import { getRules, getRulesMetaInfo } from './rulesSlice';
 import { showError, showSuccess } from '@store/notificationsSlice';
 import { getErrorMessage } from '@utils/responseUtils';
 import type { RequestError } from '@api';
@@ -77,21 +77,39 @@ const stopRule = createAsyncThunk('adh/rulesActions/stopRule', async (ruleId: nu
   }
 });
 
-const withUpdate = (name: string, dialogAction: ReturnType<typeof createAsyncThunk>) => {
+const withFullUpdate = (name: string, dialogAction: ReturnType<typeof createAsyncThunk>) => {
   return createAsyncThunk(name, async (payload: unknown, thunkAPI) => {
     await thunkAPI.dispatch(dialogAction(payload)).unwrap();
-    await thunkAPI.dispatch(getRules());
+    thunkAPI.dispatch(getRulesMetaInfo());
+    thunkAPI.dispatch(getRules());
   });
 };
 
-const createRuleWithUpdate = withUpdate(
+const withMetaInfoUpdate = (name: string, dialogAction: ReturnType<typeof createAsyncThunk>) => {
+  return createAsyncThunk(name, async (payload: unknown, thunkAPI) => {
+    await thunkAPI.dispatch(dialogAction(payload)).unwrap();
+    thunkAPI.dispatch(getRulesMetaInfo());
+  });
+};
+
+const createRuleWithUpdate = withFullUpdate(
   'adh/rulesActions/createRuleWithUpdate',
   createRule as ReturnType<typeof createAsyncThunk>,
 );
 
-const deleteRuleWithUpdate = withUpdate(
+const deleteRuleWithUpdate = withFullUpdate(
   'adh/rulesActions/deleteRuleWithUpdate',
   deleteRule as ReturnType<typeof createAsyncThunk>,
+);
+
+const startRuleWithUpdate = withMetaInfoUpdate(
+  'adh/rulesActions/startRuleWithUpdate',
+  startRule as ReturnType<typeof createAsyncThunk>,
+);
+
+const stopRuleWithUpdate = withMetaInfoUpdate(
+  'adh/rulesActions/stopRuleWithUpdate',
+  stopRule as ReturnType<typeof createAsyncThunk>,
 );
 
 interface AdhRulesActions extends ModalState<AdhRule, 'rule'> {
@@ -170,8 +188,8 @@ export {
   closeStopRuleDialog,
   createRuleWithUpdate,
   deleteRuleWithUpdate,
-  startRule,
-  stopRule,
+  startRuleWithUpdate,
+  stopRuleWithUpdate,
 };
 
 export default rulesActionsSlice.reducer;
