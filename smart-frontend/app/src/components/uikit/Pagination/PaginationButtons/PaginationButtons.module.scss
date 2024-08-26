@@ -7,6 +7,16 @@
   justify-content: center;
 }
 
+.paginationButton {
+  padding: 0 5px;
+  // set in Button.module.scss, in min size - is circle with width = height.
+  min-width: var(--button-minHeight);
+
+  &:global(.is-active) {
+    cursor: default;
+  }
+}
+
 .paginationButtonArrowSingle_prev > svg {
   transform: rotate(90deg);
 }
