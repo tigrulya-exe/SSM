@@ -2,7 +2,7 @@ version: "3.8"
 services:
 
   hadoop-namenode:
-    image: cloud-hub.adsw.io/library/hadoop-namenode:3.2.4
+    image: cloud-hub.adsw.io/library/hadoop-namenode:${HADOOP_VERSION:-3.3.6}
     hostname: hadoop-namenode
     container_name: hadoop-namenode
     restart: unless-stopped
@@ -22,7 +22,7 @@ services:
       - ssm-metastore-db
 
   hadoop-datanode:
-    image: cloud-hub.adsw.io/library/hadoop-datanode:3.2.4
+    image: cloud-hub.adsw.io/library/hadoop-datanode:${HADOOP_VERSION:-3.3.6}
     hostname: hadoop-datanode
     container_name: hadoop-datanode
     restart: unless-stopped
@@ -47,7 +47,7 @@ services:
       - ssm-server
 
   ssm-server:
-    image: cloud-hub.adsw.io/library/ssm-server:2.0.0
+    image: cloud-hub.adsw.io/library/ssm-server:2.0.0-SNAPSHOT
     hostname: ssm-server
     restart: unless-stopped
     container_name: ssm-server
