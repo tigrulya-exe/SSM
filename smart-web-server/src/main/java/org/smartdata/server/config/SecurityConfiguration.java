@@ -31,6 +31,7 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 public class SecurityConfiguration {
@@ -53,7 +54,7 @@ public class SecurityConfiguration {
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       SmartPrincipalManager principalManager,
-      List<SsmAuthHttpConfigurer> authHttpConfigurers) throws Exception {
+      Set<SsmAuthHttpConfigurer> authHttpConfigurers) throws Exception {
     baseHttpSecurity(http)
         .authorizeRequests()
         .antMatchers(API_ENDPOINTS_PATTERN).authenticated()
