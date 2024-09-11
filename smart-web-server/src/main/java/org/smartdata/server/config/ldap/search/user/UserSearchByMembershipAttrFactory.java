@@ -20,7 +20,7 @@ package org.smartdata.server.config.ldap.search.user;
 import lombok.extern.slf4j.Slf4j;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.server.config.ldap.search.LdapSearchTemplateFactory;
-import org.smartdata.server.config.ldap.search.group.GroupSearchRunner;
+import org.smartdata.server.config.ldap.search.group.SsmLdapGroupSearch;
 import org.smartdata.server.config.ldap.search.query.LdapExpressionTemplate;
 import org.springframework.util.Assert;
 
@@ -37,17 +37,17 @@ import static org.smartdata.server.config.ldap.search.query.LdapQueryDsl.or;
 public class UserSearchByMembershipAttrFactory implements LdapSearchTemplateFactory {
   private final String userMembershipAttribute;
   private final LdapSearchTemplateFactory baseUserSearch;
-  private final GroupSearchRunner groupSearch;
+  private final SsmLdapGroupSearch groupSearch;
 
   public UserSearchByMembershipAttrFactory(
-      GroupSearchRunner groupSearch,
+      SsmLdapGroupSearch groupSearch,
       SmartConf conf) {
     this(new UserSearchByNameAttributeFactory(conf), groupSearch, conf);
   }
 
   public UserSearchByMembershipAttrFactory(
       LdapSearchTemplateFactory baseUserSearch,
-      GroupSearchRunner groupSearchRunner,
+      SsmLdapGroupSearch groupSearchRunner,
       SmartConf conf) {
     Assert.notNull(conf, "conf shouldn't be null");
     Assert.notNull(groupSearchRunner, "groupSearchRunner shouldn't be null");

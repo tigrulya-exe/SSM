@@ -22,8 +22,8 @@ import org.smartdata.server.config.ldap.search.LdapSearchTemplateFactory;
 import org.smartdata.server.config.ldap.search.query.LdapExpressionTemplate;
 import org.springframework.util.Assert;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.smartdata.server.config.ConfigKeys.SMART_REST_SERVER_LDAP_USER_NAME_ATTR;
 import static org.smartdata.server.config.ConfigKeys.SMART_REST_SERVER_LDAP_USER_NAME_ATTR_DEFAULT;
@@ -44,7 +44,7 @@ public class UserSearchByNameAttributeFactory implements LdapSearchTemplateFacto
     String userNameAttribute = conf.get(
         SMART_REST_SERVER_LDAP_USER_NAME_ATTR,
         SMART_REST_SERVER_LDAP_USER_NAME_ATTR_DEFAULT);
-    Set<String> userObjectClasses = new HashSet<>(
+    List<String> userObjectClasses = new ArrayList<>(
         conf.getStringCollection(
             SMART_REST_SERVER_LDAP_USER_OBJECT,
             SMART_REST_SERVER_LDAP_USER_OBJECT_DEFAULT));

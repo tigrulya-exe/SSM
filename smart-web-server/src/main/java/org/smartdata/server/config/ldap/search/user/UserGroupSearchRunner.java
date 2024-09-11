@@ -20,7 +20,7 @@ package org.smartdata.server.config.ldap.search.user;
 import lombok.extern.slf4j.Slf4j;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.server.config.ldap.search.LdapSearchTemplateFactory;
-import org.smartdata.server.config.ldap.search.group.GroupSearchRunner;
+import org.smartdata.server.config.ldap.search.group.SsmLdapGroupSearch;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.support.BaseLdapPathContextSource;
 import org.springframework.ldap.support.LdapUtils;
@@ -33,13 +33,13 @@ import java.util.List;
 
 @Slf4j
 public class UserGroupSearchRunner extends UserSearchRunner {
-  private final GroupSearchRunner groupSearchRunner;
+  private final SsmLdapGroupSearch groupSearchRunner;
   private final LdapSearchTemplateFactory groupSearchTemplateFactory;
 
   public UserGroupSearchRunner(
       BaseLdapPathContextSource contextSource,
       LdapSearchTemplateFactory groupSearchTemplateFactory,
-      GroupSearchRunner groupSearchRunner,
+      SsmLdapGroupSearch groupSearchRunner,
       SmartConf conf) {
     this(contextSource, new UserSearchByNameAttributeFactory(conf),
         groupSearchTemplateFactory, groupSearchRunner, conf);
@@ -49,7 +49,7 @@ public class UserGroupSearchRunner extends UserSearchRunner {
       BaseLdapPathContextSource contextSource,
       LdapSearchTemplateFactory userSearchTemplateFactory,
       LdapSearchTemplateFactory groupSearchTemplateFactory,
-      GroupSearchRunner groupSearchRunner,
+      SsmLdapGroupSearch groupSearchRunner,
       SmartConf conf) {
     super(contextSource, userSearchTemplateFactory, conf);
 

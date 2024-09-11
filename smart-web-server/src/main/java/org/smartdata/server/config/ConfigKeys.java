@@ -30,9 +30,6 @@ public class ConfigKeys {
   public static final String KERBEROS_BASIC_AUTH_ENABLED =
       "smart.rest.server.auth.kerberos.enabled";
 
-  public static final String AD_AUTH_ENABLED =
-      "smart.rest.server.auth.active-directory.enabled";
-
   public static final String PREDEFINED_BASIC_AUTH_ENABLED =
       "smart.rest.server.auth.predefined.enabled";
 
@@ -59,88 +56,88 @@ public class ConfigKeys {
       "smart.rest.server.auth.ldap.enabled";
 
   public static final String SMART_REST_SERVER_LDAP_SEARCH_BASE =
-      "smart.rest.server.security.ldap.search.base";
+      "smart.rest.server.auth.ldap.search.base";
 
   public static final String SMART_REST_SERVER_LDAP_SEARCH_BASE_DEFAULT =
       "";
 
   public static final String SMART_REST_SERVER_LDAP_URL =
-      "smart.rest.server.security.ldap.url";
+      "smart.rest.server.auth.ldap.url";
 
   public static final String SMART_REST_SERVER_LDAP_USER_SEARCH_BASE =
-      "smart.rest.server.security.ldap.user.search.base";
+      "smart.rest.server.auth.ldap.user.search.base";
 
   public static final String SMART_REST_SERVER_LDAP_GROUP_SEARCH_BASE =
-      "smart.rest.server.security.ldap.group.search.base";
+      "smart.rest.server.auth.ldap.group.search.base";
 
   public static final String SMART_REST_SERVER_LDAP_USER_NAME_ATTR =
-      "smart.rest.server.security.ldap.user.attributes.name";
+      "smart.rest.server.auth.ldap.user.attributes.name";
 
   public static final String SMART_REST_SERVER_LDAP_USER_NAME_ATTR_DEFAULT =
       "uid";
 
   public static final String SMART_REST_SERVER_LDAP_USER_OBJECT =
-      "smart.rest.server.security.ldap.user.object-classes";
+      "smart.rest.server.auth.ldap.user.object-classes";
 
   public static final List<String> SMART_REST_SERVER_LDAP_USER_OBJECT_DEFAULT =
       Collections.singletonList("person");
 
   public static final String SMART_REST_SERVER_LDAP_SEARCH_ADDITIONAL_FILTER =
-      "smart.rest.server.security.ldap.user.search.additional.filter";
+      "smart.rest.server.auth.ldap.user.search.additional.filter";
 
   public static final String SMART_REST_SERVER_LDAP_USER_SEARCH_SCOPE =
-      "smart.rest.server.security.ldap.user.search.scope";
+      "smart.rest.server.auth.ldap.user.search.scope";
 
   public static final LdapSearchScope SMART_REST_SERVER_LDAP_USER_SEARCH_SCOPE_DEFAULT =
       LdapSearchScope.ONE_LEVEL;
 
   public static final String SMART_REST_SERVER_LDAP_GROUP_SEARCH_SCOPE =
-      "smart.rest.server.security.ldap.group.search.scope";
+      "smart.rest.server.auth.ldap.group.search.scope";
 
   public static final LdapSearchScope SMART_REST_SERVER_LDAP_GROUP_SEARCH_SCOPE_DEFAULT =
       LdapSearchScope.ONE_LEVEL;
 
   public static final String SMART_REST_SERVER_LDAP_CUSTOM_SEARCH =
-      "smart.rest.server.security.ldap.user.search.filter";
+      "smart.rest.server.auth.ldap.user.search.filter";
 
   public static final String SMART_REST_SERVER_LDAP_USER_MEMBER_ATTR =
-      "smart.rest.server.security.ldap.user.attributes.membership";
+      "smart.rest.server.auth.ldap.user.attributes.membership";
   public static final String SMART_REST_SERVER_LDAP_USER_MEMBER_ATTR_DEFAULT =
       "memberOf";
 
   public static final String SMART_REST_SERVER_LDAP_USER_PASSWORD_ATTR =
-      "smart.rest.server.security.ldap.user.attributes.password";
+      "smart.rest.server.auth.ldap.user.attributes.password";
 
   public static final String SMART_REST_SERVER_LDAP_USER_PASSWORD_ATTR_DEFAULT =
       "userPassword";
 
   public static final String SMART_REST_SERVER_LDAP_USER_GROUPS =
-      "smart.rest.server.security.ldap.user.search.groups";
+      "smart.rest.server.auth.ldap.user.search.groups";
 
   public static final String SMART_REST_SERVER_LDAP_GROUP_OBJECT =
-      "smart.rest.server.security.ldap.group.object-class";
+      "smart.rest.server.auth.ldap.group.object-class";
 
   public static final String SMART_REST_SERVER_LDAP_GROUP_OBJECT_DEFAULT =
       "groupOfNames";
 
   public static final String SMART_REST_SERVER_LDAP_GROUP_MEMBER_ATTR =
-      "smart.rest.server.security.ldap.group.attributes.member";
+      "smart.rest.server.auth.ldap.group.attributes.member";
 
   public static final String SMART_REST_SERVER_LDAP_GROUP_MEMBER_DEFAULT =
       "member";
 
   public static final String SMART_REST_SERVER_LDAP_GROUP_NAME_ATTR =
-      "smart.rest.server.security.ldap.group.attributes.name";
+      "smart.rest.server.auth.ldap.group.attributes.name";
 
   public static final String SMART_REST_SERVER_LDAP_GROUP_NAME_DEFAULT =
       "cn";
 
   public static final String SMART_REST_SERVER_LDAP_AUTH_TYPE =
-      "smart.rest.server.security.ldap.auth.type";
+      "smart.rest.server.auth.ldap.auth.type";
 
   public static final String SMART_REST_SERVER_LDAP_BIND_USER_DN =
-      "smart.rest.server.security.ldap.bind.user";
+      "smart.rest.server.auth.ldap.bind.user";
 
   public static final String SMART_REST_SERVER_LDAP_BIND_PASSWORD =
-      "smart.rest.server.security.ldap.bind.password";
+      "smart.rest.server.auth.ldap.bind.password";
 }

@@ -20,14 +20,15 @@ package org.smartdata.server.config.ldap.search.user;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.smartdata.conf.SmartConf;
+import org.smartdata.server.config.ldap.search.AdditionalFilterTemplateFactoryWrapper;
 import org.smartdata.server.config.ldap.search.LdapSearchScope;
 import org.smartdata.server.config.ldap.search.LdapSearchTemplateFactory;
-import org.smartdata.server.config.ldap.search.query.LdapExpressionTemplate;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.support.BaseLdapPathContextSource;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.ldap.SpringSecurityLdapTemplate;
+import org.springframework.security.ldap.search.LdapUserSearch;
 import org.springframework.util.Assert;
 
 import javax.naming.directory.SearchControls;
@@ -35,20 +36,17 @@ import javax.naming.ldap.LdapName;
 
 import java.util.Optional;
 
-import static org.smartdata.server.config.ConfigKeys.SMART_REST_SERVER_LDAP_SEARCH_ADDITIONAL_FILTER;
 import static org.smartdata.server.config.ConfigKeys.SMART_REST_SERVER_LDAP_SEARCH_BASE;
 import static org.smartdata.server.config.ConfigKeys.SMART_REST_SERVER_LDAP_USER_SEARCH_BASE;
 import static org.smartdata.server.config.ConfigKeys.SMART_REST_SERVER_LDAP_USER_SEARCH_SCOPE;
 import static org.smartdata.server.config.ConfigKeys.SMART_REST_SERVER_LDAP_USER_SEARCH_SCOPE_DEFAULT;
 import static org.smartdata.server.config.ldap.search.LdapUtils.getRelativeBaseName;
-import static org.smartdata.server.config.ldap.search.query.LdapQueryDsl.and;
 
 @Slf4j
-public class UserSearchRunner implements SsmLdapUserSearch {
+public class UserSearchRunner implements LdapUserSearch {
   protected final BaseLdapPathContextSource contextSource;
 
   protected final LdapName searchBase;
-  protected final String additionalCustomSearch;
   protected final SearchControls searchControls;
   protected final SpringSecurityLdapTemplate ldapTemplate;
 
@@ -58,12 +56,12 @@ public class UserSearchRunner implements SsmLdapUserSearch {
       BaseLdapPathContextSource contextSource,
       LdapSearchTemplateFactory templateFactory,
       SmartConf conf) {
-    Assert.notNull(contextSource, "contextSource must not be null");
-    Assert.notNull(templateFactory, "templateFactory must not be null");
-    Assert.notNull(conf, "conf must not be null.");
+    Assert.notNull(contextSource, "contextSource shouldn't be null");
+    Assert.notNull(templateFactory, "templateFactory shouldn't be null");
+    Assert.notNull(conf, "conf shouldn't be null");
 
     this.contextSource = contextSource;
-    this.templateFactory = templateFactory;
+    this.templateFactory = new AdditionalFilterTemplateFactoryWrapper(templateFactory, conf);
 
     String rawSearchBase = Optional.ofNullable(conf.get(SMART_REST_SERVER_LDAP_USER_SEARCH_BASE))
         .filter(StringUtils::isNotBlank)
@@ -75,9 +73,6 @@ public class UserSearchRunner implements SsmLdapUserSearch {
 
     this.searchBase = getRelativeBaseName(
         rawSearchBase, contextSource.getBaseLdapName());
-    this.additionalCustomSearch = conf.get(
-        SMART_REST_SERVER_LDAP_SEARCH_ADDITIONAL_FILTER);
-
     this.searchControls = new SearchControls();
     LdapSearchScope searchScope = conf.getEnum(
         SMART_REST_SERVER_LDAP_USER_SEARCH_SCOPE,
@@ -92,21 +87,14 @@ public class UserSearchRunner implements SsmLdapUserSearch {
   public DirContextOperations searchForUser(String username) throws UsernameNotFoundException {
     try {
       return ldapTemplate.searchForSingleEntry(
-          searchBase.toString(), getSearchTemplate().build(), new Object[]{username});
+          searchBase.toString(),
+          templateFactory.buildSearchTemplate().build(),
+          new Object[]{username});
     } catch (IncorrectResultSizeDataAccessException ex) {
       if (ex.getActualSize() == 0) {
         throw new UsernameNotFoundException("User " + username + " not found in directory.");
       }
-      // Search should never return multiple results if properly configured
       throw ex;
     }
-  }
-
-  @Override
-  public LdapExpressionTemplate getSearchTemplate() {
-    LdapExpressionTemplate template = templateFactory.buildSearchTemplate();
-    return StringUtils.isBlank(additionalCustomSearch)
-        ? template
-        : and(template, LdapExpressionTemplate.custom(additionalCustomSearch));
   }
 }

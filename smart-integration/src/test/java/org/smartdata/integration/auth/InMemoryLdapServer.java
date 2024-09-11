@@ -91,7 +91,6 @@ public class InMemoryLdapServer {
         config.setSchema(null);
       }
       config.setListenerConfigs(InMemoryListenerConfig.createLDAPConfig("LDAP", port));
-      config.setSchema(null);
 
       InMemoryDirectoryServer directoryServer = new InMemoryDirectoryServer(config);
       directoryServer.importFromLDIF(false, IntegrationTestBase.resourceAbsolutePath(ldifResourcePath));

@@ -46,7 +46,7 @@ import static org.smartdata.server.config.ldap.search.LdapUtils.formatTemplate;
 import static org.smartdata.server.config.ldap.search.LdapUtils.getRelativeBaseName;
 
 @Slf4j
-public class GroupSearchRunner {
+public class GroupSearchRunner implements SsmLdapGroupSearch {
 
   private final BaseLdapPathContextSource contextSource;
   private final LdapName searchBase;
@@ -92,10 +92,12 @@ public class GroupSearchRunner {
     ldapTemplate.setSearchControls(searchControls);
   }
 
+  @Override
   public List<Name> getGroupDnsFromConfig() {
     return getGroupDns(filterTemplate);
   }
 
+  @Override
   public List<Name> getGroupDns(LdapExpressionTemplate filter, Object... args) {
     return getGroupDns(formatTemplate(filter, args));
   }

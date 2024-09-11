@@ -23,8 +23,8 @@ import org.smartdata.server.config.ldap.search.LdapSearchTemplateFactory;
 import org.smartdata.server.config.ldap.search.query.LdapExpressionTemplate;
 import org.springframework.util.Assert;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.smartdata.server.config.ConfigKeys.SMART_REST_SERVER_LDAP_GROUP_NAME_ATTR;
 import static org.smartdata.server.config.ConfigKeys.SMART_REST_SERVER_LDAP_GROUP_NAME_DEFAULT;
@@ -43,7 +43,7 @@ public class GroupSearchByNameAttrFactory implements LdapSearchTemplateFactory {
   public GroupSearchByNameAttrFactory(SmartConf conf) {
     Assert.notNull(conf, "conf shouldn't be null");
 
-    Set<String> groups = new HashSet<>(conf.getStringCollection(
+    List<String> groups = new ArrayList<>(conf.getStringCollection(
         SMART_REST_SERVER_LDAP_USER_GROUPS));
     Assert.notEmpty(groups, "filter groups shouldn't be empty");
 
@@ -65,7 +65,7 @@ public class GroupSearchByNameAttrFactory implements LdapSearchTemplateFactory {
     return expressionTemplate;
   }
 
-  private LdapExpressionTemplate groupHasNameFromConfig(Set<String> groups, String groupNameAttribute) {
+  private LdapExpressionTemplate groupHasNameFromConfig(List<String> groups, String groupNameAttribute) {
     return or(
         groups.stream()
             .map(group -> eq(groupNameAttribute, group))

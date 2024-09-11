@@ -27,10 +27,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.smartdata.client.generated.invoker.ApiClient;
-import org.smartdata.client.generated.model.AuditEventsDto;
+import org.smartdata.client.generated.model.ActionsDto;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.integration.IntegrationTestBase;
-import org.smartdata.integration.api.AuditApiWrapper;
+import org.smartdata.integration.api.ActionsApiWrapper;
 
 import java.util.Optional;
 
@@ -48,14 +48,14 @@ public abstract class TestWebServerAuth extends IntegrationTestBase {
 
   protected static final String TEST_PARAM_NAME_OPTION = "internal.test.param.name";
 
-  private AuditApiWrapper auditApiClient;
+  private ActionsApiWrapper actionsApiWrapper;
 
   @Parameter
   public TestParams testParams;
 
   @Before
   public void createApi() {
-    auditApiClient = new AuditApiWrapper(
+    actionsApiWrapper = new ActionsApiWrapper(
         ApiClient.Config.apiConfig().reqSpecSupplier(this::withAuth));
   }
 
@@ -76,18 +76,20 @@ public abstract class TestWebServerAuth extends IntegrationTestBase {
   }
 
   private void testUnsuccessfulAuthentication() {
-    auditApiClient.rawClient()
-        .getAuditEvents()
+    actionsApiWrapper.rawClient()
+        .getActions()
         .respSpec(response -> response.expectStatusCode(HttpStatus.UNAUTHORIZED_401))
         .executeAs(Response::andReturn);
   }
 
   private void testSuccessfulAuthentication() {
-    AuditEventsDto auditEvents = auditApiClient.getAuditEvents();
+    ActionsDto actionsDto = actionsApiWrapper.getActions();
 
-    assertEquals(0, auditEvents.getTotal().longValue());
-    assertNotNull(auditEvents.getItems());
-    assertTrue(auditEvents.getItems().isEmpty());
+    assertEquals(0, actionsDto.getTotal().longValue());
+    assertNotNull(actionsDto.getItems());
+    assertTrue(actionsDto.getItems().isEmpty());
+
+    actionsApiWrapper.submitAction("read -file text.txt");
   }
 
   private RequestSpecBuilder withAuth() {

@@ -31,10 +31,10 @@ import org.springframework.security.ldap.authentication.LdapAuthenticationProvid
 import org.springframework.security.ldap.authentication.LdapAuthenticator;
 import org.springframework.security.ldap.authentication.PasswordComparisonAuthenticator;
 import org.springframework.security.ldap.search.LdapUserSearch;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 
 import static org.smartdata.server.config.ConfigKeys.LDAP_AUTH_ENABLED;
@@ -60,12 +60,13 @@ public class LdapAuthSecurityConfiguration {
 
   @Bean
   public LdapContextSource ldapContextSource(SmartConf conf) {
+    Collection<String> ldapUrls = conf.getStringCollection(SMART_REST_SERVER_LDAP_URL);
+    Assert.notEmpty(ldapUrls, "At least one LDAP server URL must be provided.");
+
     String ldapRoot = conf.get(
         SMART_REST_SERVER_LDAP_SEARCH_BASE,
         SMART_REST_SERVER_LDAP_SEARCH_BASE_DEFAULT);
-    Collection<String> ldapUrls = conf.getStringCollection(
-        SMART_REST_SERVER_LDAP_URL,
-        Collections.emptyList());
+
     DefaultSpringSecurityContextSource contextSource =
         new DefaultSpringSecurityContextSource(new ArrayList<>(ldapUrls), ldapRoot);
 

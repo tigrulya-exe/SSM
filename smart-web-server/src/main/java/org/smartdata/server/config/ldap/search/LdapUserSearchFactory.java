@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.server.config.ldap.search.group.GroupSearchByMemberAttrFactory;
 import org.smartdata.server.config.ldap.search.group.GroupSearchRunner;
+import org.smartdata.server.config.ldap.search.group.SsmLdapGroupSearch;
 import org.smartdata.server.config.ldap.search.user.UserGroupSearchRunner;
 import org.smartdata.server.config.ldap.search.user.UserSearchByCustomQueryFactory;
 import org.smartdata.server.config.ldap.search.user.UserSearchByMembershipAttrFactory;
@@ -66,7 +67,7 @@ public class LdapUserSearchFactory {
 
   private static LdapUserSearch buildSearchByUserMembershipAttr(
       BaseLdapPathContextSource contextSource, SmartConf conf) {
-    GroupSearchRunner groupSearchRunner = new GroupSearchRunner(contextSource, conf);
+    SsmLdapGroupSearch groupSearchRunner = new GroupSearchRunner(contextSource, conf);
     LdapSearchTemplateFactory userTemplateFactory =
         new UserSearchByMembershipAttrFactory(groupSearchRunner, conf);
     return new UserSearchRunner(contextSource, userTemplateFactory, conf);
@@ -75,7 +76,7 @@ public class LdapUserSearchFactory {
   private static LdapUserSearch buildSearchByGroupMemberAttr(
       BaseLdapPathContextSource contextSource, SmartConf conf) {
     LdapSearchTemplateFactory groupTemplateFactory = new GroupSearchByMemberAttrFactory(conf);
-    GroupSearchRunner groupSearchRunner = new GroupSearchRunner(contextSource, conf);
+    SsmLdapGroupSearch groupSearchRunner = new GroupSearchRunner(contextSource, conf);
     return new UserGroupSearchRunner(contextSource,
         groupTemplateFactory, groupSearchRunner, conf);
   }
