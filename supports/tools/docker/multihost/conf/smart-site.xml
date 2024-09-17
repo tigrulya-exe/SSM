@@ -18,13 +18,77 @@
 
 <configuration>
     <property>
-        <name>smart.dfs.namenode.rpcserver</name>
-        <value>hdfs://hadoop-namenode:8020</value>
-        <description>Namenode rpcserver</description>
+        <name>smart.dfs.enabled</name>
+        <value>true</value>
     </property>
-    <!--<property>
+    <property>
+        <name>smart.server.rpc.address</name>
+        <value>ssm-server.demo:7042</value>
+    </property>
+    <property>
+        <name>smart.agent.address</name>
+        <value>hadoop-datanode.demo:7048</value>
+    </property>
+    <property>
+        <name>smart.agent.master.address</name>
+        <value>hadoop-datanode.demo:7051</value>
+    </property>
+    <property>
+        <name>smart.rule.executors</name>
+        <value>5</value>
+    </property>
+    <property>
         <name>smart.hadoop.conf.path</name>
-        <value>file:///etc/hadoop/conf/</value>
-        <description>Hadoop main cluster configuration file path</description>
-    </property>-->
+        <value>/opt/ssm/conf</value>
+    </property>
+    <property>
+        <name>smart.security.enable</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>smart.server.keytab.file</name>
+        <value>/etc/secrets/ssm.keytab</value>
+    </property>
+    <property>
+        <name>smart.server.kerberos.principal</name>
+        <value>ssm/ssm-server.demo@DEMO</value>
+    </property>
+    <property>
+        <name>smart.agent.keytab.file</name>
+        <value>/etc/secrets/agent.keytab</value>
+    </property>
+    <property>
+        <name>smart.agent.kerberos.principal</name>
+        <value>agent/_HOST@DEMO</value>
+    </property>
+
+    <!-- REST server configs -->
+    <property>
+        <name>smart.rest.server.security.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>smart.rest.server.auth.predefined.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>smart.rest.server.auth.predefined.users</name>
+        <value>john:1234</value>
+    </property>
+    <property>
+        <name>smart.rest.server.auth.kerberos.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>smart.rest.server.auth.spnego.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>smart.rest.server.auth.spnego.keytab</name>
+        <value>/etc/secrets/http.keytab</value>
+    </property>
+    <property>
+        <name>smart.rest.server.auth.spnego.principal</name>
+        <value>HTTP/ssm-server.demo@DEMO</value>
+    </property>
 </configuration>
