@@ -23,6 +23,6 @@ echo "Starting SSM agents"
 echo "-------------------"
 
 source bin/start-agent.sh &
-wait_for_it hadoop-datanode:7048
+wait_for_it hadoop-datanode.demo:7048
 
 tail -f /var/log/ssm/*
