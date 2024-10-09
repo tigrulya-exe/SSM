@@ -140,4 +140,7 @@ public class ConfigKeys {
 
   public static final String SMART_REST_SERVER_LDAP_BIND_PASSWORD =
       "smart.rest.server.auth.ldap.bind.password";
+
+  public static final String SMART_REST_SERVER_AUTH_ERRORS_LOGGING_ENABLED =
+      "smart.rest.server.auth.failures.logging.enabled";
 }

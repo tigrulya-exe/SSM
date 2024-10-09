@@ -648,4 +648,12 @@
         PASSWORD_COMPARE: search user by specified filters and use LDAP password compare operation
     </description>
   </property>
+
+  <property>
+    <name>smart.rest.server.auth.failures.logging.enabled</name>
+    <value>true</value>
+    <description>
+      Whether to enable unsuccessful REST server auth attempts.
+    </description>
+  </property>
 </configuration>
