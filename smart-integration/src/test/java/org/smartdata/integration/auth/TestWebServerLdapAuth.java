@@ -103,7 +103,11 @@ public class TestWebServerLdapAuth extends TestWebServerAuth {
         new TestParams("july", "kitty_cat",
             searchWithAdditionalSearch(BIND)),
         new TestParams("ben", "bens_password",
-            searchWithAdditionalSearch(BIND), FAIL)
+            searchWithAdditionalSearch(BIND), FAIL),
+        new TestParams("july", "kitty_cat",
+            searchByCustomSearchSeveralUsers(BIND), FAIL),
+        new TestParams("july", "kitty_cat",
+            searchByCustomSearchSeveralUsers(PASSWORD_COMPARE), FAIL)
     };
   }
 
@@ -121,6 +125,16 @@ public class TestWebServerLdapAuth extends TestWebServerAuth {
     conf.set(SMART_REST_SERVER_LDAP_AUTH_TYPE, authType.toString());
     conf.set(SMART_REST_SERVER_LDAP_USER_SEARCH_BASE, "ou=people");
     conf.set(SMART_REST_SERVER_LDAP_CUSTOM_SEARCH, "(&(additionalAttr=test)(objectClass=person))");
+
+    conf.set(TEST_PARAM_NAME_OPTION, "searchByCustomSearch");
+    return conf;
+  }
+
+  private static SmartConf searchByCustomSearchSeveralUsers(AuthType authType) {
+    SmartConf conf = baseConf();
+    conf.set(SMART_REST_SERVER_LDAP_AUTH_TYPE, authType.toString());
+    conf.set(SMART_REST_SERVER_LDAP_USER_SEARCH_BASE, "ou=people");
+    conf.set(SMART_REST_SERVER_LDAP_CUSTOM_SEARCH, "(objectClass=person)");
 
     conf.set(TEST_PARAM_NAME_OPTION, "searchByCustomSearch");
     return conf;

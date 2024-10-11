@@ -26,6 +26,7 @@ import org.smartdata.server.config.ldap.search.LdapSearchTemplateFactory;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.support.BaseLdapPathContextSource;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.ldap.SpringSecurityLdapTemplate;
 import org.springframework.security.ldap.search.LdapUserSearch;
@@ -93,6 +94,10 @@ public class UserSearchRunner implements LdapUserSearch {
     } catch (IncorrectResultSizeDataAccessException ex) {
       if (ex.getActualSize() == 0) {
         throw new UsernameNotFoundException("User " + username + " not found in directory.");
+      }
+      if (ex.getActualSize() > 1) {
+        throw new BadCredentialsException(
+            "Search query returns several user entries for provided username: " + username);
       }
       throw ex;
     }
