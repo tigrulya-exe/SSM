@@ -139,14 +139,36 @@ public class SmartConfKeys {
     public static final int SMART_CMDLET_MOVER_MAX_CONCURRENT_BLOCKS_PER_SRV_INST_DEFAULT = 0;
 
     // Schedulers
-    public static final String SMART_COPY_SCHEDULER_BASE_SYNC_BATCH =
+    public static final String SMART_COPY_SCHEDULER_BASE_SYNC_BATCH_KEY =
             "smart.copy.scheduler.base.sync.batch";
     public static final int SMART_COPY_SCHEDULER_BASE_SYNC_BATCH_DEFAULT =
             500;
-    public static final String SMART_COPY_SCHEDULER_CHECK_INTERVAL =
-            "smart.copy.scheduler.check.interval";
+    public static final String SMART_COPY_SCHEDULER_CHECK_INTERVAL_KEY =
+            "smart.copy.scheduler.check.interval.ms";
     public static final int SMART_COPY_SCHEDULER_CHECK_INTERVAL_DEFAULT =
             500;
+    public static final String SMART_COPY_SCHEDULER_FILE_DIFF_ARCHIVE_SIZE_KEY =
+        "smart.copy.scheduler.diff.archive.size";
+    public static final int SMART_COPY_SCHEDULER_FILE_DIFF_ARCHIVE_SIZE_DEFAULT =
+        1000;
+    public static final String SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_SIZE_KEY =
+        "smart.copy.scheduler.diff.chain.append.merge.threshold.size";
+    public static final long SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_SIZE_DEFAULT =
+        // default block size in bytes x 3
+        134217728L * 3;
+    public static final String SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_COUNT_KEY =
+        "smart.copy.scheduler.diff.chain.append.merge.threshold.count";
+    public static final long SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_COUNT_DEFAULT =
+        10;
+    public static final String SMART_COPY_SCHEDULER_ACTION_RETRY_COUNT_KEY =
+        "smart.copy.scheduler.retry.count";
+    public static final int SMART_COPY_SCHEDULER_ACTION_RETRY_COUNT_DEFAULT =
+        3;
+    public static final String SMART_COPY_SCHEDULER_DIFF_CACHE_SYNC_THRESHOLD_KEY =
+        "smart.copy.scheduler.diff.cache.sync.threshold";
+    public static final int SMART_COPY_SCHEDULER_DIFF_CACHE_SYNC_THRESHOLD_DEFAULT =
+        500;
+
     public static final String SMART_FILE_DIFF_MAX_NUM_RECORDS_KEY =
             "smart.file.diff.max.num.records";
     public static final int SMART_FILE_DIFF_MAX_NUM_RECORDS_DEFAULT =

@@ -22,11 +22,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.SmartContext;
 import org.smartdata.action.SyncAction;
+import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.hdfs.action.CopyDirectoryAction;
 import org.smartdata.hdfs.action.CopyFileAction;
@@ -68,6 +68,22 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static org.smartdata.conf.SmartConfKeys.SMART_ACTION_COPY_THROTTLE_MB_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_ACTION_COPY_THROTTLE_MB_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_ACTION_RETRY_COUNT_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_ACTION_RETRY_COUNT_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_COUNT_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_COUNT_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_SIZE_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_SIZE_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_BASE_SYNC_BATCH_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_BASE_SYNC_BATCH_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_CHECK_INTERVAL_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_CHECK_INTERVAL_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_DIFF_CACHE_SYNC_THRESHOLD_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_DIFF_CACHE_SYNC_THRESHOLD_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_FILE_DIFF_ARCHIVE_SIZE_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_FILE_DIFF_ARCHIVE_SIZE_KEY;
 import static org.smartdata.model.FileDiffType.DELETE;
 import static org.smartdata.utils.ConfigUtil.toRemoteClusterConfig;
 import static org.smartdata.utils.FileDiffUtils.getDest;
@@ -76,17 +92,8 @@ import static org.smartdata.utils.FileDiffUtils.getOffset;
 import static org.smartdata.utils.PathUtil.pathStartsWith;
 
 public class CopyScheduler extends ActionSchedulerService {
-  static final Logger LOG = LoggerFactory.getLogger(CopyScheduler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CopyScheduler.class);
 
-  // todo make this and other threshold constants configurable options
-  private static final int FILE_DIFF_ARCHIVE_SIZE = 1000;
-  // Merge append length threshold
-  private final static long MERGE_LEN_THRESHOLD = DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT * 3;
-  // Merge count length threshold
-  private final static long MERGE_COUNT_THRESHOLD = 10;
-  private final static int RETRY_THRESHOLD = 3;
-  // Base sync batch insert size
-  private final static int INITIAL_SYNC_BATCH_SIZE = 500;
   private static final List<String> SUPPORTED_ACTIONS = Collections.singletonList("sync");
 
   private final MetaStore metaStore;
@@ -94,7 +101,7 @@ public class CopyScheduler extends ActionSchedulerService {
   // Fixed rate scheduler
   private final ScheduledExecutorService executorService;
   // Global variables
-  private Configuration conf;
+  private final Configuration conf;
   // <File path, file diff id>
   private final Set<String> fileLocks;
   // <actionId, file diff id>
@@ -109,11 +116,11 @@ public class CopyScheduler extends ActionSchedulerService {
   private final long checkInterval;
   // Cache of the file_diff
   private final Map<Long, FileDiff> fileDiffCache;
-  // cache sync threshold, default 100
-  private int cacheSyncTh = 100;
+  // cache sync threshold
+  private final int cacheSyncTh;
   // record the file_diff whether being changed
   private final Set<Long> changedFileInCacheDiffIds;
-  private RateLimiter rateLimiter = null;
+  private final RateLimiter rateLimiter;
   // records the number of file diffs in useless states
   private final AtomicInteger numFileDiffUseless = new AtomicInteger(0);
   // record the file diff info in order for check use
@@ -122,6 +129,12 @@ public class CopyScheduler extends ActionSchedulerService {
   // contains fileDiffs for deferred termination
   private final Queue<FileDiff> fileDiffsToTerminate;
   private final FileEqualityStrategy fileEqualityStrategy;
+
+  private final int fileDiffArchiveSize;
+  private final long appendMergeLenThreshold;
+  private final long appendMergeCountThreshold;
+  private final int syncActionRetryCount;
+  private final int initialSyncBatchSize;
 
   public CopyScheduler(SmartContext context, MetaStore metaStore) {
     super(context, metaStore);
@@ -135,25 +148,38 @@ public class CopyScheduler extends ActionSchedulerService {
     this.fileDiffCache = new ConcurrentHashMap<>();
     this.fileDiffsToTerminate = new ConcurrentLinkedQueue<>();
     this.changedFileInCacheDiffIds = ConcurrentHashMap.newKeySet();
-    // Get conf or new default conf
-    try {
-      conf = getContext().getConf();
-    } catch (NullPointerException e) {
-      // SmartContext is empty
-      conf = new Configuration();
-    }
+    this.conf = Optional.ofNullable(getContext())
+        .map(SmartContext::getConf)
+        .orElseGet(SmartConf::new);
+
     // Conf related parameters
-    cacheSyncTh = conf.getInt(SmartConfKeys
-            .SMART_COPY_SCHEDULER_BASE_SYNC_BATCH,
-        SmartConfKeys.SMART_COPY_SCHEDULER_BASE_SYNC_BATCH_DEFAULT);
-    checkInterval = conf.getLong(SmartConfKeys.SMART_COPY_SCHEDULER_CHECK_INTERVAL,
-        SmartConfKeys.SMART_COPY_SCHEDULER_CHECK_INTERVAL_DEFAULT);
+    this.cacheSyncTh = conf.getInt(
+        SMART_COPY_SCHEDULER_DIFF_CACHE_SYNC_THRESHOLD_KEY,
+        SMART_COPY_SCHEDULER_DIFF_CACHE_SYNC_THRESHOLD_DEFAULT);
+    this.checkInterval = conf.getLong(
+        SMART_COPY_SCHEDULER_CHECK_INTERVAL_KEY,
+        SMART_COPY_SCHEDULER_CHECK_INTERVAL_DEFAULT);
+    this.fileDiffArchiveSize = conf.getInt(
+        SMART_COPY_SCHEDULER_FILE_DIFF_ARCHIVE_SIZE_KEY,
+        SMART_COPY_SCHEDULER_FILE_DIFF_ARCHIVE_SIZE_DEFAULT);
+    this.appendMergeLenThreshold = conf.getLong(
+        SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_SIZE_KEY,
+        SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_SIZE_DEFAULT);
+    this.appendMergeCountThreshold = conf.getLong(
+        SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_COUNT_KEY,
+        SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_COUNT_DEFAULT);
+    this.syncActionRetryCount = conf.getInt(
+        SMART_COPY_SCHEDULER_ACTION_RETRY_COUNT_KEY,
+        SMART_COPY_SCHEDULER_ACTION_RETRY_COUNT_DEFAULT);
+    this.initialSyncBatchSize = conf.getInt(
+        SMART_COPY_SCHEDULER_BASE_SYNC_BATCH_KEY,
+        SMART_COPY_SCHEDULER_BASE_SYNC_BATCH_DEFAULT);
     // throttle for copy action
-    long throttleInMb = conf.getLong(SmartConfKeys.SMART_ACTION_COPY_THROTTLE_MB_KEY,
-        SmartConfKeys.SMART_ACTION_COPY_THROTTLE_MB_DEFAULT);
-    if (throttleInMb > 0) {
-      rateLimiter = RateLimiter.create(throttleInMb);
-    }
+    long throttleInMb = conf.getLong(
+        SMART_ACTION_COPY_THROTTLE_MB_KEY,
+        SMART_ACTION_COPY_THROTTLE_MB_DEFAULT);
+    this.rateLimiter = throttleInMb > 0
+        ? RateLimiter.create(throttleInMb) : null;
     try {
       this.numFileDiffUseless.addAndGet(metaStore.getUselessFileDiffNum());
     } catch (MetaStoreException e) {
@@ -347,7 +373,7 @@ public class CopyScheduler extends ActionSchedulerService {
         } else {
           if (fileDiffFailedTimes.containsKey(did)) {
             int curr = fileDiffFailedTimes.get(did);
-            if (curr >= RETRY_THRESHOLD) {
+            if (curr >= syncActionRetryCount) {
               fileDiffTerminated(fileDiff);
               //update state in cache
               updateFileDiffInCache(did, FileDiffState.FAILED);
@@ -396,7 +422,7 @@ public class CopyScheduler extends ActionSchedulerService {
     int index = 0;
 
     for (Map.Entry<String, String> syncQueueEntry : initialSyncQueue.entrySet()) {
-      if (index++ >= INITIAL_SYNC_BATCH_SIZE) {
+      if (index++ >= initialSyncBatchSize) {
         break;
       }
       FileDiff fileDiff = runFileInitialSync(syncQueueEntry.getKey(), syncQueueEntry.getValue());
@@ -751,7 +777,7 @@ public class CopyScheduler extends ActionSchedulerService {
       }
       fileDiffArchive.add(newFileDiff);
       int index = 0;
-      while (fileDiffArchive.size() > FILE_DIFF_ARCHIVE_SIZE && index < FILE_DIFF_ARCHIVE_SIZE) {
+      while (fileDiffArchive.size() > fileDiffArchiveSize && index < fileDiffArchiveSize) {
         if (FileDiffState.isTerminalState(fileDiffArchive.get(index).getState())) {
           fileDiffArchive.remove(index);
           continue;
@@ -807,8 +833,8 @@ public class CopyScheduler extends ActionSchedulerService {
               mergeAllDiffs();
             }
 
-            if (currAppendLength >= MERGE_LEN_THRESHOLD ||
-                appendChain.size() >= MERGE_COUNT_THRESHOLD) {
+            if (currAppendLength >= appendMergeLenThreshold ||
+                appendChain.size() >= appendMergeCountThreshold) {
               mergeAppend();
             }
 
