@@ -153,7 +153,7 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
   }
 
   private void copyWithOffset(String src, String dest, int bufferSize,
-                              long offset, long length) throws IOException {
+      long offset, long length) throws IOException {
     appendLog(
         String.format("Copy with offset %s and length %s", offset, length));
 
@@ -222,9 +222,11 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
 
   private FileStatus validateDestFile(FileStatus destFileStatus) {
     if (destFileStatus.getLen() < offset) {
-      throw new IllegalStateException("Destination file " + destFileStatus.getPath()
-          + " is shorter than it should be - expected min length: "
-          + offset + ", actual length: " + destFileStatus.getLen());
+      String errorMessage = String.format(
+          "Destination file %s is shorter than it should be "
+              + "- expected min length: %d, actual length: %d",
+          destFileStatus.getPath(), offset, destFileStatus.getLen());
+      throw new IllegalStateException(errorMessage);
     }
 
     return destFileStatus;
