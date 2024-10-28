@@ -928,6 +928,7 @@ public class CopyScheduler extends ActionSchedulerService {
           FileDiff fileDiff = fileDiffCache.get(lastAppend);
           fileDiff.getParameters().put("-offset", "" + offset);
           fileDiff.getParameters().put("-length", "" + totalLength);
+          fileDiff.setState(FileDiffState.PENDING);
           // Update fileDiff in metastore
           changedFileInCacheDiffIds.add(fileDiff.getDiffId());
         } finally {
