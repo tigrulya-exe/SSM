@@ -30,9 +30,9 @@ import java.util.Map;
 import static org.smartdata.conf.SmartConfKeys.SMART_CONF_KEYS_PREFIX;
 
 public class SmartRestServer {
-  private final static String SPRING_LOGGING_PROPERTY =
+  private static final String SPRING_LOGGING_PROPERTY =
       "org.springframework.boot.logging.LoggingSystem";
-  private final static String SPRING_DISABLED_LOGGER = "none";
+  private static final String SPRING_DISABLED_LOGGER = "none";
 
   private final SpringApplication springApplication;
 
