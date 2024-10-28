@@ -30,6 +30,10 @@ import java.util.Map;
 import static org.smartdata.conf.SmartConfKeys.SMART_CONF_KEYS_PREFIX;
 
 public class SmartRestServer {
+  private final static String SPRING_LOGGING_PROPERTY =
+      "org.springframework.boot.logging.LoggingSystem";
+  private final static String SPRING_DISABLED_LOGGER = "none";
+
   private final SpringApplication springApplication;
 
   private volatile ConfigurableApplicationContext applicationContext;
@@ -38,13 +42,14 @@ public class SmartRestServer {
     this.springApplication = new SpringApplication(RestServerApplication.class);
 
     injectToSpringProperties(ssmConfig);
-
     SsmContextInitializer contextInitializer =
         new SsmContextInitializer(smartEngine, ssmConfig);
     springApplication.addInitializers(contextInitializer);
   }
 
   public void start() {
+    // disable repeated log4j loggers global configuration by Spring
+    System.setProperty(SPRING_LOGGING_PROPERTY, SPRING_DISABLED_LOGGER);
     applicationContext = springApplication.run();
   }
 
