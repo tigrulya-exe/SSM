@@ -17,14 +17,14 @@
  */
 package org.smartdata.hdfs.action;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.hdfs.protocol.DatanodeInfoWithStorage;
-import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
-import org.apache.hadoop.hdfs.protocol.LocatedBlock;
-import org.smartdata.action.ActionException;
+import org.apache.hadoop.fs.BlockLocation;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.StorageType;
 import org.smartdata.action.annotation.ActionSignature;
 
-import java.util.List;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -35,51 +35,60 @@ import java.util.Map;
     displayName = "checkstorage",
     usage = HdfsAction.FILE_PATH + " $file "
 )
-public class CheckStorageAction extends HdfsAction {
-  private String fileName;
+public class CheckStorageAction extends HdfsActionWithRemoteClusterSupport {
+  private Path filePath;
 
   @Override
   public void init(Map<String, String> args) {
     super.init(args);
-    fileName = args.get(FILE_PATH);
+    filePath = getPathArg(FILE_PATH);
   }
 
   @Override
-  protected void execute() throws Exception {
-    if (StringUtils.isBlank(fileName)) {
-      throw new IllegalArgumentException("File parameter is missing! ");
-    }
-    HdfsFileStatus fileStatus = dfsClient.getFileInfo(fileName);
-    if (fileStatus == null) {
-      throw new ActionException("File does not exist.");
-    }
-    if (fileStatus.isDir()) {
+  protected void preExecute() {
+    validateNonEmptyArg(FILE_PATH);
+  }
+
+  @Override
+  protected void execute(FileSystem fileSystem) throws Exception {
+    FileStatus fileStatus = fileSystem.getFileStatus(filePath);
+    if (fileStatus.isDirectory()) {
       appendResult("This is a directory which has no storage result!");
       return;
     }
 
-    long length = fileStatus.getLen();
-    List<LocatedBlock> locatedBlocks =
-        dfsClient.getLocatedBlocks(fileName, 0, length).getLocatedBlocks();
-
-    if (locatedBlocks.isEmpty()) {
-      appendResult("File '" + fileName + "' has no blocks.");
+    BlockLocation[] fileBlockLocations =
+        fileSystem.getFileBlockLocations(filePath, 0, fileStatus.getLen());
+    if (fileBlockLocations.length == 0) {
+      appendResult("File '" + filePath + "' has no blocks.");
       return;
     }
 
-    for (LocatedBlock locatedBlock : locatedBlocks) {
-      StringBuilder blockInfo = new StringBuilder();
-      blockInfo.append("File offset = ").append(locatedBlock.getStartOffset()).append(", ");
-      blockInfo.append("Block locations = {");
-      for (DatanodeInfoWithStorage datanodeInfo : locatedBlock.getLocations()) {
-        blockInfo.append(datanodeInfo.getName())
-            .append("[")
-            .append(datanodeInfo.getStorageType())
-            .append("]")
-            .append(" ");
-      }
-      blockInfo.append("}");
-      appendResult(blockInfo.toString());
+    for (BlockLocation blockLocation : fileBlockLocations) {
+      appendResult(buildBlockInfo(blockLocation));
     }
   }
+
+  private String buildBlockInfo(BlockLocation blockLocation) throws IOException {
+    StringBuilder blockInfo = new StringBuilder();
+
+    String[] names = blockLocation.getNames();
+    StorageType[] storageTypes = blockLocation.getStorageTypes();
+
+    blockInfo.append("File offset = ")
+        .append(blockLocation.getOffset())
+        .append(", ")
+        .append("Block locations = {");
+
+    for (int i = 0; i < names.length; i++) {
+      blockInfo.append(names[i])
+          .append("[")
+          .append(storageTypes[i])
+          .append("]")
+          .append(" ");
+    }
+
+    return blockInfo.toString();
+  }
+
 }

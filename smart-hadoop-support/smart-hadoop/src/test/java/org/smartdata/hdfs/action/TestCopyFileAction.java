@@ -53,7 +53,7 @@ public class TestCopyFileAction extends MultiClusterHarness {
   private void copyFile(Path src, Path dest, long length,
       long offset, Set<CopyPreservedAttributesAction.PreserveAttribute> preserveAttributes) throws Exception {
     CopyFileAction copyFileAction = new CopyFileAction();
-    copyFileAction.setDfsClient(dfsClient);
+    copyFileAction.setLocalFileSystem(dfs);
     copyFileAction.setContext(smartContext);
     Map<String, String> args = new HashMap<>();
     args.put(CopyFileAction.FILE_PATH, src.toUri().getPath());
