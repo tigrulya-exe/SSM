@@ -20,15 +20,13 @@ package org.smartdata.hdfs.action;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.smartdata.action.ActionException;
-import org.smartdata.action.Utils;
 import org.smartdata.action.annotation.ActionSignature;
 
-import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
+
+import static org.smartdata.utils.ConfigUtil.toRemoteClusterConfig;
+import static org.smartdata.utils.PathUtil.isAbsoluteRemotePath;
 
 /**
  * An action to delete a single file in dest
@@ -43,8 +41,6 @@ import java.util.Map;
 )
 
 public class DeleteFileAction extends HdfsAction {
-  private static final Logger LOG =
-      LoggerFactory.getLogger(DeleteFileAction.class);
   private String filePath;
 
   @Override
@@ -55,39 +51,34 @@ public class DeleteFileAction extends HdfsAction {
 
   @Override
   protected void execute() throws Exception {
-    if (filePath == null) {
-      throw new IllegalArgumentException("File parameter is missing.");
+    validateNonEmptyArg(FILE_PATH);
+
+    if (isAbsoluteRemotePath(filePath)) {
+      deleteRemoteFile();
+    } else {
+      deleteLocalFile();
     }
-    appendLog(
-        String.format("Action starts at %s : Delete %s",
-            Utils.getFormatedCurrentTime(), filePath));
-    //delete File
-    deleteFile(filePath);
   }
 
-  private boolean deleteFile(
-      String filePath) throws IOException, ActionException {
-    if (filePath.startsWith("hdfs")) {
-      //delete in remote cluster
-      // TODO read conf from file
-      Configuration conf = new Configuration();
-      //get FileSystem object
-      FileSystem fs = FileSystem.get(URI.create(filePath), conf);
-      if (!fs.exists(new Path(filePath))) {
-        throw new ActionException(
-            "DeleteFile Action fails, file doesn't exist!");
-      }
-      fs.delete(new Path(filePath), true);
-      return true;
-    } else {
-      //delete in local cluster
-      if (!dfsClient.exists(filePath)) {
-        throw new ActionException(
-            "DeleteFile Action fails, file doesn't exist!");
-      }
-      appendLog(String.format("Delete %s", filePath));
-      return dfsClient.delete(filePath, true);
+  private void deleteLocalFile() throws Exception {
+    if (!dfsClient.exists(filePath)) {
+      throw new ActionException(
+          "DeleteFile Action fails, file doesn't exist!");
     }
+
+    dfsClient.delete(filePath, true);
+  }
+
+  private void deleteRemoteFile() throws Exception {
+    Path sourcePath = new Path(filePath);
+    Configuration conf = toRemoteClusterConfig(getConf());
+    FileSystem fs = sourcePath.getFileSystem(conf);
+    if (!fs.exists(sourcePath)) {
+      throw new ActionException(
+          "DeleteFile Action fails, file doesn't exist!");
+    }
+
+    fs.delete(sourcePath, true);
   }
 }
 

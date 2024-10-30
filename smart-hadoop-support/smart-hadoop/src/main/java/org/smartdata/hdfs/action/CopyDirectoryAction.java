@@ -18,20 +18,22 @@
 package org.smartdata.hdfs.action;
 
 import com.google.common.collect.Sets;
-import java.io.IOException;
-import java.net.URI;
-import java.util.Map;
-import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.smartdata.action.ActionException;
 import org.smartdata.action.annotation.ActionSignature;
 
+import java.io.IOException;
+import java.net.URI;
+import java.util.Map;
+import java.util.Set;
+
 import static org.smartdata.hdfs.action.CopyPreservedAttributesAction.PreserveAttribute.GROUP;
 import static org.smartdata.hdfs.action.CopyPreservedAttributesAction.PreserveAttribute.OWNER;
 import static org.smartdata.hdfs.action.CopyPreservedAttributesAction.PreserveAttribute.PERMISSIONS;
 import static org.smartdata.utils.ConfigUtil.toRemoteClusterConfig;
+import static org.smartdata.utils.PathUtil.isAbsoluteRemotePath;
 
 /**
  * An action to copy a directory without content
@@ -90,7 +92,7 @@ public class CopyDirectoryAction extends CopyPreservedAttributesAction {
     appendLog(
         String.format("Creating directory %s", destPath));
 
-    if (!destPath.startsWith("hdfs")) {
+    if (!isAbsoluteRemotePath(destPath)) {
       dfsClient.mkdirs(destPath, null, true);
       return;
     }

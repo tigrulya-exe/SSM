@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,22 +19,24 @@ package org.smartdata.hdfs.action;
 
 
 import com.google.common.collect.Sets;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IOUtils;
+import org.smartdata.action.ActionException;
+import org.smartdata.action.Utils;
+import org.smartdata.action.annotation.ActionSignature;
+import org.smartdata.hdfs.CompatibilityHelper;
+import org.smartdata.hdfs.CompatibilityHelperLoader;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.smartdata.action.ActionException;
-import org.smartdata.action.Utils;
-import org.smartdata.action.annotation.ActionSignature;
-import org.smartdata.hdfs.CompatibilityHelper;
-import org.smartdata.hdfs.CompatibilityHelperLoader;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_DEFAULT;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_KEY;
@@ -43,6 +45,7 @@ import static org.smartdata.hdfs.action.CopyPreservedAttributesAction.PreserveAt
 import static org.smartdata.hdfs.action.CopyPreservedAttributesAction.PreserveAttribute.PERMISSIONS;
 import static org.smartdata.hdfs.action.CopyPreservedAttributesAction.PreserveAttribute.REPLICATION_NUMBER;
 import static org.smartdata.utils.ConfigUtil.toRemoteClusterConfig;
+import static org.smartdata.utils.PathUtil.isAbsoluteRemotePath;
 
 /**
  * An action to copy a single file from src to destination.
@@ -72,10 +75,10 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
 
   private String srcPath;
   private String destPath;
-  private long offset = 0;
-  private long length = 0;
-  private int bufferSize = 64 * 1024;
-  private boolean copyContent = true;
+  private long offset;
+  private long length;
+  private int bufferSize;
+  private boolean copyContent;
 
   private Set<PreserveAttribute> preserveAttributes;
 
@@ -83,6 +86,10 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
 
   public CopyFileAction() {
     super(DEFAULT_PRESERVE_ATTRIBUTES);
+    this.offset = 0;
+    this.length = 0;
+    this.bufferSize = 64 * 1024;
+    this.copyContent = true;
   }
 
   @Override
@@ -90,9 +97,7 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
     withDefaultFs();
     super.init(args);
     this.srcPath = args.get(FILE_PATH);
-    if (args.containsKey(DEST_PATH)) {
-      this.destPath = args.get(DEST_PATH);
-    }
+    this.destPath = args.get(DEST_PATH);
     if (args.containsKey(BUF_SIZE)) {
       bufferSize = Integer.parseInt(args.get(BUF_SIZE));
     }
@@ -110,12 +115,8 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
   @Override
   protected void execute() throws Exception {
     validateArgs();
+
     preserveAttributes = parsePreserveAttributes();
-
-    appendLog(
-        String.format("Action starts at %s : Copy from %s to %s",
-            Utils.getFormatedCurrentTime(), srcPath, destPath));
-
     srcFileStatus = getFileStatus(srcPath);
 
     if (!copyContent) {
@@ -132,12 +133,7 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
   }
 
   private void validateArgs() throws Exception {
-    if (StringUtils.isBlank(srcPath)) {
-      throw new IllegalArgumentException("File parameter is missing.");
-    }
-    if (StringUtils.isBlank(destPath)) {
-      throw new IllegalArgumentException("Dest File parameter is missing.");
-    }
+    validateNonEmptyArgs(FILE_PATH, DEST_PATH);
     if (!dfsClient.exists(srcPath)) {
       throw new ActionException("Src file doesn't exist!");
     }
@@ -174,7 +170,7 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
   }
 
   private InputStream getSrcInputStream(String src) throws IOException {
-    if (src.startsWith("hdfs")) {
+    if (isAbsoluteRemotePath(src)) {
       // Copy between different remote clusters
       // Get InputStream from URL
       FileSystem fs = FileSystem.get(URI.create(src), getContext().getConf());
@@ -184,6 +180,7 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
   }
 
   private OutputStream getDestOutPutStream(String dest, long offset) throws IOException {
+    // todo
     if (dest.startsWith("s3")) {
       // Copy to s3
       FileSystem fs = FileSystem.get(URI.create(dest), getContext().getConf());
@@ -195,7 +192,7 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
       // Copy to remote HDFS
       // Get OutPutStream from URL
       Configuration remoteClusterConfig = toRemoteClusterConfig(getContext().getConf());
-      FileSystem fs = FileSystem.get(URI.create(dest),  remoteClusterConfig);
+      FileSystem fs = FileSystem.get(URI.create(dest), remoteClusterConfig);
       Path destHdfsPath = new Path(dest);
 
       if (fs.exists(destHdfsPath) && offset != 0) {

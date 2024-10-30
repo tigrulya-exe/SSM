@@ -76,6 +76,9 @@ public class MetaDataAction extends HdfsAction {
       throw new IllegalArgumentException("File src is missing.");
     }
 
-    delegate.changeFileMetadata(fileInfoDiff);
+    boolean metadataChanged = delegate.changeFileMetadata(fileInfoDiff);
+    if (!metadataChanged) {
+      appendLog("Metadata hasn't been changed, because path not supported: " + fileInfoDiff.getPath());
+    }
   }
 }

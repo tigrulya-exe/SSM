@@ -17,20 +17,35 @@
  */
 package org.smartdata.hdfs.action;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.smartdata.action.SmartAction;
+import org.smartdata.action.Utils;
+import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.model.CmdletDescriptor;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Base class for all HDFS actions.
  */
 public abstract class HdfsAction extends SmartAction {
   public static final String FILE_PATH = CmdletDescriptor.HDFS_FILE_PATH;
-  // SmartDFSClient
+
   protected DFSClient dfsClient = null;
+
+  public enum DfsClientType {
+    SMART,
+    DEFAULT_HDFS
+  }
+
+  public DfsClientType dfsClientType() {
+    return DfsClientType.SMART;
+  }
 
   public void setDfsClient(DFSClient dfsClient) {
     this.dfsClient = dfsClient;
@@ -42,12 +57,19 @@ public abstract class HdfsAction extends SmartAction {
     conf.set(DFSConfigKeys.FS_DEFAULT_NAME_KEY, nameNodeURL);
   }
 
-  public DfsClientType dfsClientType() {
-    return DfsClientType.SMART;
+  protected void validateNonEmptyArgs(String... keys) {
+    for (String key : keys) {
+      validateNonEmptyArg(key);
+    }
   }
 
-  public enum DfsClientType {
-    SMART,
-    DEFAULT_HDFS
+  protected void validateNonEmptyArg(String key) {
+    if (StringUtils.isBlank(getArguments().get(key))) {
+      throw new IllegalArgumentException(key + " parameter is missing.");
+    }
+  }
+
+  protected SmartConf getConf() {
+    return getContext().getConf();
   }
 }

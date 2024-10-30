@@ -18,19 +18,21 @@
 package org.smartdata.hdfs.action;
 
 import com.google.common.collect.Sets;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.Path;
+import org.smartdata.model.FileInfoDiff;
+
 import java.io.IOException;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.smartdata.model.FileInfoDiff;
+
+import static org.smartdata.utils.PathUtil.getRemoteFileSystem;
+import static org.smartdata.utils.PathUtil.isAbsoluteRemotePath;
 
 
 /**
@@ -51,7 +53,7 @@ public abstract class CopyPreservedAttributesAction extends HdfsAction {
   }
 
   public CopyPreservedAttributesAction(Set<PreserveAttribute> supportedAttributes,
-                                       Set<PreserveAttribute> defaultAttributes) {
+      Set<PreserveAttribute> defaultAttributes) {
     this.supportedAttributes = supportedAttributes;
     this.defaultAttributes = defaultAttributes;
   }
@@ -78,7 +80,7 @@ public abstract class CopyPreservedAttributesAction extends HdfsAction {
   }
 
   protected void copyFileAttributes(String srcPath, String destPath,
-                                    Set<PreserveAttribute> preserveAttributes) throws IOException {
+      Set<PreserveAttribute> preserveAttributes) throws IOException {
     if (preserveAttributes.isEmpty()) {
       return;
     }
@@ -99,10 +101,9 @@ public abstract class CopyPreservedAttributesAction extends HdfsAction {
   }
 
   protected FileStatus getFileStatus(String fileName) throws IOException {
-    if (fileName.startsWith("hdfs")) {
-      FileSystem fs = FileSystem.get(URI.create(fileName), getContext().getConf());
-      // Get InputStream from URL
-      return fs.getFileStatus(new Path(fileName));
+    if (isAbsoluteRemotePath(fileName)) {
+      Path filePath = new Path(fileName);
+      return getRemoteFileSystem(filePath).getFileStatus(filePath);
     }
     return (FileStatus) dfsClient.getFileInfo(fileName);
   }

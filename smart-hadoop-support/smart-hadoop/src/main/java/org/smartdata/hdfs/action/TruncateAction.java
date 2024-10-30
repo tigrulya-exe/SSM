@@ -18,17 +18,14 @@
 package org.smartdata.hdfs.action;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.smartdata.action.annotation.ActionSignature;
-import org.smartdata.hdfs.CompatibilityHelperLoader;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * action to truncate file
@@ -39,7 +36,6 @@ import java.util.Map;
     usage = HdfsAction.FILE_PATH + " $src " + TruncateAction.LENGTH + " $length"
 )
 public class TruncateAction extends HdfsAction {
-  private static final Logger LOG = LoggerFactory.getLogger(TruncateAction.class);
   public static final String LENGTH = "-length";
 
   private String srcPath;
@@ -50,27 +46,23 @@ public class TruncateAction extends HdfsAction {
     super.init(args);
     srcPath = args.get(FILE_PATH);
 
-    this.length = -1;
-
-    if (args.containsKey(LENGTH)) {
-      this.length = Long.parseLong(args.get(LENGTH));
-    }
+    this.length = Optional.ofNullable(args.get(LENGTH))
+        .map(Long::parseLong)
+        .orElse(-1L);
   }
 
   @Override
   protected void execute() throws Exception {
-    if (srcPath == null) {
-      throw new IllegalArgumentException("File src is missing.");
-    }
+    validateNonEmptyArgs(FILE_PATH, LENGTH);
 
-    if (length == -1) {
-      throw new IllegalArgumentException("Length is missing");
+    if (length < 0) {
+      throw new IllegalArgumentException("Length should be non negative number");
     }
 
     truncateClusterFile(srcPath, length);
   }
 
-  private boolean truncateClusterFile(String srcFile, long length) throws IOException {
+  private void truncateClusterFile(String srcFile, long length) throws IOException {
     if (srcFile.startsWith("hdfs")) {
       // TODO read conf from files
       Configuration conf = new Configuration();

@@ -17,12 +17,6 @@
  */
 package org.smartdata.hdfs.action;
 
-import static org.smartdata.utils.ConfigUtil.toRemoteClusterConfig;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.URI;
-import java.util.Optional;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -31,21 +25,41 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.smartdata.hdfs.HadoopUtil;
 import org.smartdata.model.FileInfoDiff;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.URI;
+import java.util.Optional;
+import java.util.function.Predicate;
+
+import static org.smartdata.utils.ConfigUtil.toRemoteClusterConfig;
+import static org.smartdata.utils.PathUtil.isAbsoluteRemotePath;
+
 public class UpdateFileMetadataSupport {
   private final Configuration configuration;
   private final PrintStream logOutput;
 
-  public UpdateFileMetadataSupport(Configuration configuration, PrintStream logOutput) {
+  private final Predicate<String> pathFilter;
+
+  public UpdateFileMetadataSupport(
+      Configuration configuration, PrintStream logOutput, Predicate<String> schemeTester) {
     this.configuration = configuration;
     this.logOutput = logOutput;
+    this.pathFilter = schemeTester;
   }
 
-  public void changeFileMetadata(FileInfoDiff fileInfoDiff) throws IOException {
-    if (fileInfoDiff.getPath().startsWith("hdfs")) {
+  public boolean changeFileMetadata(FileInfoDiff fileInfoDiff) throws IOException {
+    if (pathFilter.test(fileInfoDiff.getPath())) {
+      return false;
+    }
+
+    // TODO we need to skip it for fs not supporting changing metadata
+    if (isAbsoluteRemotePath(fileInfoDiff.getPath())) {
       changeRemoteFileMetadata(fileInfoDiff);
     } else {
       changeLocalFileMetadata(fileInfoDiff);
     }
+
+    return true;
   }
 
   private void changeRemoteFileMetadata(FileInfoDiff fileInfoDiff) throws IOException {
