@@ -19,16 +19,17 @@ package org.smartdata.hdfs.action;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.smartdata.action.SmartAction;
-import org.smartdata.action.Utils;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.model.CmdletDescriptor;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
+
 
 /**
  * Base class for all HDFS actions.
@@ -36,7 +37,7 @@ import java.util.Map;
 public abstract class HdfsAction extends SmartAction {
   public static final String FILE_PATH = CmdletDescriptor.HDFS_FILE_PATH;
 
-  protected DFSClient dfsClient = null;
+  protected DistributedFileSystem sourceFileSystem = null;
 
   public enum DfsClientType {
     SMART,
@@ -49,6 +50,12 @@ public abstract class HdfsAction extends SmartAction {
 
   public void setDfsClient(DFSClient dfsClient) {
     this.dfsClient = dfsClient;
+  }
+
+  protected DFSClient getSourceFsClient() {
+    return Optional.ofNullable(sourceFileSystem)
+        .map(DistributedFileSystem::getClient)
+        .orElse(null);
   }
 
   protected void withDefaultFs() {
@@ -71,5 +78,11 @@ public abstract class HdfsAction extends SmartAction {
 
   protected SmartConf getConf() {
     return getContext().getConf();
+  }
+
+  protected Path getPathArg(String key) {
+    return Optional.ofNullable(getArguments().get(key))
+        .map(Path::new)
+        .orElse(null);
   }
 }

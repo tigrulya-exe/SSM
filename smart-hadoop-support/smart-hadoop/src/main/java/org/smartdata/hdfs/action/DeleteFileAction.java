@@ -17,16 +17,12 @@
  */
 package org.smartdata.hdfs.action;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.smartdata.action.ActionException;
 import org.smartdata.action.annotation.ActionSignature;
 
 import java.util.Map;
-
-import static org.smartdata.utils.ConfigUtil.toRemoteClusterConfig;
-import static org.smartdata.utils.PathUtil.isAbsoluteRemotePath;
 
 /**
  * An action to delete a single file in dest
@@ -40,45 +36,25 @@ import static org.smartdata.utils.PathUtil.isAbsoluteRemotePath;
     usage = HdfsAction.FILE_PATH + " $file"
 )
 
-public class DeleteFileAction extends HdfsAction {
-  private String filePath;
-
+public class DeleteFileAction extends HdfsActionWithRemoteClusterSupport {
   @Override
   public void init(Map<String, String> args) {
     super.init(args);
-    this.filePath = args.get(FILE_PATH);
   }
 
   @Override
-  protected void execute() throws Exception {
+  protected void preExecute() {
     validateNonEmptyArg(FILE_PATH);
-
-    if (isAbsoluteRemotePath(filePath)) {
-      deleteRemoteFile();
-    } else {
-      deleteLocalFile();
-    }
   }
 
-  private void deleteLocalFile() throws Exception {
-    if (!dfsClient.exists(filePath)) {
+  @Override
+  protected void execute(Path filePath, FileSystem fileSystem) throws Exception {
+    if (!fileSystem.exists(filePath)) {
       throw new ActionException(
           "DeleteFile Action fails, file doesn't exist!");
     }
 
-    dfsClient.delete(filePath, true);
-  }
-
-  private void deleteRemoteFile() throws Exception {
-    Path sourcePath = new Path(filePath);
-    Configuration conf = toRemoteClusterConfig(getConf());
-    FileSystem fs = sourcePath.getFileSystem(conf);
-    if (!fs.exists(sourcePath)) {
-      throw new ActionException(
-          "DeleteFile Action fails, file doesn't exist!");
-    }
-
-    fs.delete(sourcePath, true);
+    fileSystem.delete(filePath, true);
   }
 }
 

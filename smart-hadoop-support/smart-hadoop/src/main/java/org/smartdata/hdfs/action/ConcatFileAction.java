@@ -23,16 +23,16 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.fs.Path;
-import org.smartdata.action.Utils;
 import org.smartdata.action.annotation.ActionSignature;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.Map;
 import java.util.Optional;
+
+import static org.smartdata.utils.PathUtil.getRemoteFileSystem;
 
 /**
  * An action to merge a list of file,
@@ -44,84 +44,83 @@ import java.util.Optional;
     displayName = "concat",
     usage = HdfsAction.FILE_PATH + " $src " + ConcatFileAction.DEST_PATH + " $dest"
 )
-public class ConcatFileAction extends HdfsAction {
+public class ConcatFileAction extends HdfsActionWithRemoteClusterSupport {
   public static final String DEST_PATH = "-dest";
 
-  private Deque<String> srcPathList;
-  private String targetPath;
+  private Deque<String> srcFiles;
+  private String targetFile;
 
   @Override
   public void init(Map<String, String> args) {
     super.init(args);
-    this.srcPathList = Optional.ofNullable(args.get(FILE_PATH))
+    this.srcFiles = Optional.ofNullable(args.get(FILE_PATH))
         .map(paths -> paths.split(","))
         .map(Arrays::asList)
         .map(ArrayDeque::new)
         .orElseGet(ArrayDeque::new);
-    this.targetPath = args.get(DEST_PATH);
+    this.targetFile = args.get(DEST_PATH);
   }
 
   @Override
-  protected void execute() throws Exception {
-    if (CollectionUtils.isEmpty(srcPathList)) {
+  protected void preRun() {
+    if (CollectionUtils.isEmpty(srcFiles)) {
       throw new IllegalArgumentException("Dest File parameter is missing.");
     }
-    if (srcPathList.size() == 1) {
+    if (srcFiles.size() == 1) {
       throw new IllegalArgumentException("Don't accept only one source file");
     }
-    if (StringUtils.isBlank(targetPath)) {
+    if (StringUtils.isBlank(targetFile)) {
       throw new IllegalArgumentException("File parameter is missing.");
     }
-
-    appendLog(
-        String.format("Action starts at %s : Concat %s to %s",
-            Utils.getFormatedCurrentTime(), srcPathList, targetPath));
-    //Merge the files
-    concatFiles(srcPathList, targetPath);
   }
 
-  private void concatFiles(Deque<String> allFiles, String target) throws IOException {
-    if (target.startsWith("hdfs")) {
-      //merge in remote cluster
-      //check if all of the source file
-      // TODO read conf from files
-      Configuration conf = new Configuration();
-      FileSystem fs = FileSystem.get(URI.create(target), conf);
-      for (String sourceFile : allFiles) {
-        if (!fs.isFile(new Path(sourceFile))) {
-          throw new IllegalArgumentException("File parameter is not file");
-        }
-      }
-      Path firstFile = new Path(allFiles.pollFirst());
-      Path[] restFile = new Path[allFiles.size()];
+  @Override
+  protected String getPath() {
+    return targetFile;
+  }
 
-      int index = -1;
-      for (String transFile : allFiles) {
-        index++;
-        restFile[index] = new Path(transFile);
+  @Override
+  protected void onLocalPath() throws Exception {
+    for (String sourceFile : srcFiles) {
+      if (dfsClient.getFileInfo(sourceFile).isDir()) {
+        throw new IllegalArgumentException("File parameter is not file: " + sourceFile);
       }
-
-      fs.concat(firstFile, restFile);
-      if (fs.exists(new Path(target))) {
-        fs.delete(new Path(target), true);
-      }
-      fs.rename(firstFile, new Path(target));
-      return;
     }
 
+    String firstFile = srcFiles.removeFirst();
+    String[] restFile = new String[srcFiles.size()];
 
-    for (String sourceFile : allFiles) {
-      if (dfsClient.getFileInfo(sourceFile).isDir()) {
+    dfsClient.concat(firstFile, restFile);
+    if (dfsClient.exists(targetFile)) {
+      dfsClient.delete(targetFile, true);
+    }
+    dfsClient.rename(firstFile, targetFile, Options.Rename.NONE);
+  }
+
+  @Override
+  protected void onRemotePath() throws Exception {
+    Path targetPath = new Path(targetFile);
+    FileSystem targetFs = getRemoteFileSystem(targetPath);
+
+    for (String sourceFile : srcFiles) {
+      if (!targetFs.getFileStatus(new Path(sourceFile))) {
         throw new IllegalArgumentException("File parameter is not file");
       }
     }
-    String firstFile = allFiles.removeFirst();
-    String[] restFile = new String[allFiles.size()];
-    allFiles.toArray(restFile);
-    dfsClient.concat(firstFile, restFile);
-    if (dfsClient.exists(target)) {
-      dfsClient.delete(target, true);
+
+    Path firstFile = new Path(srcFiles.pollFirst());
+    Path[] restFile = new Path[srcFiles.size()];
+
+    int index = -1;
+    for (String transFile : srcFiles) {
+      index++;
+      restFile[index] = new Path(transFile);
     }
-    dfsClient.rename(firstFile, target, Options.Rename.NONE);
+
+    targetFs.concat(firstFile, restFile);
+    if (targetFs.exists(new Path(targetFile))) {
+      targetFs.delete(new Path(targetFile), true);
+    }
+    targetFs.rename(firstFile, new Path(targetFile));
   }
 }

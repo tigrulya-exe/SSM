@@ -17,16 +17,11 @@
  */
 package org.smartdata.hdfs.action;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.fs.Path;
 import org.smartdata.action.ActionException;
 import org.smartdata.action.annotation.ActionSignature;
-import org.smartdata.hdfs.HadoopUtil;
 
-import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
@@ -44,40 +39,33 @@ import static org.smartdata.utils.PathUtil.getScheme;
     usage = HdfsAction.FILE_PATH + " $src " + RenameFileAction.DEST_PATH +
         " $dest"
 )
-public class RenameFileAction extends HdfsAction {
+public class RenameFileAction extends HdfsActionWithRemoteClusterSupport {
   public static final String DEST_PATH = "-dest";
 
-  private String srcPath;
-  private String destPath;
+  private Path srcPath;
+  private Path destPath;
 
   @Override
   public void init(Map<String, String> args) {
     super.init(args);
-    this.srcPath = args.get(FILE_PATH);
-    this.destPath = args.get(DEST_PATH);
+    this.srcPath = getPathArg(FILE_PATH);
+    this.destPath = getPathArg(DEST_PATH);
   }
 
   @Override
-  protected void execute() throws Exception {
-    validateNonEmptyArgs(FILE_PATH, DEST_PATH);
-
-    if (!renameSingleFile(srcPath, destPath)) {
-      throw new IOException("Failed to rename " + srcPath + " to " + destPath);
-    }
-
-    appendLog("File " + srcPath + " was renamed to " + destPath);
+  protected boolean isRemoteMode() {
+    return getScheme(srcPath).isPresent() || getScheme(destPath).isPresent();
   }
 
-  private boolean renameSingleFile(
-      String src, String dest) throws Exception {
-    Optional<String> srcScheme = getScheme(src);
-    Optional<String> destScheme = getScheme(dest);
+  @Override
+  protected void preExecute() {
+    validateNonEmptyArgs(FILE_PATH, DEST_PATH);
+  }
 
-    // Files are in the local cluster
-    if (!srcScheme.isPresent() && !destScheme.isPresent()) {
-      dfsClient.rename(src, dest, Options.Rename.NONE);
-      return true;
-    }
+  @Override
+  protected void preRemoteExecute() throws Exception {
+    Optional<String> srcScheme = getScheme(srcPath);
+    Optional<String> destScheme = getScheme(destPath);
 
     // One of files is in local cluster and second is in remote
     // TODO handle the case when absolute path's host is local cluster
@@ -89,16 +77,18 @@ public class RenameFileAction extends HdfsAction {
       throw new ActionException("Paths have different schemes");
     }
 
-    return renameRemoteFile(new Path(src), new Path(dest));
+    if (!destPath.toUri().getHost().equals(srcPath.toUri().getHost())) {
+      throw new ActionException("Paths are not in the same cluster");
+    }
   }
 
-  private boolean renameRemoteFile(Path srcPath, Path destPath) throws Exception {
-    if (!destPath.toUri().getHost().equals(srcPath.toUri().getHost())) {
-      throw new ActionException("the file names are not in the same cluster");
-    }
+  @Override
+  protected void execute(FileSystem fileSystem) throws Exception {
+    fileSystem.rename(srcPath, destPath);
+  }
 
-    // Case when both files are in the same remote cluster
-    FileSystem destFs = destPath.getFileSystem(new Configuration());
-    return destFs.rename(srcPath, destPath);
+  @Override
+  protected void postExecute() {
+    appendLog("File " + srcPath + " was renamed to " + destPath);
   }
 }

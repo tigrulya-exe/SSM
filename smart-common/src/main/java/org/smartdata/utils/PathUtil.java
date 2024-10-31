@@ -92,6 +92,12 @@ public class PathUtil {
         .map(URI::getScheme);
   }
 
+  public static Optional<String> getScheme(Path path) {
+    return Optional.ofNullable(path)
+        .map(Path::toUri)
+        .map(URI::getScheme);
+  }
+
   public static FileSystem getRemoteFileSystem(String path) throws IOException {
     return getRemoteFileSystem(new Path(path));
   }
@@ -100,5 +106,9 @@ public class PathUtil {
   // hdfs config paths for remote clusters
   public static FileSystem getRemoteFileSystem(Path path) throws IOException {
     return path.getFileSystem(new Configuration());
+  }
+
+  public static String getRawPath(Path path) {
+    return path.toUri().getPath();
   }
 }

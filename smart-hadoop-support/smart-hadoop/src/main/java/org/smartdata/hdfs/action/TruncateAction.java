@@ -17,15 +17,14 @@
  */
 package org.smartdata.hdfs.action;
 
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.smartdata.action.annotation.ActionSignature;
 
-import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
+
+import static org.smartdata.utils.PathUtil.getRemoteFileSystem;
 
 /**
  * action to truncate file
@@ -35,54 +34,51 @@ import java.util.Optional;
     displayName = "truncate",
     usage = HdfsAction.FILE_PATH + " $src " + TruncateAction.LENGTH + " $length"
 )
-public class TruncateAction extends HdfsAction {
+public class TruncateAction extends HdfsActionWithRemoteClusterSupport {
   public static final String LENGTH = "-length";
 
-  private String srcPath;
+  private String srcFile;
   private long length;
 
   @Override
   public void init(Map<String, String> args) {
     super.init(args);
-    srcPath = args.get(FILE_PATH);
 
+    this.srcFile = args.get(FILE_PATH);
     this.length = Optional.ofNullable(args.get(LENGTH))
         .map(Long::parseLong)
         .orElse(-1L);
   }
 
   @Override
-  protected void execute() throws Exception {
+  protected void preRun() {
     validateNonEmptyArgs(FILE_PATH, LENGTH);
 
     if (length < 0) {
       throw new IllegalArgumentException("Length should be non negative number");
     }
-
-    truncateClusterFile(srcPath, length);
   }
 
-  private void truncateClusterFile(String srcFile, long length) throws IOException {
-    if (srcFile.startsWith("hdfs")) {
-      // TODO read conf from files
-      Configuration conf = new Configuration();
-      DistributedFileSystem fs = new DistributedFileSystem();
-      fs.initialize(URI.create(srcFile), conf);
+  @Override
+  protected void onRemotePath() throws Exception {
+    Path srcPath = new Path(srcFile);
+    FileSystem remoteFileSystem = getRemoteFileSystem(srcPath);
+    //check the length
+    long oldLength = remoteFileSystem.getFileStatus(srcPath).getLen();
 
-      //check the length
-      long oldLength = fs.getFileStatus(new Path(srcFile)).getLen();
-
-      if (length > oldLength) {
-        throw new IllegalArgumentException("Length is illegal");
-      }
-      return fs.truncate(new Path(srcPath), length);
-    } else {
-      long oldLength = dfsClient.getFileInfo(srcFile).getLen();
-
-      if (length > oldLength) {
-        throw new IllegalArgumentException("Length is illegal");
-      }
-      return dfsClient.truncate(srcFile, length);
+    if (length > oldLength) {
+      throw new IllegalArgumentException("Length is illegal");
     }
+    remoteFileSystem.truncate(srcPath, length);
+  }
+
+  @Override
+  protected void onLocalPath() throws Exception {
+    long oldLength = dfsClient.getFileInfo(srcFile).getLen();
+    if (length > oldLength) {
+      throw new IllegalArgumentException("Length is illegal");
+    }
+
+    dfsClient.truncate(srcFile, length);
   }
 }
