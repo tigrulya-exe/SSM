@@ -24,34 +24,33 @@ import org.smartdata.action.annotation.ActionSignature;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.smartdata.utils.PathUtil.getRemoteFileSystem;
-
 /**
  * action to truncate file
  */
 @ActionSignature(
     actionId = "truncate",
     displayName = "truncate",
-    usage = HdfsAction.FILE_PATH + " $src " + TruncateAction.LENGTH + " $length"
+    usage = HdfsAction.FILE_PATH + " $src "
+        + TruncateAction.LENGTH + " $length"
 )
 public class TruncateAction extends HdfsActionWithRemoteClusterSupport {
   public static final String LENGTH = "-length";
 
-  private String srcFile;
+  private Path srcPath;
   private long length;
 
   @Override
   public void init(Map<String, String> args) {
     super.init(args);
 
-    this.srcFile = args.get(FILE_PATH);
+    this.srcPath = getPathArg(FILE_PATH);
     this.length = Optional.ofNullable(args.get(LENGTH))
         .map(Long::parseLong)
         .orElse(-1L);
   }
 
   @Override
-  protected void preRun() {
+  protected void preExecute() {
     validateNonEmptyArgs(FILE_PATH, LENGTH);
 
     if (length < 0) {
@@ -60,25 +59,12 @@ public class TruncateAction extends HdfsActionWithRemoteClusterSupport {
   }
 
   @Override
-  protected void onRemotePath() throws Exception {
-    Path srcPath = new Path(srcFile);
-    FileSystem remoteFileSystem = getRemoteFileSystem(srcPath);
-    //check the length
-    long oldLength = remoteFileSystem.getFileStatus(srcPath).getLen();
+  protected void execute(FileSystem fileSystem) throws Exception {
+    long oldLength = fileSystem.getFileStatus(srcPath).getLen();
 
     if (length > oldLength) {
       throw new IllegalArgumentException("Length is illegal");
     }
-    remoteFileSystem.truncate(srcPath, length);
-  }
-
-  @Override
-  protected void onLocalPath() throws Exception {
-    long oldLength = dfsClient.getFileInfo(srcFile).getLen();
-    if (length > oldLength) {
-      throw new IllegalArgumentException("Length is illegal");
-    }
-
-    dfsClient.truncate(srcFile, length);
+    fileSystem.truncate(srcPath, length);
   }
 }

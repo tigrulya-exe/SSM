@@ -18,7 +18,9 @@
 package org.smartdata.hdfs.action;
 
 import com.google.gson.Gson;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.smartdata.action.Utils;
 import org.smartdata.hdfs.action.move.AbstractMoveFileAction;
@@ -33,26 +35,22 @@ import java.util.Map;
  * An action to set and enforce storage policy for a file.
  */
 public class MoveFileAction extends AbstractMoveFileAction {
+  private Path fileName;
   private MoverStatus status;
+  @Getter
   private String storagePolicy;
-  private String fileName;
   private FileMovePlan movePlan;
 
   public MoveFileAction() {
-    super();
     this.status = new MoverStatus();
-  }
-
-  public MoverStatus getStatus() {
-    return this.status;
   }
 
   @Override
   public void init(Map<String, String> args) {
     super.init(args);
-    this.fileName = args.get(FILE_PATH);
-    this.storagePolicy = getStoragePolicy() != null ?
-        getStoragePolicy() : args.get(STORAGE_POLICY);
+    this.fileName = getPathArg(FILE_PATH);
+    this.storagePolicy = args.get(STORAGE_POLICY);
+
     if (args.containsKey(MOVE_PLAN)) {
       String plan = args.get(MOVE_PLAN);
       if (plan != null) {
@@ -131,10 +129,6 @@ public class MoveFileAction extends AbstractMoveFileAction {
   @Override
   public float getProgress() {
     return this.status.getPercentage();
-  }
-
-  public String getStoragePolicy() {
-    return storagePolicy;
   }
 
   @Override

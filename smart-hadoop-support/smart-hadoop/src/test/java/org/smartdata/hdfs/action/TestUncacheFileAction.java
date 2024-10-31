@@ -62,11 +62,11 @@ public class TestUncacheFileAction extends MiniClusterHarness {
 
     cacheFileAction.run();
     Assert.assertTrue(cacheFileAction.getExpectedAfterRun());
-    Assert.assertTrue(cacheFileAction.isCached(file));
+    Assert.assertTrue(cacheFileAction.isFileCached(file));
 
     uncacheFileAction.run();
     Assert.assertTrue(uncacheFileAction.getExpectedAfterRun());
-    Assert.assertFalse(cacheFileAction.isCached(file));
+    Assert.assertFalse(cacheFileAction.isFileCached(file));
   }
 
   @Test
@@ -96,6 +96,6 @@ public class TestUncacheFileAction extends MiniClusterHarness {
     CacheFileAction cacheFileAction = new CacheFileAction();
     cacheFileAction.setDfsClient(dfsClient);
     cacheFileAction.setContext(smartContext);
-    Assert.assertFalse(cacheFileAction.isCached(file));
+    Assert.assertFalse(cacheFileAction.isFileCached(file));
   }
 }

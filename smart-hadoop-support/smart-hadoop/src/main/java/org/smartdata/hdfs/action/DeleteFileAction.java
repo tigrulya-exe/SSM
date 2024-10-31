@@ -37,9 +37,12 @@ import java.util.Map;
 )
 
 public class DeleteFileAction extends HdfsActionWithRemoteClusterSupport {
+  private Path filePath;
+
   @Override
   public void init(Map<String, String> args) {
     super.init(args);
+    filePath = getPathArg(FILE_PATH);
   }
 
   @Override
@@ -48,7 +51,7 @@ public class DeleteFileAction extends HdfsActionWithRemoteClusterSupport {
   }
 
   @Override
-  protected void execute(Path filePath, FileSystem fileSystem) throws Exception {
+  protected void execute(FileSystem fileSystem) throws Exception {
     if (!fileSystem.exists(filePath)) {
       throw new ActionException(
           "DeleteFile Action fails, file doesn't exist!");

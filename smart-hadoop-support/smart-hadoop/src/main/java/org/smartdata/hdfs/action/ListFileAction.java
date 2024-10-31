@@ -17,13 +17,10 @@
  */
 package org.smartdata.hdfs.action;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
-import org.smartdata.action.Utils;
 import org.smartdata.action.annotation.ActionSignature;
 
 import java.io.IOException;
@@ -33,10 +30,7 @@ import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Queue;
-
-import static org.smartdata.utils.PathUtil.isAbsoluteRemotePath;
 
 /**
  * An action to list files in a directory.
@@ -48,7 +42,7 @@ import static org.smartdata.utils.PathUtil.isAbsoluteRemotePath;
         + ListFileAction.RECURSIVELY
         + ListFileAction.PRETTY_SIZES
 )
-public class ListFileAction extends HdfsAction {
+public class ListFileAction extends HdfsActionWithRemoteClusterSupport {
   // Options
   public static final String RECURSIVELY = "-r";
   public static final String PRETTY_SIZES = "-h";
@@ -61,42 +55,26 @@ public class ListFileAction extends HdfsAction {
       "", "K", "M", "G", "T"
   );
 
-  private String srcPath;
-  private boolean recursively = false;
-  private boolean human = false;
+  private Path srcPath;
+  private boolean recursively;
+  private boolean human;
 
   @Override
   public void init(Map<String, String> args) {
     super.init(args);
-    this.srcPath = args.get(FILE_PATH);
-    if (args.containsKey(RECURSIVELY)) {
-      this.recursively = true;
-    }
-    if (args.containsKey(PRETTY_SIZES)) {
-      this.human = true;
-    }
+    this.srcPath = getPathArg(FILE_PATH);
+    this.recursively = args.containsKey(RECURSIVELY);
+    this.human = args.containsKey(PRETTY_SIZES);
   }
 
   @Override
-  protected void execute() throws Exception {
-    Path listingRoot = Optional.ofNullable(srcPath)
-        .filter(StringUtils::isNotBlank)
-        .map(Path::new)
-        .orElseThrow(() -> new IllegalArgumentException("File parameter is missing."));
-
-    appendLog(
-        String.format("Action starts at %s : List %s", Utils.getFormatedCurrentTime(), srcPath));
-
-    if (isAbsoluteRemotePath(srcPath)) {
-      listDirectory(listingRoot.getFileSystem(new Configuration()), listingRoot);
-    } else {
-      withDefaultFs();
-      listDirectory(listingRoot.getFileSystem(getContext().getConf()), listingRoot);
-    }
+  protected void preExecute() {
+    validateNonEmptyArg(FILE_PATH);
   }
 
-  private void listDirectory(FileSystem fs, Path root) throws IOException {
-    FileStatus rootStatus = fs.getFileStatus(root);
+  @Override
+  protected void execute(FileSystem fs) throws IOException {
+    FileStatus rootStatus = fs.getFileStatus(srcPath);
     if (rootStatus == null) {
       appendResult("File not found!");
       return;
@@ -108,7 +86,7 @@ public class ListFileAction extends HdfsAction {
     }
 
     Queue<FileStatus> fileQueue = new ArrayDeque<>();
-    addFilesFromDir(fs, root, fileQueue);
+    addFilesFromDir(fs, srcPath, fileQueue);
 
     while (!fileQueue.isEmpty()) {
       FileStatus fileStatus = fileQueue.poll();

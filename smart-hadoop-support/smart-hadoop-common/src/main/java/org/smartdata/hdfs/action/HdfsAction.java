@@ -52,6 +52,12 @@ public abstract class HdfsAction extends SmartAction {
     this.dfsClient = dfsClient;
   }
 
+  @Override
+  protected void preRun() throws Exception {
+    super.preRun();
+    withDefaultFs();
+  }
+
   protected DFSClient getSourceFsClient() {
     return Optional.ofNullable(sourceFileSystem)
         .map(DistributedFileSystem::getClient)
@@ -82,6 +88,7 @@ public abstract class HdfsAction extends SmartAction {
 
   protected Path getPathArg(String key) {
     return Optional.ofNullable(getArguments().get(key))
+        .filter(StringUtils::isNotBlank)
         .map(Path::new)
         .orElse(null);
   }

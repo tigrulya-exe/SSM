@@ -53,9 +53,9 @@ public class TestCacheFile extends MiniClusterHarness {
     args.put(CacheFileAction.FILE_PATH, file);
     cacheAction.init(args);
     try {
-      Assert.assertFalse(cacheAction.isCached(file));
+      Assert.assertFalse(cacheAction.isFileCached(file));
       cacheAction.run();
-      Assert.assertTrue(cacheAction.isCached(file));
+      Assert.assertTrue(cacheAction.isFileCached(file));
       Assert.assertTrue(cacheAction.getExpectedAfterRun());
     } catch (Exception e) {
       throw new RuntimeException(e);
