@@ -48,13 +48,13 @@ public class CheckCompressAction extends HdfsAction {
     validateNonEmptyArg(FILE_PATH);
 
     // Consider directory case.
-    if (sourceFileSystem.getFileStatus(srcPath).isDirectory()) {
+    if (localFileSystem.getFileStatus(srcPath).isDirectory()) {
       appendLog("The given path is a directory, " +
           "not applicable to checking compression status.");
       return;
     }
 
-    FileState fileState = HadoopUtil.getFileState(sourceFileSystem, srcPath);
+    FileState fileState = HadoopUtil.getFileState(localFileSystem, srcPath);
     if (fileState instanceof CompressionFileState) {
       appendLog("The given file has already been compressed by SSM.");
       appendLog("The compression codec is " +

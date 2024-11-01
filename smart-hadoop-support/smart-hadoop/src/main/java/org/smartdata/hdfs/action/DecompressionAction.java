@@ -67,13 +67,13 @@ public class DecompressionAction extends HdfsAction {
   private void validate() throws Exception {
     validateNonEmptyArgs(FILE_PATH, COMPRESS_TMP);
 
-    if (!sourceFileSystem.exists(filePath)) {
+    if (!localFileSystem.exists(filePath)) {
       throw new ActionException(
           "Failed to execute Compression Action: the given file doesn't exist!");
     }
 
     // Consider directory case.
-    if (sourceFileSystem.getFileStatus(filePath).isDirectory()) {
+    if (localFileSystem.getFileStatus(filePath).isDirectory()) {
       throw new ActionException("Decompression is not applicable to a directory.");
     }
   }
@@ -81,22 +81,22 @@ public class DecompressionAction extends HdfsAction {
   protected void execute() throws Exception {
     validate();
 
-    FileState fileState = HadoopUtil.getFileState(sourceFileSystem, filePath);
+    FileState fileState = HadoopUtil.getFileState(localFileSystem, filePath);
     if (!(fileState instanceof CompressionFileState)) {
       throw new ActionException("File is not compressed: " + filePath);
     }
 
-    FileStatus compressedFileStatus = sourceFileSystem.getFileStatus(filePath);
+    FileStatus compressedFileStatus = localFileSystem.getFileStatus(filePath);
 
-    try (InputStream in = sourceFileSystem.open(filePath);
+    try (InputStream in = localFileSystem.open(filePath);
          // No need to lock the file by append operation,
          // since compressed file cannot be modified.
-         OutputStream out = sourceFileSystem.create(compressTmpPath, true)) {
+         OutputStream out = localFileSystem.create(compressTmpPath, true)) {
 
       // Keep storage policy consistent.
-      String storagePolicyName = sourceFileSystem.getStoragePolicy(filePath).getName();
+      String storagePolicyName = localFileSystem.getStoragePolicy(filePath).getName();
       if (!storagePolicyName.equals("UNDEF")) {
-        sourceFileSystem.setStoragePolicy(compressTmpPath, storagePolicyName);
+        localFileSystem.setStoragePolicy(compressTmpPath, storagePolicyName);
       }
 
       StreamCopyHandler.of(in, out)
@@ -108,11 +108,11 @@ public class DecompressionAction extends HdfsAction {
           .runCopy();
 
       // Overwrite the original file with decompressed data
-      sourceFileSystem.setOwner(compressTmpPath,
+      localFileSystem.setOwner(compressTmpPath,
           compressedFileStatus.getOwner(),
           compressedFileStatus.getGroup());
-      sourceFileSystem.setPermission(compressTmpPath, compressedFileStatus.getPermission());
-      sourceFileSystem.rename(compressTmpPath, filePath, Options.Rename.OVERWRITE);
+      localFileSystem.setPermission(compressTmpPath, compressedFileStatus.getPermission());
+      localFileSystem.rename(compressTmpPath, filePath, Options.Rename.OVERWRITE);
       appendLog("The given file is successfully decompressed by codec: " +
           ((CompressionFileState) fileState).getCompressionImpl());
     }

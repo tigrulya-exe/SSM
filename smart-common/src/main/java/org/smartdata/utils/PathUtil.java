@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
 
+import static org.smartdata.utils.ConfigUtil.toRemoteClusterConfig;
+
 public class PathUtil {
   private static final String DIR_SEP = "/";
   private static final String[] GLOBS = new String[] {
@@ -105,7 +107,7 @@ public class PathUtil {
   // todo we use default HDFS config, add mechanism to provide
   // hdfs config paths for remote clusters
   public static FileSystem getRemoteFileSystem(Path path) throws IOException {
-    return path.getFileSystem(new Configuration());
+    return path.getFileSystem(toRemoteClusterConfig(new Configuration()));
   }
 
   public static String getRawPath(Path path) {

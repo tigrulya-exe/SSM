@@ -41,7 +41,7 @@ public class RemoveErasureCodingPolicy extends HdfsAction {
 
   @Override
   public void execute() throws Exception {
-    sourceFileSystem.removeErasureCodingPolicy(policyName);
+    localFileSystem.removeErasureCodingPolicy(policyName);
     appendLog("The EC policy named is removed: " + policyName);
   }
 

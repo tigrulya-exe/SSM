@@ -35,7 +35,7 @@ public abstract class HdfsActionWithRemoteClusterSupport extends HdfsAction {
       execute(getRemoteFileSystem(targetPath));
     } else {
       preLocalExecute();
-      execute(sourceFileSystem);
+      execute(localFileSystem);
     }
 
     postExecute();

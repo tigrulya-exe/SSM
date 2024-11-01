@@ -57,7 +57,7 @@ public class CacheFileAction extends HdfsAction {
 
     // set cache replication as the replication number of the file if not set
     if (replication == 0) {
-      FileStatus fileStatus = sourceFileSystem.getFileStatus(filePath);
+      FileStatus fileStatus = localFileSystem.getFileStatus(filePath);
       replication = fileStatus.isDirectory() ? 1 : fileStatus.getReplication();
     }
     executeCacheAction();
@@ -77,7 +77,7 @@ public class CacheFileAction extends HdfsAction {
     CacheDirectiveInfo filter = new CacheDirectiveInfo.Builder()
         .setPath(filePath)
         .build();
-    return sourceFileSystem.listCacheDirectives(filter).hasNext();
+    return localFileSystem.listCacheDirectives(filter).hasNext();
   }
 
   private void addDirective() throws Exception {
@@ -87,6 +87,6 @@ public class CacheFileAction extends HdfsAction {
         .setReplication(replication)
         .build();
 
-    sourceFileSystem.addCacheDirective(filter);
+    localFileSystem.addCacheDirective(filter);
   }
 }

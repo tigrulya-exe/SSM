@@ -19,10 +19,8 @@ package org.smartdata.hdfs.action;
 
 import com.google.gson.Gson;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
-import org.smartdata.action.Utils;
 import org.smartdata.hdfs.action.move.AbstractMoveFileAction;
 import org.smartdata.hdfs.action.move.MoverExecutor;
 import org.smartdata.hdfs.action.move.MoverStatus;
@@ -30,13 +28,16 @@ import org.smartdata.model.action.FileMovePlan;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * An action to set and enforce storage policy for a file.
  */
 public class MoveFileAction extends AbstractMoveFileAction {
-  private Path fileName;
-  private MoverStatus status;
+  private static final Gson MOVER_PLAN_DESERIALIZER = new Gson();
+
+  private final MoverStatus status;
+  private Path filePath;
   @Getter
   private String storagePolicy;
   private FileMovePlan movePlan;
@@ -48,53 +49,41 @@ public class MoveFileAction extends AbstractMoveFileAction {
   @Override
   public void init(Map<String, String> args) {
     super.init(args);
-    this.fileName = getPathArg(FILE_PATH);
+    this.filePath = getPathArg(FILE_PATH);
     this.storagePolicy = args.get(STORAGE_POLICY);
 
-    if (args.containsKey(MOVE_PLAN)) {
-      String plan = args.get(MOVE_PLAN);
-      if (plan != null) {
-        Gson gson = new Gson();
-        movePlan = gson.fromJson(plan, FileMovePlan.class);
-        status.setTotalBlocks(movePlan.getBlockIds().size());
-      }
-    }
+    Optional.ofNullable(args.get(MOVE_PLAN))
+        .map(plan -> MOVER_PLAN_DESERIALIZER.fromJson(plan, FileMovePlan.class))
+        .ifPresent(movePlan -> {
+          this.movePlan = movePlan;
+          status.setTotalBlocks(movePlan.getBlockIds().size());
+        });
   }
 
   @Override
   protected void execute() throws Exception {
-    if (StringUtils.isBlank(fileName)) {
-      throw new IllegalArgumentException("File parameter is missing!");
-    }
-
-    if (movePlan == null) {
-      throw new IllegalArgumentException("File move plan not specified.");
-    }
+    validateNonEmptyArgs(FILE_PATH, MOVE_PLAN);
 
     if (movePlan.isDir()) {
-      dfsClient.setStoragePolicy(fileName, storagePolicy);
+      localFileSystem.setStoragePolicy(filePath, storagePolicy);
       appendLog("Directory moved successfully.");
       return;
     }
 
     int totalReplicas = movePlan.getBlockIds().size();
-    this.appendLog(
-        String.format(
-            "Action starts at %s : %s -> %s with %d replicas to move in total.",
-            Utils.getFormatedCurrentTime(), fileName, storagePolicy, totalReplicas));
 
     int numFailed = move();
-    if (numFailed == 0) {
-      appendLog("All scheduled " + totalReplicas + " replicas moved successfully.");
-      if (movePlan.isBeingWritten() || recheckModification()) {
-        appendResult("UpdateStoragePolicy=false");
-        appendLog("NOTE: File may be changed during executing this action. "
-            + "Will move the corresponding blocks later.");
-      }
-    } else {
+    if (numFailed != 0) {
       String res = numFailed + " of " + totalReplicas + " replicas movement failed.";
       appendLog(res);
       throw new IOException(res);
+    }
+
+    appendLog("All scheduled " + totalReplicas + " replicas moved successfully.");
+    if (movePlan.isBeingWritten() || recheckModification()) {
+      appendResult("UpdateStoragePolicy=false");
+      appendLog("NOTE: File may be changed during executing this action. "
+          + "Will move the corresponding blocks later.");
     }
   }
 
@@ -108,19 +97,15 @@ public class MoveFileAction extends AbstractMoveFileAction {
 
   private boolean recheckModification() {
     try {
-      HdfsFileStatus fileStatus = dfsClient.getFileInfo(fileName);
+      HdfsFileStatus fileStatus = (HdfsFileStatus) localFileSystem.getFileStatus(filePath);
       if (fileStatus == null) {
         return true;
       }
 
-      boolean closed = dfsClient.isFileClosed(fileName);
-      if (!closed
+      return !localFileSystem.isFileClosed(filePath)
           || (movePlan.getFileId() != 0 && fileStatus.getFileId() != movePlan.getFileId())
           || fileStatus.getLen() != movePlan.getFileLength()
-          || fileStatus.getModificationTime() != movePlan.getModificationTime()) {
-        return true;
-      }
-      return false;
+          || fileStatus.getModificationTime() != movePlan.getModificationTime();
     } catch (Exception e) {
       return true; // check again for this case
     }

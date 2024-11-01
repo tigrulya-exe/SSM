@@ -43,8 +43,9 @@ import java.util.Map;
 @ActionSignature(
     actionId = "ec",
     displayName = "ec",
-    usage = HdfsAction.FILE_PATH + " $src " + ErasureCodingAction.EC_POLICY_NAME + " $policy" +
-        ErasureCodingBase.BUF_SIZE + " $bufSize"
+    usage = HdfsAction.FILE_PATH + " $src "
+        + ErasureCodingAction.EC_POLICY_NAME + " $policy"
+        + ErasureCodingBase.BUF_SIZE + " $bufSize"
 )
 public class ErasureCodingAction extends ErasureCodingBase {
   private static final Logger LOG =

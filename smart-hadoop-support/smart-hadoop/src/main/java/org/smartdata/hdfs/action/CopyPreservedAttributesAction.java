@@ -20,6 +20,7 @@ package org.smartdata.hdfs.action;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.smartdata.model.FileInfoDiff;
 
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.smartdata.utils.PathUtil.getRawPath;
 import static org.smartdata.utils.PathUtil.getRemoteFileSystem;
 import static org.smartdata.utils.PathUtil.isAbsoluteRemotePath;
 
@@ -64,8 +66,7 @@ public abstract class CopyPreservedAttributesAction extends HdfsAction {
     if (StringUtils.isNotBlank(args.get(PRESERVE))) {
       rawPreserveAttributes = Arrays.asList(args.get(PRESERVE).split(","));
     }
-    updateMetadataSupport = new UpdateFileMetadataSupport(
-        getContext().getConf(), getLogPrintStream());
+    updateMetadataSupport = new UpdateFileMetadataSupport(getLogPrintStream());
   }
 
   protected Set<PreserveAttribute> parsePreserveAttributes() {
@@ -79,33 +80,27 @@ public abstract class CopyPreservedAttributesAction extends HdfsAction {
         : attributesFromOptions;
   }
 
-  protected void copyFileAttributes(String srcPath, String destPath,
+  protected void copyFileAttributes(
+      FileStatus srcFileStatus,
+      Path destPath,
+      FileSystem destFileSystem,
       Set<PreserveAttribute> preserveAttributes) throws IOException {
     if (preserveAttributes.isEmpty()) {
       return;
     }
 
     appendLog(
-        String.format("Copy attributes from %s to %s", srcPath, destPath));
+        String.format("Copy attributes from %s to %s", srcFileStatus.getPath(), destPath));
 
-    FileStatus srcFileStatus = getFileStatus(srcPath);
-    FileInfoDiff fileInfoDiff = new FileInfoDiff().setPath(destPath);
+    FileInfoDiff fileInfoDiff = new FileInfoDiff().setPath(getRawPath(destPath));
 
     supportedAttributes
         .stream()
         .filter(preserveAttributes::contains)
         .forEach(attribute -> attribute.applyToDiff(fileInfoDiff, srcFileStatus));
 
-    updateMetadataSupport.changeFileMetadata(fileInfoDiff);
+    updateMetadataSupport.changeFileMetadata(destFileSystem, fileInfoDiff);
     appendLog("Successfully transferred file attributes: " + preserveAttributes);
-  }
-
-  protected FileStatus getFileStatus(String fileName) throws IOException {
-    if (isAbsoluteRemotePath(fileName)) {
-      Path filePath = new Path(fileName);
-      return getRemoteFileSystem(filePath).getFileStatus(filePath);
-    }
-    return (FileStatus) dfsClient.getFileInfo(fileName);
   }
 
   public enum PreserveAttribute {
