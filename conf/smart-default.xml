@@ -676,4 +676,52 @@
       Whether to enable unsuccessful REST server auth attempts.
     </description>
   </property>
+
+  <property>
+    <name>smart.copy.scheduler.check.interval.ms</name>
+    <value>500</value>
+    <description>
+      Time interval in milliseconds to check metastore for unhandled pending file diffs.
+    </description>
+  </property>
+
+  <property>
+    <name>smart.copy.scheduler.check.interval.ms</name>
+    <value>500</value>
+    <description>
+      Time interval in milliseconds to check metastore for unhandled pending file diffs.
+    </description>
+  </property>
+
+  <property>
+    <name>smart.copy.scheduler.diff.chain.append.merge.threshold.size</name>
+    <value>402653184</value>
+    <description>
+      The threshold size in bytes for merging multiple appends to the same file into one.
+    </description>
+  </property>
+
+  <property>
+    <name>smart.copy.scheduler.diff.chain.append.merge.threshold.count</name>
+    <value>10</value>
+    <description>
+      The threshold number of append diffs to the same file for merging them into one.
+    </description>
+  </property>
+
+  <property>
+    <name>smart.copy.scheduler.retry.count</name>
+    <value>3</value>
+    <description>
+      The maximum number of retries for sync actions.
+    </description>
+  </property>
+
+  <property>
+    <name>smart.copy.scheduler.diff.cache.sync.threshold</name>
+    <value>500</value>
+    <description>
+      The threshold number of file diff cache elements for starting cache invalidation.
+    </description>
+  </property>
 </configuration>
