@@ -47,6 +47,13 @@ const RuleCreateDialog: React.FC = () => {
     dispatch(createRuleWithUpdate(ruleText));
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.shiftKey && e.key === 'Enter') {
+      e.preventDefault();
+      handleCreate();
+    }
+  };
+
   return (
     <FooterDialog
       isOpen={isOpen}
@@ -55,7 +62,12 @@ const RuleCreateDialog: React.FC = () => {
       actionButtonLabel="Create"
       onAction={handleCreate}
     >
-      <MultilineInput value={ruleText} onChange={handleChange} disabled={isActionInProgress} />
+      <MultilineInput
+        onKeyDown={handleKeyDown}
+        value={ruleText}
+        onChange={handleChange}
+        disabled={isActionInProgress}
+      />
       {isActionInProgress && <SpinnerPanel />}
     </FooterDialog>
   );
