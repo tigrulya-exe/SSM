@@ -17,22 +17,17 @@
  */
 package org.smartdata.hdfs.action;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.fs.Path;
 import org.smartdata.action.annotation.ActionSignature;
 
-import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.Map;
 import java.util.Optional;
-
-import static org.smartdata.utils.PathUtil.getRemoteFileSystem;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * An action to merge a list of file,
@@ -44,83 +39,43 @@ import static org.smartdata.utils.PathUtil.getRemoteFileSystem;
     displayName = "concat",
     usage = HdfsAction.FILE_PATH + " $src " + ConcatFileAction.DEST_PATH + " $dest"
 )
-public class ConcatFileAction extends HdfsActionWithRemoteClusterSupport {
+public class ConcatFileAction extends HdfsAction {
   public static final String DEST_PATH = "-dest";
 
-  private Deque<String> srcFiles;
-  private String targetFile;
+  private Deque<Path> srcPaths;
+  private Path targetPath;
 
   @Override
   public void init(Map<String, String> args) {
     super.init(args);
-    this.srcFiles = Optional.ofNullable(args.get(FILE_PATH))
+    this.srcPaths = Optional.ofNullable(args.get(FILE_PATH))
         .map(paths -> paths.split(","))
-        .map(Arrays::asList)
-        .map(ArrayDeque::new)
-        .orElseGet(ArrayDeque::new);
-    this.targetFile = args.get(DEST_PATH);
+        .map(Arrays::stream)
+        .orElseGet(Stream::empty)
+        .map(Path::new)
+        .collect(Collectors.toCollection(ArrayDeque::new));
+    this.targetPath = getPathArg(DEST_PATH);
   }
 
   @Override
-  protected void preRun() {
-    if (CollectionUtils.isEmpty(srcFiles)) {
-      throw new IllegalArgumentException("Dest File parameter is missing.");
+  protected void execute() throws Exception {
+    validateNonEmptyArgs(FILE_PATH, DEST_PATH);
+    if (srcPaths.isEmpty()) {
+      throw new IllegalArgumentException("Source files not provided");
     }
-    if (srcFiles.size() == 1) {
+    if (srcPaths.size() == 1) {
       throw new IllegalArgumentException("Don't accept only one source file");
     }
-    if (StringUtils.isBlank(targetFile)) {
-      throw new IllegalArgumentException("File parameter is missing.");
-    }
-  }
 
-  @Override
-  protected String getPath() {
-    return targetFile;
-  }
-
-  @Override
-  protected void onLocalPath() throws Exception {
-    for (String sourceFile : srcFiles) {
-      if (dfsClient.getFileInfo(sourceFile).isDir()) {
-        throw new IllegalArgumentException("File parameter is not file: " + sourceFile);
-      }
-    }
-
-    String firstFile = srcFiles.removeFirst();
-    String[] restFile = new String[srcFiles.size()];
-
-    dfsClient.concat(firstFile, restFile);
-    if (dfsClient.exists(targetFile)) {
-      dfsClient.delete(targetFile, true);
-    }
-    dfsClient.rename(firstFile, targetFile, Options.Rename.NONE);
-  }
-
-  @Override
-  protected void onRemotePath() throws Exception {
-    Path targetPath = new Path(targetFile);
-    FileSystem targetFs = getRemoteFileSystem(targetPath);
-
-    for (String sourceFile : srcFiles) {
-      if (!targetFs.getFileStatus(new Path(sourceFile))) {
+    for (Path sourcePath : srcPaths) {
+      if (localFileSystem.getFileStatus(sourcePath).isDirectory()) {
         throw new IllegalArgumentException("File parameter is not file");
       }
     }
 
-    Path firstFile = new Path(srcFiles.pollFirst());
-    Path[] restFile = new Path[srcFiles.size()];
-
-    int index = -1;
-    for (String transFile : srcFiles) {
-      index++;
-      restFile[index] = new Path(transFile);
-    }
-
-    targetFs.concat(firstFile, restFile);
-    if (targetFs.exists(new Path(targetFile))) {
-      targetFs.delete(new Path(targetFile), true);
-    }
-    targetFs.rename(firstFile, new Path(targetFile));
+    Path firstPath = srcPaths.removeFirst();
+    Path[] restPaths = srcPaths.toArray(new Path[0]);
+    localFileSystem.concat(firstPath, restPaths);
+    localFileSystem.rename(firstPath, targetPath, Options.Rename.OVERWRITE);
   }
 }

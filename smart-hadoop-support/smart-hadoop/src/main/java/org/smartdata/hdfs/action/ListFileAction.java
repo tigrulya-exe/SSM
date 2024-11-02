@@ -75,10 +75,6 @@ public class ListFileAction extends HdfsActionWithRemoteClusterSupport {
   @Override
   protected void execute(FileSystem fs) throws IOException {
     FileStatus rootStatus = fs.getFileStatus(srcPath);
-    if (rootStatus == null) {
-      appendResult("File not found!");
-      return;
-    }
 
     if (!rootStatus.isDirectory()) {
       appendResult(formatFileStatus(rootStatus));

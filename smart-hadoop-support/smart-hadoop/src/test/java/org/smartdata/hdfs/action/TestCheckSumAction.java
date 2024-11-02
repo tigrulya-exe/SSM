@@ -46,7 +46,7 @@ public class TestCheckSumAction extends MiniClusterHarness {
   @Before
   public void setUp() {
     action = new CheckSumAction();
-    action.setDfsClient(dfsClient);
+    action.setLocalFileSystem(dfs);
     action.setContext(smartContext);
   }
 

@@ -46,14 +46,14 @@ public class TestUncacheFileAction extends MiniClusterHarness {
     CacheScheduler.createCachePool(dfsClient);
 
     CacheFileAction cacheFileAction = new CacheFileAction();
-    cacheFileAction.setDfsClient(dfsClient);
+    cacheFileAction.setLocalFileSystem(dfs);
     cacheFileAction.setContext(smartContext);
     Map<String, String> argsCache = new HashMap();
     argsCache.put(CacheFileAction.FILE_PATH, file);
     cacheFileAction.init(argsCache);
 
     UncacheFileAction uncacheFileAction = new UncacheFileAction();
-    uncacheFileAction.setDfsClient(dfsClient);
+    uncacheFileAction.setLocalFileSystem(dfs);
     uncacheFileAction.setContext(smartContext);
 
     Map<String, String> argsUncache = new HashMap();
@@ -84,7 +84,7 @@ public class TestUncacheFileAction extends MiniClusterHarness {
     CacheScheduler.createCachePool(dfsClient);
 
     UncacheFileAction uncacheFileAction = new UncacheFileAction();
-    uncacheFileAction.setDfsClient(dfsClient);
+    uncacheFileAction.setLocalFileSystem(dfs);
     uncacheFileAction.setContext(smartContext);
 
     Map<String, String> argsUncache = new HashMap();
@@ -94,7 +94,7 @@ public class TestUncacheFileAction extends MiniClusterHarness {
     uncacheFileAction.run();
     Assert.assertTrue(uncacheFileAction.getExpectedAfterRun());
     CacheFileAction cacheFileAction = new CacheFileAction();
-    cacheFileAction.setDfsClient(dfsClient);
+    cacheFileAction.setLocalFileSystem(dfs);
     cacheFileAction.setContext(smartContext);
     Assert.assertFalse(cacheFileAction.isFileCached(file));
   }

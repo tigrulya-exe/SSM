@@ -130,7 +130,7 @@ public class TestCachedListFetcher extends TestDaoBase {
 
       fileInfos.add(createFileStatus(pathPrefix + fids[i]));
       cacheAction.setContext(smartContext);
-      cacheAction.setDfsClient(dfsClient);
+      cacheAction.setLocalFileSystem(dfs);
       Map<String, String> args = new HashMap();
       args.put(CacheFileAction.FILE_PATH, path);
       cacheAction.init(args);
@@ -151,7 +151,7 @@ public class TestCachedListFetcher extends TestDaoBase {
       String path = pathPrefix + fids[i];
       fileInfos.add(createFileStatus("fileTest/cache/" + fids[i]));
       uncacheFileAction.setContext(smartContext);
-      uncacheFileAction.setDfsClient(dfsClient);
+      uncacheFileAction.setLocalFileSystem(dfs);
       Map<String, String> args = new HashMap();
       args.put(UncacheFileAction.FILE_PATH, path);
       uncacheFileAction.init(args);

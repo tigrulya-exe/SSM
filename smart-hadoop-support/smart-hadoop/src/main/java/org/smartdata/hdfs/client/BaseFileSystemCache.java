@@ -25,6 +25,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.smartdata.hdfs.HadoopUtil;
 
 import java.io.IOException;
@@ -37,12 +38,12 @@ import java.util.concurrent.ScheduledExecutorService;
 
 
 @Slf4j
-public abstract class BaseDfsClientCache<T extends DFSClient> implements DfsClientCache<T> {
+public abstract class BaseFileSystemCache<T extends DistributedFileSystem> implements FileSystemCache<T> {
 
   private final Cache<CacheKey, T> clientCache;
   private final ScheduledExecutorService evictionHandlerExecutor;
 
-  public BaseDfsClientCache(Duration keyTtl) {
+  public BaseFileSystemCache(Duration keyTtl) {
     this.evictionHandlerExecutor = Executors.newSingleThreadScheduledExecutor();
     this.clientCache = Caffeine.newBuilder()
         .expireAfterAccess(keyTtl)

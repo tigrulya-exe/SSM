@@ -47,7 +47,7 @@ public class DisableErasureCodingPolicy extends HdfsAction {
   }
 
   @Override
-  public DfsClientType dfsClientType() {
-    return DfsClientType.DEFAULT_HDFS;
+  public FsType localFsType() {
+    return FsType.DEFAULT_HDFS;
   }
 }

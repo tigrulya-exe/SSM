@@ -29,7 +29,7 @@ public abstract class HdfsActionWithRemoteClusterSupport extends HdfsAction {
   protected void execute() throws Exception {
     preExecute();
 
-    Path targetPath = new Path(getTargetFile());
+    Path targetPath = getTargetFile();
     if (isRemoteMode()) {
       preRemoteExecute();
       execute(getRemoteFileSystem(targetPath));
@@ -57,8 +57,8 @@ public abstract class HdfsActionWithRemoteClusterSupport extends HdfsAction {
 
   }
 
-  protected String getTargetFile() {
-    return getArguments().get(FILE_PATH);
+  protected Path getTargetFile() {
+    return getPathArg(FILE_PATH);
   }
 
   protected boolean isRemoteMode() {

@@ -17,21 +17,24 @@
  */
 package org.smartdata.hdfs.action;
 
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.smartdata.action.SmartAction;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.model.CmdletDescriptor;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.function.Function;
 
 import static org.smartdata.utils.PathUtil.getRemoteFileSystem;
 import static org.smartdata.utils.PathUtil.isAbsoluteRemotePath;
@@ -40,22 +43,19 @@ import static org.smartdata.utils.PathUtil.isAbsoluteRemotePath;
 /**
  * Base class for all HDFS actions.
  */
+@Setter
 public abstract class HdfsAction extends SmartAction {
   public static final String FILE_PATH = CmdletDescriptor.HDFS_FILE_PATH;
 
-  protected DistributedFileSystem localFileSystem = null;
+  protected DistributedFileSystem localFileSystem;
 
-  public enum DfsClientType {
+  public enum FsType {
     SMART,
     DEFAULT_HDFS
   }
 
-  public DfsClientType dfsClientType() {
-    return DfsClientType.SMART;
-  }
-
-  public void setDfsClient(DFSClient dfsClient) {
-    this.dfsClient = dfsClient;
+  public FsType localFsType() {
+    return FsType.SMART;
   }
 
   @Override
@@ -105,9 +105,19 @@ public abstract class HdfsAction extends SmartAction {
         : localFileSystem;
   }
 
-  protected <T> T typedArgOrNull(String key, Function<String, T> mapper) {
-    return Optional.ofNullable(getArguments().get(key))
-        .map(mapper)
-        .orElse(null);
+  protected boolean isArgPresent(String key) {
+    return StringUtils.isNotBlank(getArguments().get(key));
+  }
+
+  protected Optional<FileStatus> getFileStatus(FileSystem fileSystem, Path path) throws IOException {
+    try {
+      return Optional.of(fileSystem.getFileStatus(path));
+    } catch (FileNotFoundException e) {
+      return Optional.empty();
+    }
+  }
+
+  protected Optional<HdfsFileStatus> getHdfsFileStatus(FileSystem fileSystem, Path path) throws IOException {
+    return getFileStatus(fileSystem, path).map(HdfsFileStatus.class::cast);
   }
 }

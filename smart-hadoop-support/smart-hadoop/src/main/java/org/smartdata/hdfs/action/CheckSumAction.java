@@ -61,10 +61,6 @@ public class CheckSumAction extends HdfsActionWithRemoteClusterSupport {
     Path filePath = new Path(fileRawPath);
     FileStatus fileStatus = fileSystem.getFileStatus(filePath);
 
-    if (fileStatus == null) {
-      throw new ActionException("Provided file doesn't exist: " + fileRawPath);
-    }
-
     if (fileStatus.isDirectory()) {
       appendResult("This is a directory which has no checksum result!");
       return;

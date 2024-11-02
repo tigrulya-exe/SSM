@@ -54,7 +54,6 @@ import static org.smartdata.hdfs.action.CopyPreservedAttributesAction.PreserveAt
         + CopyFileAction.PRESERVE + " $attributes"
 )
 public class CopyFileAction extends CopyPreservedAttributesAction {
-
   public static final String BUF_SIZE = "-bufSize";
   public static final String DEST_PATH = "-dest";
   public static final String OFFSET_INDEX = "-offset";
@@ -146,7 +145,7 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
         String.format("Copy with offset %s and length %s", offset, length));
 
     try (InputStream in = srcFileSystem.open(srcPath);
-         OutputStream out = getDestOutPutStream(destFileSystem, offset)) {
+         OutputStream out = getOutputStream(destFileSystem, offset)) {
       StreamCopyHandler.of(in, out)
           .offset(offset)
           .count(length)
@@ -157,21 +156,11 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
     }
   }
 
-  private OutputStream getDestOutPutStream(FileSystem fileSystem, long offset) throws IOException {
-    if (dest.startsWith("s3")) {
-      // Copy to s3
-      FileSystem fs = FileSystem.get(destPath.toUri(), getContext().getConf());
-      return fs.create(destPath, true);
-    }
-
-    return getOutputStream(fileSystem, offset);
-  }
-
+  // TODO add action option to fully re-copy the file in case if fs
+  // doesn't support appends
   private OutputStream getOutputStream(
       FileSystem fileSystem, long offset) throws IOException {
-
-    Optional<FileStatus> destFileStatus = Optional.ofNullable(
-            fileSystem.getFileStatus(destPath))
+    Optional<FileStatus> destFileStatus = getFileStatus(fileSystem, destPath)
         .map(this::validateDestFile);
 
     if (!destFileStatus.isPresent() || offset == 0) {

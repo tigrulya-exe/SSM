@@ -97,15 +97,15 @@ public class MoveFileAction extends AbstractMoveFileAction {
 
   private boolean recheckModification() {
     try {
-      HdfsFileStatus fileStatus = (HdfsFileStatus) localFileSystem.getFileStatus(filePath);
-      if (fileStatus == null) {
+      Optional<HdfsFileStatus> fileStatus = getHdfsFileStatus(localFileSystem, filePath);
+      if (!fileStatus.isPresent()) {
         return true;
       }
 
       return !localFileSystem.isFileClosed(filePath)
-          || (movePlan.getFileId() != 0 && fileStatus.getFileId() != movePlan.getFileId())
-          || fileStatus.getLen() != movePlan.getFileLength()
-          || fileStatus.getModificationTime() != movePlan.getModificationTime();
+          || (movePlan.getFileId() != 0 && fileStatus.get().getFileId() != movePlan.getFileId())
+          || fileStatus.get().getLen() != movePlan.getFileLength()
+          || fileStatus.get().getModificationTime() != movePlan.getModificationTime();
     } catch (Exception e) {
       return true; // check again for this case
     }
@@ -117,7 +117,7 @@ public class MoveFileAction extends AbstractMoveFileAction {
   }
 
   @Override
-  public DfsClientType dfsClientType() {
-    return DfsClientType.DEFAULT_HDFS;
+  public FsType localFsType() {
+    return FsType.DEFAULT_HDFS;
   }
 }

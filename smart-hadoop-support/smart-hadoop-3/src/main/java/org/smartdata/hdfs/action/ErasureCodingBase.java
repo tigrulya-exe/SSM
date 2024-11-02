@@ -17,6 +17,7 @@
  */
 package org.smartdata.hdfs.action;
 
+import lombok.Getter;
 import lombok.Setter;
 import org.apache.hadoop.fs.CreateFlag;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -27,7 +28,6 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSOutputStream;
 import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.apache.hadoop.hdfs.protocol.SystemErasureCodingPolicies;
-import org.smartdata.action.ActionException;
 import org.smartdata.hdfs.StreamCopyHandler;
 
 import java.io.IOException;
@@ -46,33 +46,34 @@ abstract public class ErasureCodingBase extends HdfsAction {
   public static final String REPLICATION_POLICY_NAME =
       SystemErasureCodingPolicies.getReplicationPolicy().getName();
 
+  protected final static String MATCH_RESULT =
+      "The current EC policy is already matched with the target one.";
+  protected final static String DIR_RESULT =
+      "The EC policy is set successfully for the given directory.";
+  protected final static String CONVERT_RESULT =
+      "The file is converted successfully with the given or default EC policy.";
+
+  public static final int DEFAULT_BUF_SIZE = 1024 * 1024;
+
   protected Path srcPath;
   protected Path ecTmpPath;
 
-  protected int bufferSize = 1024 * 1024;
   @Setter
+  @Getter
   protected float progress;
+  protected int bufferSize;
   protected String ecPolicyName;
 
   protected void convert(HdfsFileStatus srcFileStatus) throws Exception {
-    FSDataInputStream in = null;
-    DFSOutputStream out = null;
 
-    long blockSize = getConf().getLong(
-        DFSConfigKeys.DFS_BLOCK_SIZE_KEY,
-        DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT);
-    short replication = (short) getConf().getInt(
-        DFSConfigKeys.DFS_REPLICATION_KEY,
-        DFSConfigKeys.DFS_REPLICATION_DEFAULT);
-    try {
+    long blockSize = localFileSystem.getDefaultBlockSize();
+    short replication = localFileSystem.getDefaultReplication();
+    FsPermission permission = srcFileStatus.getPermission();
 
-      in = localFileSystem.open(srcPath, bufferSize);
-
-      // use the same FsPermission as srcPath
-      FsPermission permission = srcFileStatus.getPermission();
-      out = getLocalDfsClient().create(
-          getRawPath(ecTmpPath), permission, EnumSet.of(CreateFlag.CREATE), true,
-          replication, blockSize, null, bufferSize, null, null, ecPolicyName);
+    try (FSDataInputStream in = localFileSystem.open(srcPath, bufferSize);
+         DFSOutputStream out = getLocalDfsClient().create(
+             getRawPath(ecTmpPath), permission, EnumSet.of(CreateFlag.CREATE), true,
+             replication, blockSize, null, bufferSize, null, null, ecPolicyName)) {
 
       // Keep storage policy according to original file except UNDEF storage policy
       String storagePolicyName = localFileSystem.getStoragePolicy(srcPath).getName();

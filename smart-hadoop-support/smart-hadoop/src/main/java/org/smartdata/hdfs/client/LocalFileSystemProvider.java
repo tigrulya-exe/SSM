@@ -18,12 +18,13 @@
 package org.smartdata.hdfs.client;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.smartdata.hdfs.action.HdfsAction;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 
-public interface DfsClientCache<T extends DFSClient> extends Closeable {
-  T get(Configuration config, InetSocketAddress ssmMasterAddress) throws IOException;
+public interface LocalFileSystemProvider extends Closeable {
+  DistributedFileSystem provide(
+      Configuration config, HdfsAction.FsType fsType) throws IOException;
 }

@@ -24,7 +24,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.smartdata.model.FileInfoDiff;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -33,8 +32,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.smartdata.utils.PathUtil.getRawPath;
-import static org.smartdata.utils.PathUtil.getRemoteFileSystem;
-import static org.smartdata.utils.PathUtil.isAbsoluteRemotePath;
 
 
 /**
@@ -84,7 +81,7 @@ public abstract class CopyPreservedAttributesAction extends HdfsAction {
       FileStatus srcFileStatus,
       Path destPath,
       FileSystem destFileSystem,
-      Set<PreserveAttribute> preserveAttributes) throws IOException {
+      Set<PreserveAttribute> preserveAttributes) {
     if (preserveAttributes.isEmpty()) {
       return;
     }
@@ -99,7 +96,7 @@ public abstract class CopyPreservedAttributesAction extends HdfsAction {
         .filter(preserveAttributes::contains)
         .forEach(attribute -> attribute.applyToDiff(fileInfoDiff, srcFileStatus));
 
-    updateMetadataSupport.changeFileMetadata(destFileSystem, fileInfoDiff);
+    updateMetadataSupport.changeFileMetadata(destFileSystem, fileInfoDiff, srcFileStatus);
     appendLog("Successfully transferred file attributes: " + preserveAttributes);
   }
 

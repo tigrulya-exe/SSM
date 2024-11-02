@@ -19,7 +19,6 @@ package org.smartdata.hdfs.action;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.smartdata.model.FileInfoDiff;
 
@@ -35,10 +34,7 @@ public class UpdateFileMetadataSupport {
   }
 
   public void changeFileMetadata(FileSystem destFileSystem,
-      FileInfoDiff fileInfoDiff) throws IOException {
-    Path srcPath = new Path(fileInfoDiff.getPath());
-    FileStatus srcFileStatus = destFileSystem.getFileStatus(srcPath);
-
+      FileInfoDiff fileInfoDiff, FileStatus srcFileStatus) {
     maybeChangeOwnerAndGroup(destFileSystem, fileInfoDiff, srcFileStatus);
     maybeChangeBlockReplication(destFileSystem, fileInfoDiff, srcFileStatus);
     maybeChangePermissions(destFileSystem, fileInfoDiff, srcFileStatus);

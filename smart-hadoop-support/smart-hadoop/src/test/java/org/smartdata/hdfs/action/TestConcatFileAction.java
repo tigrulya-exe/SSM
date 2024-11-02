@@ -56,7 +56,7 @@ public class TestConcatFileAction extends MiniClusterHarness {
     out1.close();
 
     ConcatFileAction concatFileAction = new ConcatFileAction();
-    concatFileAction.setDfsClient(dfsClient);
+    concatFileAction.setLocalFileSystem(dfs);
     concatFileAction.setContext(smartContext);
     Map<String, String> args = new HashMap<>();
     args.put(CopyFileAction.FILE_PATH, dfs.getUri() + srcPath + "/" +
@@ -100,7 +100,7 @@ public class TestConcatFileAction extends MiniClusterHarness {
     out1.close();
 
     ConcatFileAction concatFileAction = new ConcatFileAction();
-    concatFileAction.setDfsClient(dfsClient);
+    concatFileAction.setLocalFileSystem(dfs);
     concatFileAction.setContext(smartContext);
     Map<String, String> args = new HashMap<>();
     args.put(CopyFileAction.FILE_PATH, srcPath + "/" +

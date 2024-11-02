@@ -41,7 +41,7 @@ public class TestCompressionAction extends MiniClusterHarness {
 
   protected void compression(String filePath, String bufferSize) throws IOException {
     CompressionAction compressionAction = new CompressionAction();
-    compressionAction.setDfsClient(dfsClient);
+    compressionAction.setLocalFileSystem(dfs);
     compressionAction.setContext(smartContext);
     Map<String, String> args = new HashMap<>();
     args.put(compressionAction.FILE_PATH, filePath);
@@ -67,7 +67,7 @@ public class TestCompressionAction extends MiniClusterHarness {
 //    args.put(CompressionAction.COMPRESS_IMPL,"Bzip2");
 //    args.put(CompressionAction.COMPRESS_IMPL,"Zlib");
     CompressionAction compressionAction = new CompressionAction();
-    compressionAction.setDfsClient(dfsClient);
+    compressionAction.setLocalFileSystem(dfs);
     compressionAction.setContext(smartContext);
     compressionAction.init(args);
   }

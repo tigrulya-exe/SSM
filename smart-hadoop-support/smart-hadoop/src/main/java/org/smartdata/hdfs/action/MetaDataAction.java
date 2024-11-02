@@ -18,6 +18,7 @@
 package org.smartdata.hdfs.action;
 
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.smartdata.action.annotation.ActionSignature;
 import org.smartdata.model.FileInfoDiff;
@@ -77,6 +78,7 @@ public class MetaDataAction extends HdfsActionWithRemoteClusterSupport {
 
   @Override
   protected void execute(FileSystem fileSystem) throws Exception {
-    delegate.changeFileMetadata(fileSystem, fileInfoDiff);
+    FileStatus fileStatus = fileSystem.getFileStatus(getPathArg(FILE_PATH));
+    delegate.changeFileMetadata(fileSystem, fileInfoDiff, fileStatus);
   }
 }

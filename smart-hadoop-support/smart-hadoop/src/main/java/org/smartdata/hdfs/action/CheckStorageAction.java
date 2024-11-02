@@ -22,7 +22,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.StorageType;
-import org.smartdata.action.ActionException;
 import org.smartdata.action.annotation.ActionSignature;
 
 import java.io.IOException;
@@ -53,9 +52,6 @@ public class CheckStorageAction extends HdfsActionWithRemoteClusterSupport {
   @Override
   protected void execute(FileSystem fileSystem) throws Exception {
     FileStatus fileStatus = fileSystem.getFileStatus(filePath);
-    if (fileStatus == null) {
-      throw new ActionException("File does not exist.");
-    }
     if (fileStatus.isDirectory()) {
       appendResult("This is a directory which has no storage result!");
       return;

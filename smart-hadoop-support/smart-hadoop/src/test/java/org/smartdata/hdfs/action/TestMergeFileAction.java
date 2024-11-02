@@ -56,7 +56,7 @@ public class TestMergeFileAction extends MiniClusterHarness {
     out1.close();
 
     MergeFileAction mergeFileAction = new MergeFileAction();
-    mergeFileAction.setDfsClient(dfsClient);
+    mergeFileAction.setLocalFileSystem(dfs);
     mergeFileAction.setContext(smartContext);
     Map<String, String> args = new HashMap<>();
     args.put(MergeFileAction.FILE_PATH, srcPath + "/" +
@@ -101,7 +101,7 @@ public class TestMergeFileAction extends MiniClusterHarness {
     out1.close();
 
     MergeFileAction mergeFileAction = new MergeFileAction();
-    mergeFileAction.setDfsClient(dfsClient);
+    mergeFileAction.setLocalFileSystem(dfs);
     mergeFileAction.setContext(smartContext);
     Map<String, String> args = new HashMap<>();
     args.put(MergeFileAction.FILE_PATH, dfs.getUri() + srcPath + "/" +

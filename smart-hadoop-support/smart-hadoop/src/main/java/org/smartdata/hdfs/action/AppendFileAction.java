@@ -60,7 +60,7 @@ public class AppendFileAction extends HdfsActionWithRemoteClusterSupport {
   }
 
   @Override
-  protected void execute() throws Exception {
+  protected void preExecute() throws Exception {
     validateNonEmptyArg(FILE_PATH);
   }
 

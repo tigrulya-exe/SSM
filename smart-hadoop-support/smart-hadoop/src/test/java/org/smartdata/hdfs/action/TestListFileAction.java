@@ -55,7 +55,7 @@ public class TestListFileAction extends MiniClusterHarness {
     Assert.assertTrue(dfsClient.exists(srcPath + dir + "/" + dirFile1));
 
     ListFileAction listFileAction = new ListFileAction();
-    listFileAction.setDfsClient(dfsClient);
+    listFileAction.setLocalFileSystem(dfs);
     listFileAction.setContext(smartContext);
     Map<String , String> args = new HashMap<>();
     args.put(ListFileAction.FILE_PATH , dfs.getUri() + srcPath);
@@ -64,7 +64,7 @@ public class TestListFileAction extends MiniClusterHarness {
     Assert.assertTrue(listFileAction.getExpectedAfterRun());
 
     listFileAction = new ListFileAction();
-    listFileAction.setDfsClient(dfsClient);
+    listFileAction.setLocalFileSystem(dfs);
     listFileAction.setContext(smartContext);
     args = new HashMap<>();
     args.put(ListFileAction.FILE_PATH , dfs.getUri() + srcPath + "/" + file1);
@@ -98,7 +98,7 @@ public class TestListFileAction extends MiniClusterHarness {
     Assert.assertTrue(dfsClient.exists(srcPath + dir + "/" + dirFile1));
 
     ListFileAction listFileAction = new ListFileAction();
-    listFileAction.setDfsClient(dfsClient);
+    listFileAction.setLocalFileSystem(dfs);
     listFileAction.setContext(smartContext);
     Map<String , String> args = new HashMap<>();
     args.put(ListFileAction.FILE_PATH , srcPath);
@@ -107,7 +107,7 @@ public class TestListFileAction extends MiniClusterHarness {
     Assert.assertTrue(listFileAction.getExpectedAfterRun());
 
     listFileAction = new ListFileAction();
-    listFileAction.setDfsClient(dfsClient);
+    listFileAction.setLocalFileSystem(dfs);
     listFileAction.setContext(smartContext);
     args = new HashMap<>();
     args.put(ListFileAction.FILE_PATH , srcPath + "/" + file1);
