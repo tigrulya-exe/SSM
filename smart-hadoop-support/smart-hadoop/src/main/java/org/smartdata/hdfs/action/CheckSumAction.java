@@ -31,6 +31,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 
+import static org.smartdata.utils.PathUtil.getRawPath;
+
 @ActionSignature(
     actionId = "checksum",
     displayName = "checksum",
@@ -98,7 +100,7 @@ public class CheckSumAction extends HdfsActionWithRemoteClusterSupport {
     byte[] bytes = byteStream.toByteArray();
     appendResult(
         String.format("%s\t%s\t%s",
-            path,
+            getRawPath(path),
             md5.getAlgorithmName(),
             byteArray2HexString(bytes)
         ));

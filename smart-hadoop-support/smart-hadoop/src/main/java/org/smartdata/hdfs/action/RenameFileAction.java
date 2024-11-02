@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.Path;
 import org.smartdata.action.ActionException;
 import org.smartdata.action.annotation.ActionSignature;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -84,7 +85,9 @@ public class RenameFileAction extends HdfsActionWithRemoteClusterSupport {
 
   @Override
   protected void execute(FileSystem fileSystem) throws Exception {
-    fileSystem.rename(srcPath, destPath);
+    if (!fileSystem.rename(srcPath, destPath)) {
+      throw new IOException("Failed to rename " + srcPath + " to " + destPath);
+    }
   }
 
   @Override

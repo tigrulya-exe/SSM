@@ -73,9 +73,11 @@ public class TestCachedListFetcher extends TestDaoBase {
     dfsClient = dfs.getClient();
     smartContext = new SmartContext(conf);
     cachedListFetcher = new CachedListFetcher(conf, dfsClient, metaStore);
+    conf.set(SmartConfKeys.SMART_DFS_NAMENODE_RPCSERVER_KEY,
+        "hdfs://" + cluster.getNameNode().getNameNodeAddressHostPortString());
   }
 
-  static void initConf(Configuration conf) {
+  private void initConf(Configuration conf) {
     conf.setLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, DEFAULT_BLOCK_SIZE);
     conf.setInt(DFSConfigKeys.DFS_BYTES_PER_CHECKSUM_KEY, DEFAULT_BLOCK_SIZE);
     conf.setLong(DFSConfigKeys.DFS_HEARTBEAT_INTERVAL_KEY, 1L);
