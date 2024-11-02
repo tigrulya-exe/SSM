@@ -55,7 +55,7 @@ public class UnErasureCodingAction extends ErasureCodingBase {
 
   @Override
   protected void execute() throws Exception {
-    validateNonEmptyArgs(FILE_PATH, EC_TMP);
+    validateNonEmptyArgs(FILE_PATH);
 
     HdfsFileStatus fileStatus = (HdfsFileStatus) localFileSystem.getFileStatus(srcPath);
     ErasureCodingPolicy srcEcPolicy = fileStatus.getErasureCodingPolicy();

@@ -62,7 +62,7 @@ public class ErasureCodingAction extends ErasureCodingBase {
 
   @Override
   protected void execute() throws Exception {
-    validateNonEmptyArgs(FILE_PATH, EC_TMP);
+    validateNonEmptyArgs(FILE_PATH);
 
     // keep attribute consistent
     HdfsFileStatus fileStatus = (HdfsFileStatus) localFileSystem.getFileStatus(srcPath);
