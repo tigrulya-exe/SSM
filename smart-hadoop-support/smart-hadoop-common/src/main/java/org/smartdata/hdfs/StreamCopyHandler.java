@@ -34,7 +34,7 @@ public class StreamCopyHandler {
   private final Consumer<Float> progressConsumer = progress -> {};
 
   public static Builder of(InputStream inputStream, OutputStream outputStream) {
-    return new Builder()
+    return builder()
         .inputStream(inputStream)
         .outputStream(outputStream);
   }

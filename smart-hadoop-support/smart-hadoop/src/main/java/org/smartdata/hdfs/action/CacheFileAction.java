@@ -63,6 +63,13 @@ public class CacheFileAction extends HdfsAction {
     executeCacheAction();
   }
 
+  boolean isFileCached() throws Exception {
+    CacheDirectiveInfo filter = new CacheDirectiveInfo.Builder()
+        .setPath(filePath)
+        .build();
+    return localFileSystem.listCacheDirectives(filter).hasNext();
+  }
+
   private void executeCacheAction() throws Exception {
     if (isFileCached()) {
       this.appendLog("The given file has already been cached, " +
@@ -71,13 +78,6 @@ public class CacheFileAction extends HdfsAction {
     }
 
     addDirective();
-  }
-
-  private boolean isFileCached() throws Exception {
-    CacheDirectiveInfo filter = new CacheDirectiveInfo.Builder()
-        .setPath(filePath)
-        .build();
-    return localFileSystem.listCacheDirectives(filter).hasNext();
   }
 
   private void addDirective() throws Exception {
