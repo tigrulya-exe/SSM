@@ -20,7 +20,8 @@ package org.smartdata.hdfs.client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.smartdata.hadoop.filesystem.SmartFileSystem;
 import org.smartdata.hdfs.HadoopUtil;
 import org.smartdata.hdfs.action.HdfsAction;
 import org.smartdata.utils.StringUtil;
@@ -32,32 +33,33 @@ import java.time.Duration;
 import static org.smartdata.conf.SmartConfKeys.SMART_ACTION_CLIENT_CACHE_TTL_DEFAULT;
 import static org.smartdata.conf.SmartConfKeys.SMART_ACTION_CLIENT_CACHE_TTL_KEY;
 import static org.smartdata.conf.SmartConfKeys.SMART_CLIENT_CONCURRENT_REPORT_ENABLED;
+import static org.smartdata.hdfs.HadoopUtil.doAsCurrentUser;
 import static org.smartdata.utils.ConfigUtil.getSsmMasterRpcAddress;
 
 @Slf4j
 @RequiredArgsConstructor
-public class CachingDfsClientProvider implements DfsClientProvider {
+public class CachingLocalFileSystemProvider implements LocalFileSystemProvider {
 
-  private final DfsClientCache<SmartDFSClient> smartClientCache;
-  private final DfsClientCache<DFSClient> hdfsClientCache;
+  private final FileSystemCache<SmartFileSystem> smartClientCache;
+  private final FileSystemCache<DistributedFileSystem> hdfsClientCache;
 
-  public CachingDfsClientProvider(Configuration config) {
+  public CachingLocalFileSystemProvider(Configuration config) {
     String cacheKeyTtl = config.get(
         SMART_ACTION_CLIENT_CACHE_TTL_KEY, SMART_ACTION_CLIENT_CACHE_TTL_DEFAULT);
     Duration cacheKeyTtlDuration = Duration.ofMillis(
         StringUtil.parseTimeString(cacheKeyTtl)
     );
 
-    this.smartClientCache = new SmartDfsClientCache(cacheKeyTtlDuration);
+    this.smartClientCache = new SmartFileSystemCache(cacheKeyTtlDuration);
     this.hdfsClientCache = new HdfsClientCache(cacheKeyTtlDuration);
   }
 
   @Override
-  public DFSClient provide(Configuration config, HdfsAction.DfsClientType clientType)
+  public DistributedFileSystem provide(Configuration config, HdfsAction.FsType fsType)
       throws IOException {
     InetSocketAddress ssmMasterAddress = getSsmMasterRpcAddress(config);
 
-    return clientType == HdfsAction.DfsClientType.SMART
+    return fsType == HdfsAction.FsType.SMART
         ? smartClientCache.get(config, ssmMasterAddress)
         // we don't rely on SSM in case of pure HDFS client
         : hdfsClientCache.get(config, null);
@@ -69,36 +71,44 @@ public class CachingDfsClientProvider implements DfsClientProvider {
     hdfsClientCache.close();
   }
 
-  private static class SmartDfsClientCache extends BaseDfsClientCache<SmartDFSClient> {
+  private static class SmartFileSystemCache extends BaseFileSystemCache<SmartFileSystem> {
 
-    private SmartDfsClientCache(Duration keyTtl) {
+    private SmartFileSystemCache(Duration keyTtl) {
       super(keyTtl);
     }
 
     @Override
-    protected SmartDFSClient createDfsClient(Configuration config, CacheKey cacheKey) {
+    protected SmartFileSystem createDfsClient(Configuration config, CacheKey cacheKey) {
       try {
         Configuration clientConfig = new Configuration(config);
         // smart server always have only 1 address set
         // in the "smart.server.rpc.address" option
         clientConfig.setBoolean(SMART_CLIENT_CONCURRENT_REPORT_ENABLED, false);
-        return new SmartDFSClient(
-            cacheKey.getNameNodeUri(), config, cacheKey.getSsmMasterAddress());
+        return doAsCurrentUser(() -> createSmartFileSystem(config, cacheKey));
       } catch (IOException exception) {
         throw new RuntimeException("Error creating smart client", exception);
       }
     }
+
+    private SmartFileSystem createSmartFileSystem(
+        Configuration config, CacheKey cacheKey) throws IOException {
+      SmartDFSClient smartDFSClient = new SmartDFSClient(
+          cacheKey.getNameNodeUri(), config, cacheKey.getSsmMasterAddress());
+      SmartFileSystem fileSystem = new SmartFileSystem(smartDFSClient);
+      fileSystem.initialize(cacheKey.getNameNodeUri(), config);
+      return fileSystem;
+    }
   }
 
-  private static class HdfsClientCache extends BaseDfsClientCache<DFSClient> {
+  private static class HdfsClientCache extends BaseFileSystemCache<DistributedFileSystem> {
     private HdfsClientCache(Duration keyTtl) {
       super(keyTtl);
     }
 
     @Override
-    protected DFSClient createDfsClient(Configuration config, CacheKey cacheKey) {
+    protected DistributedFileSystem createDfsClient(Configuration config, CacheKey cacheKey) {
       try {
-        return HadoopUtil.getDFSClient(cacheKey.getNameNodeUri(), config);
+        return HadoopUtil.getDistributedFileSystem(cacheKey.getNameNodeUri(), config);
       } catch (IOException exception) {
         throw new RuntimeException("Error creating hdfs client", exception);
       }

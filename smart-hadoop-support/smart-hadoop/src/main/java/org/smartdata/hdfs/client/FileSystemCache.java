@@ -15,18 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.hdfs.action;
+package org.smartdata.hdfs.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 
-/**
- * An action to do block level erasure code a file, for both Hadoop 2.x and Hadoop 3.x.
- */
-public class BlockErasureCodeFileAction extends HdfsAction {
-  private static final Logger LOG = LoggerFactory.getLogger(BlockErasureCodeFileAction.class);
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 
-  @Override
-  protected void execute() throws Exception {
-  }
+public interface FileSystemCache<T extends DistributedFileSystem> extends Closeable {
+  T get(Configuration config, InetSocketAddress ssmMasterAddress) throws IOException;
 }
