@@ -131,24 +131,24 @@ public class CompressionAction extends HdfsAction {
     compressionFileState = new CompressionFileState(getRawPath(filePath), bufferSize, compressCodec);
     compressionFileState.setOriginalLength(srcFileStatus.getLen());
 
-    try (
-        // SmartDFSClient will fail to open compressing file with PROCESSING FileStage
-        // set by Compression scheduler. But considering DfsClient may be used, we use
-        // append operation to lock the file to avoid any modification.
-        OutputStream lockStream = localFileSystem.append(filePath, bufferSize);
+    CompressionFileInfo compressionFileInfo;
+    if (srcFileStatus.getLen() == 0) {
+      compressionFileInfo = new CompressionFileInfo(false, compressionFileState);
+    } else {
+      try (
+          // SmartDFSClient will fail to open compressing file with PROCESSING FileStage
+          // set by Compression scheduler. But considering DfsClient may be used, we use
+          // append operation to lock the file to avoid any modification.
+          OutputStream lockStream = localFileSystem.append(filePath, bufferSize);
 
-        FSDataInputStream in = localFileSystem.open(filePath);
-        OutputStream out = localFileSystem.create(compressTmpPath,
-            true,
-            getLocalDfsClient().getConf().getIoBufferSize(),
-            srcFileStatus.getReplication(),
-            srcFileStatus.getBlockSize())
-    ) {
+          FSDataInputStream in = localFileSystem.open(filePath);
+          OutputStream out = localFileSystem.create(compressTmpPath,
+              true,
+              getLocalDfsClient().getConf().getIoBufferSize(),
+              srcFileStatus.getReplication(),
+              srcFileStatus.getBlockSize())
+      ) {
 
-      CompressionFileInfo compressionFileInfo;
-      if (srcFileStatus.getLen() == 0) {
-        compressionFileInfo = new CompressionFileInfo(false, compressionFileState);
-      } else {
         appendLog("File length: " + srcFileStatus.getLen());
         bufferSize = getActualBuffSize(srcFileStatus.getLen());
 
@@ -166,23 +166,23 @@ public class CompressionAction extends HdfsAction {
         compressionFileInfo =
             new CompressionFileInfo(true, getRawPath(compressTmpPath), compressionFileState);
       }
+    }
 
-      compressionFileState.setBufferSize(bufferSize);
-      appendLog("Compression buffer size: " + bufferSize);
-      appendLog("Compression codec: " + compressCodec);
-      String compressionInfoJson = compressionInfoSerializer.toJson(compressionFileInfo);
-      appendResult(compressionInfoJson);
-      if (compressionFileInfo.needReplace()) {
-        // Add to temp path
-        // Please make sure content write to Xattr is less than 64K
-        setXAttr(compressTmpPath, compressionFileState);
-        // Rename operation is moved from CompressionScheduler.
-        // Thus, modification for original file will be avoided.
-        localFileSystem.rename(compressTmpPath, filePath, Options.Rename.OVERWRITE);
-      } else {
-        // Add to raw path
-        setXAttr(filePath, compressionFileState);
-      }
+    compressionFileState.setBufferSize(bufferSize);
+    appendLog("Compression buffer size: " + bufferSize);
+    appendLog("Compression codec: " + compressCodec);
+    String compressionInfoJson = compressionInfoSerializer.toJson(compressionFileInfo);
+    appendResult(compressionInfoJson);
+    if (compressionFileInfo.needReplace()) {
+      // Add to temp path
+      // Please make sure content write to Xattr is less than 64K
+      setXAttr(compressTmpPath, compressionFileState);
+      // Rename operation is moved from CompressionScheduler.
+      // Thus, modification for original file will be avoided.
+      localFileSystem.rename(compressTmpPath, filePath, Options.Rename.OVERWRITE);
+    } else {
+      // Add to raw path
+      setXAttr(filePath, compressionFileState);
     }
   }
 
