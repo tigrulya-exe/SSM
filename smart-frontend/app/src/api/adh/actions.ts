@@ -45,6 +45,12 @@ export class AdhActionsApi {
     return response.data;
   }
 
+  public static async getAction(actionId: string): Promise<AdhAction> {
+    const response = await httpClient.get<AdhAction>(`/api/v2/actions/${actionId}`);
+
+    return response.data;
+  }
+
   public static async createAction(text: string) {
     const response = await httpClient.post('/api/v2/actions', {
       action: text,

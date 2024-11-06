@@ -25,6 +25,7 @@ import ActionActionsCell from './ActionActionsCell/ActionActionsCell';
 import ActionStatusCell from './ActionStatusCell/ActionStatusCell';
 import ActionSourceCell from './ActionSourceCell/ActionSourceCell';
 import ActionsHostsFilter from '@pages/ActionsPage/ActionsTable/ActionsHostsFilter/ActionsHostsFilter';
+import ActionActionTextCell from '@pages/ActionsPage/ActionsTable/ActionActionTextCell/ActionActionTextCell';
 
 const actionStatesOptions = getOptionsFromEnum(AdhActionState);
 const actionSourcesOptions = [
@@ -52,7 +53,7 @@ export const actionsColumns: TableColumnSchema[] = [
     },
     filterName: 'textRepresentationLike',
     schema: {
-      type: SchemaColumnType.BigText,
+      cellRenderer: (action: AdhAction) => <ActionActionTextCell action={action} />,
     },
   },
   {
