@@ -16,31 +16,25 @@
  * limitations under the License.
  */
 
+import React from 'react';
+import Table from '@uikit/Table/Table';
+import { actionColumns } from './ActionTable.schema';
 import { useStore } from '@hooks';
-import ActionHeader from '@pages/ActionPage/ActionHeader/ActionHeader';
-import ActionTable from '@pages/ActionPage/ActionTable/ActionTable';
-import ActionExecutionInfo from '@pages/ActionPage/ActionExecutionInfo/ActionExecutionInfo';
-import ActionRepeatDialog from '@commonComponents/Action/ActionsDialogs/ActionRepeatDialog';
-import { useRequestAction } from '@pages/ActionPage/useRequestAction';
-import { SpinnerPanel } from '@uikit/Spinner/Spinner';
+import TableRow from '@uikit/Table/TableRow/TableRow';
+import TableCellsRenderer from '@uikit/Table/TableCell/TableCellsRenderer';
 
-const ActionPage = () => {
-  useRequestAction();
-  const action = useStore((s) => s.adh.action.action);
-  const isSomeError = useStore((s) => s.adh.action.isSomeError);
-
-  if (!action && !isSomeError) {
-    return <SpinnerPanel />;
-  }
+const ActionTable: React.FC = () => {
+  const action = useStore(({ adh }) => adh.action.action);
 
   return (
-    <>
-      <ActionHeader />
-      <ActionTable />
-      <ActionExecutionInfo />
-      <ActionRepeatDialog />
-    </>
+    <Table columns={actionColumns}>
+      {action && (
+        <TableRow>
+          <TableCellsRenderer model={action} />
+        </TableRow>
+      )}
+    </Table>
   );
 };
 
-export default ActionPage;
+export default ActionTable;

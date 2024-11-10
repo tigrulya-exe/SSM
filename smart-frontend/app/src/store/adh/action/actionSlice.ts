@@ -24,83 +24,78 @@ import type { RequestError } from '@api';
 import { AdhActionsApi } from '@api';
 import { executeWithMinDelay } from '@utils/requestUtils';
 import { defaultSpinnerDelay } from '@constants';
-import type { AdhAction } from '@models/adh';
+import type { AdhActionDetails } from '@models/adh';
 
-interface AdhActionsSliceState {
-  actions: AdhAction[];
-  totalCount: number;
+interface AdhActionSliceState {
+  action: AdhActionDetails | null;
   loadState: LoadState;
+  isSomeError: boolean;
 }
 
-const loadActions = createAsyncThunk('adh/actions/loadActions', async (_, thunkAPI) => {
-  const {
-    adh: {
-      actionsTable: { filter, paginationParams, sortParams },
-    },
-  } = thunkAPI.getState();
-
+const loadAction = createAsyncThunk('adh/action/loadAction', async (actionId: number, thunkAPI) => {
   try {
-    const collection = await AdhActionsApi.getActions(filter, sortParams, paginationParams);
-
-    return collection;
+    return await AdhActionsApi.getAction(actionId);
   } catch (error) {
     thunkAPI.dispatch(
       showError({
         message: getErrorMessage(error as RequestError),
       }),
     );
+    thunkAPI.dispatch(setIsSomeError(true));
+    thunkAPI.dispatch(setActionLoadState(LoadState.Loaded));
     return thunkAPI.rejectWithValue(error);
   }
 });
 
-const getActions = createAsyncThunk('adh/actions/getActions', async (_, thunkAPI) => {
-  thunkAPI.dispatch(setActionsLoadState(LoadState.Loading));
+const getAction = createAsyncThunk('adh/action/getAction', async (actionId: number, thunkAPI) => {
+  thunkAPI.dispatch(setActionLoadState(LoadState.Loading));
   const startDate = new Date();
 
-  await thunkAPI.dispatch(loadActions());
+  await thunkAPI.dispatch(loadAction(actionId));
 
   executeWithMinDelay({
     startDate,
     delay: defaultSpinnerDelay,
     callback: () => {
-      thunkAPI.dispatch(setActionsLoadState(LoadState.Loaded));
+      thunkAPI.dispatch(setActionLoadState(LoadState.Loaded));
     },
   });
 });
 
-const refreshActions = createAsyncThunk('adh/actions/refreshActions', async (_, thunkAPI) => {
-  thunkAPI.dispatch(loadActions());
+const refreshAction = createAsyncThunk('adh/action/refreshAction', async (actionId: number, thunkAPI) => {
+  thunkAPI.dispatch(loadAction(actionId));
 });
 
-const createInitialState = (): AdhActionsSliceState => ({
-  actions: [],
-  totalCount: 0,
+const createInitialState = (): AdhActionSliceState => ({
+  action: null,
   loadState: LoadState.NotLoaded,
+  isSomeError: false,
 });
 
 const actionSlice = createSlice({
   name: 'adh/actions',
   initialState: createInitialState(),
   reducers: {
-    cleanupActions() {
+    cleanupAction() {
       return createInitialState();
     },
     setLoadState(state, action) {
       state.loadState = action.payload;
     },
+    setIsSomeError(state, action) {
+      state.isSomeError = action.payload;
+    },
   },
   extraReducers: (builder) => {
-    builder.addCase(loadActions.fulfilled, (state, action) => {
-      state.actions = action.payload.items;
-      state.totalCount = action.payload.total;
+    builder.addCase(loadAction.fulfilled, (state, action) => {
+      state.action = action.payload;
     });
-    builder.addCase(loadActions.rejected, (state) => {
-      state.actions = [];
-      state.totalCount = 0;
+    builder.addCase(loadAction.rejected, (state) => {
+      state.action = null;
     });
   },
 });
 
-const { cleanupActions, setLoadState: setActionsLoadState } = actionSlice.actions;
-export { cleanupActions, setActionsLoadState, getActions, refreshActions };
+const { cleanupAction, setLoadState: setActionLoadState, setIsSomeError } = actionSlice.actions;
+export { cleanupAction, setActionLoadState, setIsSomeError, getAction, refreshAction };
 export default actionSlice.reducer;

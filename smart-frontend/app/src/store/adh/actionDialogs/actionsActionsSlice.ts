@@ -19,7 +19,7 @@ import { createCrudSlice } from '@store/redux/createCrudSlice';
 import type { AdhAction } from '@models/adh';
 import type { ModalState } from '@models/modal';
 import { createAsyncThunk } from '@store/redux';
-import { getActions } from './actionsSlice';
+import { getActions } from '../actions/actionsSlice';
 import { showError, showSuccess } from '@store/notificationsSlice';
 import { getErrorMessage } from '@utils/responseUtils';
 import type { RequestError } from '@api';
@@ -100,6 +100,7 @@ const {
   closeCreateDialog: closeCreateActionDialog,
   closeUpdateDialog: closeUpdateActionDialog,
   setIsActionInProgress,
+  cleanupActions,
 } = actionsActionsSlice.actions;
 
 export {
@@ -109,6 +110,7 @@ export {
   closeUpdateActionDialog,
   createActionWithUpdate,
   repeatActionWithUpdate,
+  cleanupActions,
 };
 
 export default actionsActionsSlice.reducer;

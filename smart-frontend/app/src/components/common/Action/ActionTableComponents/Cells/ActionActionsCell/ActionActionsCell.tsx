@@ -20,7 +20,7 @@ import { FlexGroup, IconButton } from '@uikit';
 import TableCell from '@uikit/Table/TableCell/TableCell';
 import { useDispatch } from '@hooks';
 import type { AdhAction } from '@models/adh';
-import { openUpdateActionDialog } from '@store/adh/actions/actionsActionsSlice';
+import { openUpdateActionDialog } from '@store/adh/actionDialogs/actionsActionsSlice';
 
 interface ActionActionsCellProps {
   action: AdhAction;

@@ -17,7 +17,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useStore } from '@hooks';
-import { closeUpdateActionDialog, repeatActionWithUpdate } from '@store/adh/actions/actionsActionsSlice';
+import { closeUpdateActionDialog, repeatActionWithUpdate } from '@store/adh/actionDialogs/actionsActionsSlice';
 import { FooterDialog, MultilineInput } from '@uikit';
 import { SpinnerPanel } from '@uikit/Spinner/Spinner';
 

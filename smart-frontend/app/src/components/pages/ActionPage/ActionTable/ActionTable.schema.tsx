@@ -17,61 +17,20 @@
  */
 import type { TableColumnSchema } from '@uikit/Table/Table.types';
 import { SchemaColumnType } from '@uikit/Table/Table.types';
-import { TableDateRangePickerFilter, TableMultiSelectFilter, TableSearchFilter } from '@uikit/Table/TableFilter';
-import { AdhActionSource, AdhActionState } from '@models/adh';
-import type { AdhActionsFilter, AdhAction } from '@models/adh';
-import { getOptionsFromEnum } from '@uikit/Select/Select.utils';
+import type { AdhAction } from '@models/adh';
 import ActionActionsCell from '@commonComponents/Action/ActionTableComponents/Cells/ActionActionsCell/ActionActionsCell';
 import ActionStatusCell from '@commonComponents/Action/ActionTableComponents/Cells/ActionStatusCell/ActionStatusCell';
 import ActionSourceCell from '@commonComponents/Action/ActionTableComponents/Cells/ActionSourceCell/ActionSourceCell';
-import ActionsHostsFilter from '@commonComponents/Action/ActionTableComponents/Cells/ActionsHostsFilter/ActionsHostsFilter';
-import ActionActionTextCell from '@commonComponents/Action/ActionTableComponents/Cells/ActionActionTextCell/ActionActionTextCell';
+import PassedTimeCell from '@uikit/Table/TableCell/AdvancedCells/PassedTimeCell';
 
-const actionStatesOptions = getOptionsFromEnum(AdhActionState);
-const actionSourcesOptions = [
-  {
-    label: 'Rule action',
-    value: AdhActionSource.Rule,
-  },
-  {
-    label: 'User action',
-    value: AdhActionSource.User,
-  },
-];
-
-export const actionsColumns: TableColumnSchema[] = [
+export const actionColumns: TableColumnSchema[] = [
   {
     name: 'id',
     label: 'ID',
-    isSortable: true,
-  },
-  {
-    name: 'textRepresentation',
-    label: 'Action',
-    filterRenderer: () => {
-      return <TableSearchFilter<AdhActionsFilter> filterName="textRepresentationLike" placeholder="Search text like" />;
-    },
-    filterName: 'textRepresentationLike',
-    schema: {
-      cellRenderer: (action: AdhAction) => <ActionActionTextCell action={action} />,
-    },
-  },
-  {
-    name: 'execHost',
-    label: 'Host',
-    isSortable: true,
-    filterRenderer: () => {
-      return <ActionsHostsFilter />;
-    },
-    filterName: 'hosts',
   },
   {
     name: 'submissionTime',
     label: 'Create Time',
-    isSortable: true,
-    filterRenderer: (closeFilter) => {
-      return <TableDateRangePickerFilter<AdhActionsFilter> filterName="submissionTime" closeFilter={closeFilter} />;
-    },
     schema: {
       type: SchemaColumnType.DateTime,
     },
@@ -79,24 +38,23 @@ export const actionsColumns: TableColumnSchema[] = [
   {
     name: 'completionTime',
     label: 'Finish Time',
-    isSortable: true,
-    filterRenderer: (closeFilter) => {
-      return <TableDateRangePickerFilter<AdhActionsFilter> filterName="completionTime" closeFilter={closeFilter} />;
-    },
     schema: {
       type: SchemaColumnType.DateTime,
     },
   },
   {
+    name: 'runningTime',
+    label: 'Running time',
+    schema: {
+      cellRenderer: (action: AdhAction) => (
+        <PassedTimeCell startTime={action.submissionTime} finishTime={action.completionTime} />
+      ),
+    },
+  },
+  {
     name: 'state',
     label: 'Status',
-    isSortable: true,
     width: '150px',
-    filterRenderer: () => {
-      return (
-        <TableMultiSelectFilter<AdhActionsFilter, AdhActionState> filterName="states" options={actionStatesOptions} />
-      );
-    },
     filterName: 'states',
     schema: {
       cellRenderer: (action: AdhAction) => {
@@ -107,17 +65,18 @@ export const actionsColumns: TableColumnSchema[] = [
   {
     name: 'source',
     label: 'Type',
-    isSortable: true,
     width: '150px',
-    filterRenderer: () => {
-      return <TableMultiSelectFilter<AdhActionsFilter, string> filterName="sources" options={actionSourcesOptions} />;
-    },
     filterName: 'sources',
     schema: {
       cellRenderer: (action: AdhAction) => {
         return <ActionSourceCell action={action} />;
       },
     },
+  },
+  {
+    name: 'execHost',
+    label: 'Host',
+    filterName: 'hosts',
   },
   {
     name: 'actions',

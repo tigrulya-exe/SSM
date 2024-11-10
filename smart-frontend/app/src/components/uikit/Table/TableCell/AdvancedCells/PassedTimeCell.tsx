@@ -16,27 +16,19 @@
  * limitations under the License.
  */
 import React from 'react';
-import { FlexGroup, Title } from '@uikit';
-import ActionCreateBtn from './ActionCreateBtn/ActionCreateBtn';
-import ActionsToolbar from './ActionsToolbar/ActionsToolbar';
-import ActionsTable from './ActionsTable/ActionsTable';
-import { useRequestActions } from '@pages/ActionsPage/useRequestActions';
-import ActionsDialogs from '@commonComponents/Action/ActionsDialogs/ActionsDialogs';
+import { type TableCellProps } from '@uikit/Table/TableCell/TableCell';
+import TableCell from '@uikit/Table/TableCell/TableCell';
+import { getToday } from '@utils/date/calendarUtils';
+import { millisecondsToDuration } from '@utils/date/dateConvertUtils';
 
-const ActionsPage: React.FC = () => {
-  useRequestActions();
+interface PassedTimeCellProps extends Omit<TableCellProps, 'children'> {
+  startTime: number;
+  finishTime?: number | null;
+}
 
-  return (
-    <div>
-      <FlexGroup gap="20px">
-        <Title variant="h1">Actions</Title>
-        <ActionCreateBtn />
-      </FlexGroup>
-      <ActionsToolbar />
-      <ActionsTable />
-      <ActionsDialogs />
-    </div>
-  );
+const PassedTimeCell = ({ startTime, finishTime, ...props }: PassedTimeCellProps) => {
+  const timeDiff = finishTime ? finishTime - startTime : getToday().getTime() - startTime;
+  return <TableCell {...props}>{millisecondsToDuration(timeDiff)}</TableCell>;
 };
 
-export default ActionsPage;
+export default PassedTimeCell;
