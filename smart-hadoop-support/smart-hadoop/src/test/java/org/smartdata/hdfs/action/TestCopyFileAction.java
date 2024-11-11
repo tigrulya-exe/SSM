@@ -21,16 +21,17 @@ import com.google.common.collect.Sets;
 import lombok.Setter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.hdfs.DFSInputStream;
 import org.apache.hadoop.hdfs.DFSTestUtil;
-import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.FailingDfsInputStream;
 import org.junit.Assert;
 import org.junit.Test;
+import org.smartdata.hadoop.filesystem.SmartFileSystem;
 import org.smartdata.hdfs.MultiClusterHarness;
+import org.smartdata.hdfs.client.SmartDFSClient;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -49,15 +50,14 @@ public class TestCopyFileAction extends MultiClusterHarness {
 
   private static final String FILE_TO_COPY_CONTENT = "testContent 112";
 
-  private void copyFile(Path src, Path dest, long length,
-                        long offset) throws Exception {
+  private void copyFile(Path src, Path dest, long length, long offset) {
     copyFile(src, dest, length, offset, action -> {});
   }
 
   private void copyFile(Path src, Path dest, long length, long offset,
-                        Consumer<CopyFileAction> actionConfigurer,
-                        CopyPreservedAttributesAction.PreserveAttribute... preserveAttributes
-  ) throws Exception {
+      Consumer<CopyFileAction> actionConfigurer,
+      CopyPreservedAttributesAction.PreserveAttribute... preserveAttributes
+  ) {
     CopyFileAction copyFileAction = new CopyFileAction();
     copyFileAction.setLocalFileSystem(dfs);
     copyFileAction.setContext(smartContext);
@@ -171,16 +171,19 @@ public class TestCopyFileAction extends MultiClusterHarness {
     DFSTestUtil.createFile(anotherDfs, destPath, 50, (short) 3, 0xFEED);
 
     try (FailingDfsClient failingDfsClient =
-             new FailingDfsClient(cluster.getConfiguration(0), true)) {
+             new FailingDfsClient(smartContext.getConf(), true);
+         SmartFileSystem smartFileSystem = new SmartFileSystem(failingDfsClient)) {
+      smartFileSystem.initialize(
+          FileSystem.getDefaultUri(smartContext.getConf()), smartContext.getConf());
       try {
-        copyFile(srcPath, destPath, 50, 50, action -> action.setDfsClient(failingDfsClient));
+        copyFile(srcPath, destPath, 50, 50, action -> action.setLocalFileSystem(smartFileSystem));
       } catch (Exception e) {
         // it should fail at first time after writing 1 byte
       }
 
       failingDfsClient.setShouldFail(false);
 
-      copyFile(srcPath, destPath, 50, 50, action -> action.setDfsClient(failingDfsClient));
+      copyFile(srcPath, destPath, 50, 50, action -> action.setLocalFileSystem(smartFileSystem));
 
       Assert.assertTrue(anotherDfs.exists(destPath));
       Assert.assertEquals(100, anotherDfs.getFileStatus(destPath).getLen());
@@ -188,11 +191,11 @@ public class TestCopyFileAction extends MultiClusterHarness {
   }
 
   @Setter
-  private static class FailingDfsClient extends DFSClient {
+  private static class FailingDfsClient extends SmartDFSClient {
     private boolean shouldFail;
 
     private FailingDfsClient(Configuration config, boolean shouldFail) throws IOException {
-      super(DFSUtilClient.getNNAddress(config), config);
+      super(FileSystem.getDefaultUri(config), config);
       this.shouldFail = shouldFail;
     }
 
@@ -217,7 +220,7 @@ public class TestCopyFileAction extends MultiClusterHarness {
   }
 
   private void copyFileWithAttributes(Path srcFilePath, Path destPath,
-                                      CopyPreservedAttributesAction.PreserveAttribute... preserveAttributes)
+      CopyPreservedAttributesAction.PreserveAttribute... preserveAttributes)
       throws Exception {
     copyFile(srcFilePath, destPath, 0, 0, action -> {}, preserveAttributes);
     assertFileContent(destPath, FILE_TO_COPY_CONTENT);
