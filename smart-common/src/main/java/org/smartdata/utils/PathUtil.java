@@ -77,9 +77,9 @@ public class PathUtil {
   // todo replace 'stringPath.startsWith("hdfs")' calls with this method
   public static boolean isAbsoluteRemotePath(Path path) {
     return Optional.ofNullable(path)
-            .map(Path::toUri)
-            .filter(PathUtil::isAbsoluteRemotePath)
-            .isPresent();
+        .map(Path::toUri)
+        .filter(PathUtil::isAbsoluteRemotePath)
+        .isPresent();
   }
 
   public static boolean isAbsoluteRemotePath(URI uri) {
