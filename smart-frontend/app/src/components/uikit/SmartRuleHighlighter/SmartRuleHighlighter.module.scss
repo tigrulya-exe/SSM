@@ -4,7 +4,7 @@ $syntaxSymbols: #ffffff;
 $syntaxMatches: #00ff00;
 $syntaxString: #ff00bb;
 $syntaxError: #ff0000;
-$syntaxAt: #5858dd;
+$syntaxTimeKeyword: #5858dd;
 $syntaxTimeintvalconst: #b3ff00;
 
 
@@ -15,8 +15,15 @@ $syntaxTimeintvalconst: #b3ff00;
   syntaxMatches: $syntaxMatches;
   syntaxString: $syntaxString;
   syntaxError: $syntaxError;
-  syntaxAt: $syntaxAt;
+
+  syntaxEvery: $syntaxTimeKeyword;
+  syntaxAt: $syntaxTimeKeyword;
+  syntaxFrom: $syntaxTimeKeyword;
+  syntaxTo: $syntaxTimeKeyword;
+  syntaxNow: $syntaxTimeKeyword;
+
   syntaxTimeintvalconst: $syntaxTimeintvalconst;
+  syntaxLong: $syntaxTimeintvalconst;
 }
 
 .smartRuleHighlighter {
@@ -43,23 +50,19 @@ $syntaxTimeintvalconst: #b3ff00;
     font-style: italic;
   }
 
-  &>.symbols\.ssmrule {
+  &>.symbols\.ssmrule, &>.or\.ssmrule, &>.and\.ssmrule {
     color: $syntaxSymbols;
   }
 
-  &>.unrecognized\.ssmrule {
+  &>.unrecognized\.ssmrule, &>.error\.ssmrule {
     color: $syntaxError;
   }
 
-  &>.error\.ssmrule {
-    color: $syntaxError;
+  &>.every\.ssmrule, &>.at\.ssmrule, &>.from\.ssmrule, &>.to\.ssmrule, &>.now\.ssmrule {
+    color: $syntaxTimeKeyword;
   }
 
-  &>.at\.ssmrule {
-    color: $syntaxAt;
-  }
-
-  &>.timeintvalconst\.ssmrule {
+  &>.timeintvalconst\.ssmrule, &>.long\.ssmrule {
     color: $syntaxTimeintvalconst;
   }
 }

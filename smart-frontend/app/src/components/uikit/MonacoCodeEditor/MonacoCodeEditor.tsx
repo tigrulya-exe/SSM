@@ -185,10 +185,17 @@ monaco.editor.defineTheme('ssmruleTheme', {
     { token: 'matches.ssmrule', foreground: smartRuleHighlighterStyles.syntaxMatches, fontStyle: 'bold' },
     { token: 'string.ssmrule', foreground: smartRuleHighlighterStyles.syntaxString, fontStyle: 'italic' },
     { token: 'symbols.ssmrule', foreground: smartRuleHighlighterStyles.syntaxSymbols },
+    { token: 'or.ssmrule', foreground: smartRuleHighlighterStyles.syntaxSymbols },
+    { token: 'and.ssmrule', foreground: smartRuleHighlighterStyles.syntaxSymbols },
     { token: 'unrecognized.ssmrule', foreground: smartRuleHighlighterStyles.syntaxError },
     { token: 'error.ssmrule', foreground: smartRuleHighlighterStyles.syntaxError },
     { token: 'at.ssmrule', foreground: smartRuleHighlighterStyles.syntaxAt },
+    { token: 'every.ssmrule', foreground: smartRuleHighlighterStyles.syntaxEvery },
+    { token: 'from.ssmrule', foreground: smartRuleHighlighterStyles.syntaxFrom },
+    { token: 'to.ssmrule', foreground: smartRuleHighlighterStyles.syntaxTo },
+    { token: 'now.ssmrule', foreground: smartRuleHighlighterStyles.syntaxNow },
     { token: 'timeintvalconst.ssmrule', foreground: smartRuleHighlighterStyles.syntaxTimeintvalconst },
+    { token: 'long.ssmrule', foreground: smartRuleHighlighterStyles.syntaxLong },
   ],
 });
 
