@@ -24,40 +24,46 @@ import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.apache.hadoop.io.WritableUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.smartdata.action.SyncAction;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.hdfs.CompatibilityHelperLoader;
 import org.smartdata.hdfs.HadoopUtil;
+import org.smartdata.hdfs.action.CopyFileAction;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
-import org.smartdata.model.BackUpInfo;
 import org.smartdata.model.FileDiff;
 import org.smartdata.model.FileDiffType;
 import org.smartdata.model.FileInfo;
 import org.smartdata.model.FileInfoDiff;
+import org.smartdata.model.PathChecker;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import org.smartdata.model.PathChecker;
+
+import static org.smartdata.action.SyncAction.BASE_OPERATION;
+import static org.smartdata.utils.PathUtil.addPathSeparator;
 
 /**
  * This is a very preliminary and buggy applier, can further enhance by referring to
  * {@link org.apache.hadoop.hdfs.server.namenode.FSEditLogLoader}
  */
 public class InotifyEventApplier {
+  private static final Logger LOG =
+      LoggerFactory.getLogger(InotifyEventApplier.class);
+
   private static final String ROOT_DIRECTORY = "/";
 
   private final MetaStore metaStore;
   private final PathChecker pathChecker;
-  private DFSClient client;
-  private static final Logger LOG =
-      LoggerFactory.getLogger(InotifyEventFetcher.class);
+  private final DFSClient client;
+
   private NamespaceFetcher namespaceFetcher;
 
   public InotifyEventApplier(MetaStore metaStore, DFSClient client) {
@@ -75,20 +81,20 @@ public class InotifyEventApplier {
     this.pathChecker = new PathChecker(conf);
   }
 
-  public void apply(List<Event> events) throws IOException, MetaStoreException, InterruptedException {
+  public void apply(List<Event> events) throws IOException, InterruptedException {
     for (Event event : events) {
       apply(event);
     }
   }
 
-  public void apply(Event[] events) throws IOException, MetaStoreException, InterruptedException {
+  public void apply(Event[] events) throws IOException, InterruptedException {
     this.apply(Arrays.asList(events));
   }
 
-  private void apply(Event event) throws IOException, MetaStoreException, InterruptedException {
+  private void apply(Event event) throws IOException, InterruptedException {
     String path;
     String srcPath, dstPath;
-    LOG.debug("Even Type = {}", event.getEventType());
+    LOG.debug("Handle event {}", event);
 
     // we already filtered events in the fetch tasks, so we can skip
     // event's path check here
@@ -108,25 +114,25 @@ public class InotifyEventApplier {
         dstPath = ((Event.RenameEvent) event).getDstPath();
         LOG.trace("event type: {}, src path: {}, dest path: {}",
             event.getEventType().name(), srcPath, dstPath);
-        applyRename((Event.RenameEvent)event);
+        applyRename((Event.RenameEvent) event);
         break;
       case METADATA:
         // The property dfs.namenode.accesstime.precision in HDFS's configuration controls
         // the precision of access time. Its default value is 1h. To avoid missing a
         // MetadataUpdateEvent for updating access time, a smaller value should be set.
-        path = ((Event.MetadataUpdateEvent)event).getPath();
+        path = ((Event.MetadataUpdateEvent) event).getPath();
         LOG.trace("event type: {}, path: {}", event.getEventType().name(), path);
-        applyMetadataUpdate((Event.MetadataUpdateEvent)event);
+        applyMetadataUpdate((Event.MetadataUpdateEvent) event);
         break;
       case APPEND:
-        path = ((Event.AppendEvent)event).getPath();
+        path = ((Event.AppendEvent) event).getPath();
         LOG.trace("event type: {}, path: {}", event.getEventType().name(), path);
         // do nothing
         break;
       case UNLINK:
-        path = ((Event.UnlinkEvent)event).getPath();
+        path = ((Event.UnlinkEvent) event).getPath();
         LOG.trace("event type: {}, path: {}", event.getEventType().name(), path);
-        applyUnlink((Event.UnlinkEvent)event);
+        applyUnlink((Event.UnlinkEvent) event);
     }
   }
 
@@ -264,7 +270,7 @@ public class InotifyEventApplier {
         //info = HadoopUtil.convertFileStatus(status, dest);
         //metaStore.insertFile(info);
         namespaceFetcher.startFetch(dest);
-        while(!namespaceFetcher.fetchFinished()) {
+        while (!namespaceFetcher.fetchFinished()) {
           LOG.info("Fetching the files under " + dest);
           Thread.sleep(100);
         }
@@ -284,48 +290,93 @@ public class InotifyEventApplier {
     metaStore.renameFile(src, dest, info.isdir());
   }
 
-  private void generateFileDiff(Event.RenameEvent renameEvent)
-      throws MetaStoreException {
-    String src = renameEvent.getSrcPath();
-    String dest = renameEvent.getDstPath();
-    FileInfo info = metaStore.getFile(src);
-    // TODO: consider src or dest is ignored by SSM
-    if (inBackup(src)) {
-      // rename the file if the renamed file is still under the backup src dir
-      // if not, insert a delete file diff
-      if (inBackup(dest)) {
-        FileDiff fileDiff = new FileDiff(FileDiffType.RENAME);
-        fileDiff.setSrc(src);
-        fileDiff.getParameters().put("-dest", dest);
-        metaStore.insertFileDiff(fileDiff);
-      } else {
-        insertDeleteDiff(src, info.isdir());
-      }
-    } else if (inBackup(dest)) {
-      // tackle such case: rename file from outside into backup dir
-      if (!info.isdir()) {
-        FileDiff fileDiff = new FileDiff(FileDiffType.APPEND);
-        fileDiff.setSrc(dest);
-        fileDiff.getParameters().put("-offset", String.valueOf(0));
-        fileDiff.getParameters()
-            .put("-length", String.valueOf(info.getLength()));
-        metaStore.insertFileDiff(fileDiff);
-      } else {
-        List<FileInfo> fileInfos = metaStore.getFilesByPrefix(src.endsWith("/") ? src : src + "/");
-        for (FileInfo fileInfo : fileInfos) {
-          // TODO: cover subdir with no file case
-          if (fileInfo.isdir()) {
-            continue;
-          }
-          FileDiff fileDiff = new FileDiff(FileDiffType.APPEND);
-          fileDiff.setSrc(fileInfo.getPath().replaceFirst(src, dest));
-          fileDiff.getParameters().put("-offset", String.valueOf(0));
-          fileDiff.getParameters()
-              .put("-length", String.valueOf(fileInfo.getLength()));
-          metaStore.insertFileDiff(fileDiff);
-        }
-      }
+  private void generateFileDiff(Event.RenameEvent renameEvent) throws MetaStoreException {
+    boolean srcInBackup = inBackup(renameEvent.getSrcPath());
+    boolean destInBackup = inBackup(renameEvent.getDstPath());
+
+    if (!srcInBackup && !destInBackup) {
+      return;
     }
+
+    FileInfo srcFileInfo = metaStore.getFile(renameEvent.getSrcPath());
+    if (srcFileInfo == null) {
+      LOG.warn(
+          "Inconsistency in metastore and HDFS namespace, file not found: {}",
+          renameEvent.getSrcPath());
+      return;
+    }
+
+    List<FileDiff> fileDiffs;
+    if (srcInBackup) {
+      if (destInBackup) {
+        // if both src and dest are in backup directory,
+        // then generate rename diffs for all content under src
+        fileDiffs = visitFileRecursively(srcFileInfo, renameEvent, this::buildRenameFileDiff);
+      } else {
+        // if src is in backup directory and dest isn't,
+        // then simply delete all files under src on remote cluster
+        fileDiffs = Collections.singletonList(getDeleteFileDiff(srcFileInfo.getPath()));
+      }
+    } else {
+      // if dest is in backup directory and src isn't,
+      // then simply copy files under dest to remote cluster
+      fileDiffs = visitFileRecursively(srcFileInfo, renameEvent, this::buildCreateFileDiff);
+    }
+
+    if (fileDiffs.isEmpty()) {
+      LOG.warn(
+          "Inconsistency in metastore and HDFS namespace, file not found: {}",
+          renameEvent.getSrcPath());
+      return;
+    }
+    // set first diff as base rename operation
+    fileDiffs.get(0).setParameter(BASE_OPERATION, "");
+    metaStore.insertFileDiffs(fileDiffs);
+  }
+
+  private <C, T> List<T> visitFileRecursively(
+      FileInfo srcFileInfo, C context,
+      BiFunction<FileInfo, C, T> diffProducer)
+      throws MetaStoreException {
+    List<T> results = new ArrayList<>();
+    results.add(diffProducer.apply(srcFileInfo, context));
+
+    if (srcFileInfo.isdir()) {
+      metaStore.getFilesByPrefixInOrder(addPathSeparator(srcFileInfo.getPath()))
+          .stream()
+          .map(fileInfo -> diffProducer.apply(fileInfo, context))
+          .forEach(results::add);
+    }
+
+    return results;
+  }
+
+  private FileDiff buildRenameFileDiff(FileInfo fileInfo, Event.RenameEvent renameEvent) {
+    FileDiff fileDiff = new FileDiff(FileDiffType.RENAME);
+    fileDiff.setSrc(fileInfo.getPath());
+    fileDiff.getParameters().put(
+        SyncAction.DEST,
+        fileInfo.getPath().replaceFirst(
+            renameEvent.getSrcPath(),
+            renameEvent.getDstPath()));
+    return fileDiff;
+  }
+
+  private FileDiff buildCreateFileDiff(FileInfo fileInfo, Event.RenameEvent renameEvent) {
+    if (fileInfo.isdir()) {
+      FileDiff fileDiff = new FileDiff(FileDiffType.MKDIR);
+      fileDiff.setSrc(fileInfo.getPath());
+      return fileDiff;
+    }
+
+    FileDiff fileDiff = new FileDiff(FileDiffType.APPEND);
+    fileDiff.setSrc(fileInfo.getPath()
+        .replaceFirst(renameEvent.getSrcPath(), renameEvent.getDstPath()));
+    fileDiff.getParameters().put(
+        CopyFileAction.OFFSET_INDEX, String.valueOf(0));
+    fileDiff.getParameters()
+        .put(CopyFileAction.LENGTH, String.valueOf(fileInfo.getLength()));
+    return fileDiff;
   }
 
   private void applyMetadataUpdate(Event.MetadataUpdateEvent metadataUpdateEvent) throws MetaStoreException {
@@ -415,7 +466,7 @@ public class InotifyEventApplier {
     // delete root, i.e., /
     if (ROOT_DIRECTORY.equals(unlinkEvent.getPath())) {
       LOG.warn("Deleting root directory!!!");
-      insertDeleteDiff(ROOT_DIRECTORY, true);
+      insertDeleteDiff(ROOT_DIRECTORY);
       metaStore.unlinkRootDirectory();
       return;
     }
@@ -426,94 +477,21 @@ public class InotifyEventApplier {
         path.substring(0, path.length() - 1) : path);
 
     if (fileInfo != null) {
-      insertDeleteDiff(unlinkEvent.getPath(), fileInfo.isdir());
+      insertDeleteDiff(unlinkEvent.getPath());
       metaStore.unlinkFile(unlinkEvent.getPath(), fileInfo.isdir());
     }
   }
 
-  // TODO: just insert a fileDiff for this kind of path.
-  // It seems that there is no need to see if path matches with one dir in FileInfo.
-  private void insertDeleteDiff(String path, boolean isDir) throws MetaStoreException {
-    if (isDir) {
-      path = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
-      List<FileInfo> fileInfos = metaStore.getFilesByPrefix(path);
-      for (FileInfo fileInfo : fileInfos) {
-        if (fileInfo.isdir()) {
-          if (path.equals(fileInfo.getPath())) {
-            insertDeleteDiff(fileInfo.getPath());
-            break;
-          }
-        }
-      }
-    } else {
-      insertDeleteDiff(path);
-    }
-  }
-
   private void insertDeleteDiff(String path) throws MetaStoreException {
-    // TODO: remove "/" appended in src or dest in backup_file table
-    String pathWithSlash = path.endsWith("/") ? path : path + "/";
     if (inBackup(path)) {
-      List<BackUpInfo> backUpInfos = metaStore.getBackUpInfoBySrc(pathWithSlash);
-      for (BackUpInfo backUpInfo : backUpInfos) {
-        String destPath = pathWithSlash.replaceFirst(backUpInfo.getSrc(), backUpInfo.getDest());
-        try {
-          // tackle root path case
-          URI namenodeUri = new URI(destPath);
-          String root = "hdfs://" + namenodeUri.getHost() + ":"
-              + String.valueOf(namenodeUri.getPort());
-          if (destPath.equals(root) || destPath.equals(root + "/") || destPath.equals("/")) {
-            for (String srcFilePath : getFilesUnderDir(pathWithSlash)) {
-              FileDiff fileDiff = new FileDiff(FileDiffType.DELETE);
-              fileDiff.setSrc(srcFilePath);
-              String destFilePath = srcFilePath.replaceFirst(backUpInfo.getSrc(), backUpInfo.getDest());
-              fileDiff.getParameters().put("-dest", destFilePath);
-              metaStore.insertFileDiff(fileDiff);
-            }
-          } else {
-            FileDiff fileDiff = new FileDiff(FileDiffType.DELETE);
-            // use the path getting from event with no slash appended
-            fileDiff.setSrc(path);
-            // put sync's dest path in parameter for delete use
-            fileDiff.getParameters().put("-dest", destPath);
-            metaStore.insertFileDiff(fileDiff);
-          }
-        } catch (URISyntaxException e) {
-          LOG.error("Error occurs!", e);
-        }
-      }
+      FileDiff deleteFileDiff = getDeleteFileDiff(path);
+      metaStore.insertFileDiff(deleteFileDiff);
     }
   }
 
-  private List<String> getFilesUnderDir(String dir) throws MetaStoreException {
-    dir = dir.endsWith("/") ? dir : dir + "/";
-    List<String> fileList = new ArrayList<>();
-    List<String> subdirList = new ArrayList<>();
-    // get fileInfo in asc order of path to guarantee that
-    // the subdir is tackled prior to files or dirs under it
-    List<FileInfo> fileInfos = metaStore.getFilesByPrefixInOrder(dir);
-    for (FileInfo fileInfo : fileInfos) {
-      // just delete subdir instead of deleting all files under it
-      if (isUnderDir(fileInfo.getPath(), subdirList)) {
-        continue;
-      }
-      fileList.add(fileInfo.getPath());
-      if (fileInfo.isdir()) {
-        subdirList.add(fileInfo.getPath());
-      }
-    }
-    return fileList;
-  }
-
-  private boolean isUnderDir(String path, List<String> dirs) {
-    if (dirs.isEmpty()) {
-      return false;
-    }
-    for (String subdir : dirs) {
-      if (path.startsWith(subdir)) {
-        return true;
-      }
-    }
-    return false;
+  private FileDiff getDeleteFileDiff(String path) {
+    FileDiff fileDiff = new FileDiff(FileDiffType.DELETE);
+    fileDiff.setSrc(path);
+    return fileDiff;
   }
 }

@@ -111,7 +111,7 @@ public class SmartConfKeys {
     public static final int SMART_DISPATCH_CMDLETS_EXTRA_NUM_DEFAULT = 10;
 
     public static final String SMART_SYNC_SCHEDULE_STRATEGY_KEY = "smart.sync.schedule.strategy";
-    public static final String SMART_SYNC_SCHEDULE_STRATEGY_DEFAULT = "UNORDERED";
+    public static final String SMART_SYNC_SCHEDULE_STRATEGY_DEFAULT = "FIFO";
 
 
     public static final String SMART_SYNC_FILE_EQUALITY_STRATEGY =

@@ -17,6 +17,8 @@
  */
 package org.smartdata.integration;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartdata.client.generated.model.AuditEventDto;
@@ -53,6 +55,23 @@ public class TestAuditRestApi extends IntegrationTestBase {
 
     assertEquals(0, auditEvents.getTotal().longValue());
     assertTrue(auditEvents.getItems().isEmpty());
+  }
+
+  @Test
+  public void test() throws Exception {
+    FileSystem fileSystem = cluster.getFileSystem();
+
+    fileSystem.mkdirs(new Path("/test"));
+    createFile("/test/1.txt");
+    createFile("/test/2.txt");
+    createFile("/test/3.txt");
+    createFile("/test/4.txt");
+
+    fileSystem.rename(new Path("/test"), new Path("/test_renamed"));
+
+    while (true) {
+      Thread.sleep(100);
+    }
   }
 
   @Test

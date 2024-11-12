@@ -61,7 +61,7 @@ fi
 echo "=============================="
 echo "      Rebuild the project     "
 echo "=============================="
-mvn clean package -Pdist,web-ui,hadoop-${HADOOP_PROFILE} -DskipTests
+#mvn clean package -Pdist,web-ui,hadoop-${HADOOP_PROFILE} -DskipTests
 
 echo "========================================================"
 echo "      Build Hadoop ${HADOOP_VERSION} with SSM image     "
