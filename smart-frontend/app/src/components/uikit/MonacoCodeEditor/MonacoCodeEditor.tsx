@@ -33,7 +33,6 @@ import CodeEditorV3Problems from './MonacoCodeEditorProblems/MonacoCodeEditorPro
 import CodeEditorV3Widgets from './MonacoCodeEditorWidgets';
 import { SmartRuleTokensProvider } from '@utils/smartRule/smartRuleTokensProvider';
 import { initMonacoEditorModel, unknownSchemaToMonacoEditorSchemas } from './MonacoCodeEditor.utils';
-// import { initMonacoEditorModel, unknownSchemaToMonacoEditorSchemas } from './MonacoCodeEditor.utils';
 
 export interface MonacoCodeEditorProps {
   modelUri?: string;
