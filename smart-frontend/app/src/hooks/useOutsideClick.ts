@@ -16,13 +16,22 @@
  * limitations under the License.
  */
 
-export { useBreadcrumbs } from './useBreadcrumbs';
-export { useCheckSession } from './useCheckSession';
-export { useDispatch } from './useDispatch';
-export { useForwardRef } from './useForwardRef';
-export { useLocalStorage } from './useLocalStorage';
-export { useStore } from './useStore';
-export { useDebounce } from './useDebounce';
-export { useRequestTimer } from './useRequestTimer';
-export { useResizeObserver } from './useResizeObserver';
-export { useOutsideClick } from './useOutsideClick';
+import type { MutableRefObject } from 'react';
+import { useEffect } from 'react';
+
+type OutsideClickRefType = MutableRefObject<HTMLElement | null>;
+type OutsideClickCallbackType = (el: EventTarget | null) => void;
+
+export const useOutsideClick = (ref: OutsideClickRefType, callback: OutsideClickCallbackType) => {
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as HTMLElement)) {
+        callback(event.target);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [ref, callback]);
+};

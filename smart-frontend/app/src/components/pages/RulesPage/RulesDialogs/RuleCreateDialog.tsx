@@ -15,43 +15,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useDispatch, useStore } from '@hooks';
 import { closeCreateRuleDialog, createRuleWithUpdate } from '@store/adh/rules/rulesActionsSlice';
-import { FooterDialog, MultilineInput } from '@uikit';
+import { FooterDialog } from '@uikit';
 import { SpinnerPanel } from '@uikit/Spinner/Spinner';
+import MonacoCodeEditor from '@uikit/MonacoCodeEditor/MonacoCodeEditor';
 
 const RuleCreateDialog: React.FC = () => {
   const dispatch = useDispatch();
   const isOpen = useStore(({ adh }) => adh.rulesActions.createDialog.isOpen);
   const isActionInProgress = useStore(({ adh }) => adh.rulesActions.isActionInProgress);
 
-  const [ruleText, setRuleText] = useState('');
+  const ruleText = useRef('');
 
   useEffect(() => {
     // clear when close dialog
     if (!isOpen) {
-      setRuleText('');
+      ruleText.current = '';
     }
-  }, [isOpen, setRuleText]);
+  }, [isOpen]);
 
   const closeDialog = () => {
     dispatch(closeCreateRuleDialog());
   };
 
-  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setRuleText(event.target.value);
-  };
+  const handleChange = useCallback((value: string) => {
+    ruleText.current = value;
+  }, []);
 
   const handleCreate = () => {
     dispatch(createRuleWithUpdate(ruleText));
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.shiftKey && e.key === 'Enter') {
-      e.preventDefault();
-      handleCreate();
-    }
   };
 
   return (
@@ -62,11 +56,12 @@ const RuleCreateDialog: React.FC = () => {
       actionButtonLabel="Create"
       onAction={handleCreate}
     >
-      <MultilineInput
-        onKeyDown={handleKeyDown}
-        value={ruleText}
+      <MonacoCodeEditor
+        language="ssmrule"
+        initialValue={ruleText.current}
+        theme="ssmruleTheme"
+        showMinimap={false}
         onChange={handleChange}
-        disabled={isActionInProgress}
       />
       {isActionInProgress && <SpinnerPanel />}
     </FooterDialog>

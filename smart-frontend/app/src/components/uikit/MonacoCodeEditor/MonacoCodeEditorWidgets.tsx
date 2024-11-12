@@ -16,13 +16,15 @@
  * limitations under the License.
  */
 
-export { useBreadcrumbs } from './useBreadcrumbs';
-export { useCheckSession } from './useCheckSession';
-export { useDispatch } from './useDispatch';
-export { useForwardRef } from './useForwardRef';
-export { useLocalStorage } from './useLocalStorage';
-export { useStore } from './useStore';
-export { useDebounce } from './useDebounce';
-export { useRequestTimer } from './useRequestTimer';
-export { useResizeObserver } from './useResizeObserver';
-export { useOutsideClick } from './useOutsideClick';
+import React from 'react';
+import type { MonacoCodeEditorWidget } from './MonacoCodeEditor.types';
+
+export interface MonacoCodeEditorWidgetsProps {
+  widgets?: MonacoCodeEditorWidget[];
+}
+
+const MonacoCodeEditorWidgets: React.FC<MonacoCodeEditorWidgetsProps> = ({ widgets }) => {
+  return <>{widgets?.map((w) => w.renderWidget())}</>;
+};
+
+export default MonacoCodeEditorWidgets;

@@ -16,13 +16,26 @@
  * limitations under the License.
  */
 
-export { useBreadcrumbs } from './useBreadcrumbs';
-export { useCheckSession } from './useCheckSession';
-export { useDispatch } from './useDispatch';
-export { useForwardRef } from './useForwardRef';
-export { useLocalStorage } from './useLocalStorage';
-export { useStore } from './useStore';
-export { useDebounce } from './useDebounce';
-export { useRequestTimer } from './useRequestTimer';
-export { useResizeObserver } from './useResizeObserver';
-export { useOutsideClick } from './useOutsideClick';
+import SmartRuleHighlighter from './SmartRuleHighlighter';
+import type { Meta, StoryObj } from '@storybook/react';
+
+type Story = StoryObj<typeof SmartRuleHighlighter>;
+
+export default {
+  title: 'uikit/SmartRuleHighlighter',
+  component: SmartRuleHighlighter,
+  argTypes: {},
+} as Meta<typeof SmartRuleHighlighter>;
+
+export const SmartRuleHighlighterStory: Story = {
+  args: {
+    rule: 'file: at 5sec | path matches "/tmp/*.log" | read; delete',
+  },
+  render: (args) => {
+    return (
+      <div style={{ height: '500px' }}>
+        <SmartRuleHighlighter rule={args.rule} />
+      </div>
+    );
+  },
+};
