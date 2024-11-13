@@ -54,15 +54,15 @@ $syntaxTimeintvalconst: #b3ff00;
     color: $syntaxSymbols;
   }
 
-  &>.unrecognized\.ssmrule, &>.error\.ssmrule {
+  &>:is(.unrecognized\.ssmrule, .error\.ssmrule) {
     color: $syntaxError;
   }
 
-  &>.every\.ssmrule, &>.at\.ssmrule, &>.from\.ssmrule, &>.to\.ssmrule, &>.now\.ssmrule {
+  &>:is(.every\.ssmrule, .at\.ssmrule, .from\.ssmrule, .to\.ssmrule, .now\.ssmrule) {
     color: $syntaxTimeKeyword;
   }
 
-  &>.timeintvalconst\.ssmrule, &>.long\.ssmrule {
+  &>:is(.timeintvalconst\.ssmrule, .long\.ssmrule) {
     color: $syntaxTimeintvalconst;
   }
 }

@@ -21,6 +21,7 @@ import { closeCreateRuleDialog, createRuleWithUpdate } from '@store/adh/rules/ru
 import { FooterDialog } from '@uikit';
 import { SpinnerPanel } from '@uikit/Spinner/Spinner';
 import MonacoCodeEditor from '@uikit/MonacoCodeEditor/MonacoCodeEditor';
+import { type IStandaloneCodeEditor, monaco } from '@uikit/MonacoCodeEditor/MonacoCodeEditor.types';
 
 const RuleCreateDialog: React.FC = () => {
   const dispatch = useDispatch();
@@ -45,7 +46,11 @@ const RuleCreateDialog: React.FC = () => {
   }, []);
 
   const handleCreate = () => {
-    dispatch(createRuleWithUpdate(ruleText));
+    dispatch(createRuleWithUpdate(ruleText.current));
+  };
+
+  const handleMount = (editor: IStandaloneCodeEditor) => {
+    editor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.Enter, handleCreate);
   };
 
   return (
@@ -61,6 +66,7 @@ const RuleCreateDialog: React.FC = () => {
         initialValue={ruleText.current}
         theme="ssmruleTheme"
         showMinimap={false}
+        onMount={handleMount}
         onChange={handleChange}
       />
       {isActionInProgress && <SpinnerPanel />}
