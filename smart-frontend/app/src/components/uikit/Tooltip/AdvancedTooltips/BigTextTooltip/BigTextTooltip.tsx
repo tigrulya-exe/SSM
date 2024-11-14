@@ -1,7 +1,6 @@
 import React from 'react';
 import s from './BigTextTooltip.module.scss';
-import type { TooltipProps } from '@uikit/Tooltip/Tooltip';
-import Tooltip from '../../Tooltip';
+import Tooltip, { type TooltipProps } from '../../Tooltip';
 import { prepareLabel } from './BigTextTooltip.utils';
 
 interface BigTextTooltipProps extends TooltipProps {

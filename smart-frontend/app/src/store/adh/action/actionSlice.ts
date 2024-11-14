@@ -73,7 +73,7 @@ const createInitialState = (): AdhActionSliceState => ({
 });
 
 const actionSlice = createSlice({
-  name: 'adh/actions',
+  name: 'adh/action',
   initialState: createInitialState(),
   reducers: {
     cleanupAction() {

@@ -17,8 +17,7 @@
  */
 
 import React from 'react';
-import { type IconsNames, Title } from '@uikit';
-import Icon from '@uikit/Icon/Icon';
+import { type IconsNames, Icon, Title } from '@uikit';
 import { AdhActionState } from '@models/adh';
 import s from './ActionHeader.module.scss';
 import { getActionHeaderData } from '@pages/ActionPage/ActionHeader/ActionHeader.utils';

@@ -17,12 +17,12 @@
  */
 
 import { useStore } from '@hooks';
-import ActionHeader from '@pages/ActionPage/ActionHeader/ActionHeader';
-import ActionTable from '@pages/ActionPage/ActionTable/ActionTable';
-import ActionExecutionInfo from '@pages/ActionPage/ActionExecutionInfo/ActionExecutionInfo';
+import ActionHeader from './ActionHeader/ActionHeader';
+import ActionTable from './ActionTable/ActionTable';
+import ActionExecutionInfo from './ActionExecutionInfo/ActionExecutionInfo';
 import ActionRepeatDialog from '@commonComponents/Action/ActionsDialogs/ActionRepeatDialog';
-import { useRequestAction } from '@pages/ActionPage/useRequestAction';
 import { SpinnerPanel } from '@uikit/Spinner/Spinner';
+import { useRequestAction } from './useRequestAction';
 
 const ActionPage = () => {
   useRequestAction();

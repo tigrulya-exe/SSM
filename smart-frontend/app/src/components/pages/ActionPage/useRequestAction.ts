@@ -18,7 +18,7 @@
 import { useDebounce, useDispatch, useRequestTimer, useStore } from '@hooks';
 import { useEffect, useMemo } from 'react';
 import { cleanupActions as cleanupActionDialogs } from '@store/adh/actionDialogs/actionsActionsSlice';
-import { defaultDebounceDelay } from '@constants';
+import { defaultDebounceDelay, defaultActionPageFrequency } from '@constants';
 import { cleanupAction, getAction, refreshAction } from '@store/adh/action/actionSlice';
 import { useParams } from 'react-router-dom';
 import { AdhActionState } from '@models/adh';
@@ -52,5 +52,5 @@ export const useRequestAction = () => {
     dispatch(refreshAction(parseInt(actionId)));
   }, defaultDebounceDelay);
 
-  useRequestTimer(debounceGetData, debounceRefreshData, 1, isNeedUpdate, [actionId]);
+  useRequestTimer(debounceGetData, debounceRefreshData, defaultActionPageFrequency, isNeedUpdate, [actionId]);
 };

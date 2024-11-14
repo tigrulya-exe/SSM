@@ -16,10 +16,8 @@
  * limitations under the License.
  */
 import React, { useState } from 'react';
-import TabsBlock from '@uikit/Tabs/TabsBlock';
-import Tab from '@uikit/Tabs/Tab';
 import s from './ActionExecutionInfo.module.scss';
-import SimpleLogView from '@uikit/SimpleLogView/SimpleLogView';
+import { SimpleLogView, TabsBlock, Tab } from '@uikit';
 import { useStore } from '@hooks';
 
 enum InfoTabs {
