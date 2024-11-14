@@ -16,13 +16,23 @@
  * limitations under the License.
  */
 
-export { useBreadcrumbs } from './useBreadcrumbs';
-export { useCheckSession } from './useCheckSession';
-export { useDispatch } from './useDispatch';
-export { useForwardRef } from './useForwardRef';
-export { useLocalStorage } from './useLocalStorage';
-export { useStore } from './useStore';
-export { useDebounce } from './useDebounce';
-export { useRequestTimer } from './useRequestTimer';
-export { useResizeObserver } from './useResizeObserver';
-export { useOutsideClick } from './useOutsideClick';
+/* eslint-disable-next-line import/no-unresolved */
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+/* eslint-disable-next-line import/no-unresolved */
+import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
+
+// todo: minimize by following
+// https://github.com/microsoft/monaco-editor/blob/main/samples/browser-esm-webpack-small/index.js
+
+self.MonacoEnvironment = {
+  getWorker(_: unknown, label: string) {
+    switch (label) {
+      // Handle other cases
+      case 'json':
+        return new jsonWorker();
+      default:
+        console.warn(`Unknown label ${label}`);
+        return new editorWorker();
+    }
+  },
+};
