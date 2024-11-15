@@ -18,19 +18,15 @@
 package org.smartdata.hdfs.scheduler;
 
 import com.google.common.util.concurrent.RateLimiter;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.SmartContext;
 import org.smartdata.action.SyncAction;
+import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.hdfs.action.CopyDirectoryAction;
 import org.smartdata.hdfs.action.CopyFileAction;
@@ -38,7 +34,16 @@ import org.smartdata.hdfs.action.HdfsAction;
 import org.smartdata.hdfs.file.equality.FileEqualityStrategy;
 import org.smartdata.metastore.MetaStore;
 import org.smartdata.metastore.MetaStoreException;
-import org.smartdata.model.*;
+import org.smartdata.model.ActionInfo;
+import org.smartdata.model.BackUpInfo;
+import org.smartdata.model.CmdletInfo;
+import org.smartdata.model.CompressionFileState;
+import org.smartdata.model.FileDiff;
+import org.smartdata.model.FileDiffState;
+import org.smartdata.model.FileDiffType;
+import org.smartdata.model.FileInfo;
+import org.smartdata.model.FileState;
+import org.smartdata.model.LaunchAction;
 import org.smartdata.model.action.ScheduleResult;
 import org.smartdata.protocol.message.LaunchCmdlet;
 
@@ -49,13 +54,36 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
+import static org.smartdata.conf.SmartConfKeys.SMART_ACTION_COPY_THROTTLE_MB_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_ACTION_COPY_THROTTLE_MB_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_ACTION_RETRY_COUNT_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_ACTION_RETRY_COUNT_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_COUNT_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_COUNT_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_SIZE_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_SIZE_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_BASE_SYNC_BATCH_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_BASE_SYNC_BATCH_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_CHECK_INTERVAL_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_CHECK_INTERVAL_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_DIFF_CACHE_SYNC_THRESHOLD_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_DIFF_CACHE_SYNC_THRESHOLD_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_FILE_DIFF_ARCHIVE_SIZE_DEFAULT;
+import static org.smartdata.conf.SmartConfKeys.SMART_COPY_SCHEDULER_FILE_DIFF_ARCHIVE_SIZE_KEY;
 import static org.smartdata.model.FileDiffType.DELETE;
 import static org.smartdata.utils.ConfigUtil.toRemoteClusterConfig;
 import static org.smartdata.utils.FileDiffUtils.getDest;
@@ -64,17 +92,8 @@ import static org.smartdata.utils.FileDiffUtils.getOffset;
 import static org.smartdata.utils.PathUtil.pathStartsWith;
 
 public class CopyScheduler extends ActionSchedulerService {
-  static final Logger LOG = LoggerFactory.getLogger(CopyScheduler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CopyScheduler.class);
 
-  // todo make this and other threshold constants configurable options
-  private static final int FILE_DIFF_ARCHIVE_SIZE = 1000;
-  // Merge append length threshold
-  private final static long MERGE_LEN_THRESHOLD = DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT * 3;
-  // Merge count length threshold
-  private final static long MERGE_COUNT_THRESHOLD = 10;
-  private final static int RETRY_THRESHOLD = 3;
-  // Base sync batch insert size
-  private final static int INITIAL_SYNC_BATCH_SIZE = 500;
   private static final List<String> SUPPORTED_ACTIONS = Collections.singletonList("sync");
 
   private final MetaStore metaStore;
@@ -82,7 +101,7 @@ public class CopyScheduler extends ActionSchedulerService {
   // Fixed rate scheduler
   private final ScheduledExecutorService executorService;
   // Global variables
-  private Configuration conf;
+  private final Configuration conf;
   // <File path, file diff id>
   private final Set<String> fileLocks;
   // <actionId, file diff id>
@@ -97,17 +116,25 @@ public class CopyScheduler extends ActionSchedulerService {
   private final long checkInterval;
   // Cache of the file_diff
   private final Map<Long, FileDiff> fileDiffCache;
-  // cache sync threshold, default 100
-  private int cacheSyncTh = 100;
+  // cache sync threshold
+  private final int cacheSyncTh;
   // record the file_diff whether being changed
   private final Set<Long> changedFileInCacheDiffIds;
-  private RateLimiter rateLimiter = null;
+  private final RateLimiter rateLimiter;
   // records the number of file diffs in useless states
   private final AtomicInteger numFileDiffUseless = new AtomicInteger(0);
   // record the file diff info in order for check use
   // todo encapsulate actions on archive in separate class
   private final List<FileDiff> fileDiffArchive;
+  // contains fileDiffs for deferred termination
+  private final Queue<FileDiff> fileDiffsToTerminate;
   private final FileEqualityStrategy fileEqualityStrategy;
+
+  private final int fileDiffArchiveSize;
+  private final long appendMergeLenThreshold;
+  private final long appendMergeCountThreshold;
+  private final int syncActionRetryCount;
+  private final int initialSyncBatchSize;
 
   public CopyScheduler(SmartContext context, MetaStore metaStore) {
     super(context, metaStore);
@@ -119,30 +146,44 @@ public class CopyScheduler extends ActionSchedulerService {
     this.initialSyncQueue = new ConcurrentHashMap<>();
     this.executorService = Executors.newScheduledThreadPool(2);
     this.fileDiffCache = new ConcurrentHashMap<>();
+    this.fileDiffsToTerminate = new ConcurrentLinkedQueue<>();
     this.changedFileInCacheDiffIds = ConcurrentHashMap.newKeySet();
-    // Get conf or new default conf
-    try {
-      conf = getContext().getConf();
-    } catch (NullPointerException e) {
-      // SmartContext is empty
-      conf = new Configuration();
-    }
+    this.conf = Optional.ofNullable(getContext())
+        .map(SmartContext::getConf)
+        .orElseGet(SmartConf::new);
+
     // Conf related parameters
-    cacheSyncTh = conf.getInt(SmartConfKeys
-            .SMART_COPY_SCHEDULER_BASE_SYNC_BATCH,
-        SmartConfKeys.SMART_COPY_SCHEDULER_BASE_SYNC_BATCH_DEFAULT);
-    checkInterval = conf.getLong(SmartConfKeys.SMART_COPY_SCHEDULER_CHECK_INTERVAL,
-        SmartConfKeys.SMART_COPY_SCHEDULER_CHECK_INTERVAL_DEFAULT);
+    this.cacheSyncTh = conf.getInt(
+        SMART_COPY_SCHEDULER_DIFF_CACHE_SYNC_THRESHOLD_KEY,
+        SMART_COPY_SCHEDULER_DIFF_CACHE_SYNC_THRESHOLD_DEFAULT);
+    this.checkInterval = conf.getLong(
+        SMART_COPY_SCHEDULER_CHECK_INTERVAL_KEY,
+        SMART_COPY_SCHEDULER_CHECK_INTERVAL_DEFAULT);
+    this.fileDiffArchiveSize = conf.getInt(
+        SMART_COPY_SCHEDULER_FILE_DIFF_ARCHIVE_SIZE_KEY,
+        SMART_COPY_SCHEDULER_FILE_DIFF_ARCHIVE_SIZE_DEFAULT);
+    this.appendMergeLenThreshold = conf.getLong(
+        SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_SIZE_KEY,
+        SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_SIZE_DEFAULT);
+    this.appendMergeCountThreshold = conf.getLong(
+        SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_COUNT_KEY,
+        SMART_COPY_SCHEDULER_APPEND_CHAIN_MERGE_COUNT_DEFAULT);
+    this.syncActionRetryCount = conf.getInt(
+        SMART_COPY_SCHEDULER_ACTION_RETRY_COUNT_KEY,
+        SMART_COPY_SCHEDULER_ACTION_RETRY_COUNT_DEFAULT);
+    this.initialSyncBatchSize = conf.getInt(
+        SMART_COPY_SCHEDULER_BASE_SYNC_BATCH_KEY,
+        SMART_COPY_SCHEDULER_BASE_SYNC_BATCH_DEFAULT);
     // throttle for copy action
-    long throttleInMb = conf.getLong(SmartConfKeys.SMART_ACTION_COPY_THROTTLE_MB_KEY,
-        SmartConfKeys.SMART_ACTION_COPY_THROTTLE_MB_DEFAULT);
-    if (throttleInMb > 0) {
-      rateLimiter = RateLimiter.create(throttleInMb);
-    }
+    long throttleInMb = conf.getLong(
+        SMART_ACTION_COPY_THROTTLE_MB_KEY,
+        SMART_ACTION_COPY_THROTTLE_MB_DEFAULT);
+    this.rateLimiter = throttleInMb > 0
+        ? RateLimiter.create(throttleInMb) : null;
     try {
       this.numFileDiffUseless.addAndGet(metaStore.getUselessFileDiffNum());
     } catch (MetaStoreException e) {
-      LOG.error("Failed to get num of useless file diffs!");
+      LOG.error("Failed to get num of useless file diffs!", e);
     }
     this.fileDiffArchive = new CopyOnWriteArrayList<>();
     this.fileEqualityStrategy = FileEqualityStrategy.from(conf);
@@ -163,20 +204,24 @@ public class CopyScheduler extends ActionSchedulerService {
     long diffId = fileDiffChains.get(path).getHead();
     if (diffId == -1) {
       // FileChain is already empty
+      LOG.warn("File chain not found for path {}", path);
       return ScheduleResult.FAIL;
     }
     FileDiff fileDiff = fileDiffCache.get(diffId);
     if (fileDiff == null) {
+      LOG.warn("File diff cache entry not found for path {}", path);
       return ScheduleResult.FAIL;
     }
     if (fileDiff.getState() != FileDiffState.PENDING) {
       // If file diff is applied or failed
-      fileDiffChains.get(path).removeHead();
+      doOnFileChain(path, ScheduleTask.FileChain::removeHead);
       fileLocks.remove(path);
+      LOG.warn("File diff is not PENDING for path {}", path);
       return ScheduleResult.FAIL;
     }
     // wait dependent file diff
     if (requireWait(fileDiff)) {
+      LOG.debug("File {} is locked by another action, it will be processed later", path);
       return ScheduleResult.RETRY;
     }
 
@@ -206,12 +251,10 @@ public class CopyScheduler extends ActionSchedulerService {
         if (rateLimiter != null) {
           String strLen = getLength(fileDiff);
           if (strLen != null) {
-            int appendLen = (int)(Long.parseLong(strLen) >> 20);
+            int appendLen = (int) (Long.parseLong(strLen) >> 20);
             if (appendLen > 0) {
               if (!rateLimiter.tryAcquire(appendLen)) {
-                if (LOG.isDebugEnabled()) {
-                  LOG.debug("Cancel Scheduling COPY action {} due to throttling.", actionInfo);
-                }
+                LOG.debug("Cancel Scheduling COPY action {} due to throttling.", actionInfo);
                 return ScheduleResult.RETRY;
               }
             }
@@ -259,18 +302,27 @@ public class CopyScheduler extends ActionSchedulerService {
   }
 
   private boolean isFileLocked(String path) {
-    if(fileLocks.isEmpty()) {
-      LOG.debug("File Lock is empty. Current path = {}", path);
+    if (fileLocks.contains(path)) {
+      LOG.debug("File {} is locked: it's in fileLocks", path);
+      return true;
     }
 
-    // File is locked
-    return fileLocks.contains(path)
-        // File is in base sync queue
-        || initialSyncQueue.containsKey(path)
-        // File Chain is not ready
-        || !fileDiffChains.containsKey(path)
-        // File Chain is empty
-        || fileDiffChains.get(path).isEmpty();
+    if (initialSyncQueue.containsKey(path)) {
+      LOG.debug("File {} is locked: it's in initial sync queue", path);
+      return true;
+    }
+
+    if (!fileDiffChains.containsKey(path)) {
+      LOG.debug("File {} is locked: no file diff chain found for this path", path);
+      return true;
+    }
+
+    if (fileDiffChains.get(path).isEmpty()) {
+      LOG.debug("File {} is locked: file diff chain for this path is empty", path);
+      return true;
+    }
+
+    return false;
   }
 
   private boolean requireWait(FileDiff fileDiff) {
@@ -309,7 +361,7 @@ public class CopyScheduler extends ActionSchedulerService {
   @Override
   public void onActionFinished(CmdletInfo cmdletInfo, ActionInfo actionInfo) {
     // Remove lock
-    FileDiff fileDiff = null;
+    FileDiff fileDiff;
     if (actionInfo.isFinished()) {
       try {
         long did = actionDiffMap.get(actionInfo.getActionId());
@@ -332,7 +384,7 @@ public class CopyScheduler extends ActionSchedulerService {
         } else {
           if (fileDiffFailedTimes.containsKey(did)) {
             int curr = fileDiffFailedTimes.get(did);
-            if (curr >= RETRY_THRESHOLD) {
+            if (curr >= syncActionRetryCount) {
               fileDiffTerminated(fileDiff);
               //update state in cache
               updateFileDiffInCache(did, FileDiffState.FAILED);
@@ -355,21 +407,19 @@ public class CopyScheduler extends ActionSchedulerService {
   }
 
   private void fileDiffTerminated(FileDiff fileDiff) {
-    if (fileDiffChains.containsKey(fileDiff.getSrc())) {
-      // Remove chain top
-      fileDiffChains.get(fileDiff.getSrc()).removeHead();
-    }
+    // Remove chain top
+    doOnFileChain(fileDiff.getSrc(), ScheduleTask.FileChain::removeHead);
+
     // remove from fileDiffMap which is for retry use
     fileDiffFailedTimes.remove(fileDiff.getDiffId());
   }
 
-  private void fileDiffTerminatedInternal(FileDiff fileDiff) {
-    if (fileDiffChains.containsKey(fileDiff.getSrc())) {
-      // Remove the fileDiff from chain
-      fileDiffChains.get(fileDiff.getSrc()).removeFromChain(fileDiff);
-    }
-    // remove from fileDiffMap which is for retry use
-    fileDiffFailedTimes.remove(fileDiff.getDiffId());
+  private void doOnFileChain(String filePath, Consumer<ScheduleTask.FileChain> chainAction) {
+    fileDiffChains.computeIfPresent(filePath, (ignore, fileChain) -> {
+      chainAction.accept(fileChain);
+      // delete fileChain in case it's empty
+      return fileChain.isEmpty() ? null : fileChain;
+    });
   }
 
   private void runBatchInitialSync() throws MetaStoreException {
@@ -383,7 +433,7 @@ public class CopyScheduler extends ActionSchedulerService {
     int index = 0;
 
     for (Map.Entry<String, String> syncQueueEntry : initialSyncQueue.entrySet()) {
-      if (index++ >= INITIAL_SYNC_BATCH_SIZE) {
+      if (index++ >= initialSyncBatchSize) {
         break;
       }
       FileDiff fileDiff = runFileInitialSync(syncQueueEntry.getKey(), syncQueueEntry.getValue());
@@ -563,17 +613,17 @@ public class CopyScheduler extends ActionSchedulerService {
    * add fileDiff to Cache, if diff is already in cache, then print error log
    */
   private void addDiffToCache(FileDiff fileDiff) {
-    LOG.debug("Add FileDiff Cache into file_diff cache");
+    LOG.debug("Adding {} to file diff cache", fileDiff);
     if (fileDiffCache.containsKey(fileDiff.getDiffId())) {
-      LOG.error("FileDiff {} already in cache!", fileDiff);
+      LOG.error("File diff {} is already in cache!", fileDiff);
       return;
     }
     fileDiffCache.put(fileDiff.getDiffId(), fileDiff);
   }
 
-  private synchronized void updateFileDiffInCache(Long diffId,
-      FileDiffState fileDiffState) throws MetaStoreException {
-    LOG.debug("Update FileDiff");
+  private synchronized void updateFileDiffInCache(
+      Long diffId, FileDiffState fileDiffState) throws MetaStoreException {
+    LOG.debug("Update file diff wit id {}: new state {}", diffId, fileDiffState);
     if (!fileDiffCache.containsKey(diffId)) {
       return;
     }
@@ -603,7 +653,7 @@ public class CopyScheduler extends ActionSchedulerService {
    * delete cache and remove file lock if necessary
    */
   private void deleteDiffInCache(Long diffId) {
-    LOG.debug("Delete FileDiff in cache");
+    LOG.debug("Remove file diff wit id {} from cache", diffId);
     if (fileDiffCache.containsKey(diffId)) {
       FileDiff fileDiff = fileDiffCache.get(diffId);
       fileDiffCache.remove(diffId);
@@ -627,7 +677,7 @@ public class CopyScheduler extends ActionSchedulerService {
 
     // Push cache to metastore
     if (!updatedFileDiffs.isEmpty()) {
-      LOG.debug("Push FileDiff from cache to metastore");
+      LOG.debug("Inserting file diff cache to metastore");
       metaStore.updateFileDiff(updatedFileDiffs);
     }
     // Remove file diffs in cache and file lock
@@ -666,18 +716,18 @@ public class CopyScheduler extends ActionSchedulerService {
         pushCacheToDB();
         List<FileDiff> pendingDiffs = metaStore.getPendingDiff();
         processPendingDiffs(pendingDiffs);
-      } catch (MetaStoreException e) {
+      } catch (Exception e) {
         LOG.error("Sync fileDiffs error", e);
       }
     }
 
     private void processPendingDiffs(
         List<FileDiff> fileDiffs) throws MetaStoreException {
-      for (FileDiff fileDiff: fileDiffs) {
+      for (FileDiff fileDiff : fileDiffs) {
         addToFileDiffArchive(fileDiff);
       }
 
-      LOG.debug("Size of Pending diffs {}", fileDiffs.size());
+      LOG.debug("Start processing pending diffs of size {}", fileDiffs.size());
       if (fileDiffs.isEmpty() && initialSyncQueue.isEmpty()) {
         LOG.debug("All Backup directories are synced");
         return;
@@ -702,21 +752,43 @@ public class CopyScheduler extends ActionSchedulerService {
         }
 
         // Get or create fileChain
-        FileChain fileChain = fileDiffChains.computeIfAbsent(
-            fileDiff.getSrc(), FileChain::new);
-        fileChain.addToChain(fileDiff);
+        addFileDiffToChain(fileDiff);
       }
     }
 
+    private void addFileDiffToChain(FileDiff fileDiff) {
+      fileDiffChains.compute(fileDiff.getSrc(), (filePath, maybeFileChain) -> {
+        try {
+          FileChain chain = Optional.ofNullable(maybeFileChain)
+              .orElseGet(() -> new FileChain(filePath));
+          chain.addToChain(fileDiff);
+          return chain;
+        } catch (MetaStoreException e) {
+          throw new RuntimeException(e);
+        }
+      });
+
+      fileDiffsToTerminate.forEach(this::fileDiffTerminatedInternal);
+    }
+
+    private void fileDiffTerminatedInternal(FileDiff fileDiff) {
+      // Remove the fileDiff from chain
+      doOnFileChain(fileDiff.getSrc(),
+          baseChain -> baseChain.removeFromChain(fileDiff.getDiffId()));
+
+      // remove from fileDiffMap which is for retry use
+      fileDiffFailedTimes.remove(fileDiff.getDiffId());
+    }
+
     private void addToFileDiffArchive(FileDiff newFileDiff) {
-      for (FileDiff fileDiff: fileDiffArchive) {
+      for (FileDiff fileDiff : fileDiffArchive) {
         if (fileDiff.getDiffId() == newFileDiff.getDiffId()) {
           return;
         }
       }
       fileDiffArchive.add(newFileDiff);
       int index = 0;
-      while (fileDiffArchive.size() > FILE_DIFF_ARCHIVE_SIZE && index < FILE_DIFF_ARCHIVE_SIZE) {
+      while (fileDiffArchive.size() > fileDiffArchiveSize && index < fileDiffArchiveSize) {
         if (FileDiffState.isTerminalState(fileDiffArchive.get(index).getState())) {
           fileDiffArchive.remove(index);
           continue;
@@ -772,8 +844,8 @@ public class CopyScheduler extends ActionSchedulerService {
               mergeAllDiffs();
             }
 
-            if (currAppendLength >= MERGE_LEN_THRESHOLD ||
-                appendChain.size() >= MERGE_COUNT_THRESHOLD) {
+            if (currAppendLength >= appendMergeLenThreshold ||
+                appendChain.size() >= appendMergeCountThreshold) {
               mergeAppend();
             }
 
@@ -789,7 +861,7 @@ public class CopyScheduler extends ActionSchedulerService {
               mergeRename(fileDiff);
               break;
             }
-            fileDiffTerminatedInternal(fileDiff);
+            fileDiffsToTerminate.add(fileDiff);
             // discard rename file diff due to not synced
             updateFileDiffInCache(fileDiff.getDiffId(), FileDiffState.FAILED);
             discardDirtyData(fileDiff);
@@ -823,7 +895,7 @@ public class CopyScheduler extends ActionSchedulerService {
         if (fileLocks.contains(filePath)) {
           return;
         }
-        LOG.debug("Append Merge Triggered!");
+        LOG.debug("Append chain merge triggered for path {}", filePath);
         // Lock file to avoid File Chain being processed
         fileLocks.add(filePath);
         try {
@@ -856,6 +928,7 @@ public class CopyScheduler extends ActionSchedulerService {
           FileDiff fileDiff = fileDiffCache.get(lastAppend);
           fileDiff.getParameters().put("-offset", "" + offset);
           fileDiff.getParameters().put("-length", "" + totalLength);
+          fileDiff.setState(FileDiffState.PENDING);
           // Update fileDiff in metastore
           changedFileInCacheDiffIds.add(fileDiff.getDiffId());
         } finally {
@@ -867,7 +940,7 @@ public class CopyScheduler extends ActionSchedulerService {
       }
 
       void mergeDelete(FileDiff fileDiff) throws MetaStoreException {
-        LOG.debug("Delete Merge Triggered!");
+        LOG.debug("Delete chain merge triggered for path {}", filePath);
         for (FileDiff archiveDiff : fileDiffArchive) {
           if (archiveDiff.getDiffId() == fileDiff.getDiffId()) {
             break;
@@ -877,7 +950,7 @@ public class CopyScheduler extends ActionSchedulerService {
           }
 
           if (pathStartsWith(archiveDiff.getSrc(), fileDiff.getSrc())) {
-            fileDiffTerminatedInternal(archiveDiff);
+            fileDiffsToTerminate.add(archiveDiff);
             updateFileDiffInCache(archiveDiff.getDiffId(), FileDiffState.APPLIED);
           }
         }
@@ -889,7 +962,7 @@ public class CopyScheduler extends ActionSchedulerService {
         if (fileLocks.contains(filePath)) {
           return;
         }
-        LOG.debug("Rename Merge Triggered!");
+        LOG.debug("Rename chain merge triggered for path {}", filePath);
         // Lock file to avoid File Chain being processed
         fileLocks.add(filePath);
         try {
@@ -932,11 +1005,9 @@ public class CopyScheduler extends ActionSchedulerService {
             break;
           }
 
-          if (fileDiff.getDiffType() != FileDiffType.APPEND ||
-              !pathStartsWith(path, fileDiff.getSrc())) {
-            continue;
-          }
-          if (fileDiff.getState() == FileDiffState.PENDING) {
+          if (fileDiff.getDiffType() == FileDiffType.APPEND
+              && fileDiff.getState() == FileDiffState.PENDING
+              && pathStartsWith(path, fileDiff.getSrc())) {
             unfinishedAppendFileDiff.add(fileDiff);
           }
         }
@@ -950,7 +1021,7 @@ public class CopyScheduler extends ActionSchedulerService {
           if (fileDiff == null) {
             fileDiff = unfinished;
           }
-          fileDiffTerminatedInternal(fileDiff);
+          fileDiffsToTerminate.add(fileDiff);
           updateFileDiffInCache(fileDiff.getDiffId(), FileDiffState.FAILED);
           // add a new append file diff with new name
           FileDiff newFileDiff = new FileDiff(FileDiffType.APPEND, FileDiffState.PENDING);
@@ -971,26 +1042,19 @@ public class CopyScheduler extends ActionSchedulerService {
         return diffChain.get(0);
       }
 
-      long removeHead() {
+      void removeHead() {
         if (diffChain.isEmpty()) {
-          return -1;
+          return;
         }
         long fid = diffChain.get(0);
         if (!appendChain.isEmpty() && fid == appendChain.get(0)) {
           appendChain.remove(0);
         }
         diffChain.remove(0);
-        if (diffChain.isEmpty()) {
-          fileDiffChains.remove(filePath);
-        }
-        return fid;
       }
 
-      void removeFromChain(FileDiff fileDiff) {
-        diffChain.removeIf(aLong -> aLong == fileDiff.getDiffId());
-        if (diffChain.isEmpty()) {
-          fileDiffChains.remove(filePath);
-        }
+      void removeFromChain(long diffId) {
+        diffChain.removeIf(aLong -> aLong == diffId);
       }
 
       void mergeAllDiffs() throws MetaStoreException {
@@ -1016,8 +1080,9 @@ public class CopyScheduler extends ActionSchedulerService {
   private class PurgeFileDiffTask implements Runnable {
     public int maxNumRecords;
 
-    public PurgeFileDiffTask(Configuration conf){
-      this.maxNumRecords = conf.getInt(SmartConfKeys.SMART_FILE_DIFF_MAX_NUM_RECORDS_KEY,
+    public PurgeFileDiffTask(Configuration conf) {
+      this.maxNumRecords = conf.getInt(
+          SmartConfKeys.SMART_FILE_DIFF_MAX_NUM_RECORDS_KEY,
           SmartConfKeys.SMART_FILE_DIFF_MAX_NUM_RECORDS_DEFAULT);
     }
 
@@ -1029,7 +1094,7 @@ public class CopyScheduler extends ActionSchedulerService {
       try {
         numFileDiffUseless.addAndGet(-metaStore.deleteUselessFileDiff(maxNumRecords));
       } catch (MetaStoreException e) {
-        LOG.error("Error occurs when delete useless file diff!");
+        LOG.error("Error occurs when delete useless file diff!", e);
       }
     }
   }

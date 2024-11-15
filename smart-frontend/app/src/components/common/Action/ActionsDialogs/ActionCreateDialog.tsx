@@ -47,6 +47,13 @@ const ActionCreateDialog: React.FC = () => {
     dispatch(createActionWithUpdate(actionText));
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.shiftKey && e.key === 'Enter') {
+      e.preventDefault();
+      handleRun();
+    }
+  };
+
   return (
     <FooterDialog
       isOpen={isOpen}
@@ -55,7 +62,12 @@ const ActionCreateDialog: React.FC = () => {
       actionButtonLabel="Run"
       onAction={handleRun}
     >
-      <MultilineInput value={actionText} onChange={handleChange} disabled={isActionInProgress} />
+      <MultilineInput
+        onKeyDown={handleKeyDown}
+        value={actionText}
+        onChange={handleChange}
+        disabled={isActionInProgress}
+      />
       {isActionInProgress && <SpinnerPanel />}
     </FooterDialog>
   );
