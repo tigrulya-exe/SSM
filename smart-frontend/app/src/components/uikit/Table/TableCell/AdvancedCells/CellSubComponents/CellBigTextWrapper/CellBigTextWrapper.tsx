@@ -16,30 +16,26 @@
  * limitations under the License.
  */
 import React from 'react';
-import { FlexGroup, IconButton } from '@uikit';
-import TableCell from '@uikit/Table/TableCell/TableCell';
-import { useDispatch } from '@hooks';
-import type { AdhAction } from '@models/adh';
-import { openUpdateActionDialog } from '@store/adh/actions/actionsActionsSlice';
+import s from './CellBigTextWrapper.module.scss';
+import { orElseGet } from '@utils/checkUtils';
+import { prepareText } from './CellBigTextWrapper.utils';
 
-interface ActionActionsCellProps {
-  action: AdhAction;
+const tenLinesHeight = 197;
+
+export interface CellBigTextWrapperProps {
+  text: string;
+  textLimit?: number;
+  maxHeight?: number;
 }
 
-const ActionActionsCell: React.FC<ActionActionsCellProps> = ({ action }) => {
-  const dispatch = useDispatch();
-
-  const handleReset = () => {
-    dispatch(openUpdateActionDialog(action));
-  };
+const CellBigTextWrapper = ({ text, maxHeight = tenLinesHeight, textLimit = 100 }: CellBigTextWrapperProps) => {
+  const preparedText = orElseGet(text, (value) => prepareText(value, textLimit));
 
   return (
-    <TableCell align="center" data-qa="actions">
-      <FlexGroup gap="4px">
-        <IconButton icon="refresh" title="Repeat action" onClick={handleReset} data-qa="action-refresh" />
-      </FlexGroup>
-    </TableCell>
+    <div className={s.cellBigTextWrapper} style={{ maxHeight: maxHeight }}>
+      {preparedText}
+    </div>
   );
 };
 
-export default ActionActionsCell;
+export default CellBigTextWrapper;

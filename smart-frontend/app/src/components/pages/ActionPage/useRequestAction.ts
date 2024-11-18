@@ -16,41 +16,41 @@
  * limitations under the License.
  */
 import { useDebounce, useDispatch, useRequestTimer, useStore } from '@hooks';
-import { useEffect } from 'react';
-import { cleanupActions, getActions, refreshActions } from '@store/adh/actions/actionsSlice';
-import { cleanupActionsTable, loadHosts } from '@store/adh/actions/actionsTableSlice';
+import { useEffect, useMemo } from 'react';
 import { cleanupActions as cleanupActionDialogs } from '@store/adh/actionDialogs/actionsActionsSlice';
-import { defaultDebounceDelay } from '@constants';
+import { defaultDebounceDelay, defaultActionPageFrequency } from '@constants';
+import { cleanupAction, getAction, refreshAction } from '@store/adh/action/actionSlice';
+import { useParams } from 'react-router-dom';
+import { AdhActionState } from '@models/adh';
 
-export const useRequestActions = () => {
+export const useRequestAction = () => {
+  const { actionId = '' } = useParams();
+  const action = useStore((s) => s.adh.action.action);
+  const isSomeError = useStore((s) => s.adh.action.isSomeError);
+
+  const isNeedUpdate = useMemo(() => {
+    return (!action && !isSomeError) || action?.state === AdhActionState.Running;
+  }, [action, isSomeError]);
+
   const dispatch = useDispatch();
 
-  const paginationParams = useStore(({ adh }) => adh.actionsTable.paginationParams);
-  const sortParams = useStore(({ adh }) => adh.actionsTable.sortParams);
-  const filter = useStore(({ adh }) => adh.actionsTable.filter);
-  const requestFrequency = useStore(({ adh }) => adh.actionsTable.requestFrequency);
-
   useEffect(() => {
-    dispatch(loadHosts());
+    if (!actionId) return;
+    dispatch(getAction(parseInt(actionId)));
+
     return () => {
-      dispatch(cleanupActions());
-      dispatch(cleanupActionsTable());
+      dispatch(cleanupAction());
       dispatch(cleanupActionDialogs());
     };
-  }, [dispatch]);
+  }, [dispatch, actionId]);
 
   const debounceGetData = useDebounce(() => {
-    dispatch(getActions());
+    dispatch(getAction(parseInt(actionId)));
   }, defaultDebounceDelay);
 
   const debounceRefreshData = useDebounce(() => {
-    dispatch(refreshActions());
+    dispatch(refreshAction(parseInt(actionId)));
   }, defaultDebounceDelay);
 
-  useRequestTimer(debounceGetData, debounceRefreshData, requestFrequency, true, [
-    filter,
-    sortParams,
-    paginationParams,
-    requestFrequency,
-  ]);
+  useRequestTimer(debounceGetData, debounceRefreshData, defaultActionPageFrequency, isNeedUpdate, [actionId]);
 };

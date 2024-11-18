@@ -15,18 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const defaultPerPagesList = [
-  { value: 10, label: '10 per page' },
-  { value: 30, label: '30 per page' },
-  { value: 50, label: '50 per page' },
-  { value: 100, label: '100 per page' },
-];
+export const prepareLabel = (value: string, limit: number) => {
+  if (value === '') return '-';
 
-// in milliseconds
-export const defaultSpinnerDelay = 250;
-export const defaultDebounceDelay = 300;
-
-// in seconds
-export const defaultActionsFrequency = 5;
-export const defaultActionPageFrequency = 1;
-export const defaultAuditFrequency = 5;
+  return value.length > limit ? `${value.slice(0, limit / 2)} <...> ${value.slice(-limit / 2)}` : value;
+};

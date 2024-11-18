@@ -15,18 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const defaultPerPagesList = [
-  { value: 10, label: '10 per page' },
-  { value: 30, label: '30 per page' },
-  { value: 50, label: '50 per page' },
-  { value: 100, label: '100 per page' },
-];
 
-// in milliseconds
-export const defaultSpinnerDelay = 250;
-export const defaultDebounceDelay = 300;
-
-// in seconds
-export const defaultActionsFrequency = 5;
-export const defaultActionPageFrequency = 1;
-export const defaultAuditFrequency = 5;
+export const getActionHeaderData = (textRepresentation: string) => {
+  const firstSpaceIndex = textRepresentation.indexOf(' ');
+  const title = textRepresentation.slice(0, firstSpaceIndex);
+  const subtitle = textRepresentation.slice(firstSpaceIndex);
+  return { title, subtitle };
+};

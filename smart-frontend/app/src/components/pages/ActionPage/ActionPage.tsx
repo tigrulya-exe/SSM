@@ -15,28 +15,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { FlexGroup, Title } from '@uikit';
-import ActionCreateBtn from './ActionCreateBtn/ActionCreateBtn';
-import ActionsToolbar from './ActionsToolbar/ActionsToolbar';
-import ActionsTable from './ActionsTable/ActionsTable';
-import { useRequestActions } from '@pages/ActionsPage/useRequestActions';
-import ActionsDialogs from '@commonComponents/Action/ActionsDialogs/ActionsDialogs';
 
-const ActionsPage: React.FC = () => {
-  useRequestActions();
+import { useStore } from '@hooks';
+import ActionHeader from './ActionHeader/ActionHeader';
+import ActionTable from './ActionTable/ActionTable';
+import ActionExecutionInfo from './ActionExecutionInfo/ActionExecutionInfo';
+import ActionRepeatDialog from '@commonComponents/Action/ActionsDialogs/ActionRepeatDialog';
+import { SpinnerPanel } from '@uikit/Spinner/Spinner';
+import { useRequestAction } from './useRequestAction';
+
+const ActionPage = () => {
+  useRequestAction();
+  const action = useStore((s) => s.adh.action.action);
+  const isSomeError = useStore((s) => s.adh.action.isSomeError);
+
+  if (!action && !isSomeError) {
+    return <SpinnerPanel />;
+  }
 
   return (
-    <div>
-      <FlexGroup gap="20px">
-        <Title variant="h1">Actions</Title>
-        <ActionCreateBtn />
-      </FlexGroup>
-      <ActionsToolbar />
-      <ActionsTable />
-      <ActionsDialogs />
-    </div>
+    <>
+      <ActionHeader />
+      <ActionTable />
+      <ActionExecutionInfo />
+      <ActionRepeatDialog />
+    </>
   );
 };
 
-export default ActionsPage;
+export default ActionPage;

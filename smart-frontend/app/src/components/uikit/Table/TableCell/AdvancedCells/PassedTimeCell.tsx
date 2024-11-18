@@ -15,18 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const defaultPerPagesList = [
-  { value: 10, label: '10 per page' },
-  { value: 30, label: '30 per page' },
-  { value: 50, label: '50 per page' },
-  { value: 100, label: '100 per page' },
-];
+import React from 'react';
+import { type TableCellProps } from '@uikit/Table/TableCell/TableCell';
+import TableCell from '@uikit/Table/TableCell/TableCell';
+import { getToday } from '@utils/date/calendarUtils';
+import { millisecondsToDuration } from '@utils/date/dateConvertUtils';
 
-// in milliseconds
-export const defaultSpinnerDelay = 250;
-export const defaultDebounceDelay = 300;
+interface PassedTimeCellProps extends Omit<TableCellProps, 'children'> {
+  startTime: number;
+  finishTime?: number | null;
+}
 
-// in seconds
-export const defaultActionsFrequency = 5;
-export const defaultActionPageFrequency = 1;
-export const defaultAuditFrequency = 5;
+const PassedTimeCell = ({ startTime, finishTime, ...props }: PassedTimeCellProps) => {
+  const timeDiff = finishTime ? finishTime - startTime : getToday().getTime() - startTime;
+  return <TableCell {...props}>{millisecondsToDuration(timeDiff)}</TableCell>;
+};
+
+export default PassedTimeCell;
