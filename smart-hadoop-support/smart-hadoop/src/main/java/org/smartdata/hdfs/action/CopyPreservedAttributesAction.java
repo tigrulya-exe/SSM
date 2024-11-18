@@ -24,16 +24,15 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.smartdata.model.FileInfoDiff;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.smartdata.utils.PathUtil.getRawPath;
 
 
 /**
@@ -54,7 +53,7 @@ public abstract class CopyPreservedAttributesAction extends HdfsAction {
   }
 
   public CopyPreservedAttributesAction(Set<PreserveAttribute> supportedAttributes,
-                                       Set<PreserveAttribute> defaultAttributes) {
+      Set<PreserveAttribute> defaultAttributes) {
     this.supportedAttributes = supportedAttributes;
     this.defaultAttributes = defaultAttributes;
   }
@@ -65,8 +64,7 @@ public abstract class CopyPreservedAttributesAction extends HdfsAction {
     if (StringUtils.isNotBlank(args.get(PRESERVE))) {
       rawPreserveAttributes = Arrays.asList(args.get(PRESERVE).split(","));
     }
-    updateMetadataSupport = new UpdateFileMetadataSupport(
-        getContext().getConf(), getLogPrintStream());
+    updateMetadataSupport = new UpdateFileMetadataSupport(getLogPrintStream());
   }
 
   protected Set<PreserveAttribute> parsePreserveAttributes() {
@@ -80,42 +78,27 @@ public abstract class CopyPreservedAttributesAction extends HdfsAction {
         : attributesFromOptions;
   }
 
-  protected void copyFileAttributes(String srcPath, String destPath,
-                                    Set<PreserveAttribute> preserveAttributes) throws IOException {
+  protected void copyFileAttributes(
+      FileStatus srcFileStatus,
+      Path destPath,
+      FileSystem destFileSystem,
+      Set<PreserveAttribute> preserveAttributes) throws IOException {
     if (preserveAttributes.isEmpty()) {
       return;
     }
 
     appendLog(
-        String.format("Copy attributes from %s to %s", srcPath, destPath));
+        String.format("Copy attributes from %s to %s", srcFileStatus.getPath(), destPath));
 
-    FileStatus srcFileStatus = getFileStatus(srcPath);
-    FileInfoDiff fileInfoDiff = new FileInfoDiff().setPath(destPath);
+    FileInfoDiff fileInfoDiff = new FileInfoDiff().setPath(getRawPath(destPath));
 
     supportedAttributes
         .stream()
         .filter(preserveAttributes::contains)
         .forEach(attribute -> attribute.applyToDiff(fileInfoDiff, srcFileStatus));
 
-    updateMetadataSupport.changeFileMetadata(fileInfoDiff);
+    updateMetadataSupport.changeFileMetadata(destFileSystem, fileInfoDiff);
     appendLog("Successfully transferred file attributes: " + preserveAttributes);
-  }
-
-  protected FileStatus getFileStatus(String fileName) throws IOException {
-    if (fileName.startsWith("hdfs")) {
-      FileSystem fs = FileSystem.get(URI.create(fileName), getContext().getConf());
-      // Get InputStream from URL
-      return fs.getFileStatus(new Path(fileName));
-    }
-    return (FileStatus) dfsClient.getFileInfo(fileName);
-  }
-
-  protected Optional<FileStatus> getFileStatusSafely(String fileName) throws IOException {
-    try {
-      return Optional.ofNullable(getFileStatus(fileName));
-    } catch (FileNotFoundException fileNotFoundException) {
-      return Optional.empty();
-    }
   }
 
   public enum PreserveAttribute {

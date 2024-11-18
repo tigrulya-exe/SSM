@@ -24,7 +24,7 @@ import com.github.benmanes.caffeine.cache.Scheduler;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.smartdata.hdfs.HadoopUtil;
 
 import java.io.IOException;
@@ -37,14 +37,14 @@ import java.util.concurrent.ScheduledExecutorService;
 
 
 @Slf4j
-public abstract class BaseDfsClientCache<T extends DFSClient> implements DfsClientCache<T> {
+public abstract class BaseFileSystemCache<T extends DistributedFileSystem> implements FileSystemCache<T> {
 
-  private final Cache<CacheKey, T> clientCache;
+  private final Cache<CacheKey, T> fileSystemCache;
   private final ScheduledExecutorService evictionHandlerExecutor;
 
-  public BaseDfsClientCache(Duration keyTtl) {
+  public BaseFileSystemCache(Duration keyTtl) {
     this.evictionHandlerExecutor = Executors.newSingleThreadScheduledExecutor();
-    this.clientCache = Caffeine.newBuilder()
+    this.fileSystemCache = Caffeine.newBuilder()
         .expireAfterAccess(keyTtl)
         .removalListener(this::onEntryRemoved)
         .scheduler(Scheduler.forScheduledExecutorService(evictionHandlerExecutor))
@@ -55,27 +55,27 @@ public abstract class BaseDfsClientCache<T extends DFSClient> implements DfsClie
   public T get(Configuration config, InetSocketAddress ssmMasterAddress)
       throws IOException {
     CacheKey cacheKey = new CacheKey(ssmMasterAddress, HadoopUtil.getNameNodeUri(config));
-    return clientCache.get(cacheKey, key -> createDfsClient(config, key));
+    return fileSystemCache.get(cacheKey, key -> createFileSystem(config, key));
   }
 
   @Override
   public void close() throws IOException {
-    clientCache.invalidateAll();
-    clientCache.cleanUp();
+    fileSystemCache.invalidateAll();
+    fileSystemCache.cleanUp();
     evictionHandlerExecutor.shutdown();
   }
 
-  protected abstract T createDfsClient(Configuration config, CacheKey cacheKey);
+  protected abstract T createFileSystem(Configuration config, CacheKey cacheKey);
 
   private void onEntryRemoved(CacheKey key, T value, RemovalCause removalCause) {
-    Optional.ofNullable(value).ifPresent(this::closeClient);
+    Optional.ofNullable(value).ifPresent(this::closeFileSystem);
   }
 
-  private void closeClient(T dfsClient) {
+  private void closeFileSystem(T fileSystem) {
     try {
-      dfsClient.close();
+      fileSystem.close();
     } catch (IOException exception) {
-      log.error("Error closing cached dfsClient after expiration", exception);
+      log.error("Error closing cached fileSystem after expiration", exception);
     }
   }
 

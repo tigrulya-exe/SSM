@@ -15,19 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.hdfs.action;
+package org.smartdata.hdfs.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.smartdata.hdfs.action.HdfsAction;
 
-/**
- * An action to do balance for a cluster.
- */
-public class ClusterBalanceAction extends HdfsAction {
-  private static final Logger LOG = LoggerFactory.getLogger(ClusterBalanceAction.class);
+import java.io.Closeable;
+import java.io.IOException;
 
-  @Override
-  protected void execute() throws Exception {
-
-  }
+public interface LocalFileSystemProvider extends Closeable {
+  DistributedFileSystem provide(
+      Configuration config, HdfsAction.FsType fsType) throws IOException;
 }

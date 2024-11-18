@@ -47,7 +47,7 @@ public class ChecksumFileEqualityStrategy implements FileEqualityStrategy {
 
   private FileSystem getFileSystem(Path path, Configuration conf) throws IOException {
     return isAbsoluteRemotePath(path)
-        ? getRemoteFileSystem(path, conf)
+        ? getRemoteFileSystem(path)
         : FileSystem.get(HadoopUtil.getNameNodeUri(conf), conf);
   }
 

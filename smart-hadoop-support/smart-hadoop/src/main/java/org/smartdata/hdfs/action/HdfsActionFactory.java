@@ -50,7 +50,6 @@ public class HdfsActionFactory extends AbstractActionFactory {
     addAction(DecompressionAction.class);
     addAction(CheckCompressAction.class);
     addAction(TruncateAction.class);
-    addAction(Truncate0Action.class);
     addAction(SmallFileCompactAction.class);
     addAction(SmallFileUncompactAction.class);
     addAction(CheckSumAction.class);

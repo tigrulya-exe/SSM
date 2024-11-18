@@ -63,7 +63,7 @@ public class TestListFileAction extends MiniClusterHarness {
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 
     listFileAction = new ListFileAction();
-    listFileAction.setDfsClient(dfsClient);
+    listFileAction.setLocalFileSystem(dfs);
     listFileAction.setContext(smartContext);
   }
 

@@ -85,9 +85,15 @@ public abstract class SmartAction {
 
   protected abstract void execute() throws Exception;
 
+  protected void preRun() throws Exception {
+    setStartTime();
+    appendLog(
+        String.format("Action starts at %s", Utils.getFormatedCurrentTime()));
+  }
+
   public final void run() {
     try {
-      setStartTime();
+      preRun();
       execute();
       successful = true;
     } catch (Throwable t) {
