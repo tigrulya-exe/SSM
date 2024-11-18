@@ -150,7 +150,7 @@ public class TestFileAccessManager extends
 
   private void createTestFiles() throws MetaStoreException {
     FileInfo[] fileInfos = IntStream.range(0, TEST_FILES.size())
-        .mapToObj(id -> FileInfo.newBuilder()
+        .mapToObj(id -> FileInfo.builder()
             .setFileId(id)
             .setPath(TEST_FILES.get(id))
             .build())

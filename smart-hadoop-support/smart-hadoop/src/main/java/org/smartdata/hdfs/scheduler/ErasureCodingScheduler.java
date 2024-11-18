@@ -176,7 +176,7 @@ public class ErasureCodingScheduler extends ActionSchedulerService {
       }
 
       FileInfo fileinfo = metaStore.getFile(srcPath);
-      if (fileinfo != null && fileinfo.isdir()) {
+      if (fileinfo != null && fileinfo.isDir()) {
         return ScheduleResult.SUCCESS;
       }
 

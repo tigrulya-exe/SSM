@@ -11,13 +11,11 @@
     </property>
     <property>
         <name>hadoop.security.authorization</name>
-<!--        <value>true</value>-->
-        <value>false</value>
+        <value>true</value>
     </property>
     <property>
         <name>hadoop.security.authentication</name>
-<!--        <value>kerberos</value>-->
-        <value>simple</value>
+        <value>kerberos</value>
     </property>
 
     <property>
@@ -27,6 +25,6 @@
 
     <property>
         <name>ipc.client.fallback-to-simple-auth-allowed</name>
-        <value>True</value>
+        <value>true</value>
     </property>
 </configuration>

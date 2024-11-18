@@ -53,9 +53,8 @@ public class DeleteFileAction extends HdfsActionWithRemoteClusterSupport {
   @Override
   protected void execute(FileSystem fileSystem) throws Exception {
     boolean successfullyDeleted = fileSystem.delete(filePath, true);
-    if (!successfullyDeleted) {
-      appendLog("File was not deleted: " + filePath);
-      return;
+    if (!successfullyDeleted && fileSystem.exists(filePath)) {
+      throw new ActionException("File was not deleted: " + filePath);
     }
 
     appendLog("File successfully deleted: " + filePath);

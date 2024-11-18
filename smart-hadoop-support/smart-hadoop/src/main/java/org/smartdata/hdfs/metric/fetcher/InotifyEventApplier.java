@@ -137,9 +137,13 @@ public class InotifyEventApplier {
   }
 
   //Todo: times and ec policy id, etc.
+  // TODO we need to create FileInfo from create event, not from HDFS client,
+  // because it can be either deleted or renamed at the moment
+  // of fetching info from HDFS
   private void applyCreate(Event.CreateEvent createEvent) throws IOException, MetaStoreException {
     FileInfo fileInfo = getFileInfo(createEvent.getPath());
     if (fileInfo == null) {
+      LOG.warn("Skipping create event for file {}", createEvent.getPath());
       return;
     }
 
@@ -158,7 +162,7 @@ public class InotifyEventApplier {
     applyCreateFileDiff(fileInfo);
     metaStore.deleteFileByPath(fileInfo.getPath(), false);
     metaStore.insertFile(fileInfo);
-    metaStore.renameFile(renameEvent.getSrcPath(), renameEvent.getDstPath(), fileInfo.isdir());
+    metaStore.renameFile(renameEvent.getSrcPath(), renameEvent.getDstPath(), fileInfo.isDir());
   }
 
   private FileInfo getFileInfo(String path) throws IOException {
@@ -173,7 +177,7 @@ public class InotifyEventApplier {
 
   private void applyCreateFileDiff(FileInfo fileInfo) throws MetaStoreException {
     if (inBackup(fileInfo.getPath())) {
-      if (fileInfo.isdir()) {
+      if (fileInfo.isDir()) {
         FileDiff fileDiff = new FileDiff(FileDiffType.MKDIR);
         fileDiff.setSrc(fileInfo.getPath());
         metaStore.insertFileDiff(fileDiff);
@@ -232,15 +236,8 @@ public class InotifyEventApplier {
     metaStore.updateFileByPath(closeEvent.getPath(), fileInfoDiff);
   }
 
-  //Todo: should update mtime? atime?
-//  private String getTruncateSql(Event.TruncateEvent truncateEvent) {
-//    return String.format(
-//        "UPDATE file SET length = %s, modification_time = %s WHERE path = '%s';",
-//        truncateEvent.getFileSize(), truncateEvent.getTimestamp(), truncateEvent.getPath());
-//  }
-
   private void applyRename(Event.RenameEvent renameEvent)
-      throws IOException, MetaStoreException, InterruptedException {
+      throws IOException, InterruptedException {
     String src = renameEvent.getSrcPath();
     String dest = renameEvent.getDstPath();
 
@@ -249,15 +246,12 @@ public class InotifyEventApplier {
       return;
     }
 
-    HdfsFileStatus status = client.getFileInfo(dest);
+    HdfsFileStatus destHdfsStatus = client.getFileInfo(dest);
     FileInfo info = metaStore.getFile(src);
 
     // For backup data to use.
     generateFileDiff(renameEvent);
 
-    if (status == null) {
-      LOG.debug("Get rename dest status failed, {} -> {}", src, dest);
-    }
     // The dest path which the src is renamed to should be checked in file table
     // to avoid duplicated record for one same path.
     FileInfo destInfo = metaStore.getFile(dest);
@@ -266,9 +260,10 @@ public class InotifyEventApplier {
     }
     // src is not in file table because it is not fetched or other reason
     if (info == null) {
-      if (status != null) {
-        //info = HadoopUtil.convertFileStatus(status, dest);
-        //metaStore.insertFile(info);
+      // TODO get rid of repeating namespace fetching
+      // by achieving full consistency of metastore fs namespace
+      // by saving all files including ignored ones
+      if (destHdfsStatus != null) {
         namespaceFetcher.startFetch(dest);
         while (!namespaceFetcher.fetchFinished()) {
           LOG.info("Fetching the files under " + dest);
@@ -287,7 +282,7 @@ public class InotifyEventApplier {
       return;
     }
 
-    metaStore.renameFile(src, dest, info.isdir());
+    metaStore.renameFile(src, dest, info.isDir());
   }
 
   private void generateFileDiff(Event.RenameEvent renameEvent) throws MetaStoreException {
@@ -341,7 +336,7 @@ public class InotifyEventApplier {
     List<T> results = new ArrayList<>();
     results.add(diffProducer.apply(srcFileInfo, context));
 
-    if (srcFileInfo.isdir()) {
+    if (srcFileInfo.isDir()) {
       metaStore.getFilesByPrefixInOrder(addPathSeparator(srcFileInfo.getPath()))
           .stream()
           .map(fileInfo -> diffProducer.apply(fileInfo, context))
@@ -363,7 +358,7 @@ public class InotifyEventApplier {
   }
 
   private FileDiff buildCreateFileDiff(FileInfo fileInfo, Event.RenameEvent renameEvent) {
-    if (fileInfo.isdir()) {
+    if (fileInfo.isDir()) {
       FileDiff fileDiff = new FileDiff(FileDiffType.MKDIR);
       fileDiff.setSrc(fileInfo.getPath());
       return fileDiff;
@@ -478,7 +473,7 @@ public class InotifyEventApplier {
 
     if (fileInfo != null) {
       insertDeleteDiff(unlinkEvent.getPath());
-      metaStore.unlinkFile(unlinkEvent.getPath(), fileInfo.isdir());
+      metaStore.unlinkFile(unlinkEvent.getPath(), fileInfo.isDir());
     }
   }
 

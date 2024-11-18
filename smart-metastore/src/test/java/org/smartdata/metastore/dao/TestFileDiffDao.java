@@ -86,8 +86,8 @@ public class TestFileDiffDao extends TestDaoBase {
     dids.add(1L);
     dids.add(2L);
     List<String> parameters = new ArrayList<>();
-    parameters.add(diffParametersSerializer.toJson(fileDiffs.get(0)));
-    parameters.add(diffParametersSerializer.toJson(fileDiffs.get(1)));
+    parameters.add(diffParametersSerializer.toJson(fileDiffs.get(0).getParameters()));
+    parameters.add(diffParametersSerializer.toJson(fileDiffs.get(1).getParameters()));
     List<FileDiffState> fileDiffStates = new ArrayList<>();
     fileDiffStates.add(FileDiffState.APPLIED);
     fileDiffStates.add(fileDiffs.get(1).getState());

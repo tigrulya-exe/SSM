@@ -106,7 +106,7 @@ public class TestAccessEventAggregator extends TestDaoBase {
   }
 
   private FileInfo dummyFileInfo(String path, long fileId) {
-    return FileInfo.newBuilder()
+    return FileInfo.builder()
         .setPath(path)
         .setFileId(fileId)
         .build();

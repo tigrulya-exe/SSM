@@ -180,10 +180,10 @@ public class DefaultFileInfoDao extends AbstractDao implements FileInfoDao {
     parameters.put("fid", fileInfo.getFileId());
     parameters.put("length", fileInfo.getLength());
     parameters.put("block_replication", fileInfo.getBlockReplication());
-    parameters.put("block_size", fileInfo.getBlocksize());
+    parameters.put("block_size", fileInfo.getBlockSize());
     parameters.put("modification_time", fileInfo.getModificationTime());
     parameters.put("access_time", fileInfo.getAccessTime());
-    parameters.put("is_dir", fileInfo.isdir());
+    parameters.put("is_dir", fileInfo.isDir());
     parameters.put("sid", fileInfo.getStoragePolicy());
     parameters
         .put("owner", fileInfo.getOwner());

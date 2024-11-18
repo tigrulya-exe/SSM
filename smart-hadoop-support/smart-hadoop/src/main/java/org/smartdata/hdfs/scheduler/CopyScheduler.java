@@ -567,7 +567,7 @@ public class CopyScheduler extends ActionSchedulerService {
 
     mergePendingDiffs(src);
 
-    if (srcFileInfo.isdir()) {
+    if (srcFileInfo.isDir()) {
       FileDiff fileDiff = new FileDiff(FileDiffType.MKDIR, FileDiffState.PENDING);
       fileDiff.setSrc(src);
       return fileDiff;
@@ -867,7 +867,7 @@ public class CopyScheduler extends ActionSchedulerService {
             mergeDelete(fileDiff);
             break;
           default:
-            // Metadata or rename or mkdir
+            // Metadata or mkdir
             diffChain.add(diffId);
         }
       }
