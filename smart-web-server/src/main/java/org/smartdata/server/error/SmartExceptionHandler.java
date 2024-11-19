@@ -20,6 +20,7 @@ package org.smartdata.server.error;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.smartdata.exception.ActionRejectedException;
 import org.smartdata.exception.NotFoundException;
 import org.smartdata.exception.SsmParseException;
 import org.smartdata.exception.StateTransitionException;
@@ -93,7 +94,8 @@ public class SmartExceptionHandler extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler(value = {
       ConstraintViolationException.class,
-      IllegalArgumentException.class
+      IllegalArgumentException.class,
+      ActionRejectedException.class
   })
   protected ResponseEntity<Object> handleValidationExceptions(
       Exception exception, WebRequest request) {
