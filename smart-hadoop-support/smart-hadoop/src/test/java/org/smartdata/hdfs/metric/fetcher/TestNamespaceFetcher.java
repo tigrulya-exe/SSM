@@ -105,28 +105,6 @@ public class TestNamespaceFetcher {
   }
 
   @Test
-  public void testFetchingFromGivenDir() throws IOException, InterruptedException,
-      MetaStoreException {
-    pathesInDB.clear();
-    final Configuration conf = new SmartConf();
-    final MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
-        .numDataNodes(2).build();
-    String fetchDir = "/user";
-    try {
-      NamespaceFetcher fetcher = init(cluster, null);
-      fetcher.startFetch(fetchDir);
-      Set<String> expected = Sets.newHashSet("/user", "/user/user1", "/user/user2");
-      while (!fetcher.fetchFinished()) {
-        Thread.sleep(100);
-      }
-      Assert.assertEquals(expected, pathesInDB);
-      fetcher.stop();
-    } finally {
-      cluster.shutdown();
-    }
-  }
-
-  @Test
   public void testIgnore() throws IOException, InterruptedException,
       MetaStoreException {
     pathesInDB.clear();

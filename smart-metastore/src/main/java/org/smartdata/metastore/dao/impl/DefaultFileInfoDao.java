@@ -24,6 +24,7 @@ import org.smartdata.model.FileInfoDiff;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
 import javax.sql.DataSource;
 
@@ -40,6 +41,12 @@ public class DefaultFileInfoDao extends AbstractDao implements FileInfoDao {
 
   public DefaultFileInfoDao(DataSource dataSource) {
     super(dataSource, TABLE_NAME);
+  }
+
+  @Override
+  protected SimpleJdbcInsert simpleJdbcInsert() {
+    return super.simpleJdbcInsert()
+        .usingGeneratedKeyColumns("fid");
   }
 
   @Override
@@ -171,6 +178,7 @@ public class DefaultFileInfoDao extends AbstractDao implements FileInfoDao {
         .put("owner_group", fileInfo.getGroup());
     parameters.put("permission", fileInfo.getPermission());
     parameters.put("ec_policy_id", fileInfo.getErasureCodingPolicy());
+    parameters.put("sid", fileInfo.getStoragePolicy());
     return parameters;
   }
 
