@@ -29,7 +29,7 @@ import static org.smartdata.utils.ConfigUtil.toRemoteClusterConfig;
 
 public class PathUtil {
   private static final String DIR_SEP = "/";
-  private static final String[] GLOBS = new String[] {
+  private static final String[] GLOBS = new String[]{
       "*", "?"
   };
 
@@ -100,14 +100,11 @@ public class PathUtil {
         .map(URI::getScheme);
   }
 
-  public static FileSystem getRemoteFileSystem(String path) throws IOException {
-    return getRemoteFileSystem(new Path(path));
-  }
-
   // todo we use default HDFS config, add mechanism to provide
   // hdfs config paths for remote clusters
-  public static FileSystem getRemoteFileSystem(Path path) throws IOException {
-    return path.getFileSystem(toRemoteClusterConfig(new Configuration()));
+  public static FileSystem getRemoteFileSystem(
+      Path path, Configuration configuration) throws IOException {
+    return path.getFileSystem(toRemoteClusterConfig(configuration));
   }
 
   public static String getRawPath(Path path) {

@@ -17,6 +17,8 @@
  */
 package org.smartdata.hdfs.action;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,8 +37,14 @@ public class TestCompressionAction extends MiniClusterHarness {
   @Override
   @Before
   public void init() throws Exception {
-    DEFAULT_BLOCK_SIZE = 1024 * 1024;
     super.init();
+  }
+
+  @Override
+  protected void initConf(Configuration conf) {
+    super.initConf(conf);
+    conf.setLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, 1024 * 1024);
+    conf.setInt(DFSConfigKeys.DFS_BYTES_PER_CHECKSUM_KEY, 1024 * 1024);
   }
 
   protected void compression(String filePath, String bufferSize) throws IOException {
