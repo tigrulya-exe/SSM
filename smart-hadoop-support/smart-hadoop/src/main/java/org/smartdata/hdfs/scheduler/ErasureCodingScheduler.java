@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.smartdata.SmartContext;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
+import org.smartdata.exception.ActionRejectedException;
 import org.smartdata.hdfs.CompatibilityHelper;
 import org.smartdata.hdfs.CompatibilityHelperLoader;
 import org.smartdata.hdfs.HadoopUtil;
@@ -124,7 +125,8 @@ public class ErasureCodingScheduler extends ActionSchedulerService {
     }
 
     if (actionInfo.getArgs().get(HdfsAction.FILE_PATH) == null) {
-      throw new IOException("File path is required for action " + actionInfo.getActionName() + "!");
+      throw new ActionRejectedException("File path is required for action "
+          + actionInfo.getActionName() + "!");
     }
     String srcPath = actionInfo.getArgs().get(HdfsAction.FILE_PATH);
     // The root dir should be excluded in checking whether file path ends with slash.
@@ -135,9 +137,7 @@ public class ErasureCodingScheduler extends ActionSchedulerService {
     // For ec or unec action, check if the file is locked.
     if (actionInfo.getActionName().equals(EC_ACTION_ID) ||
         actionInfo.getActionName().equals(UNEC_ACTION_ID)) {
-      if (fileLock.contains(srcPath)) {
-        return false;
-      }
+      return !fileLock.contains(srcPath);
     }
     return true;
   }

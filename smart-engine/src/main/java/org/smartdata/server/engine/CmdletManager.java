@@ -30,6 +30,7 @@ import org.smartdata.action.ActionException;
 import org.smartdata.cmdlet.parser.CmdletParser;
 import org.smartdata.cmdlet.parser.ParsedCmdlet;
 import org.smartdata.conf.SmartConfKeys;
+import org.smartdata.exception.ActionRejectedException;
 import org.smartdata.exception.NotFoundException;
 import org.smartdata.exception.QueueFullException;
 import org.smartdata.exception.SsmParseException;
@@ -308,7 +309,7 @@ public class CmdletManager extends AbstractService
     for (ActionInfo actionInfo : actionInfos) {
       for (ActionScheduler p : schedulers.get(actionInfo.getActionName())) {
         if (!p.onSubmit(cmdletInfo, actionInfo)) {
-          throw new IOException("Action rejected by scheduler: " + actionInfo);
+          throw new ActionRejectedException("Action rejected by scheduler: " + actionInfo);
         }
       }
     }

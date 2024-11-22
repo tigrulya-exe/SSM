@@ -116,7 +116,7 @@ public class Copy2S3Action extends HdfsActionWithRemoteClusterSupport {
   }
 
   private OutputStream getDestOutPutStream() throws IOException {
-    FileSystem destFileSystem = destPath.getFileSystem(new Configuration());
+    FileSystem destFileSystem = destPath.getFileSystem(getConf());
     return destFileSystem.create(destPath, true);
   }
 }
