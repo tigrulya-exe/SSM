@@ -85,7 +85,7 @@ public class TestInotifyEventApplier extends TestDaoBase {
 
     FileInfo result1 = metaStore.getFile().get(1);
     Assert.assertEquals("/file", result1.getPath());
-    Assert.assertEquals(2L, result1.getFileId());
+    Assert.assertEquals(1L, result1.getFileId());
     Assert.assertEquals(511, result1.getPermission());
 
     Event close = new Event.CloseEvent("/file", 1024, 0);
@@ -121,7 +121,7 @@ public class TestInotifyEventApplier extends TestDaoBase {
     Assert.assertEquals(result4.getOwner(), "user1");
     Assert.assertEquals(result4.getGroup(), "cg1");
     // check metadata event didn't flush other FileInfo fields
-    Assert.assertEquals(2L, result4.getFileId());
+    Assert.assertEquals(1L, result4.getFileId());
     Assert.assertEquals(new FsPermission("777").toShort(), result4.getPermission());
 
     Event.CreateEvent createEvent2 =
