@@ -44,7 +44,7 @@ public class TestInotifyEventApplier extends TestDaoBase {
     DFSClient client = Mockito.mock(DFSClient.class);
 
     FileInfo root = HadoopUtil.convertFileStatus(getDummyDirStatus("/", 1000), "/");
-    metaStore.insertFile(root);
+    metaStore.insertFile(root, false);
     BackUpInfo backUpInfo = new BackUpInfo(1L, "/file", "remote/dest/", 10);
     metaStore.insertBackUpInfo(backUpInfo);
     InotifyEventApplier applier = new InotifyEventApplier(new SmartConf(), metaStore, client);
@@ -230,7 +230,7 @@ public class TestInotifyEventApplier extends TestDaoBase {
         HadoopUtil.convertFileStatus(getDummyFileStatus("/dir/dir/f1", 8201), "/dir/dir/f1"),
         HadoopUtil.convertFileStatus(getDummyFileStatus("/file", 2000), "/file"),
     };
-    metaStore.insertFiles(fileInfos);
+    metaStore.insertFiles(fileInfos, false);
     Mockito.when(client.getFileInfo("/dir1")).thenReturn(getDummyDirStatus("/dir1", 8000));
     Event.RenameEvent dirRenameEvent = new Event.RenameEvent.Builder()
         .srcPath("/dir")

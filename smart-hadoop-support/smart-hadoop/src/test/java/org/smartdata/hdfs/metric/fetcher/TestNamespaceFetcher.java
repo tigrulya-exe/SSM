@@ -74,7 +74,7 @@ public class TestNamespaceFetcher {
           }
           return null;
         }
-      }).when(adapter).insertFiles(any(FileInfo[].class));
+      }).when(adapter).insertFiles(any(FileInfo[].class), any());
 
       SmartConf nonNullConfig = Optional.ofNullable(conf)
           .orElseGet(SmartConf::new);

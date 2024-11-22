@@ -30,6 +30,7 @@ import javax.sql.DataSource;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -41,12 +42,6 @@ public class DefaultFileInfoDao extends AbstractDao implements FileInfoDao {
 
   public DefaultFileInfoDao(DataSource dataSource) {
     super(dataSource, TABLE_NAME);
-  }
-
-  @Override
-  protected SimpleJdbcInsert simpleJdbcInsert() {
-    return super.simpleJdbcInsert()
-        .usingGeneratedKeyColumns("fid");
   }
 
   @Override
@@ -108,13 +103,21 @@ public class DefaultFileInfoDao extends AbstractDao implements FileInfoDao {
   }
 
   @Override
-  public void insert(FileInfo fileInfo) {
-    insert(fileInfo, this::toMap);
+  public void insert(FileInfo fileInfo, boolean generateId) {
+    SimpleJdbcInsert simpleJdbcInsert = simpleJdbcInsert();
+    if (generateId) {
+      simpleJdbcInsert.usingGeneratedKeyColumns("fid");
+    }
+    simpleJdbcInsert.execute(toMap(fileInfo));
   }
 
   @Override
-  public void insert(FileInfo[] fileInfos) {
-    insert(fileInfos, this::toMap);
+  public void insert(FileInfo[] fileInfos, boolean generateId) {
+    SimpleJdbcInsert simpleJdbcInsert = simpleJdbcInsert();
+    if (generateId) {
+      simpleJdbcInsert.usingGeneratedKeyColumns("fid");
+    }
+    insert(simpleJdbcInsert, Arrays.asList(fileInfos), this::toMap);
   }
 
   @Override
@@ -135,7 +138,7 @@ public class DefaultFileInfoDao extends AbstractDao implements FileInfoDao {
   }
 
   @Override
-  public void deleteByPath(String path,  boolean recursive) {
+  public void deleteByPath(String path, boolean recursive) {
     String sql = "DELETE FROM file WHERE path = ?";
     jdbcTemplate.update(sql, path);
     if (recursive) {

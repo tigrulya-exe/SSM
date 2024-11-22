@@ -145,7 +145,7 @@ public class TestFileDiffGenerator extends TestDaoBase {
         .setPath("/backup/src/file")
         .setLength(20)
         .build();
-    metaStore.insertFile(fileInfo);
+    metaStore.insertFile(fileInfo, true);
 
     Optional<FileDiff> fileDiff = fileDiffGenerator.onFileClose(closeEvent);
 
@@ -171,7 +171,7 @@ public class TestFileDiffGenerator extends TestDaoBase {
         .setPath("/backup/src/file")
         .setLength(20)
         .build();
-    metaStore.insertFile(fileInfo);
+    metaStore.insertFile(fileInfo, true);
 
     Optional<FileDiff> fileDiff = fileDiffGenerator.onFileClose(closeEvent);
     assertFalse(fileDiff.isPresent());
@@ -440,7 +440,7 @@ public class TestFileDiffGenerator extends TestDaoBase {
         .setLength(128)
         .build();
     try {
-      metaStore.insertFile(fileInfo);
+      metaStore.insertFile(fileInfo, true);
     } catch (MetaStoreException e) {
       Assert.fail(e.getMessage());
     }

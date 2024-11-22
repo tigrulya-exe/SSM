@@ -50,7 +50,7 @@ public class TestFileInfoDao extends TestDaoBase {
     byte erasureCodingPolicy = 0;
     FileInfo fileInfo = new FileInfo(path, fileId, length, isDir, blockReplication, blockSize,
         modTime, accessTime, permission, owner, group, storagePolicy, erasureCodingPolicy);
-    fileInfoDao.insert(fileInfo);
+    fileInfoDao.insert(fileInfo, true);
 
     FileInfo file1 = fileInfoDao.getByPath("/testFile");
     Assert.assertEquals(fileInfo, file1);
@@ -60,7 +60,7 @@ public class TestFileInfoDao extends TestDaoBase {
 
     FileInfo fileInfo1 = new FileInfo(path, fileId + 1, length, isDir, blockReplication, blockSize,
         modTime, accessTime, permission, owner, group, storagePolicy, erasureCodingPolicy);
-    fileInfoDao.insert(fileInfo1);
+    fileInfoDao.insert(fileInfo1, true);
     List<FileInfo> fileInfos = fileInfoDao.getFilesByPrefix("/testaaFile");
     Assert.assertEquals(0, fileInfos.size());
 
@@ -94,7 +94,7 @@ public class TestFileInfoDao extends TestDaoBase {
 
     FileInfo fileInfo = new FileInfo(path, fileId, length, isDir, blockReplication, blockSize,
         modTime, accessTime, permission, owner, group, storagePolicy, erasureCodingPolicy);
-    fileInfoDao.insert(fileInfo);
+    fileInfoDao.insert(fileInfo, true);
     fileInfoDao.update(path, 10);
     FileInfo file = fileInfoDao.getById(fileId);
     fileInfo.setStoragePolicy((byte) 10);

@@ -156,6 +156,6 @@ public class TestFileAccessManager extends
             .build())
         .toArray(FileInfo[]::new);
 
-    metaStore.insertFiles(fileInfos);
+    metaStore.insertFiles(fileInfos, false);
   }
 }

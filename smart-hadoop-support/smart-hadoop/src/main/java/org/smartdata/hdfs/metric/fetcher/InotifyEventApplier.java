@@ -129,7 +129,7 @@ public class InotifyEventApplier {
 
     metaStore.deleteFileByPath(fileInfo.getPath(), false);
     metaStore.deleteFileState(fileInfo.getPath());
-    metaStore.insertFile(fileInfo);
+    metaStore.insertFile(fileInfo, true);
   }
 
   private Optional<HdfsFileStatus> getHdfsFileStatus(String path) throws IOException {
@@ -158,7 +158,7 @@ public class InotifyEventApplier {
         .ifPresent(this::insertFileDiffUnchecked);
 
     metaStore.deleteFileByPath(fileInfo.getPath(), false);
-    metaStore.insertFile(fileInfo);
+    metaStore.insertFile(fileInfo, true);
     metaStore.renameFile(renameEvent.getSrcPath(), renameEvent.getDstPath(), fileInfo.isDir());
   }
 
