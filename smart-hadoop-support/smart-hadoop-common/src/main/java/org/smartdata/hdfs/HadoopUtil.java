@@ -261,13 +261,13 @@ public class HadoopUtil {
   }
 
   public static FileInfo convertFileStatus(HdfsFileStatus status, String path) {
-    return FileInfo.newBuilder()
+    return FileInfo.builder()
         .setPath(path)
         .setFileId(status.getFileId())
         .setLength(status.getLen())
-        .setIsdir(status.isDir())
+        .setIsDir(status.isDir())
         .setBlockReplication(status.getReplication())
-        .setBlocksize(status.getBlockSize())
+        .setBlockSize(status.getBlockSize())
         .setModificationTime(status.getModificationTime())
         .setAccessTime(status.getAccessTime())
         .setPermission(status.getPermission().toShort())

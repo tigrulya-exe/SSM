@@ -140,7 +140,7 @@ public class TestCachedListFetcher extends TestDaoBase {
       // System.out.println(cacheAction.isCached(path));
     }
     metaStore.insertFiles(fileInfos
-        .toArray(new FileInfo[fileInfos.size()]));
+        .toArray(new FileInfo[fileInfos.size()]), false);
     List<FileInfo> ret = metaStore.getFile();
     Assert.assertTrue(ret.size() == fids.length);
     cachedListFetcher.start();
