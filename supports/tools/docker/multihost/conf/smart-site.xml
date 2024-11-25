@@ -26,14 +26,6 @@
         <value>ssm-server.demo:7042</value>
     </property>
     <property>
-        <name>smart.agent.address</name>
-        <value>hadoop-datanode.demo:7048</value>
-    </property>
-    <property>
-        <name>smart.agent.master.address</name>
-        <value>hadoop-datanode.demo:7051</value>
-    </property>
-    <property>
         <name>smart.rule.executors</name>
         <value>5</value>
     </property>
@@ -89,7 +81,7 @@
     </property>
     <property>
         <name>smart.rest.server.auth.spnego.principal</name>
-        <value>HTTP/ssm-server.demo@DEMO</value>
+        <value>HTTP/_HOST@DEMO</value>
     </property>
     <property>
         <name>smart.rest.server.auth.ldap.enabled</name>
