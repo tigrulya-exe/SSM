@@ -41,7 +41,8 @@ import static org.smartdata.http.config.ConfigKeys.WEB_SECURITY_ENABLED;
 public class SecurityConfiguration {
   private static final String SESSION_COOKIE_NAME = "SSM_SESSIONID";
   private static final String API_ENDPOINTS_PATTERN = "/api/**";
-  private static final String METRICS_ENDPOINT_PATTERN = "/actuator/prometheus/**";
+  private static final String ACTUATOR_ENDPOINTS_PATTERN = "/actuator/**";
+  private static final String HEALTH_ENDPOINT_PATTERN = "/actuator/health/**";
 
   @Bean
   @ConditionalOnProperty(name = WEB_SECURITY_ENABLED, havingValue = "true")
@@ -71,9 +72,9 @@ public class SecurityConfiguration {
       Set<SsmAuthHttpConfigurer> authHttpConfigurers) throws Exception {
     baseHttpSecurity(http)
         .authorizeRequests()
-        .antMatchers(API_ENDPOINTS_PATTERN, METRICS_ENDPOINT_PATTERN).authenticated()
+        .antMatchers(HEALTH_ENDPOINT_PATTERN).permitAll()
+        .antMatchers(API_ENDPOINTS_PATTERN, ACTUATOR_ENDPOINTS_PATTERN).authenticated()
         .and()
-        .anonymous().disable()
         .addFilterAfter(
             new SmartPrincipalInitializerFilter(principalManager),
             BasicAuthenticationFilter.class);
