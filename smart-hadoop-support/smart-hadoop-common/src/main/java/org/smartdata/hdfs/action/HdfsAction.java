@@ -32,7 +32,6 @@ import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
 import org.smartdata.model.CmdletDescriptor;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -101,7 +100,7 @@ public abstract class HdfsAction extends SmartAction {
 
   protected FileSystem getFileSystemFor(Path path) throws IOException {
     return isAbsoluteRemotePath(path)
-        ? getRemoteFileSystem(path)
+        ? getRemoteFileSystem(path, getConf())
         : localFileSystem;
   }
 
@@ -112,7 +111,7 @@ public abstract class HdfsAction extends SmartAction {
   protected Optional<FileStatus> getFileStatus(FileSystem fileSystem, Path path) throws IOException {
     try {
       return Optional.of(fileSystem.getFileStatus(path));
-    } catch (FileNotFoundException e) {
+    } catch (IOException e) {
       return Optional.empty();
     }
   }

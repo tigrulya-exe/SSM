@@ -28,6 +28,7 @@ import org.smartdata.SmartContext;
 import org.smartdata.action.SyncAction;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
+import org.smartdata.exception.ActionRejectedException;
 import org.smartdata.hdfs.action.CopyDirectoryAction;
 import org.smartdata.hdfs.action.CopyFileAction;
 import org.smartdata.hdfs.action.HdfsAction;
@@ -254,6 +255,7 @@ public class CopyScheduler extends ActionSchedulerService {
         if (preserveAttributes != null) {
           action.getArgs().put(CopyFileAction.PRESERVE, preserveAttributes);
         }
+        action.getArgs().put(CopyFileAction.FORCE, "");
         if (rateLimiter != null) {
           String strLen = getLength(fileDiff);
           if (strLen != null) {
@@ -351,7 +353,7 @@ public class CopyScheduler extends ActionSchedulerService {
       throws IOException {
     // check args
     if (actionInfo.getArgs() == null) {
-      throw new IOException("No arguments for the action");
+      throw new ActionRejectedException("No arguments for the action");
     }
     String path = actionInfo.getArgs().get(HdfsAction.FILE_PATH);
     LOG.debug("Submit file {} with lock {}", path, fileLocks);
@@ -361,7 +363,8 @@ public class CopyScheduler extends ActionSchedulerService {
       fileLocks.add(path);
       return true;
     }
-    throw new IOException("The submit file " + path + " is in use by another program or user");
+    throw new ActionRejectedException(
+        "The submit file " + path + " is in use by another program or user");
   }
 
   @Override

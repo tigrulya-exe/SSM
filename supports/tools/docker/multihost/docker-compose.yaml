@@ -43,6 +43,10 @@ services:
       - "9864:9864"
       - "7048:7048"
       - "7051:7051"
+      # SSM Agent web server port
+      - "18081:8081"
+      # JMX port
+      - "3334:3334"
     env_file:
       - hadoop.env
     healthcheck:
@@ -67,6 +71,8 @@ services:
     ports:
       - "7042:7042"
       - "8081:8081"
+      # JMX port
+      - "3333:3333"
     healthcheck:
       test: curl http://ssm-server.demo:8081 || exit 1
       interval: 30s
@@ -121,6 +127,18 @@ services:
       SMB_ADMIN_PASSWORD: "LZ2ibGAn2H0D0UW3"
     volumes:
       - ./ldap:/opt/ad-scripts
+    networks:
+      - demo
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./conf/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
     networks:
       - demo
 
