@@ -52,6 +52,7 @@ import static org.smartdata.hdfs.action.CopyPreservedAttributesAction.PreserveAt
         + CopyFileAction.LENGTH + " $length "
         + CopyFileAction.BUF_SIZE + " $size "
         + CopyFileAction.PRESERVE + " $attributes"
+        + CopyFileAction.FORCE
 )
 public class CopyFileAction extends CopyPreservedAttributesAction {
   public static final String BUF_SIZE = "-bufSize";
@@ -59,6 +60,7 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
   public static final String OFFSET_INDEX = "-offset";
   public static final String LENGTH = "-length";
   public static final String COPY_CONTENT = "-copyContent";
+  public static final String FORCE = "-force";
   public static final Set<PreserveAttribute> DEFAULT_PRESERVE_ATTRIBUTES
       = Sets.newHashSet(OWNER, GROUP, PERMISSIONS);
 
@@ -68,6 +70,7 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
   private long length;
   private int bufferSize;
   private boolean copyContent;
+  private boolean fullCopyAppend;
 
   private Set<PreserveAttribute> preserveAttributes;
 
@@ -79,6 +82,7 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
     this.length = 0;
     this.bufferSize = 64 * 1024;
     this.copyContent = true;
+    this.fullCopyAppend = false;
   }
 
   @Override
@@ -98,6 +102,7 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
     if (args.containsKey(COPY_CONTENT)) {
       copyContent = Boolean.parseBoolean(args.get(COPY_CONTENT));
     }
+    fullCopyAppend = args.containsKey(FORCE);
   }
 
   @Override
@@ -141,6 +146,25 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
       FileSystem srcFileSystem,
       FileSystem destFileSystem,
       int bufferSize, long offset, long length) throws IOException {
+    try {
+      copyWithOffsetInternal(srcFileSystem, destFileSystem, bufferSize, offset, length);
+    } catch (UnsupportedOperationException unsupportedOperationException) {
+      if (fullCopyAppend && offset != 0) {
+        appendLog(
+            String.format("Seems like target FS doesn't support appends. "
+                + "Trying to copy the entire source file of size %s", srcFileStatus.getLen()));
+
+        copySingleFile(srcFileSystem, destFileSystem);
+        return;
+      }
+      throw unsupportedOperationException;
+    }
+  }
+
+  private void copyWithOffsetInternal(
+      FileSystem srcFileSystem,
+      FileSystem destFileSystem,
+      int bufferSize, long offset, long length) throws IOException {
     appendLog(
         String.format("Copy with offset %s and length %s", offset, length));
 
@@ -156,8 +180,6 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
     }
   }
 
-  // TODO add action option to fully re-copy the file in case if fs
-  // doesn't support appends
   private OutputStream getOutputStream(
       FileSystem fileSystem, long offset) throws IOException {
     Optional<FileStatus> destFileStatus = getFileStatus(fileSystem, destPath)

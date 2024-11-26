@@ -68,7 +68,7 @@
     <scala.version>2.11.12</scala.version>
     <scala.binary.version>2.11</scala.binary.version>
     <mockito.version>2.28.2</mockito.version>
-    <testcontainers.version>1.19.1</testcontainers.version>
+    <testcontainers.version>1.20.4</testcontainers.version>
     <bouncycastle.version>1.68</bouncycastle.version>
     <protobuf.version>3.7.1</protobuf.version>
     <dbunitVersion>2.5.3</dbunitVersion>
