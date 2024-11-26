@@ -216,20 +216,20 @@ public class MetaStore implements CopyMetaService,
   /**
    * Store a single file info into database.
    */
-  public void insertFile(FileInfo file)
+  public void insertFile(FileInfo file, boolean generateId)
       throws MetaStoreException {
     updateCache();
-    fileInfoDao.insert(file);
+    fileInfoDao.insert(file, generateId);
   }
 
 
   /**
    * Store files info into database.
    */
-  public void insertFiles(FileInfo[] files)
+  public void insertFiles(FileInfo[] files, boolean generateIds)
       throws MetaStoreException {
     updateCache();
-    fileInfoDao.insert(files);
+    fileInfoDao.insert(files, generateIds);
   }
 
   public void updateFileByPath(String path, FileInfoDiff fileUpdate) {

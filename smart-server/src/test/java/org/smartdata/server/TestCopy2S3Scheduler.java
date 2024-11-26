@@ -74,10 +74,10 @@ public class TestCopy2S3Scheduler extends MiniSmartClusterHarness {
   public void testThrowIfSrcFileIsEmpty() throws Exception {
     waitTillSSMExitSafeMode();
 
-    ssm.getMetaStore().insertFile(FileInfo.newBuilder()
+    ssm.getMetaStore().insertFile(FileInfo.builder()
         .setPath("/empty.file")
         .setLength(0L)
-        .build());
+        .build(), true);
 
     ActionRejectedException exception = assertThrows(
         ActionRejectedException.class,
@@ -90,10 +90,10 @@ public class TestCopy2S3Scheduler extends MiniSmartClusterHarness {
   public void testThrowIfSrcFileIsAlreadyCopied() throws Exception {
     waitTillSSMExitSafeMode();
 
-    ssm.getMetaStore().insertFile(FileInfo.newBuilder()
+    ssm.getMetaStore().insertFile(FileInfo.builder()
         .setPath("/test.file")
         .setLength(10L)
-        .build());
+        .build(), true);
 
     ssm.getMetaStore().insertUpdateFileState(new S3FileState("/test.file"));
 
@@ -108,10 +108,10 @@ public class TestCopy2S3Scheduler extends MiniSmartClusterHarness {
   public void testThrowIfSrcFileIsLocked() throws Exception {
     waitTillSSMExitSafeMode();
 
-    ssm.getMetaStore().insertFile(FileInfo.newBuilder()
+    ssm.getMetaStore().insertFile(FileInfo.builder()
         .setPath("/test.file")
         .setLength(10L)
-        .build());
+        .build(), true);
 
     ssm.getCmdletManager()
         .submitCmdlet("sleep -ms 10000; copy2s3 -file /test.file");
