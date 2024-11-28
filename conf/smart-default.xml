@@ -759,4 +759,12 @@
       Whether to enable SQL queries statistics export.
     </description>
   </property>
+
+  <property>
+    <name>smart.action.copy.truncate.wait.ms</name>
+    <value>100</value>
+    <description>
+      The iteration time interval to wait for truncate operation completion.
+    </description>
+  </property>
 </configuration>
