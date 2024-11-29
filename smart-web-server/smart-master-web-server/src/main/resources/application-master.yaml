@@ -13,7 +13,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,prometheus
+        include: health,prometheus,heapdump,metrics,threaddump,env
+  health:
+    ldap:
+      enabled: false
 spring:
   web:
     resources:
