@@ -237,7 +237,7 @@ public class CmdletManager extends AbstractService
       throw logAndBuildMetastoreException(
           LOG, "DB Connection error! Failed to get Max CmdletId!", e);
     } catch (Exception t) {
-      throw new IOException(t);
+        throw new IOException(t);
     }
   }
 
@@ -304,7 +304,7 @@ public class CmdletManager extends AbstractService
    * Let Scheduler check actioninfo onsubmit and add them to cmdletinfo.
    */
   private void checkActionsOnSubmit(CmdletInfo cmdletInfo,
-                                    List<ActionInfo> actionInfos) throws IOException {
+      List<ActionInfo> actionInfos) throws IOException {
     for (ActionInfo actionInfo : actionInfos) {
       cmdletInfo.addAction(actionInfo.getActionId());
     }
@@ -376,7 +376,8 @@ public class CmdletManager extends AbstractService
         throw new IllegalArgumentException("Cannot submit an empty action!");
       }
       CmdletDescriptor cmdletDescriptor = buildCmdletDescriptor(cmdlet);
-      return submitCmdlet(cmdletDescriptor);
+      return submitCmdlet(cmdletDescriptor,
+          smartPrincipalManager.getCurrentPrincipal().getName());
     } catch (SsmParseException parseException) {
       LOG.error("Wrong format for cmdlet '{}'", cmdlet, parseException);
       throw new SsmParseException(
@@ -400,7 +401,8 @@ public class CmdletManager extends AbstractService
     }
   }
 
-  public long submitCmdlet(CmdletDescriptor cmdletDescriptor) throws IOException {
+  public long submitCmdlet(
+      CmdletDescriptor cmdletDescriptor, String cmdletOwner) throws IOException {
     // To avoid repeatedly submitting task. If tracker contains one CmdletDescriptor
     // with the same rule id and cmdlet string, return -1.
     if (ruleCmdletTracker.contains(cmdletDescriptor)) {
@@ -409,8 +411,7 @@ public class CmdletManager extends AbstractService
     }
     validatePendingCmdletsCount();
 
-    CmdletInfo cmdletInfo = cmdletInfoHandler
-        .createCmdletInfo(cmdletDescriptor);
+    CmdletInfo cmdletInfo = cmdletInfoHandler.createCmdletInfo(cmdletDescriptor, cmdletOwner);
     List<ActionInfo> actionInfos = actionInfoHandler
         .createActionInfos(cmdletDescriptor, cmdletInfo);
 
@@ -431,7 +432,7 @@ public class CmdletManager extends AbstractService
    * Insert cmdletInfo and actions to metastore and cache.
    */
   private void syncCmdAction(CmdletInfo cmdletInfo,
-                             List<ActionInfo> actionInfos) {
+      List<ActionInfo> actionInfos) {
     LOG.debug("Cache cmdlet {}", cmdletInfo);
     actionInfos.forEach(actionInfoHandler::store);
     cmdletInfoHandler.storeUnfinished(cmdletInfo);

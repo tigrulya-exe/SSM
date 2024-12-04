@@ -28,7 +28,6 @@ import org.smartdata.model.CmdletDescriptor;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
 import org.smartdata.model.rule.RuleExecutorPlugin;
-import org.smartdata.model.rule.RuleExecutorPluginManager;
 import org.smartdata.model.rule.RuleTranslationResult;
 import org.smartdata.model.rule.TimeBasedScheduleInfo;
 import org.smartdata.server.engine.RuleManager;
@@ -61,18 +60,24 @@ public class RuleExecutor implements Runnable {
   private final ExecutionContext executionCtx;
   private final MetaStore metastore;
   private final Stack<String> dynamicCleanups;
+  private final List<RuleExecutorPlugin> executorPlugins;
 
   private volatile boolean exited;
   private long exitTime;
 
-  public RuleExecutor(RuleManager ruleManager, ExecutionContext executionCtx,
-                      RuleTranslationResult translationResult, MetaStore metastore) {
+  public RuleExecutor(
+      RuleManager ruleManager,
+      ExecutionContext executionCtx,
+      RuleTranslationResult translationResult,
+      MetaStore metastore,
+      List<RuleExecutorPlugin> executorPlugins) {
     this.ruleManager = ruleManager;
     this.executionCtx = executionCtx;
     this.metastore = metastore;
     this.translationResult = translationResult;
     this.originalTranslationResult = translationResult.copy();
     this.dynamicCleanups = new Stack<>();
+    this.executorPlugins = executorPlugins;
     this.exited = false;
   }
 
@@ -233,8 +238,6 @@ public class RuleExecutor implements Runnable {
       return;
     }
 
-    List<RuleExecutorPlugin> plugins = RuleExecutorPluginManager.getPlugins();
-
     long rid = executionCtx.getRuleId();
     try {
       if (ruleManager.isClosed()) {
@@ -247,14 +250,14 @@ public class RuleExecutor implements Runnable {
 
       RuleInfo info;
       try {
-         info = ruleManager.getRuleInfo(rid);
+        info = ruleManager.getRuleInfo(rid);
       } catch (NotFoundException notFoundException) {
         exitSchedule();
         return;
       }
 
       boolean continueExecution = true;
-      for (RuleExecutorPlugin plugin : plugins) {
+      for (RuleExecutorPlugin plugin : executorPlugins) {
         continueExecution = plugin.preExecution(info, translationResult);
         if (!continueExecution) {
           break;
@@ -296,7 +299,7 @@ public class RuleExecutor implements Runnable {
       }
       endCheckTime = System.currentTimeMillis();
       if (continueExecution) {
-        for (RuleExecutorPlugin plugin : plugins) {
+        for (RuleExecutorPlugin plugin : executorPlugins) {
           files = plugin.preSubmitCmdlet(info, files);
         }
         numCmdSubmitted = submitCmdlets(info, files);
@@ -355,7 +358,6 @@ public class RuleExecutor implements Runnable {
       return 0;
     }
     int nSubmitted = 0;
-    List<RuleExecutorPlugin> plugins = RuleExecutorPluginManager.getPlugins();
     CmdletDescriptor templateCmdlet = translationResult.getCmdDescriptor();
     for (String file : files) {
       if (exited) {
@@ -365,11 +367,12 @@ public class RuleExecutor implements Runnable {
         CmdletDescriptor cmdletDescriptor = new CmdletDescriptor(templateCmdlet);
         cmdletDescriptor.setRuleId(ruleId);
         cmdletDescriptor.setCmdletParameter(CmdletDescriptor.HDFS_FILE_PATH, file);
-        for (RuleExecutorPlugin plugin : plugins) {
+        for (RuleExecutorPlugin plugin : executorPlugins) {
           cmdletDescriptor = plugin.preSubmitCmdletDescriptor(
               ruleInfo, translationResult, cmdletDescriptor);
         }
-        long cid = ruleManager.getCmdletManager().submitCmdlet(cmdletDescriptor);
+        long cid = ruleManager.getCmdletManager()
+            .submitCmdlet(cmdletDescriptor, ruleInfo.getOwner());
         // Not really submitted if cid is -1.
         if (cid != -1) {
           nSubmitted++;

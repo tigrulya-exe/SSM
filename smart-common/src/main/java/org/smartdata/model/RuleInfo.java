@@ -40,6 +40,7 @@ public class RuleInfo {
   private long numChecked;
   private long numCmdsGen;
   private long lastCheckTime;
+  private String owner;
 
   public void updateRuleInfo(RuleState rs, long lastCheckTime,
       long checkedCount, int cmdletsGen) {
@@ -83,6 +84,6 @@ public class RuleInfo {
 
   public RuleInfo newCopy() {
     return new RuleInfo(id, submitTime, ruleText, state, numChecked,
-        numCmdsGen, lastCheckTime);
+        numCmdsGen, lastCheckTime, owner);
   }
 }

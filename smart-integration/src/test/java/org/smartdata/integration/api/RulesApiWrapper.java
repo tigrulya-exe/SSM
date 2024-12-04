@@ -35,7 +35,11 @@ public class RulesApiWrapper {
   private final RulesApi apiClient;
 
   public RulesApiWrapper() {
-    this.apiClient = ApiClient.api(ApiClient.Config.apiConfig()).rules();
+    this(ApiClient.Config.apiConfig());
+  }
+
+  public RulesApiWrapper(ApiClient.Config config) {
+    this.apiClient = ApiClient.api(config).rules();
   }
 
   public RuleDto getRule(long ruleId) {
@@ -95,6 +99,17 @@ public class RulesApiWrapper {
     return retryUntil(
         () -> getRule(ruleId),
         rule -> rule.getActivationCount() > 0,
+        interval,
+        timeout
+    );
+  }
+
+  public RuleDto waitTillRuleProducedCmdlets(String ruleText, Duration interval, Duration timeout) {
+    RuleDto ruleInfo = submitRule(ruleText);
+    startRule(ruleInfo.getId());
+    return retryUntil(
+        () -> getRule(ruleInfo.getId()),
+        rule -> rule.getCmdletsGenerated() > 0,
         interval,
         timeout
     );

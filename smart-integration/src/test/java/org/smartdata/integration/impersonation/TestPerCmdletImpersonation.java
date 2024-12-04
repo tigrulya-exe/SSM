@@ -15,33 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.model;
+package org.smartdata.integration.impersonation;
 
-public class DetailedRuleInfo extends RuleInfo {
-  public long baseProgress;
-  public long runningProgress;
+import org.smartdata.conf.SmartConf;
+import org.smartdata.hdfs.impersonation.UserImpersonationStrategy;
+import org.smartdata.security.AnonymousDefaultPrincipalProvider;
 
-  public DetailedRuleInfo(RuleInfo ruleInfo) {
-    // Init from ruleInfo
-    super(ruleInfo.getId(), ruleInfo.getSubmitTime(), ruleInfo.getRuleText(), ruleInfo.getState(),
-        ruleInfo.getNumChecked(), ruleInfo.getNumCmdsGen(), ruleInfo.getLastCheckTime());
+import static org.smartdata.conf.SmartConfKeys.SMART_PROXY_USER_STRATEGY_KEY;
+
+public class TestPerCmdletImpersonation extends TestImpersonation {
+  @Override
+  protected void setImpersonationOptions(SmartConf conf) {
+    conf.setEnum(SMART_PROXY_USER_STRATEGY_KEY, UserImpersonationStrategy.Scope.CMDLET_SCOPE);
   }
 
-  public long getBaseProgress() {
-    return baseProgress;
+  @Override
+  protected String getProxyUserFor(String username) {
+    return authenticationEnabled
+        ? username
+        : AnonymousDefaultPrincipalProvider.anonymousPrincipal().getName();
   }
-
-  public void setBaseProgress(long baseProgress) {
-    this.baseProgress = baseProgress;
-  }
-
-  public long getRunningProgress() {
-    return runningProgress;
-  }
-
-  public void setRunningProgress(long runningProgress) {
-    this.runningProgress = runningProgress;
-  }
-
-
 }

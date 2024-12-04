@@ -36,6 +36,7 @@ public class CmdletInfo {
   private String parameters;
   private final long generateTime;
   private long stateChangedTime;
+  private final String owner;
 
   public CmdletInfo(
       long id,
@@ -45,7 +46,7 @@ public class CmdletInfo {
       long generateTime,
       long stateChangedTime) {
     this(id, ruleId, new ArrayList<>(), state,
-        parameters, generateTime, stateChangedTime);
+        parameters, generateTime, stateChangedTime, null);
   }
 
   @Override

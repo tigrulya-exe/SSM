@@ -760,4 +760,37 @@
     </description>
   </property>
 
+  <property>
+    <name>smart.proxy.user.strategy</name>
+    <value>DISABLED</value>
+    <description>
+      The strategy of user impersonation, while connecting to HDFS.
+      Possible values are:
+        DISABLED - impersonation is disabled, all actions are performed by the SSM node user
+      (either kerberos principal or user, that started SSM);
+        NODE_SCOPE - impersonation is enabled on node level,
+      all actions are performed by the user, provided in the 'smart.proxy.user' option;
+        CMDLET_SCOPE - impersonation is enabled on cmdlet level,
+      all actions are performed by the cmdlet owner (currently, it's the cmdlet creator);
+    </description>
+  </property>
+
+  <property>
+    <name>smart.proxy.users.cache.ttl</name>
+    <value>2m</value>
+    <description>
+      The minimum amount of time after the last access to the proxy users cache entry
+      that must pass in order for the entry to be evicted.
+      Should be in the format '[Amount][TimeUnit]', where TimeUnit is one
+      of 'day' or 'd', 'hour' or 'h', 'min' or 'm', 'sec' or 's'.
+    </description>
+  </property>
+
+  <property>
+    <name>smart.proxy.users.cache.size</name>
+    <value>20</value>
+    <description>
+      Maximum size of the proxy users cache.
+    </description>
+  </property>
 </configuration>

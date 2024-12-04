@@ -40,7 +40,6 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_HTTP_ADDRESS_KEY
  * A MiniCluster for integration test.
  */
 public class SmartMiniCluster implements SmartCluster {
-  private SmartConf conf;
   private MiniDFSCluster cluster;
   private FileSystem fileSystem;
 
@@ -59,23 +58,17 @@ public class SmartMiniCluster implements SmartCluster {
   }
 
   @Override
-  public void setUp() throws Exception {
-    conf = new SmartConf();
-    initConf(conf);
-    cluster = MiniClusterFactory.get().createWithStorages(3, conf);
+  public void setUp(SmartConf smartConf) throws Exception {
+    initConf(smartConf);
+    cluster = MiniClusterFactory.get().createWithStorages(3, smartConf);
     cluster.waitActive();
-    Collection<URI> namenodes = DFSUtil.getInternalNsRpcUris(conf);
+    Collection<URI> namenodes = DFSUtil.getInternalNsRpcUris(smartConf);
     List<URI> uriList = new ArrayList<>(namenodes);
-    conf.set(DFS_NAMENODE_HTTP_ADDRESS_KEY, uriList.get(0).toString());
-    conf.set(SmartConfKeys.SMART_DFS_NAMENODE_RPCSERVER_KEY,
+    smartConf.set(DFS_NAMENODE_HTTP_ADDRESS_KEY, uriList.get(0).toString());
+    smartConf.set(SmartConfKeys.SMART_DFS_NAMENODE_RPCSERVER_KEY,
         uriList.get(0).toString());
     fileSystem = new SmartFileSystem();
-    fileSystem.initialize(cluster.getURI(), conf);
-  }
-
-  @Override
-  public SmartConf getConf() {
-    return conf;
+    fileSystem.initialize(cluster.getURI(), smartConf);
   }
 
   @Override

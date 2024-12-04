@@ -17,8 +17,6 @@
  */
 package org.smartdata.integration.auth;
 
-import io.restassured.authentication.BasicAuthScheme;
-import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.response.Response;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.Before;
@@ -26,7 +24,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
-import org.smartdata.client.generated.invoker.ApiClient;
 import org.smartdata.client.generated.model.ActionsDto;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.integration.IntegrationTestBase;
@@ -34,14 +31,11 @@ import org.smartdata.integration.api.ActionsApiWrapper;
 
 import java.util.Optional;
 
-import static io.restassured.config.ObjectMapperConfig.objectMapperConfig;
-import static io.restassured.config.RestAssuredConfig.config;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.smartdata.client.generated.invoker.ApiClient.BASE_URI;
-import static org.smartdata.client.generated.invoker.JacksonObjectMapper.jackson;
 import static org.smartdata.http.config.ConfigKeys.WEB_SECURITY_ENABLED;
+import static org.smartdata.integration.auth.AuthUtils.securedApiConfig;
 
 @RunWith(Parameterized.class)
 public abstract class TestWebServerAuth extends IntegrationTestBase {
@@ -56,7 +50,7 @@ public abstract class TestWebServerAuth extends IntegrationTestBase {
   @Before
   public void createApi() {
     actionsApiWrapper = new ActionsApiWrapper(
-        ApiClient.Config.apiConfig().reqSpecSupplier(this::withAuth));
+        securedApiConfig(testParams.username, testParams.password));
   }
 
   @Override
@@ -90,17 +84,6 @@ public abstract class TestWebServerAuth extends IntegrationTestBase {
     assertTrue(actionsDto.getItems().isEmpty());
 
     actionsApiWrapper.submitAction("read -file text.txt");
-  }
-
-  private RequestSpecBuilder withAuth() {
-    BasicAuthScheme authScheme = new BasicAuthScheme();
-    authScheme.setUserName(testParams.username);
-    authScheme.setPassword(testParams.password);
-
-    return new RequestSpecBuilder()
-        .setBaseUri(BASE_URI)
-        .setConfig(config().objectMapperConfig(objectMapperConfig().defaultObjectMapper(jackson())))
-        .setAuth(authScheme);
   }
 
   public static class TestParams {

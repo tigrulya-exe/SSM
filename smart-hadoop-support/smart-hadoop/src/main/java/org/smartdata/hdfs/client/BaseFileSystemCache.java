@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.smartdata.hdfs.HadoopUtil;
+import org.smartdata.hdfs.impersonation.UserImpersonationStrategy;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -41,8 +42,10 @@ public abstract class BaseFileSystemCache<T extends DistributedFileSystem> imple
 
   private final Cache<CacheKey, T> fileSystemCache;
   private final ScheduledExecutorService evictionHandlerExecutor;
+  private final UserImpersonationStrategy userImpersonationStrategy;
 
-  public BaseFileSystemCache(Duration keyTtl) {
+  public BaseFileSystemCache(UserImpersonationStrategy userImpersonationStrategy, Duration keyTtl) {
+    this.userImpersonationStrategy = userImpersonationStrategy;
     this.evictionHandlerExecutor = Executors.newSingleThreadScheduledExecutor();
     this.fileSystemCache = Caffeine.newBuilder()
         .expireAfterAccess(keyTtl)
@@ -52,10 +55,10 @@ public abstract class BaseFileSystemCache<T extends DistributedFileSystem> imple
   }
 
   @Override
-  public T get(Configuration config, InetSocketAddress ssmMasterAddress)
+  public T get(Configuration config, String user, InetSocketAddress ssmMasterAddress)
       throws IOException {
-    CacheKey cacheKey = new CacheKey(ssmMasterAddress, HadoopUtil.getNameNodeUri(config));
-    return fileSystemCache.get(cacheKey, key -> createFileSystem(config, key));
+    CacheKey cacheKey = new CacheKey(ssmMasterAddress, user, HadoopUtil.getNameNodeUri(config));
+    return fileSystemCache.get(cacheKey, key -> createImpersonatedFileSystem(config, key));
   }
 
   @Override
@@ -66,6 +69,15 @@ public abstract class BaseFileSystemCache<T extends DistributedFileSystem> imple
   }
 
   protected abstract T createFileSystem(Configuration config, CacheKey cacheKey);
+
+  private T createImpersonatedFileSystem(Configuration config, CacheKey cacheKey) {
+    try {
+      return userImpersonationStrategy.runWithImpersonation(cacheKey.user,
+          () -> createFileSystem(config, cacheKey));
+    } catch (Exception exception) {
+      throw new RuntimeException("Exception during filesystem creation", exception);
+    }
+  }
 
   private void onEntryRemoved(CacheKey key, T value, RemovalCause removalCause) {
     Optional.ofNullable(value).ifPresent(this::closeFileSystem);
@@ -82,6 +94,7 @@ public abstract class BaseFileSystemCache<T extends DistributedFileSystem> imple
   @Data
   protected static class CacheKey {
     private final InetSocketAddress ssmMasterAddress;
+    private final String user;
     private final URI nameNodeUri;
   }
 }

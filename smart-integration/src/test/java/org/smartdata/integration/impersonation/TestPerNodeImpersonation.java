@@ -15,27 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.server.engine.model;
+package org.smartdata.integration.impersonation;
 
-import org.smartdata.model.DetailedFileAction;
+import org.smartdata.conf.SmartConf;
+import org.smartdata.hdfs.impersonation.UserImpersonationStrategy;
 
-import java.util.List;
+import static org.smartdata.conf.SmartConfKeys.SMART_PROXY_USER_KEY;
+import static org.smartdata.conf.SmartConfKeys.SMART_PROXY_USER_STRATEGY_KEY;
 
-public class DetailedFileActionGroup {
-    private final List<DetailedFileAction> detailedFileActions;
-    private final long totalNumOfActions;
+public class TestPerNodeImpersonation extends TestImpersonation {
+  private static final String NODE_PROXY_USER = "pr0xyUser";
 
-    public DetailedFileActionGroup(List<DetailedFileAction> detailedFileActions,
-                                   long totalNumOfActions) {
-      this.detailedFileActions = detailedFileActions;
-      this.totalNumOfActions = totalNumOfActions;
-    }
-
-    public List<DetailedFileAction> getDetailedFileActions() {
-      return detailedFileActions;
-    }
-
-    public long getTotalNumOfActions() {
-      return totalNumOfActions;
-    }
+  @Override
+  protected void setImpersonationOptions(SmartConf conf) {
+    conf.setEnum(SMART_PROXY_USER_STRATEGY_KEY, UserImpersonationStrategy.Scope.NODE_SCOPE);
+    conf.set(SMART_PROXY_USER_KEY, NODE_PROXY_USER);
   }
+
+  @Override
+  protected String getProxyUserFor(String username) {
+    return NODE_PROXY_USER;
+  }
+}

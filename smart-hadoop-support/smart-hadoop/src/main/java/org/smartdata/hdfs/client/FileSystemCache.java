@@ -25,5 +25,5 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public interface FileSystemCache<T extends DistributedFileSystem> extends Closeable {
-  T get(Configuration config, InetSocketAddress ssmMasterAddress) throws IOException;
+  T get(Configuration config, String user, InetSocketAddress ssmMasterAddress) throws IOException;
 }

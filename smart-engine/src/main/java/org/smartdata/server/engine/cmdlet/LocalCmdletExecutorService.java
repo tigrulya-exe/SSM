@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.smartdata.action.ActionException;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
+import org.smartdata.hdfs.impersonation.UserImpersonationStrategy;
 import org.smartdata.model.ExecutorType;
 import org.smartdata.protocol.message.LaunchCmdlet;
 import org.smartdata.protocol.message.StatusMessage;
@@ -61,8 +62,9 @@ public class LocalCmdletExecutorService extends CmdletExecutorService implements
       return;
     }
 
-    this.cmdletFactory = new CmdletFactory(cmdletManager.getContext());
-    this.cmdletExecutor = new CmdletExecutor(smartConf);
+    UserImpersonationStrategy userImpersonationStrategy = UserImpersonationStrategy.from(smartConf);
+    this.cmdletFactory = new CmdletFactory(cmdletManager.getContext(), userImpersonationStrategy);
+    this.cmdletExecutor = new CmdletExecutor(smartConf, userImpersonationStrategy);
     this.executorService = Executors.newSingleThreadScheduledExecutor();
   }
 
@@ -103,7 +105,7 @@ public class LocalCmdletExecutorService extends CmdletExecutorService implements
       this.cmdletExecutor.execute(cmdletFactory.createCmdlet(cmdlet));
       return ActiveServerInfo.getInstance().getId();
     } catch (ActionException e) {
-      LOG.error("Failed to execute cmdlet {}" , cmdlet.getCmdletId(), e);
+      LOG.error("Failed to execute cmdlet {}", cmdlet.getCmdletId(), e);
       return null;
     }
   }
@@ -122,7 +124,7 @@ public class LocalCmdletExecutorService extends CmdletExecutorService implements
 
   @Override
   public void report(StatusMessage status) {
-    LOG.debug("Reporting status message " + status);
+    LOG.debug("Reporting status message {}", status);
     cmdletManager.updateStatus(status);
   }
 

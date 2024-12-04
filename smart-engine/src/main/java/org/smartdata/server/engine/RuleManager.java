@@ -37,7 +37,7 @@ import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
 import org.smartdata.model.RulesInfo;
 import org.smartdata.model.request.RuleSearchRequest;
-import org.smartdata.model.rule.RuleExecutorPluginManager;
+import org.smartdata.model.rule.RuleExecutorPlugin;
 import org.smartdata.model.rule.RulePluginManager;
 import org.smartdata.model.rule.RuleTranslationResult;
 import org.smartdata.model.rule.TimeBasedScheduleInfo;
@@ -60,6 +60,7 @@ import org.smartdata.server.engine.rule.copy.FileCopyScheduleStrategy;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -90,6 +91,7 @@ public class RuleManager
   private final SmartPrincipalManager smartPrincipalManager;
   private final RuleDao ruleDao;
   private final RuleInfoHandler ruleInfoHandler;
+  private final List<RuleExecutorPlugin> executorPlugins;
 
   private boolean isClosed = false;
 
@@ -123,11 +125,12 @@ public class RuleManager
     this.ruleInfoHandler = new RuleInfoHandler(ruleDao);
     this.pathChecker = new PathChecker(context.getConf());
 
-    RuleExecutorPluginManager.addPlugin(new FileCopyDrPlugin(
-        context.getMetaStore(), FileCopyScheduleStrategy.ordered()));
-    RuleExecutorPluginManager.addPlugin(new FileCopy2S3Plugin());
-    RuleExecutorPluginManager.addPlugin(new SmallFilePlugin(context, cmdletManager));
-    RuleExecutorPluginManager.addPlugin(new ErasureCodingPlugin(context));
+    this.executorPlugins = Arrays.asList(
+        new FileCopyDrPlugin(
+            context.getMetaStore(), FileCopyScheduleStrategy.ordered()),
+        new FileCopy2S3Plugin(),
+        new SmallFilePlugin(context, cmdletManager),
+        new ErasureCodingPlugin(context));
   }
 
   public RuleInfo submitRule(String rule) throws IOException {
@@ -166,13 +169,14 @@ public class RuleManager
     RuleInfo ruleInfo = RuleInfo.builder()
         .setRuleText(rule)
         .setState(initState)
+        .setOwner(smartPrincipalManager.getCurrentPrincipal().getName())
         .build();
 
     RulePluginManager.onAddingNewRule(ruleInfo, tr);
 
     metaStore.insertNewRule(ruleInfo);
 
-    RuleInfoRepo infoRepo = new RuleInfoRepo(ruleInfo, metaStore, serverContext.getConf());
+    RuleInfoRepo infoRepo = new RuleInfoRepo(ruleInfo, metaStore, serverContext.getConf(), executorPlugins);
     mapRules.put(ruleInfo.getId(), infoRepo);
     submitRuleToScheduler(infoRepo.launchExecutor(this));
 
@@ -304,7 +308,7 @@ public class RuleManager
       return;
     }
     for (RuleInfo rule : rules) {
-      mapRules.put(rule.getId(), new RuleInfoRepo(rule, metaStore, serverContext.getConf()));
+      mapRules.put(rule.getId(), new RuleInfoRepo(rule, metaStore, serverContext.getConf(), executorPlugins));
     }
     LOG.info("Initialized. Totally " + rules.size() + " rules loaded from DataBase.");
     if (LOG.isDebugEnabled()) {

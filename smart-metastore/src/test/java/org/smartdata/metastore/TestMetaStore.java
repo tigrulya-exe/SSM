@@ -214,7 +214,11 @@ public class TestMetaStore extends TestDaoBase {
   public void testInsertRule() throws Exception {
     String rule = "file : accessCount(10m) > 20 \n\n" + "and length() > 3 | cache";
     long submitTime = System.currentTimeMillis();
-    RuleInfo info1 = new RuleInfo(0, submitTime, rule, RuleState.ACTIVE, 0, 0, 0);
+    RuleInfo info1 = RuleInfo.builder()
+        .setRuleText(rule)
+        .setSubmitTime(submitTime)
+        .setState(RuleState.ACTIVE)
+        .build();
     Assert.assertTrue(metaStore.insertNewRule(info1));
     RuleInfo info11 = metaStore.getRuleInfo(info1.getId());
     Assert.assertEquals(info1, info11);
@@ -228,7 +232,12 @@ public class TestMetaStore extends TestDaoBase {
     RuleInfo info12 = metaStore.getRuleInfo(info1.getId());
     Assert.assertEquals(info12, info1);
 
-    RuleInfo info2 = new RuleInfo(0, submitTime, rule, RuleState.ACTIVE, 0, 0, 0);
+    RuleInfo info2 = RuleInfo.builder()
+        .setRuleText(rule)
+        .setSubmitTime(submitTime)
+        .setState(RuleState.ACTIVE)
+        .build();
+
     Assert.assertTrue(metaStore.insertNewRule(info2));
     RuleInfo info21 = metaStore.getRuleInfo(info2.getId());
     Assert.assertNotEquals(info11, info21);

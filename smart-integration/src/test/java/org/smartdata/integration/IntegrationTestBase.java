@@ -43,11 +43,11 @@ public class IntegrationTestBase {
 
   @Before
   public void setup() throws Exception {
+    conf = withHdfsOptions(new SmartConf());
     // Set up an HDFS cluster
     cluster = new SmartMiniCluster();
-    cluster.setUp();
 
-    conf = cluster.getConf();
+    cluster.setUp(conf);
     conf.setLong(SmartConfKeys.SMART_STATUS_REPORT_PERIOD_KEY, 100);
 
     smartServer = SmartServer.launchWith(withSsmServerOptions(conf));
@@ -97,6 +97,10 @@ public class IntegrationTestBase {
     if (cluster != null) {
       cluster.cleanUp();
     }
+  }
+
+  protected SmartConf withHdfsOptions(SmartConf conf) throws IOException {
+    return conf;
   }
 
   protected SmartConf withSsmServerOptions(SmartConf conf) {

@@ -181,6 +181,7 @@ public class DefaultCmdletDao
         + "state, "
         + "parameters, "
         + "generate_time, "
+        + "owner, "
         + "state_changed_time)"
         + " VALUES(?, ?, ?, ?, ?, ?, ?)";
 
@@ -195,7 +196,8 @@ public class DefaultCmdletDao
             ps.setLong(4, cmdletInfo.getState().getValue());
             ps.setString(5, cmdletInfo.getParameters());
             ps.setLong(6, cmdletInfo.getGenerateTime());
-            ps.setLong(7, cmdletInfo.getStateChangedTime());
+            ps.setString(7, cmdletInfo.getOwner());
+            ps.setLong(8, cmdletInfo.getStateChangedTime());
           }
 
           public int getBatchSize() {
@@ -248,6 +250,7 @@ public class DefaultCmdletDao
     parameters.put("parameters", cmdletInfo.getParameters());
     parameters.put("generate_time", cmdletInfo.getGenerateTime());
     parameters.put("state_changed_time", cmdletInfo.getStateChangedTime());
+    parameters.put("owner", cmdletInfo.getOwner());
     return parameters;
   }
 
@@ -296,6 +299,7 @@ public class DefaultCmdletDao
         .setParameters(resultSet.getString("parameters"))
         .setGenerateTime(resultSet.getLong("generate_time"))
         .setStateChangedTime(resultSet.getLong("state_changed_time"))
+        .setOwner(resultSet.getString("owner"))
         .build();
   }
 

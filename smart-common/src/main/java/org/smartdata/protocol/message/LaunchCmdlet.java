@@ -17,6 +17,7 @@
  */
 package org.smartdata.protocol.message;
 
+import lombok.Data;
 import org.smartdata.AgentService;
 import org.smartdata.SmartConstants;
 import org.smartdata.model.CmdletDispatchPolicy;
@@ -28,31 +29,19 @@ import java.util.List;
  * Command send out by Active SSM server to SSM Agents, Standby servers or itself for execution.
  *
  */
+@Data
 public class LaunchCmdlet implements AgentService.Message {
-  private long cmdletId;
-  private List<LaunchAction> launchActions;
-  private CmdletDispatchPolicy dispPolicy = CmdletDispatchPolicy.ANY;
+  private final long cmdletId;
+  private final List<LaunchAction> launchActions;
+  private final CmdletDispatchPolicy dispPolicy;
+  private final String owner;
   private String nodeId;
 
-  public LaunchCmdlet(long cmdletId, List<LaunchAction> launchActions) {
+  public LaunchCmdlet(long cmdletId, List<LaunchAction> launchActions, String owner) {
     this.cmdletId = cmdletId;
     this.launchActions = launchActions;
-  }
-
-  public long getCmdletId() {
-    return cmdletId;
-  }
-
-  public void setCmdletId(long cmdletId) {
-    this.cmdletId = cmdletId;
-  }
-
-  public List<LaunchAction> getLaunchActions() {
-    return launchActions;
-  }
-
-  public void setLaunchActions(List<LaunchAction> launchActions) {
-    this.launchActions = launchActions;
+    this.owner = owner;
+    this.dispPolicy = CmdletDispatchPolicy.ANY;
   }
 
   @Override
@@ -60,24 +49,8 @@ public class LaunchCmdlet implements AgentService.Message {
     return SmartConstants.AGENT_CMDLET_SERVICE_NAME;
   }
 
-  public CmdletDispatchPolicy getDispPolicy() {
-    return dispPolicy;
-  }
-
-  public void setDispPolicy(CmdletDispatchPolicy dispPolicy) {
-    this.dispPolicy = dispPolicy;
-  }
-
   @Override
   public String toString() {
     return String.format("{cmdletId = %d, dispPolicy = '%s'}", cmdletId, dispPolicy);
-  }
-
-  public String getNodeId() {
-    return nodeId;
-  }
-
-  public void setNodeId(String nodeId) {
-    this.nodeId = nodeId;
   }
 }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="2024.12.04_001" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="cmdlet" columnName="owner"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="cmdlet">
+            <column name="owner" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2024.12.04_002" author="tmanasyan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="rule" columnName="owner"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="rule">
+            <column name="owner" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

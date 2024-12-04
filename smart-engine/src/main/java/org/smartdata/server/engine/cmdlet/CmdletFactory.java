@@ -18,6 +18,7 @@
 package org.smartdata.server.engine.cmdlet;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.SmartContext;
@@ -27,6 +28,7 @@ import org.smartdata.action.SmartAction;
 import org.smartdata.hdfs.action.HdfsAction;
 import org.smartdata.hdfs.client.CachingLocalFileSystemProvider;
 import org.smartdata.hdfs.client.LocalFileSystemProvider;
+import org.smartdata.hdfs.impersonation.UserImpersonationStrategy;
 import org.smartdata.model.LaunchAction;
 import org.smartdata.protocol.message.LaunchCmdlet;
 
@@ -41,31 +43,47 @@ public class CmdletFactory implements Closeable {
 
   private final SmartContext smartContext;
   private final LocalFileSystemProvider localFileSystemProvider;
+  private final UserImpersonationStrategy userImpersonationStrategy;
 
-  public CmdletFactory(SmartContext smartContext) {
-    this(smartContext, new CachingLocalFileSystemProvider(smartContext.getConf()));
+  public CmdletFactory(SmartContext smartContext,
+      UserImpersonationStrategy userImpersonationStrategy) {
+    this(smartContext,
+        new CachingLocalFileSystemProvider(smartContext.getConf(), userImpersonationStrategy),
+        userImpersonationStrategy);
   }
 
-  public CmdletFactory(SmartContext smartContext, LocalFileSystemProvider localFileSystemProvider) {
+  public CmdletFactory(SmartContext smartContext,
+      LocalFileSystemProvider localFileSystemProvider,
+      UserImpersonationStrategy userImpersonationStrategy) {
     this.smartContext = smartContext;
     this.localFileSystemProvider = localFileSystemProvider;
+    this.userImpersonationStrategy = userImpersonationStrategy;
   }
 
   public Cmdlet createCmdlet(LaunchCmdlet launchCmdlet) throws ActionException {
     List<SmartAction> actions = new ArrayList<>();
     int idx = 0;
-    for (LaunchAction action : launchCmdlet.getLaunchActions()) {
+    for (LaunchAction launchAction : launchCmdlet.getLaunchActions()) {
       idx++;
-      actions.add(createAction(launchCmdlet.getCmdletId(),
-          idx == launchCmdlet.getLaunchActions().size(), action));
+      SmartAction action = createAction(
+          launchCmdlet.getCmdletId(),
+          idx == launchCmdlet.getLaunchActions().size(),
+          launchAction,
+          userImpersonationStrategy.getUserFor(launchCmdlet));
+      actions.add(action);
     }
-    Cmdlet cmdlet = new Cmdlet(actions);
-    cmdlet.setId(launchCmdlet.getCmdletId());
-    return cmdlet;
+    return Cmdlet.builder()
+        .id(launchCmdlet.getCmdletId())
+        .actions(actions)
+        .owner(launchCmdlet.getOwner())
+        .build();
   }
 
-  public SmartAction createAction(long cmdletId, boolean isLastAction, LaunchAction launchAction)
-      throws ActionException {
+  public SmartAction createAction(
+      long cmdletId,
+      boolean isLastAction,
+      LaunchAction launchAction,
+      String actionUser) throws ActionException {
     SmartAction smartAction = ActionRegistry.createAction(launchAction.getActionType());
     smartAction.setContext(smartContext);
     smartAction.setCmdletId(cmdletId);
@@ -73,16 +91,16 @@ public class CmdletFactory implements Closeable {
     smartAction.init(launchAction.getArgs());
     smartAction.setActionId(launchAction.getActionId());
     if (smartAction instanceof HdfsAction) {
-      setLocalFileSystem((HdfsAction) smartAction);
+      setLocalFileSystem((HdfsAction) smartAction, actionUser);
     }
     return smartAction;
   }
 
-  private void setLocalFileSystem(HdfsAction action) throws ActionException {
+  private void setLocalFileSystem(HdfsAction action, String actionUser) throws ActionException {
     try {
-      action.setLocalFileSystem(
-          localFileSystemProvider.provide(smartContext.getConf(), action.localFsType())
-      );
+      DistributedFileSystem localFileSystem = localFileSystemProvider.provide(
+          smartContext.getConf(), actionUser, action.localFsType());
+      action.setLocalFileSystem(localFileSystem);
     } catch (IOException exception) {
       LOG.error("smartAction aid={} setDfsClient error", action.getActionId(), exception);
       throw new ActionException(exception);

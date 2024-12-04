@@ -22,9 +22,10 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import org.apache.commons.collections4.CollectionUtils;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
-import org.smartdata.model.CmdletState;
+import org.smartdata.hdfs.impersonation.UserImpersonationStrategy;
 import org.smartdata.protocol.message.ActionStatus;
 import org.smartdata.protocol.message.StatusReport;
 
@@ -44,8 +45,10 @@ public class CmdletExecutor {
   private final Map<Long, Cmdlet> idToReportCmdlet;
 
   private final ListeningExecutorService executorService;
+  private final UserImpersonationStrategy userImpersonationStrategy;
 
-  public CmdletExecutor(SmartConf smartConf) {
+  public CmdletExecutor(SmartConf smartConf,
+      UserImpersonationStrategy userImpersonationStrategy) {
     this.listenableFutures = new ConcurrentHashMap<>();
     this.runningCmdlets = new ConcurrentHashMap<>();
     this.idToReportCmdlet = new ConcurrentHashMap<>();
@@ -55,10 +58,11 @@ public class CmdletExecutor {
             SmartConfKeys.SMART_CMDLET_EXECUTORS_DEFAULT);
     this.executorService = MoreExecutors.listeningDecorator(
         Executors.newFixedThreadPool(cmdletExecutorsNum));
+    this.userImpersonationStrategy = userImpersonationStrategy;
   }
 
   public void execute(Cmdlet cmdlet) {
-    ListenableFuture<?> future = executorService.submit(cmdlet);
+    ListenableFuture<?> future = executorService.submit(() -> runCmdlet(cmdlet));
     Futures.addCallback(future, new CmdletCallBack(cmdlet), executorService);
     listenableFutures.put(cmdlet.getId(), future);
     runningCmdlets.put(cmdlet.getId(), cmdlet);
@@ -67,7 +71,6 @@ public class CmdletExecutor {
 
   public void stop(Long cmdletId) {
     if (listenableFutures.containsKey(cmdletId)) {
-      runningCmdlets.get(cmdletId).setState(CmdletState.FAILED);
       listenableFutures.get(cmdletId).cancel(true);
     }
     removeCmdlet(cmdletId);
@@ -87,7 +90,7 @@ public class CmdletExecutor {
     while (iter.hasNext()) {
       Cmdlet cmdlet = iter.next();
       List<ActionStatus> statuses = cmdlet.getActionStatuses();
-      if (statuses != null) {
+      if (CollectionUtils.isNotEmpty(statuses)) {
         actionStatusList.addAll(statuses);
       } else {
         iter.remove();
@@ -95,6 +98,10 @@ public class CmdletExecutor {
     }
 
     return new StatusReport(actionStatusList);
+  }
+
+  private void runCmdlet(Cmdlet cmdlet) {
+    userImpersonationStrategy.runWithImpersonation(cmdlet.getOwner(), cmdlet);
   }
 
   private void removeCmdlet(long cmdletId) {
