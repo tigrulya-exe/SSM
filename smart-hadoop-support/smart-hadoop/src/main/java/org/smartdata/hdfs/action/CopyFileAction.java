@@ -32,8 +32,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.smartdata.conf.SmartConfKeys.SMART_ACTION_COPY_TRUNCATE_WAIT_MS_DEFAULT;
-import static org.smartdata.conf.SmartConfKeys.SMART_ACTION_COPY_TRUNCATE_WAIT_MS_KEY;
 import static org.smartdata.hdfs.action.CopyPreservedAttributesAction.PreserveAttribute.GROUP;
 import static org.smartdata.hdfs.action.CopyPreservedAttributesAction.PreserveAttribute.OWNER;
 import static org.smartdata.hdfs.action.CopyPreservedAttributesAction.PreserveAttribute.PERMISSIONS;
@@ -65,6 +63,7 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
   public static final String COPY_CONTENT = "-copyContent";
   public static final String FORCE = "-force";
   public static final String TRUNCATE_WAIT_MS = "-truncateWaitMs";
+  public static final long SMART_ACTION_COPY_TRUNCATE_WAIT_MS_DEFAULT = 100L;
   public static final Set<PreserveAttribute> DEFAULT_PRESERVE_ATTRIBUTES
       = Sets.newHashSet(OWNER, GROUP, PERMISSIONS);
 
@@ -111,10 +110,7 @@ public class CopyFileAction extends CopyPreservedAttributesAction {
 
     truncateWaitMs = Optional.ofNullable(args.get(TRUNCATE_WAIT_MS))
         .map(Long::parseLong)
-        .orElseGet(() -> getContext()
-            .getConf()
-            .getLong(SMART_ACTION_COPY_TRUNCATE_WAIT_MS_KEY,
-                SMART_ACTION_COPY_TRUNCATE_WAIT_MS_DEFAULT));
+        .orElse(SMART_ACTION_COPY_TRUNCATE_WAIT_MS_DEFAULT);
 
     fullCopyAppend = args.containsKey(FORCE);
   }

@@ -286,10 +286,6 @@ public class SmartConfKeys {
         "smart.action.client.cache.ttl";
     public static final String SMART_ACTION_CLIENT_CACHE_TTL_DEFAULT = "10m";
 
-  public static final String SMART_ACTION_COPY_TRUNCATE_WAIT_MS_KEY =
-      "smart.action.copy.truncate.wait.ms";
-  public static final long SMART_ACTION_COPY_TRUNCATE_WAIT_MS_DEFAULT = 100L;
-
   public static final String ACCESS_EVENT_SOURCE_KEY = "smart.data.file.event.source";
     public static final String ACCESS_EVENT_SOURCE_DEFAULT =
         SmartServerAccessEventSource.class.getName();
