@@ -161,7 +161,6 @@ public class CmdletInfoHandler
       inMemoryRegistry.updateAction(aid, actionInfo -> {
         actionInfo.setProgress(1.0F);
         actionInfo.setFinished(true);
-        actionInfo.setCreateTime(cmdletInfo.getStateChangedTime());
         actionInfo.setFinishTime(cmdletInfo.getStateChangedTime());
         actionInfo.setExecHost(ActiveServerInfo.getInstance().getId());
         actionInfo.setSuccessful(success);

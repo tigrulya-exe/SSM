@@ -54,6 +54,7 @@ import org.smartdata.model.PathChecker;
 import org.smartdata.model.WhitelistHelper;
 import org.smartdata.model.action.ActionScheduler;
 import org.smartdata.model.action.ScheduleResult;
+import org.smartdata.model.request.CmdletSearchRequest;
 import org.smartdata.protocol.message.ActionStatus;
 import org.smartdata.protocol.message.ActionStatusFactory;
 import org.smartdata.protocol.message.CmdletStatus;
@@ -249,14 +250,17 @@ public class CmdletManager extends AbstractService
   private void loadCmdletsFromDb() throws IOException {
     LOG.info("reloading the dispatched and pending cmdlets in DB.");
     try {
-      for (CmdletInfo cmdletInfo : metaStore.getCmdlets(CmdletState.DISPATCHED)) {
-        recoverCmdletInfo(cmdletInfo,
-            actionInfos -> recoverDispatchedActionInfos(cmdletInfo, actionInfos));
+      CmdletSearchRequest searchRequest = CmdletSearchRequest.builder()
+          .state(CmdletState.DISPATCHED)
+          .state(CmdletState.EXECUTING)
+          .build();
+
+      for (CmdletInfo cmdletInfo : cmdletInfoHandler.search(searchRequest)) {
+        recoverCmdletInfo(cmdletInfo, this::recoverDispatchedActionInfos);
       }
 
       for (CmdletInfo cmdletInfo : metaStore.getCmdlets(CmdletState.PENDING)) {
-        recoverCmdletInfo(cmdletInfo, actionInfos -> {
-        });
+        recoverCmdletInfo(cmdletInfo, actionInfos -> {});
       }
     } catch (MetaStoreException e) {
       LOG.error("DB connection error occurs when ssm is reloading cmdlets!");
@@ -265,10 +269,8 @@ public class CmdletManager extends AbstractService
     }
   }
 
-  private void recoverDispatchedActionInfos(CmdletInfo cmdletInfo, List<ActionInfo> actionInfos) {
+  private void recoverDispatchedActionInfos(List<ActionInfo> actionInfos) {
     for (ActionInfo actionInfo : actionInfos) {
-      actionInfo.setCreateTime(cmdletInfo.getGenerateTime());
-      actionInfo.setFinishTime(System.currentTimeMillis());
       // Recover scheduler status according to dispatched action.
       onActionInfoRecover(actionInfo);
     }
@@ -441,10 +443,12 @@ public class CmdletManager extends AbstractService
       synchronized (pendingCmdlets) {
         pendingCmdlets.add(cmdletInfo.getId());
       }
-    } else if (cmdletInfo.getState() == CmdletState.DISPATCHED) {
+    } else if (cmdletInfo.getState() == CmdletState.DISPATCHED
+        || cmdletInfo.getState() == CmdletState.EXECUTING) {
       runningCmdlets.add(cmdletInfo.getId());
       LaunchCmdlet launchCmdlet = cmdletInfoHandler.createLaunchCmdlet(cmdletInfo);
       idToLaunchCmdlets.put(cmdletInfo.getId(), launchCmdlet);
+      scheduledCmdlets.add(cmdletInfo.getId());
     }
   }
 

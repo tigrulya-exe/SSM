@@ -162,13 +162,12 @@ public class ActionInfoHandler
 
     actionInfo.setLog(status.getLog());
     actionInfo.setResult(status.getResult());
+    actionInfo.setStartTime(status.getStartTime());
     if (!status.isFinished()) {
       actionInfo.setProgress(status.getPercentage());
-      actionInfo.setFinishTime(System.currentTimeMillis());
     } else {
       actionInfo.setProgress(1.0F);
       actionInfo.setFinished(true);
-      actionInfo.setCreateTime(status.getStartTime());
       actionInfo.setFinishTime(status.getFinishTime());
       if (status.getThrowable() != null) {
         actionInfo.setSuccessful(false);
