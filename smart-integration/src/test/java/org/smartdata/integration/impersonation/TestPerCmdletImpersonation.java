@@ -15,24 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.integration.cluster;
+package org.smartdata.integration.impersonation;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.smartdata.conf.SmartConf;
+import org.smartdata.hdfs.impersonation.UserImpersonationStrategy;
+import org.smartdata.security.AnonymousDefaultPrincipalProvider;
 
-/**
- * Interface for a Smart cluster.
- */
-public interface SmartCluster {
-  /**
-   * Set up a cluster or attach to a specific cluster.
-   */
-  void setUp(SmartConf smartConf) throws Exception;
+import static org.smartdata.conf.SmartConfKeys.SMART_PROXY_USER_STRATEGY_KEY;
 
-  /**
-   * Cleaning-up work to quit the cluster.
-   */
-  void cleanUp() throws Exception;
+public class TestPerCmdletImpersonation extends TestImpersonation {
+  @Override
+  protected void setImpersonationOptions(SmartConf conf) {
+    conf.setEnum(SMART_PROXY_USER_STRATEGY_KEY, UserImpersonationStrategy.Scope.CMDLET_SCOPE);
+  }
 
-  FileSystem getFileSystem();
+  @Override
+  protected String getProxyUserFor(String username) {
+    return authenticationEnabled
+        ? username
+        : AnonymousDefaultPrincipalProvider.anonymousPrincipal().getName();
+  }
 }

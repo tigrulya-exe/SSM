@@ -26,5 +26,5 @@ import java.io.IOException;
 
 public interface LocalFileSystemProvider extends Closeable {
   DistributedFileSystem provide(
-      Configuration config, HdfsAction.FsType fsType) throws IOException;
+      Configuration config, String user, HdfsAction.FsType fsType) throws IOException;
 }

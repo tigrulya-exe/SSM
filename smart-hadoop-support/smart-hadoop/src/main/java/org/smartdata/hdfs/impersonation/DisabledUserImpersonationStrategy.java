@@ -15,24 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.integration.cluster;
+package org.smartdata.hdfs.impersonation;
 
-import org.apache.hadoop.fs.FileSystem;
-import org.smartdata.conf.SmartConf;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.smartdata.protocol.message.LaunchCmdlet;
 
-/**
- * Interface for a Smart cluster.
- */
-public interface SmartCluster {
-  /**
-   * Set up a cluster or attach to a specific cluster.
-   */
-  void setUp(SmartConf smartConf) throws Exception;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 
-  /**
-   * Cleaning-up work to quit the cluster.
-   */
-  void cleanUp() throws Exception;
+public class DisabledUserImpersonationStrategy extends BaseUserImpersonationStrategy {
+  @Override
+  public String getUserFor(LaunchCmdlet launchCmdlet) {
+    return null;
+  }
 
-  FileSystem getFileSystem();
+  @Override
+  protected UserGroupInformation getProxyUserFor(String user) {
+    try {
+      return UserGroupInformation.getCurrentUser();
+    } catch (IOException exception) {
+      throw new UncheckedIOException("Error getting current user", exception);
+    }
+  }
 }

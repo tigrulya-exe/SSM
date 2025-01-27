@@ -22,13 +22,14 @@ import org.junit.Test;
 import org.smartdata.action.EchoAction;
 import org.smartdata.action.SmartAction;
 import org.smartdata.conf.SmartConf;
+import org.smartdata.hdfs.impersonation.DisabledUserImpersonationStrategy;
 import org.smartdata.protocol.message.ActionStatus;
 import org.smartdata.protocol.message.StatusMessage;
 import org.smartdata.protocol.message.StatusReport;
 import org.smartdata.protocol.message.StatusReporter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,17 +50,19 @@ public class TestCmdletExecutor {
             statusMessages.add(status);
           }
         };
-    CmdletExecutor executor = new CmdletExecutor(new SmartConf());
+    CmdletExecutor executor = new CmdletExecutor(new SmartConf(), new DisabledUserImpersonationStrategy());
     StatusReportTask statusReportTask = new StatusReportTask(reporter, executor, new SmartConf());
     ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     executorService.scheduleAtFixedRate(
-            statusReportTask, 100, 10, TimeUnit.MILLISECONDS);
+        statusReportTask, 100, 10, TimeUnit.MILLISECONDS);
     SmartAction action = new EchoAction();
     Map<String, String> args = new HashMap<>();
     args.put(EchoAction.PRINT_MESSAGE, "message success");
     action.init(args);
     action.setActionId(101);
-    Cmdlet cmdlet = new Cmdlet(Arrays.asList(action));
+    Cmdlet cmdlet = Cmdlet.builder()
+        .actions(Collections.singletonList(action))
+        .build();
 
     executor.execute(cmdlet);
 
@@ -90,15 +93,17 @@ public class TestCmdletExecutor {
             statusMessages.add(status);
           }
         };
-    CmdletExecutor executor = new CmdletExecutor(new SmartConf());
+    CmdletExecutor executor = new CmdletExecutor(new SmartConf(), new DisabledUserImpersonationStrategy());
     StatusReportTask statusReportTask = new StatusReportTask(reporter, executor, new SmartConf());
     ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     executorService.scheduleAtFixedRate(
-            statusReportTask, 100, 10, TimeUnit.MILLISECONDS);
+        statusReportTask, 100, 10, TimeUnit.MILLISECONDS);
     SmartAction action = new HangingAction();
     action.setActionId(101);
-    Cmdlet cmdlet = new Cmdlet(Arrays.asList(action));
-    cmdlet.setId(10);
+    Cmdlet cmdlet = Cmdlet.builder()
+        .id(10L)
+        .actions(Collections.singletonList(action))
+        .build();
 
     executor.execute(cmdlet);
     Thread.sleep(1000);

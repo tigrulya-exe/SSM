@@ -146,6 +146,7 @@ public class DefaultRuleDao
     parameters.put("checked_count", ruleInfo.getNumChecked());
     parameters.put("generated_cmdlets", ruleInfo.getNumCmdsGen());
     parameters.put("last_check_time", ruleInfo.getLastCheckTime());
+    parameters.put("owner", ruleInfo.getOwner());
     return parameters;
   }
 
@@ -180,6 +181,7 @@ public class DefaultRuleDao
         .setNumChecked(resultSet.getLong("checked_count"))
         .setNumCmdsGen(resultSet.getLong("generated_cmdlets"))
         .setLastCheckTime(resultSet.getLong("last_check_time"))
+        .setOwner(resultSet.getString("owner"))
         .build();
   }
 

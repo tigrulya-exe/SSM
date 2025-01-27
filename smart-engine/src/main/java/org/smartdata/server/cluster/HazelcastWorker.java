@@ -28,6 +28,7 @@ import org.smartdata.SmartContext;
 import org.smartdata.action.ActionException;
 import org.smartdata.conf.SmartConf;
 import org.smartdata.conf.SmartConfKeys;
+import org.smartdata.hdfs.impersonation.UserImpersonationStrategy;
 import org.smartdata.model.CmdletState;
 import org.smartdata.protocol.message.CmdletStatusUpdate;
 import org.smartdata.protocol.message.LaunchCmdlet;
@@ -56,8 +57,9 @@ public class HazelcastWorker implements StatusReporter {
 
   public HazelcastWorker(SmartContext smartContext) {
     this.smartConf = smartContext.getConf();
-    this.factory = new CmdletFactory(smartContext);
-    this.cmdletExecutor = new CmdletExecutor(smartContext.getConf());
+    UserImpersonationStrategy userImpersonationStrategy = UserImpersonationStrategy.from(smartConf);
+    this.factory = new CmdletFactory(smartContext, userImpersonationStrategy);
+    this.cmdletExecutor = new CmdletExecutor(smartContext.getConf(), userImpersonationStrategy);
     this.executorService = Executors.newSingleThreadScheduledExecutor();
     HazelcastInstance instance = HazelcastInstanceProvider.getInstance();
     this.statusTopic = instance.getTopic(HazelcastExecutorService.STATUS_TOPIC);
@@ -72,7 +74,7 @@ public class HazelcastWorker implements StatusReporter {
         SmartConfKeys.SMART_STATUS_REPORT_PERIOD_DEFAULT);
     StatusReportTask statusReportTask = new StatusReportTask(this, cmdletExecutor, smartConf);
     executorService.scheduleAtFixedRate(
-            statusReportTask, 1000, reportPeriod, TimeUnit.MILLISECONDS);
+        statusReportTask, 1000, reportPeriod, TimeUnit.MILLISECONDS);
   }
 
   public void stop() {

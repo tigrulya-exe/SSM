@@ -39,15 +39,22 @@ public class TestRulesTable extends TestDaoBase {
     String rule = "file : accessCount(10m) > 20 \n\n"
         + "and length() > 3 | cache";
     long submitTime = System.currentTimeMillis();
-    RuleInfo info1 = new RuleInfo(0, submitTime,
-        rule, RuleState.ACTIVE, 0, 0, 0);
+    RuleInfo info1 = RuleInfo.builder()
+        .setRuleText(rule)
+        .setSubmitTime(submitTime)
+        .setState(RuleState.ACTIVE)
+        .build();
 
     Assert.assertTrue(adapter.insertNewRule(info1));
     RuleInfo info11 = adapter.getRuleInfo(info1.getId());
     Assert.assertTrue(info1.equals(info11));
 
-    RuleInfo info2 = new RuleInfo(0, submitTime,
-        rule, RuleState.ACTIVE, 0, 0, 0);
+    RuleInfo info2 = RuleInfo.builder()
+        .setRuleText(rule)
+        .setSubmitTime(submitTime)
+        .setState(RuleState.ACTIVE)
+        .build();
+
     Assert.assertTrue(adapter.insertNewRule(info2));
     RuleInfo info21 = adapter.getRuleInfo(info2.getId());
     Assert.assertFalse(info11.equals(info21));

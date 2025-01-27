@@ -35,7 +35,11 @@ public class CmdletsApiWrapper {
   private final CmdletsApi apiClient;
 
   public CmdletsApiWrapper() {
-    this.apiClient = ApiClient.api(ApiClient.Config.apiConfig()).cmdlets();
+    this(ApiClient.Config.apiConfig());
+  }
+
+  public CmdletsApiWrapper(ApiClient.Config config) {
+    this.apiClient = ApiClient.api(config).cmdlets();
   }
 
   public CmdletDto getCmdlet(long cmdletId) {

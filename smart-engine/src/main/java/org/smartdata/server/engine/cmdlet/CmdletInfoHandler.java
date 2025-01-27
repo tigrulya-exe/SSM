@@ -76,7 +76,7 @@ public class CmdletInfoHandler
     }
   }
 
-  public CmdletInfo createCmdletInfo(CmdletDescriptor cmdletDescriptor) {
+  public CmdletInfo createCmdletInfo(CmdletDescriptor cmdletDescriptor, String cmdletOwner) {
     long submitTime = System.currentTimeMillis();
     return CmdletInfo.builder()
         .setId(maxCmdletId.getAndIncrement())
@@ -85,6 +85,7 @@ public class CmdletInfoHandler
         .setParameters(cmdletDescriptor.getCmdletString())
         .setGenerateTime(submitTime)
         .setStateChangedTime(submitTime)
+        .setOwner(cmdletOwner)
         .build();
   }
 
@@ -100,7 +101,7 @@ public class CmdletInfoHandler
         .map(actionInfoHandler::createLaunchAction)
         .collect(Collectors.toList());
 
-    return new LaunchCmdlet(cmdletInfo.getId(), launchActions);
+    return new LaunchCmdlet(cmdletInfo.getId(), launchActions, cmdletInfo.getOwner());
   }
 
   public CmdletInfo getCmdletInfo(long cid) throws IOException {

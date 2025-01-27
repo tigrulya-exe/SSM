@@ -17,41 +17,20 @@
  */
 package org.smartdata.model;
 
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Map;
 
+@Data
 public class LaunchAction implements Serializable {
-  private long actionId;
+  private final long actionId;
   private String actionType;
   private Map<String, String> args;
 
   public LaunchAction(long actionId, String actionType, Map<String, String> args) {
     this.actionId = actionId;
     this.actionType = actionType;
-    this.args = args;
-  }
-
-  public long getActionId() {
-    return actionId;
-  }
-
-  public void setActionId(long actionId) {
-    this.actionId = actionId;
-  }
-
-  public String getActionType() {
-    return actionType;
-  }
-
-  public void setActionType(String actionType) {
-    this.actionType = actionType;
-  }
-
-  public Map<String, String> getArgs() {
-    return args;
-  }
-
-  public void setArgs(Map<String, String> args) {
     this.args = args;
   }
 }

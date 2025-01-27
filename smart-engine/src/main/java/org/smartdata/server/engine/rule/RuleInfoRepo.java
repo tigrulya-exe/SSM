@@ -25,7 +25,6 @@ import org.smartdata.metastore.dao.RuleDao;
 import org.smartdata.model.RuleInfo;
 import org.smartdata.model.RuleState;
 import org.smartdata.model.rule.RuleExecutorPlugin;
-import org.smartdata.model.rule.RuleExecutorPluginManager;
 import org.smartdata.model.rule.RuleTranslationResult;
 import org.smartdata.rule.parser.SmartRuleStringParser;
 import org.smartdata.rule.parser.TranslationContext;
@@ -44,14 +43,19 @@ public class RuleInfoRepo {
   private final MetaStore metaStore;
   private final RuleDao ruleDao;
   private final SmartConf conf;
+  private final List<RuleExecutorPlugin> executorPlugins;
   private RuleExecutor ruleExecutor;
 
   private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
-  public RuleInfoRepo(RuleInfo ruleInfo, MetaStore metaStore, SmartConf conf) {
+  public RuleInfoRepo(RuleInfo ruleInfo,
+      MetaStore metaStore,
+      SmartConf conf,
+      List<RuleExecutorPlugin> executorPlugins) {
     this.ruleInfo = ruleInfo;
     this.metaStore = metaStore;
     this.ruleDao = metaStore.ruleDao();
+    this.executorPlugins = executorPlugins;
     this.conf = conf;
   }
 
@@ -148,8 +152,12 @@ public class RuleInfoRepo {
           : new SmartRuleStringParser(ruleInfo.getRuleText(), translationCtx, conf).translate();
 
       ruleExecutor = new RuleExecutor(
-          ruleManager, executionCtx, translationResult, ruleManager.getMetaStore());
-      for (RuleExecutorPlugin plugin : RuleExecutorPluginManager.getPlugins()) {
+          ruleManager,
+          executionCtx,
+          translationResult,
+          ruleManager.getMetaStore(),
+          executorPlugins);
+      for (RuleExecutorPlugin plugin : executorPlugins) {
         plugin.onNewRuleExecutor(ruleInfo, translationResult);
       }
       return ruleExecutor;
@@ -165,8 +173,7 @@ public class RuleInfoRepo {
   }
 
   private void notifyRuleExecutorExit() {
-    List<RuleExecutorPlugin> plugins = RuleExecutorPluginManager.getPlugins();
-    for (RuleExecutorPlugin plugin : plugins) {
+    for (RuleExecutorPlugin plugin : executorPlugins) {
       plugin.onRuleExecutorExit(ruleInfo);
     }
   }
@@ -177,7 +184,7 @@ public class RuleInfoRepo {
   }
 
   private void changeRuleState(RuleState newState,
-                               boolean updateDb) throws IOException {
+      boolean updateDb) throws IOException {
     RuleState oldState = ruleInfo.getState();
     if (newState == null || oldState == newState) {
       return;

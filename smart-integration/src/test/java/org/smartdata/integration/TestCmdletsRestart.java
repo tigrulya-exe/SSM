@@ -57,9 +57,9 @@ public class TestCmdletsRestart {
   @Before
   public void setup() throws Exception {
     cluster = new SmartMiniCluster();
-    cluster.setUp();
+    conf = new SmartConf();
+    cluster.setUp(conf);
 
-    conf = cluster.getConf();
     conf.setLong(SmartConfKeys.SMART_STATUS_REPORT_PERIOD_KEY, 100);
 
     cmdletsApiClient = new CmdletsApiWrapper();

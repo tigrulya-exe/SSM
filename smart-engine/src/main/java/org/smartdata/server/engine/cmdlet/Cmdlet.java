@@ -17,17 +17,17 @@
  */
 package org.smartdata.server.engine.cmdlet;
 
-import com.google.common.collect.Lists;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartdata.action.SmartAction;
-import org.smartdata.model.CmdletState;
 import org.smartdata.protocol.message.ActionStatus;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Action is the minimum unit of execution. A cmdlet can contain more than one
@@ -36,61 +36,33 @@ import java.util.ListIterator;
  *
  * <p>The cmdlet get executed when rule conditions fulfills.
  */
-// Todo: Cmdlet's state should be maintained by itself
+@Getter
 public class Cmdlet implements Runnable {
   static final Logger LOG = LoggerFactory.getLogger(Cmdlet.class);
-  private long ruleId;   // id of the rule that this cmdlet comes from
-  private long id;
-  private CmdletState state = CmdletState.NOTINITED;
-  private long stateUpdateTime;
+
+  private final long id;
   private final List<SmartAction> actions;
-  private List<SmartAction> actionReportList;
-
-  public Cmdlet(List<SmartAction> actions) {
-    this.actions = actions;
-    this.actionReportList = new ArrayList<>();
-    ListIterator<SmartAction> iter = actions.listIterator(actions.size());
-    while (iter.hasPrevious()) {
-      this.actionReportList.add(iter.previous());
-    }
-  }
-
-  public long getRuleId() {
-    return ruleId;
-  }
-
-  public void setId(long id) {
-    this.id = id;
-  }
-
-  public void setRuleId(long ruleId) {
-    this.ruleId = ruleId;
-  }
-
-  public long getId() {
-    return id;
-  }
-
-  public CmdletState getState() {
-    return state;
-  }
-
-  //Todo: remove this method
-  public void setState(CmdletState state) {
-    this.state = state;
-  }
+  private final Set<Long> idsToReport;
+  private final Long ruleId;
+  private final String owner;
 
   public String toString() {
     return "Rule-" + ruleId + "-Cmd-" + id;
   }
 
-  public boolean isFinished() {
-    return CmdletState.isTerminalState(state);
+  @lombok.Builder
+  public Cmdlet(long id, List<SmartAction> actions, Long ruleId, String owner) {
+    this.id = id;
+    this.ruleId = ruleId;
+    this.owner = owner;
+    this.actions = actions;
+    this.idsToReport = actions.stream()
+        .map(SmartAction::getActionId)
+        .collect(Collectors.toSet());
   }
 
-  private void runAllActions() {
-    state = CmdletState.EXECUTING;
-    stateUpdateTime = System.currentTimeMillis();
+  @Override
+  public void run() {
     Iterator<SmartAction> iter = actions.iterator();
     while (iter.hasNext()) {
       SmartAction act = iter.next();
@@ -105,43 +77,28 @@ public class Cmdlet implements Runnable {
         while (iter.hasNext()) {
           SmartAction nextAct = iter.next();
           synchronized (this) {
-            actionReportList.remove(nextAct);
+            idsToReport.remove(nextAct.getActionId());
           }
         }
-        state = CmdletState.FAILED;
-        stateUpdateTime = System.currentTimeMillis();
         LOG.error("Executing Cmdlet [id={}] meets failed.", getId());
         return;
       }
     }
-    state = CmdletState.DONE;
-    stateUpdateTime = System.currentTimeMillis();
-    // TODO catch MetaStoreException and handle
-  }
-
-  @Override
-  public void run() {
-    runAllActions();
   }
 
   public synchronized List<ActionStatus> getActionStatuses() {
-    if (actionReportList.isEmpty()) {
-      return null;
+    if (idsToReport.isEmpty()) {
+      return Collections.emptyList();
     }
 
-    // get status in the order of the descend action id.
-    // The cmdletmanager should update action status in the ascend order.
-    List<ActionStatus> statuses = new ArrayList<>();
-    Iterator<SmartAction> iter = actionReportList.iterator();
-    while (iter.hasNext()) {
-      SmartAction action = iter.next();
-      ActionStatus status = action.getActionStatus();
-      statuses.add(status);
-      if (status.isFinished()) {
-        iter.remove();
-      }
-    }
-
-    return Lists.reverse(statuses);
+    return actions.stream()
+        .filter(action -> idsToReport.contains(action.getActionId()))
+        .map(SmartAction::getActionStatus)
+        .peek(status -> {
+              if (status.isFinished()) {
+                idsToReport.remove(status.getActionId());
+              }
+            }
+        ).collect(Collectors.toList());
   }
 }

@@ -24,6 +24,7 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.smartdata.hadoop.filesystem.SmartFileSystem;
 import org.smartdata.hdfs.HadoopUtil;
 import org.smartdata.hdfs.action.HdfsAction;
+import org.smartdata.hdfs.impersonation.UserImpersonationStrategy;
 import org.smartdata.utils.StringUtil;
 
 import java.io.IOException;
@@ -43,25 +44,27 @@ public class CachingLocalFileSystemProvider implements LocalFileSystemProvider {
   private final FileSystemCache<SmartFileSystem> smartFsCache;
   private final FileSystemCache<DistributedFileSystem> defaultFsCache;
 
-  public CachingLocalFileSystemProvider(Configuration config) {
+  public CachingLocalFileSystemProvider(
+      Configuration config,
+      UserImpersonationStrategy userImpersonationStrategy) {
     String cacheKeyTtl = config.get(
         SMART_ACTION_CLIENT_CACHE_TTL_KEY, SMART_ACTION_CLIENT_CACHE_TTL_DEFAULT);
     Duration cacheKeyTtlDuration = Duration.ofMillis(
         StringUtil.parseTimeString(cacheKeyTtl));
 
-    this.smartFsCache = new SmartFileSystemCache(cacheKeyTtlDuration);
-    this.defaultFsCache = new DefaultFileSystemCache(cacheKeyTtlDuration);
+    this.smartFsCache = new SmartFileSystemCache(userImpersonationStrategy, cacheKeyTtlDuration);
+    this.defaultFsCache = new DefaultFileSystemCache(userImpersonationStrategy, cacheKeyTtlDuration);
   }
 
   @Override
-  public DistributedFileSystem provide(Configuration config, HdfsAction.FsType fsType)
+  public DistributedFileSystem provide(Configuration config, String user, HdfsAction.FsType fsType)
       throws IOException {
     InetSocketAddress ssmMasterAddress = getSsmMasterRpcAddress(config);
 
     return fsType == HdfsAction.FsType.SMART
-        ? smartFsCache.get(config, ssmMasterAddress)
+        ? smartFsCache.get(config, user, ssmMasterAddress)
         // we don't rely on SSM in case of pure HDFS client
-        : defaultFsCache.get(config, null);
+        : defaultFsCache.get(config, user, null);
   }
 
   @Override
@@ -72,8 +75,10 @@ public class CachingLocalFileSystemProvider implements LocalFileSystemProvider {
 
   private static class SmartFileSystemCache extends BaseFileSystemCache<SmartFileSystem> {
 
-    private SmartFileSystemCache(Duration keyTtl) {
-      super(keyTtl);
+    private SmartFileSystemCache(
+        UserImpersonationStrategy userImpersonationStrategy,
+        Duration keyTtl) {
+      super(userImpersonationStrategy, keyTtl);
     }
 
     @Override
@@ -83,7 +88,7 @@ public class CachingLocalFileSystemProvider implements LocalFileSystemProvider {
         // smart server always have only 1 address set
         // in the "smart.server.rpc.address" option
         fsConfig.setBoolean(SMART_CLIENT_CONCURRENT_REPORT_ENABLED, false);
-        return doAsCurrentUser(() -> createSmartFileSystem(config, cacheKey));
+        return createSmartFileSystem(config, cacheKey);
       } catch (IOException exception) {
         throw new RuntimeException("Error creating smart file system", exception);
       }
@@ -100,14 +105,18 @@ public class CachingLocalFileSystemProvider implements LocalFileSystemProvider {
   }
 
   private static class DefaultFileSystemCache extends BaseFileSystemCache<DistributedFileSystem> {
-    private DefaultFileSystemCache(Duration keyTtl) {
-      super(keyTtl);
+    private DefaultFileSystemCache(
+        UserImpersonationStrategy userImpersonationStrategy,
+        Duration keyTtl) {
+      super(userImpersonationStrategy, keyTtl);
     }
 
     @Override
     protected DistributedFileSystem createFileSystem(Configuration config, CacheKey cacheKey) {
       try {
-        return HadoopUtil.getDistributedFileSystem(cacheKey.getNameNodeUri(), config);
+        DistributedFileSystem fileSystem = new DistributedFileSystem();
+        fileSystem.initialize(cacheKey.getNameNodeUri(), config);
+        return fileSystem;
       } catch (IOException exception) {
         throw new RuntimeException("Error creating default file system", exception);
       }

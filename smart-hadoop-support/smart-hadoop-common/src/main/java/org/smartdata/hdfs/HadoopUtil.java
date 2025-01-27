@@ -291,15 +291,6 @@ public class HadoopUtil {
     return doAsCurrentUser(() -> new DFSClient(nnUri, conf));
   }
 
-  public static DistributedFileSystem getDistributedFileSystem(
-      final URI nnUri, final Configuration conf) throws IOException {
-    return doAsCurrentUser(() -> {
-      DistributedFileSystem fileSystem = new DistributedFileSystem();
-      fileSystem.initialize(nnUri, conf);
-      return fileSystem;
-    });
-  }
-
   /**
    * Return FileState, like SmartDFSClient#getFileState().
    * @param   dfsClient

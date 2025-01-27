@@ -50,14 +50,22 @@ public class TestRuleDao
     String rule = "file : accessCount(10m) > 20 \n\n"
         + "and length() > 3 | cache";
     long submitTime = System.currentTimeMillis();
-    RuleInfo info1 = new RuleInfo(0, submitTime,
-        rule, RuleState.ACTIVE, 0, 0, 0);
+    RuleInfo info1 = RuleInfo.builder()
+        .setRuleText(rule)
+        .setSubmitTime(submitTime)
+        .setState(RuleState.ACTIVE)
+        .build();
+
     ruleDao.insert(info1);
     RuleInfo info11 = ruleDao.getById(info1.getId());
     Assert.assertEquals(info1, info11);
 
-    RuleInfo info2 = new RuleInfo(1, submitTime,
-        rule, RuleState.ACTIVE, 0, 0, 0);
+    RuleInfo info2 = RuleInfo.builder()
+        .setRuleText(rule)
+        .setSubmitTime(submitTime)
+        .setState(RuleState.ACTIVE)
+        .build();
+
     ruleDao.insert(info2);
     RuleInfo info21 = ruleDao.getById(info2.getId());
     Assert.assertNotEquals(info11, info21);
@@ -74,9 +82,17 @@ public class TestRuleDao
     String rule = "file : accessCount(10m) > 20 \n\n"
         + "and length() > 3 | cache";
     long submitTime = System.currentTimeMillis();
-    RuleInfo info1 = new RuleInfo(20L, submitTime,
-        rule, RuleState.ACTIVE,
-        12, 12, 12);
+    RuleInfo info1 =
+        RuleInfo.builder()
+            .setId(20L)
+            .setRuleText(rule)
+            .setSubmitTime(submitTime)
+            .setState(RuleState.ACTIVE)
+            .setNumChecked(12)
+            .setNumCmdsGen(12)
+            .setLastCheckTime(12)
+            .build();
+
     ruleDao.insert(info1);
     long rid = ruleDao.update(info1.getId(),
         RuleState.DISABLED.getValue());
