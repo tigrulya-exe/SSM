@@ -47,6 +47,7 @@ export const allowIconsNames = [
   'status-ok',
   'status-running',
   'status-warning',
+  'status-scheduled',
   'table-filter',
   'user',
 ] as const;

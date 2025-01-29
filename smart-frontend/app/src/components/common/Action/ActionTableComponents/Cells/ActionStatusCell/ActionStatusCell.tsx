@@ -18,8 +18,7 @@
 import React from 'react';
 import TableCell from '@uikit/Table/TableCell/TableCell';
 import StatusMarker from '@commonComponents/StatusMarker/StatusMarker';
-import { AdhActionState } from '@models/adh';
-import type { AdhAction } from '@models/adh';
+import { type AdhAction, AdhActionState } from '@models/adh';
 import { getStatusLabel } from '@utils/humanisationUtils';
 import type { CommonStatus } from '@commonComponents/StatusMarker/StatusMarker.types';
 import { FlexGroup } from '@uikit';
@@ -28,6 +27,7 @@ const actionStateToStatus: Record<AdhActionState, CommonStatus> = {
   [AdhActionState.Failed]: 'red',
   [AdhActionState.Running]: 'blue',
   [AdhActionState.Successful]: 'green',
+  [AdhActionState.Scheduled]: 'circle',
 };
 
 interface ActionStatusCellProps {

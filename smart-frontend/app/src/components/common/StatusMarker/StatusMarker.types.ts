@@ -15,4 +15,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export type CommonStatus = 'gray' | 'blue' | 'green' | 'red';
+export type CommonStatus = 'gray' | 'blue' | 'green' | 'red' | 'circle';

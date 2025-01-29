@@ -4,12 +4,14 @@
     --statusMarker-blue: var(--color-blue);
     --statusMarker-green: var(--color-greenSaturated);
     --statusMarker-red: var(--color-red);
+    --statusMarker-circle: var(--color-grayUsual);
   }
   body.theme-light {
     --statusMarker-gray: var(--color-popupLightDarker);
     --statusMarker-blue: var(--color-blue);
     --statusMarker-green: var(--color-greenLogo);
     --statusMarker-red: var(--color-red);
+    --statusMarker-circle: var(--color-grayUsual);
   }
 }
 
@@ -30,5 +32,8 @@
   }
   &_red {
     background-color: var(--statusMarker-red);
+  }
+  &_circle {
+    border: 1px solid var(--statusMarker-circle);
   }
 }

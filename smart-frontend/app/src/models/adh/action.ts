@@ -26,6 +26,7 @@ export enum AdhActionState {
   Running = 'RUNNING',
   Successful = 'SUCCESSFUL',
   Failed = 'FAILED',
+  Scheduled = 'SCHEDULED',
 }
 
 export interface AdhAction {
