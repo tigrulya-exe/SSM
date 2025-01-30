@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { type IconsNames, Icon, Title } from '@uikit';
 import { AdhActionState } from '@models/adh';
 import s from './ActionHeader.module.scss';
@@ -27,6 +26,7 @@ const actionStateToIconName: Record<AdhActionState, IconsNames> = {
   [AdhActionState.Failed]: 'status-failed',
   [AdhActionState.Running]: 'status-running',
   [AdhActionState.Successful]: 'status-ok',
+  [AdhActionState.Scheduled]: 'status-scheduled',
 };
 
 const ActionHeader = () => {
