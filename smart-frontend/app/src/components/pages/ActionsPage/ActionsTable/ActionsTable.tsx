@@ -25,9 +25,13 @@ import TableCellsRenderer from '@uikit/Table/TableCell/TableCellsRenderer';
 import { setActionsFilter, setActionsSortParams } from '@store/adh/actions/actionsTableSlice';
 import type { SortParams } from '@models/table';
 import type { AdhActionsFilter } from '@models/adh';
+import { usePersistActionsTableSettings } from './usePersistActionsTableSettings';
 
 const ActionsTable: React.FC = () => {
+  usePersistActionsTableSettings();
+
   const dispatch = useDispatch();
+
   const actions = useStore(({ adh }) => adh.actions.actions);
   const isLoading = useStore(({ adh }) => isShowSpinner(adh.actions.loadState));
 
