@@ -26,3 +26,4 @@ export { useDebounce } from './useDebounce';
 export { useRequestTimer } from './useRequestTimer';
 export { useResizeObserver } from './useResizeObserver';
 export { useOutsideClick } from './useOutsideClick';
+export { usePersistSettings } from './usePersistSettings';

@@ -25,9 +25,13 @@ import TableCellsRenderer from '@uikit/Table/TableCell/TableCellsRenderer';
 import { setRulesFilter, setRulesSortParams } from '@store/adh/rules/rulesTableSlice';
 import type { SortParams } from '@models/table';
 import type { AdhRuleFilter } from '@models/adh';
+import { usePersistRulesTableSettings } from './usePersistRulesTableSettings';
 
 const RulesTable: React.FC = () => {
+  usePersistRulesTableSettings();
+
   const dispatch = useDispatch();
+
   const rules = useStore(({ adh }) => adh.rules.rules);
   const isLoading = useStore(({ adh }) => isShowSpinner(adh.rules.loadState));
 
