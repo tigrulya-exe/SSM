@@ -17,22 +17,40 @@
  */
 package org.smartdata.test.suite;
 
-import io.arenadata.test.suite.BaseWebSuite;
-import io.qameta.allure.aspects.StepsAspects;
-import org.smartdata.test.SsmQaApp;
-import org.smartdata.test.configuration.SsmTestConfiguration;
-import org.smartdata.test.configuration.SsmWebConfiguration;
+import io.arenadata.test.model.UserRole;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Story;
+import io.qameta.allure.TmsLink;
+import org.smartdata.test.step.LoginStep;
+import org.smartdata.test.step.MenuStep;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
+import org.testng.annotations.Test;
 
-@Import(StepsAspects.class)
-@SpringBootTest(classes = {SsmQaApp.class})
-public abstract class SsmBaseSuite extends BaseWebSuite {
+@Feature("Common functions")
+public class CommonSuite extends SsmBaseSuite {
 
   @Autowired
-  protected SsmTestConfiguration testConfig;
+  private LoginStep loginStep;
 
   @Autowired
-  protected SsmWebConfiguration webConfig;
+  private MenuStep menuStep;
+
+  @TmsLink("90211")
+  @Story("Authorization")
+  @Test(description = "Login and Logout")
+  public void testLoginLogout() {
+    loginStep.loginAs(UserRole.OWNER);
+    menuStep.checkLogoutCancel(UserRole.OWNER)
+        .logout();
+    loginStep.loginAs(UserRole.KERBEROS);
+  }
+
+  @TmsLink("91396")
+  @Story("Main Menu")
+  @Test(description = "Documentation button")
+  public void testDocumentationButton() {
+    loginStep.loginAs(UserRole.OWNER);
+    menuStep.openDocumentation()
+        .checkDocumentationIsOpened();
+  }
 }

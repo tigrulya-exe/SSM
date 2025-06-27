@@ -44,7 +44,7 @@
         <maven.surefire.version>3.5.2</maven.surefire.version>
         <maven.compiler.version>3.14.0</maven.compiler.version>
         <maven-resource-plugin.version>3.3.1</maven-resource-plugin.version>
-        <java-test-common.version>1.9-jdk8</java-test-common.version>
+        <java-test-common.version>1.10-jdk8</java-test-common.version>
     </properties>
 
     <dependencyManagement>
@@ -75,15 +75,14 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>${maven.surefire.version}</version>
                         <configuration>
                             <skipTests>false</skipTests>
                             <goal>verify</goal>
                             <parallel>none</parallel>
                             <testFailureIgnore>false</testFailureIgnore>
+                            <redirectTestOutputToFile>false</redirectTestOutputToFile>
                             <systemPropertyVariables>
                                 <allure.results.directory>${allure.results.directory}</allure.results.directory>
-                                <COMPOSE_FILE_NAME>target/test-classes/env/docker-compose.yaml</COMPOSE_FILE_NAME>
                                 <useSystemClassLoader>true</useSystemClassLoader>
                             </systemPropertyVariables>
                             <argLine>

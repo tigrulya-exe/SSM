@@ -15,16 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.test;
+package org.smartdata.test.element;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import com.codeborne.selenide.SelenideElement;
 
-@SpringBootApplication(scanBasePackages = {"org.smartdata.test"}, exclude = {DataSourceAutoConfiguration.class})
-public class SsmQaApp {
+import static com.codeborne.selenide.Selenide.$x;
 
-  public static void main(String[] args) {
-    SpringApplication.run(SsmQaApp.class, args);
-  }
+public interface LoginPageElement {
+  SelenideElement USERNAME_FIELD = $x("//input[@name='username']");
+  SelenideElement PASSWORD_FIELD = $x("//input[@type='password']");
+  SelenideElement SIGN_IN_BUTTON = $x("//button[@type='submit']");
 }
