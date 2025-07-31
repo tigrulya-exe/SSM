@@ -24,8 +24,13 @@ import org.smartdata.test.element.TableElement;
 import org.smartdata.test.model.TableColumn;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
+import static com.codeborne.selenide.CollectionCondition.texts;
+import static io.arenadata.test.util.constant.TimeoutConstants.DEFAULT_WEB_ELEMENT_TIMEOUT;
 import static org.smartdata.test.element.TableElement.NODATA_ROW;
 import static org.smartdata.test.element.TableElement.TABLE_ROWS;
+import static org.smartdata.test.element.TableElement.getAllColumnCells;
 
 @Slf4j
 @Service
@@ -44,9 +49,15 @@ public class TableStep extends BaseWebStep {
     return this;
   }
 
-  @Step("Check that page's table has '{matchingValue}' value in {columnIndex} column of the first row")
+  @Step("Check that page's table has '{matchingValue}' value in {column} column of the first row")
   public TableStep checkColumnValueInFirstRow(TableColumn column, String matchingValue) {
-    checkElementTextIs(TableElement.getColumnInFirstRow(column.getIndex()), matchingValue);
+    checkElementTextIs(TableElement.getColumnInFirstRow(column), matchingValue);
+    return this;
+  }
+
+  @Step("Check table has row values in {column} column with table order")
+  public TableStep checkColumnValues(TableColumn column, List<String> expectedValues) {
+    getAllColumnCells(column).shouldHave(texts(expectedValues), DEFAULT_WEB_ELEMENT_TIMEOUT);
     return this;
   }
 }
