@@ -23,6 +23,7 @@ import io.qameta.allure.Step;
 import io.qameta.allure.Story;
 import io.qameta.allure.TmsLink;
 import org.smartdata.test.step.ApiStep;
+import org.smartdata.test.step.DataBaseStep;
 import org.smartdata.test.step.LoginStep;
 import org.smartdata.test.step.MenuStep;
 import org.smartdata.test.step.PaginationStep;
@@ -36,9 +37,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.smartdata.test.element.RulesPageElement.RulesTableColumn.CHECKED_NUMBER;
+import static org.smartdata.test.element.RulesPageElement.RulesTableColumn.CMDLETS_GENERATED;
 import static org.smartdata.test.element.RulesPageElement.RulesTableColumn.ID;
+import static org.smartdata.test.element.RulesPageElement.RulesTableColumn.LAST_CHECK_TIME;
 import static org.smartdata.test.element.RulesPageElement.RulesTableColumn.RULE_TEXT;
 import static org.smartdata.test.element.RulesPageElement.RulesTableColumn.STATUS;
+import static org.smartdata.test.element.RulesPageElement.RulesTableColumn.SUBMISSION_TIME;
 import static org.smartdata.test.model.RuleStatus.DISABLED;
 
 @Feature("Rules page")
@@ -63,6 +68,8 @@ public class RulesSuite extends SsmBaseSuite {
   @Autowired
   private ApiStep apiStep;
 
+  @Autowired
+  private DataBaseStep dataBaseStep;
 
   @BeforeMethod
   public void testPrepare() {
@@ -98,11 +105,23 @@ public class RulesSuite extends SsmBaseSuite {
     paginationStep.checkPaginationFixture(ID, rulesIds);
   }
 
+  @TmsLink("90539")
+  @Story("Rules")
+  @Test(description = "Check sorting")
+  public void testSorting() {
+    prepareDataForSortingTest();
+    tableStep.checkDefaultSorting(ID)
+        .checkSorting(SUBMISSION_TIME)
+        .checkSorting(LAST_CHECK_TIME)
+        .checkSorting(CHECKED_NUMBER)
+        .checkSorting(CMDLETS_GENERATED)
+        .checkSorting(STATUS);
+  }
+
   @Step("Create rules for pagination test")
   private List<String> prepareDataForPaginationTest() {
     List<String> rulesIds = new ArrayList<>();
     int rulesQuantity = 101;
-
     tableStep.checkTableIsEmpty();
     for (int i = 1; i <= rulesQuantity; i++) {
       apiStep.createRule(TEST_RULE_TEXT);
@@ -112,5 +131,11 @@ public class RulesSuite extends SsmBaseSuite {
     rulesStep.checkRulesCounter(rulesQuantity);
     Collections.reverse(rulesIds);
     return rulesIds;
+  }
+
+  @Step("Create rules for sorting test")
+  private void prepareDataForSortingTest() {
+    dataBaseStep.insertDataForRulesSortTest();
+    rulesStep.refreshPage();
   }
 }
