@@ -38,9 +38,11 @@ import static com.codeborne.selenide.Condition.attributeMatching;
 import static io.arenadata.test.util.constant.TimeoutConstants.DEFAULT_WEB_ELEMENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.smartdata.test.element.TableElement.NODATA_ROW;
+import static org.smartdata.test.element.TableElement.RESET_FILTER_BUTTON;
 import static org.smartdata.test.element.TableElement.SORTING_ARROW_XPATH;
 import static org.smartdata.test.element.TableElement.TABLE_ROWS;
 import static org.smartdata.test.element.TableElement.getAllColumnCells;
+import static org.smartdata.test.element.TableElement.getFilterButton;
 import static org.smartdata.test.element.TableElement.getSortingColumnHeader;
 import static org.smartdata.test.model.SortOrder.ASC;
 import static org.smartdata.test.model.SortOrder.DESC;
@@ -64,7 +66,7 @@ public class TableStep extends BaseWebStep {
 
   @Step("Check that page's table has '{matchingValue}' value in {column} column of the first row")
   public TableStep checkColumnValueInFirstRow(TableColumn column, String matchingValue) {
-    checkElementTextIs(TableElement.getColumnInFirstRow(column), matchingValue);
+    waitTextEquals(TableElement.getColumnInFirstRow(column), matchingValue);
     return this;
   }
 
@@ -133,6 +135,18 @@ public class TableStep extends BaseWebStep {
         .clickOnSortingColumn(tableColumn)
         .checkSelectedSorting(tableColumn, DESC)
         .checkColumnValuesIsSorted(tableColumn, DESC);
+    return this;
+  }
+
+  @Step("Click on {tableColumn} column filter button")
+  public TableStep clickFilterButton(TableColumn tableColumn) {
+    waitAndClick(getFilterButton(tableColumn));
+    return this;
+  }
+
+  @Step("Click on 'Reset filter' button")
+  public TableStep clickResetFilterButton() {
+    waitAndClick(RESET_FILTER_BUTTON);
     return this;
   }
 }
