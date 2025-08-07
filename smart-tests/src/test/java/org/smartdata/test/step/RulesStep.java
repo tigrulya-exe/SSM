@@ -17,6 +17,7 @@
  */
 package org.smartdata.test.step;
 
+import com.codeborne.selenide.SelenideElement;
 import io.arenadata.test.step.BaseWebStep;
 import io.qameta.allure.Step;
 import lombok.extern.slf4j.Slf4j;
@@ -32,11 +33,15 @@ import static org.smartdata.test.element.RulesPageElement.CREATE_RULE_DIALOG_CRE
 import static org.smartdata.test.element.RulesPageElement.CREATE_RULE_DIALOG_INPUT;
 import static org.smartdata.test.element.RulesPageElement.CREATE_RULE_DIALOG_TITLE;
 import static org.smartdata.test.element.RulesPageElement.RULES_COUNTER_CARD;
+import static org.smartdata.test.element.RulesPageElement.RULE_MODAL_DIALOG;
+import static org.smartdata.test.element.RulesPageElement.RULE_MODAL_DIALOG_ACCEPT_BUTTON;
+import static org.smartdata.test.element.RulesPageElement.RULE_MODAL_DIALOG_CANCEL_BUTTON;
 import static org.smartdata.test.element.RulesPageElement.RulesTableColumn.ID;
 import static org.smartdata.test.element.RulesPageElement.RulesTableColumn.LAST_CHECK_TIME;
 import static org.smartdata.test.element.RulesPageElement.RulesTableColumn.RULE_TEXT;
 import static org.smartdata.test.element.RulesPageElement.RulesTableColumn.STATUS;
 import static org.smartdata.test.element.RulesPageElement.RulesTableColumn.SUBMISSION_TIME;
+import static org.smartdata.test.model.RuleStatus.ACTIVE;
 
 @Slf4j
 @Service
@@ -148,12 +153,23 @@ public class RulesStep extends BaseWebStep {
   @Step("Check filtration by 'Status'")
   public RulesStep checkStatusFiltration() {
     tableStep.clickFilterButton(STATUS);
-    tableFilterPopupStep.clickMultiselectPopupCheckbox("Active");
+    tableFilterPopupStep.clickMultiselectPopupCheckbox(ACTIVE.getText());
     tableStep.clickFilterButton(STATUS)
         .checkTableRowsCountIs(1)
         .checkColumnValueInFirstRow(ID, "1")
         .clickResetFilterButton()
         .checkTableRowsCountIs(2);
+    return this;
+  }
+
+  @Step("Check rule action button")
+  public RulesStep checkRuleActionButtonFixture(SelenideElement actionButton) {
+    waitAndClick(actionButton);
+    waitAndClick(RULE_MODAL_DIALOG_CANCEL_BUTTON);
+    waitDisappear(RULE_MODAL_DIALOG);
+    waitAndClick(actionButton);
+    waitAndClick(RULE_MODAL_DIALOG_ACCEPT_BUTTON);
+    waitDisappear(RULE_MODAL_DIALOG);
     return this;
   }
 }
