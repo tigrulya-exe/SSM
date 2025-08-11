@@ -29,6 +29,7 @@ import org.smartdata.integration.cluster.SmartMiniCluster;
 import org.smartdata.server.SmartServer;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.URL;
 import java.time.Duration;
@@ -134,9 +135,10 @@ public class IntegrationTestBase {
   }
 
   protected static int findRandomFreePort() {
-    try (ServerSocket serverSocket = new ServerSocket(0)) {
+    try (ServerSocket serverSocket = new ServerSocket()) {
       // Allow the port to be reused quickly
       serverSocket.setReuseAddress(true);
+      serverSocket.bind(new InetSocketAddress(0));
       return serverSocket.getLocalPort();
     } catch (IOException e) {
       throw new IllegalStateException("Could not find a free TCP/IP port.", e);
