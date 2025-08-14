@@ -15,27 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartdata.test.model;
+package org.smartdata.test.util.comparator;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import java.util.Comparator;
 
-@Getter
-@AllArgsConstructor
-public enum ActionStatus {
-  RUNNING("Running"),
-  SCHEDULED("Scheduled"),
-  SUCCESSFUL("Successful"),
-  FAILED("Failed");
+public class DashIsMaxComparator implements Comparator<String> {
 
-  private final String text;
-
-  public static ActionStatus fromText(String text) {
-    for (ActionStatus status : values()) {
-      if (status.text.equals(text)) {
-        return status;
-      }
+  @Override
+  public int compare(String o1, String o2) {
+    if (o1 == null || o2 == null) {
+      throw new IllegalArgumentException("Arguments must not be null");
     }
-    throw new IllegalArgumentException("Unknown status text: " + text);
+    if ("-".equals(o1) && "-".equals(o2)) {
+      return 0;
+    }
+    if ("-".equals(o1)) {
+      return 1;
+    }
+    if ("-".equals(o2)) {
+      return -1;
+    }
+    return o1.compareTo(o2);
   }
 }
