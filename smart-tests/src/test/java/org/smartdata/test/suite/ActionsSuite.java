@@ -111,6 +111,16 @@ public class ActionsSuite extends SsmBaseSuite {
         .checkTypeFiltration();
   }
 
+  @TmsLink("90540")
+  @Story("Actions")
+  @Test(description = "Check 'Repeat action' button")
+  public void testRepeatActionButton() {
+    apiStep.createAction(TEST_ACTION_TEXT);
+    actionsStep.refreshPage();
+    tableStep.checkTableRowsCountIs(1);
+    actionsStep.checkRepeatActionButton();
+  }
+
   @Step("Create actions for sorting test")
   private void prepareDataForSortingTest() {
     dataBaseStep.insertDataForActionSortTest();
