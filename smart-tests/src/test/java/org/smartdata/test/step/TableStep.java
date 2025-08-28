@@ -55,7 +55,7 @@ import static org.smartdata.test.element.TableElement.getFrequencyOption;
 import static org.smartdata.test.element.TableElement.getSortingColumnHeader;
 import static org.smartdata.test.model.SortOrder.ASC;
 import static org.smartdata.test.model.SortOrder.DESC;
-import static org.smartdata.test.util.constant.DateConstants.DATE_TIME_FORMATTER_UI;
+import static org.smartdata.test.util.constant.CommonConstants.DATE_TIME_FORMATTER_UI;
 
 @Slf4j
 @Service
@@ -77,6 +77,13 @@ public class TableStep extends BaseWebStep {
   @Step("Check that page's table has '{matchingValue}' value in {column} column of the first row")
   public TableStep checkColumnValueInFirstRow(TableColumn column, String matchingValue) {
     waitTextEquals(TableElement.getColumnInFirstRow(column), matchingValue);
+    return this;
+  }
+
+  @Step("Check that page's table match '{pattern}' pattern in {column} column of the first row")
+  public TableStep checkColumnValueInFirstRowMatchPattern(TableColumn column, String pattern) {
+    String value = waitVisibility(getColumnInFirstRow(column)).getText();
+    assertThat(value).matches(pattern);
     return this;
   }
 
