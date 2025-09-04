@@ -24,6 +24,7 @@ import io.qameta.allure.Story;
 import io.qameta.allure.TmsLink;
 import io.restassured.response.Response;
 import org.smartdata.client.generated.model.SubmitActionRequestDto;
+import org.smartdata.test.service.FrequencyTestScheduledService;
 import org.smartdata.test.step.ApiStep;
 import org.smartdata.test.step.AuditStep;
 import org.smartdata.test.step.DataBaseStep;
@@ -40,6 +41,8 @@ import static org.smartdata.test.element.AuditPageElement.AuditTableColumn.OBJEC
 import static org.smartdata.test.element.AuditPageElement.AuditTableColumn.OBJECT_TYPE;
 import static org.smartdata.test.element.AuditPageElement.AuditTableColumn.OPERATION;
 import static org.smartdata.test.element.AuditPageElement.AuditTableColumn.USER;
+import static org.smartdata.test.model.SortOrder.ASC;
+import static org.smartdata.test.model.SortOrder.DESC;
 
 @Feature("Audit page")
 public class AuditSuite extends SsmBaseSuite {
@@ -91,6 +94,24 @@ public class AuditSuite extends SsmBaseSuite {
         .checkAuditObjectTypeFiltration()
         .checkAuditOperationFiltration()
         .checkAuditResultFiltration();
+  }
+
+  @TmsLink("91398")
+  @Story("Audit")
+  @Test(description = "Check frequency")
+  public void testFrequency() {
+    FrequencyTestScheduledService frequencyTestScheduledService = new FrequencyTestScheduledService();
+    try {
+      String ruleText = "file: path matches \"/tmp/test/*\" | read";
+      frequencyTestScheduledService.run(() -> apiStep.createRule(ruleText));
+      tableStep.clickOnSortingColumn(DATE)
+          .checkSelectedSorting(DATE, ASC)
+          .clickOnSortingColumn(DATE)
+          .checkSelectedSorting(DATE, DESC);
+      tableStep.checkRefreshingFrequency(DATE);
+    } finally {
+      frequencyTestScheduledService.shutdownAndAwaitTermination();
+    }
   }
 
   @Step("Create audit events for sorting test")
