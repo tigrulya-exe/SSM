@@ -17,10 +17,16 @@
  */
 package org.smartdata.test.element;
 
+import com.codeborne.selenide.SelenideElement;
 import lombok.Getter;
 import org.smartdata.test.model.TableColumn;
 
+import static com.codeborne.selenide.Selenide.$x;
+
 public interface HottestFilesPageElement {
+
+  SelenideElement HOTTEST_FILES_RESET_FILTER_BUTTON =
+      $x("//*[contains(@class, 'hottestFilesToolbar')]//*[.='Reset filter']");
 
   @Getter
   enum ClusterInfoHottestFilesTableColumn implements TableColumn {
