@@ -38,15 +38,6 @@ public class HiveSmartConf extends Configuration {
   public static final String HMS_FETCH_BATCH_SIZE = "smart.hive.event.fetch.batch.size";
   public static final int HMS_FETCH_BATCH_SIZE_DEFAULT = 8192;
 
-  public static final String HMS_FETCHER_RETRY_STRATEGY = "smart.hive.event.fetcher.retry.strategy";
-  public static final RetryStrategy HMS_FETCHER_RETRY_STRATEGY_DEFAULT = RetryStrategy.EXPONENTIAL;
-
-  public static final String HMS_FETCHER_RETRY_INTERVAL_MS = "smart.hive.event.fetcher.retry.interval.ms";
-  public static final long HMS_FETCHER_RETRY_INTERVAL_MS_DEFAULT = 1000L;
-
-  public static final String HMS_FETCHER_MAX_RETRIES = "smart.hive.event.fetcher.retry.max";
-  public static final int HMS_FETCHER_MAX_RETRIES_DEFAULT = 10;
-
   public static final String HMS_FULL_SYNC = "smart.hive.event.sync.full";
   public static final boolean HMS_FULL_SYNC_DEFAULT = false;
 
@@ -76,18 +67,6 @@ public class HiveSmartConf extends Configuration {
 
   public int getFetchBatchSize() {
     return getInt(HMS_FETCH_BATCH_SIZE, HMS_FETCH_BATCH_SIZE_DEFAULT);
-  }
-
-  public RetryStrategy getHiveListenerRetryStrategy() {
-    return getEnum(HMS_FETCHER_RETRY_STRATEGY, HMS_FETCHER_RETRY_STRATEGY_DEFAULT);
-  }
-
-  public long getHiveListenerRetryIntervalMs() {
-    return getLong(HMS_FETCHER_RETRY_INTERVAL_MS, HMS_FETCHER_RETRY_INTERVAL_MS_DEFAULT);
-  }
-
-  public int getHiveListenerMaxRetries() {
-    return getInt(HMS_FETCHER_MAX_RETRIES, HMS_FETCHER_MAX_RETRIES_DEFAULT);
   }
 
   public boolean isFullMetastoreSync() {

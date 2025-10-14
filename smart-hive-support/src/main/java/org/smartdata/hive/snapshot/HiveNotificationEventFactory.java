@@ -91,23 +91,27 @@ public class HiveNotificationEventFactory {
         .build();
   }
 
-  public HiveNotificationEvent createPartitionEvent(Table table, Partition partition, long diffId) throws TException {
-    String partitionKey = fullResourceName(partition.getDbName(), partition.getTableName(),
-        Warehouse.makePartName(table.getPartitionKeys(), partition.getValues()));
-    log.debug("Saving a new partition from metastore: {}", partitionKey);
+  public HiveNotificationEvent createPartitionEvent(Table table, Partition partition, long diffId) {
+    try {
+      String partitionKey = fullResourceName(partition.getDbName(), partition.getTableName(),
+          Warehouse.makePartName(table.getPartitionKeys(), partition.getValues()));
+      log.debug("Saving a new partition from metastore: {}", partitionKey);
 
-    // we don't use filenames in the handler
-    AddPartitionMessage message = MessageBuilder.getInstance()
-        .buildAddPartitionMessage(table,
-            Collections.singletonList(partition).iterator(),
-            Collections.emptyIterator());
+      // we don't use filenames in the handler
+      AddPartitionMessage message = MessageBuilder.getInstance()
+          .buildAddPartitionMessage(table,
+              Collections.singletonList(partition).iterator(),
+              Collections.emptyIterator());
 
-    return eventBuilder(partition.getCatName(), message, diffId)
-        .fullName(partitionKey)
-        .entityType(HiveEntity.PARTITION.toString())
-        .dbName(partition.getDbName())
-        .tableName(partition.getTableName())
-        .build();
+      return eventBuilder(partition.getCatName(), message, diffId)
+          .fullName(partitionKey)
+          .entityType(HiveEntity.PARTITION.toString())
+          .dbName(partition.getDbName())
+          .tableName(partition.getTableName())
+          .build();
+    } catch (TException e) {
+      throw new IllegalArgumentException("Error creating partition name", e);
+    }
   }
 
   public HiveNotificationEvent createFunctionEvent(Function function, long diffId) {
