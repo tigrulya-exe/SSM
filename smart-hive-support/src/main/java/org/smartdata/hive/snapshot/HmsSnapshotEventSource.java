@@ -48,7 +48,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static org.smartdata.hdfs.HadoopUtil.doAsCurrentUserThrowing;
+import static org.smartdata.hdfs.HadoopUtil.doAsCurrentUser;
 
 @Slf4j
 public class HmsSnapshotEventSource extends BaseHmsEventSource {
@@ -97,6 +97,7 @@ public class HmsSnapshotEventSource extends BaseHmsEventSource {
   @Override
   protected void closeAction() {
     outputQueue.add(HmsEventStreamRecord.endOfStreamRecord());
+    executor.shutdown();
   }
 
   CompletableFuture<Void> pollRecordsBatchAsync(long diffId) {
@@ -228,7 +229,7 @@ public class HmsSnapshotEventSource extends BaseHmsEventSource {
   private <V> V withMetastoreClient(ThrowingFunction<IMetaStoreClient, V, Exception> function) {
     throwIfClosed();
     try (IMetaStoreClient client = metaStoreClientProvider.get()) {
-      return doAsCurrentUserThrowing(() -> function.apply(client));
+      return doAsCurrentUser(() -> function.apply(client));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -261,8 +262,12 @@ public class HmsSnapshotEventSource extends BaseHmsEventSource {
   }
 
   private void send(HmsEventStreamRecord record) {
-    throwIfClosed();
-    outputQueue.add(record);
+    try {
+      throwIfClosed();
+      outputQueue.put(record);
+    } catch (InterruptedException e) {
+      throw new RuntimeException("Thread interrupted during event send", e);
+    }
   }
 
   private void throwIfClosed() {

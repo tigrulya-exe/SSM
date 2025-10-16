@@ -50,6 +50,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
@@ -81,7 +82,7 @@ public class HiveMetastoreFetcherService extends AbstractService {
   @Override
   public void init() throws IOException {
     try {
-      scheduledExecutorService = Executors.newScheduledThreadPool(16);
+      scheduledExecutorService = Executors.newScheduledThreadPool(8);
 
       resourceSource = buildEventSource(buildClientSupplier());
       eventStreamHandler = buildStreamHandler();
@@ -156,9 +157,11 @@ public class HiveMetastoreFetcherService extends AbstractService {
 
   private HmsSnapshotEventSource buildSnapshotEventSource(
       Supplier<IMetaStoreClient> metaStoreClientSupplier) {
+    ExecutorService executorService = Executors.newFixedThreadPool(
+        hiveSmartConf.getSnapshotFetcherThreadsCount());
     return new HmsSnapshotEventSource(
         metaStoreClientSupplier,
-        scheduledExecutorService,
+        executorService,
         new HiveNotificationEventFactory(
             GzipJSONMessageEncoder.getInstance()
         ),

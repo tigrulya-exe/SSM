@@ -208,7 +208,8 @@ public class CompositeHmsEventSourceTest {
     private final BlockingQueue<HmsEventStreamRecord> records;
 
     public MockSnapshotFetcher(List<HmsEventStreamRecord> records) {
-      super(null, null, null, new HiveSmartConf(new SmartConf()));
+      super(null, Executors.newSingleThreadExecutor(),
+          null, new HiveSmartConf(new SmartConf()));
       this.records = new ArrayBlockingQueue<>(records.size() + 1);
       this.records.addAll(records);
       this.records.add(HmsEventStreamRecord.endOfStreamRecord());

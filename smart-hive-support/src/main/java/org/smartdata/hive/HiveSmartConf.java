@@ -38,6 +38,9 @@ public class HiveSmartConf extends Configuration {
   public static final String HMS_FETCH_BATCH_SIZE = "smart.hive.event.fetch.batch.size";
   public static final int HMS_FETCH_BATCH_SIZE_DEFAULT = 8192;
 
+  public static final String HMS_SNAPSHOT_THREADS_COUNT = "smart.hive.event.snapshot.threads.count";
+  public static final int HMS_SNAPSHOT_THREADS_COUNT_DEFAULT = 16;
+
   public static final String HMS_FULL_SYNC = "smart.hive.event.sync.full";
   public static final boolean HMS_FULL_SYNC_DEFAULT = false;
 
@@ -83,6 +86,10 @@ public class HiveSmartConf extends Configuration {
 
   public int getEventApplierMaxRetries() {
     return getInt(EVENT_APPLIER_MAX_RETRIES, EVENT_APPLIER_MAX_RETRIES_DEFAULT);
+  }
+
+  public int getSnapshotFetcherThreadsCount() {
+    return getInt(HMS_SNAPSHOT_THREADS_COUNT, HMS_SNAPSHOT_THREADS_COUNT_DEFAULT);
   }
 
   private void loadSystemProperties() {
