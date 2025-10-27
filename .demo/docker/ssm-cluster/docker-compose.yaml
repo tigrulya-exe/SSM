@@ -1,5 +1,7 @@
 version: "3.8"
 services:
+  ##### SOURCE CLUSTER
+
   hadoop-namenode:
     image: cloud-hub.adsw.io/library/hadoop-namenode:${HADOOP_VERSION:-3.3.6}
     hostname: hadoop-namenode.demo
@@ -14,7 +16,7 @@ services:
     env_file:
       - hadoop.env
     healthcheck:
-      test: ["CMD-SHELL", "bash /healthcheck-hadoop-namenode.sh"]
+      test: [ "CMD-SHELL", "bash /healthcheck-hadoop-namenode.sh" ]
       interval: 30s
       timeout: 15s
       retries: 5
@@ -52,7 +54,7 @@ services:
     env_file:
       - hadoop.env
     healthcheck:
-      test: ["CMD-SHELL", "curl http://hadoop-datanode.demo:1006 || exit 1"]
+      test: [ "CMD-SHELL", "curl http://hadoop-datanode.demo:1006 || exit 1" ]
       interval: 30s
       timeout: 15s
       retries: 5
@@ -80,7 +82,7 @@ services:
     environment:
       SSM_DEBUG_OPT: ${SSM_DEBUG_OPT}
     healthcheck:
-      test: ["CMD-SHELL", "curl http://ssm-server.demo:8081 || exit 1"]
+      test: [ "CMD-SHELL", "curl http://ssm-server.demo:8081 || exit 1" ]
       interval: 30s
       timeout: 15s
       retries: 5
@@ -101,7 +103,7 @@ services:
     ports:
       - '5432:5432'
     healthcheck:
-      test: ["CMD-SHELL", "psql -d metastore -U ssm -Atc 'SELECT 1;'"]
+      test: [ "CMD-SHELL", "psql -d metastore -U ssm -Atc 'SELECT 1;'" ]
       interval: 30s
       timeout: 15s
       retries: 3
@@ -165,6 +167,105 @@ services:
     networks:
       - demo
 
+  ##### TARGET CLUSTER
+
+  target-namenode:
+    image: cloud-hub.adsw.io/library/hadoop-namenode:${HADOOP_VERSION:-3.3.6}
+    hostname: target-namenode.demo
+    container_name: target-namenode
+    restart: unless-stopped
+    volumes:
+      - target-namenode:/hadoop/dfs/name
+      - ./conf:/etc/conf
+    env_file:
+      - hadoop.env
+    healthcheck:
+      test: [ "CMD-SHELL", "curl http://target-namenode.demo:9870/ || exit 1" ]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+    networks:
+      - demo
+    depends_on:
+      - target-datanode
+
+  target-datanode:
+    image: cloud-hub.adsw.io/library/hadoop-datanode:${HADOOP_VERSION:-3.3.6}
+    hostname: target-datanode.demo
+    container_name: target-datanode
+    restart: unless-stopped
+    volumes:
+      - target-datanode-data:/hadoop/dfs/data
+      - target-datanode-ram-data:/hadoop/dfs/ram-data
+      - target-datanode-ssd-data:/hadoop/dfs/ssd-data
+      - target-datanode-archive-data:/hadoop/dfs/archive-data
+      - ./target-conf:/etc/conf
+      - ./target-conf:/opt/ssm/conf
+      - ./ssm-conf/smart-site-agent.xml:/opt/ssm/conf/smart-site.xml
+    environment:
+      SSM_DEBUG_OPT: ${SSM_DEBUG_OPT}
+    env_file:
+      - hadoop.env
+    healthcheck:
+      test: [ "CMD-SHELL", "curl http://target-datanode.demo:1006 || exit 1" ]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+    networks:
+      - demo
+
+  target-hive-metastore:
+    image: apache/hive:4.0.1
+    container_name: target-hive-metastore
+    hostname: target-hive-metastore.demo
+    depends_on:
+      - ssm-metastore-db
+    environment:
+      SERVICE_NAME: metastore
+      DB_DRIVER: postgres
+      SERVICE_OPTS: >-
+        -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver
+        -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://ssm-metastore-db/hive2
+        -Djavax.jdo.option.ConnectionUserName=ssm
+        -Djavax.jdo.option.ConnectionPassword=ssm
+        -Dhive.metastore.event.listeners=org.apache.hive.hcatalog.listener.DbNotificationListener
+        -Dhive.metastore.event.db.listener.timetolive=86400s
+        -Dhive.metastore.warehouse.dir=hdfs://target/user/hive/warehouse
+    volumes:
+      - ./db/postgresql-42.2.16.jre7.jar:/opt/hive/lib/postgres.jar
+      - ./target-conf/hive-site.xml:/opt/hive/conf/hive-site.xml
+      - ./target-conf/hdfs-site.xml:/opt/hive/conf/hdfs-site.xml
+      - ./target-conf/core-site.xml:/opt/hive/conf/core-site.xml
+    networks:
+      - demo
+
+  target-hive-server2:
+    image: apache/hive:4.0.1
+    container_name: target-hive-server2
+    hostname: target-hive-server2.demo
+    depends_on:
+      target-hive-metastore:
+        condition: service_started
+      target-namenode:
+        condition: service_healthy
+    environment:
+      SERVICE_NAME: hiveserver2
+      IS_RESUME: true
+      SERVICE_OPTS: >-
+        -Dhive.metastore.uris=thrift://target-hive-metastore.demo:9083
+        -Dhive.metastore.warehouse.dir=hdfs://target/user/hive/warehouse
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "beeline -u 'jdbc:hive2://localhost:10000/'" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - ./target-conf/hive-site.xml:/opt/hive/conf/hive-site.xml
+      - ./target-conf/hdfs-site.xml:/opt/hive/conf/hdfs-site.xml
+      - ./target-conf/core-site.xml:/opt/hive/conf/core-site.xml
+    networks:
+      - demo
+
 networks:
   demo:
     name: demo
@@ -176,3 +277,8 @@ volumes:
   hadoop-datanode-ram-data:
   hadoop-datanode-ssd-data:
   hadoop-datanode-archive-data:
+  target-namenode:
+  target-datanode-data:
+  target-datanode-ram-data:
+  target-datanode-ssd-data:
+  target-datanode-archive-data:
