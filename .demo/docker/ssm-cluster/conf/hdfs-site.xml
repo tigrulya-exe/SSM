@@ -20,6 +20,31 @@
 <!-- Put site-specific property overrides in this file. -->
 
 <configuration>
+  <property>
+    <name>dfs.nameservices</name>
+    <value>source</value>
+  </property>
+
+  <property>
+    <name>dfs.ha.namenodes.source</name>
+    <value>nn1</value>
+  </property>
+
+  <property>
+    <name>dfs.namenode.rpc-address.source.nn1</name>
+    <value>hadoop-namenode.demo:8020</value>
+  </property>
+
+  <property>
+    <name>dfs.namenode.http-address.source.nn1</name>
+    <value>hadoop-namenode.demo:9870</value>
+  </property>
+
+  <property>
+    <name>dfs.client.failover.proxy.provider.source</name>
+    <value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
+  </property>
+
   <!-- Disable min block size since most tests use tiny blocks -->
   <property>
     <name>dfs.namenode.fs-limits.min-block-size</name>
