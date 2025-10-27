@@ -42,25 +42,9 @@
     <value>1048576</value>
   </property>
   <property>
-    <name>dfs.namenode.keytab.file</name>
-    <value>/etc/secrets/namenode.keytab</value>
-  </property>
-  <property>
-    <name>dfs.namenode.kerberos.principal</name>
-    <value>namenode/_HOST@DEMO</value>
-  </property>
-  <property>
     <name>dfs.namenode.delegation.token.max-lifetime</name>
     <value>604800000</value>
     <description>The maximum lifetime in milliseconds for which a delegation token is valid.</description>
-  </property>
-  <property>
-    <name>dfs.datanode.keytab.file</name>
-    <value>/etc/secrets/datanode.keytab</value>
-  </property>
-  <property>
-    <name>dfs.datanode.kerberos.principal</name>
-    <value>datanode/_HOST@DEMO</value>
   </property>
   <property>
     <name>dfs.block.access.token.enable</name>

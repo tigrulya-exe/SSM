@@ -26,31 +26,6 @@
     </property>
 
     <property>
-        <name>hive.server2.authentication.kerberos.principal</name>
-        <value>hive/_HOST@DEMO</value>
-    </property>
-
-    <property>
-        <name>hive.server2.authentication.kerberos.keytab</name>
-        <value>/etc/secrets/hive.keytab</value>
-    </property>
-
-    <property>
-        <name>hive.metastore.sasl.enabled</name>
-        <value>true</value>
-    </property>
-
-    <property>
-        <name>hive.metastore.kerberos.principal</name>
-        <value>hive/_HOST@DEMO</value>
-    </property>
-
-    <property>
-        <name>hive.metastore.kerberos.keytab.file</name>
-        <value>/etc/secrets/hms.keytab</value>
-    </property>
-
-    <property>
         <name>hive.server2.enable.doAs</name>
         <value>false</value>
     </property>
@@ -64,4 +39,5 @@
         <name>hive.metastore.event.db.notification.api.auth</name>
         <value>false</value>
     </property>
+
 </configuration>

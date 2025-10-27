@@ -1,6 +1,5 @@
 version: "3.8"
 services:
-
   hadoop-namenode:
     image: cloud-hub.adsw.io/library/hadoop-namenode:${HADOOP_VERSION:-3.3.6}
     hostname: hadoop-namenode.demo
@@ -8,8 +7,6 @@ services:
     restart: unless-stopped
     volumes:
       - hadoop-namenode:/hadoop/dfs/name
-      - secrets:/etc/secrets
-      - ./kerberos/krb5.conf:/etc/krb5.conf
       - ./conf:/etc/conf
     ports:
       - "9870:9870"
@@ -37,8 +34,6 @@ services:
       - hadoop-datanode-ram-data:/hadoop/dfs/ram-data
       - hadoop-datanode-ssd-data:/hadoop/dfs/ssd-data
       - hadoop-datanode-archive-data:/hadoop/dfs/archive-data
-      - secrets:/etc/secrets
-      - ./kerberos/krb5.conf:/etc/krb5.conf
       - ./conf:/etc/conf
       - ./conf:/opt/ssm/conf
       - ./ssm-conf/smart-site-agent.xml:/opt/ssm/conf/smart-site.xml
@@ -73,8 +68,6 @@ services:
     restart: unless-stopped
     volumes:
       - ssm-shared:/tmp/shared
-      - secrets:/etc/secrets
-      - ./kerberos/krb5.conf:/etc/krb5.conf
       - ./conf:/opt/ssm/conf
       - ./ssm-conf/smart-site-master.xml:/opt/ssm/conf/smart-site.xml
     ports:
@@ -95,7 +88,6 @@ services:
       - demo
     depends_on:
       - ssm-metastore-db
-      - kdc-server
 
   ssm-metastore-db:
     image: "docker.io/library/postgres:14.0"
@@ -118,48 +110,6 @@ services:
     networks:
       - demo
 
-  kdc-server:
-    image: cloud-hub.adsw.io/library/ssm-kdc-server:${HADOOP_VERSION:-3.3.6}
-    restart: unless-stopped
-    container_name: kdc-server
-    hostname: kdc-server.demo
-    volumes:
-      - secrets:/tmp/secrets
-      - ./kerberos/krb5.conf:/etc/krb5.conf
-      - ./kerberos/kdc.conf:/etc/krb5kdc/kdc.conf
-      - ./kerberos/kdc.conf:/var/kerberos/krb5kdc/kdc.conf
-      - ./kerberos/kadm5.acl:/etc/krb5kdc/kadm5.acl
-      - ./kerberos/kdc-init.sh:/tmp/kdc-init.sh
-    ports:
-      - "749:749"
-      - "88:88/udp"
-    healthcheck:
-      test: ["CMD-SHELL", "bash -c echo -n '' > /dev/tcp/kdc-server.demo/749"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-    networks:
-      - demo
-
-  samba:
-    image: hub.adsw.io/qa-samba/samba:demo
-    hostname: samba
-    container_name: samba
-    privileged: true
-    ports:
-      - "389:389"
-    environment:
-      SMB_ADMIN_PASSWORD: "LZ2ibGAn2H0D0UW3"
-    volumes:
-      - ./ldap:/opt/ad-scripts
-    healthcheck:
-      test: ["CMD-SHELL", "ps -e | grep samba"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-    networks:
-      - demo
-
   hive-metastore:
     image: apache/hive:4.0.1
     container_name: hive-metastore
@@ -177,8 +127,6 @@ services:
         -Dhive.metastore.warehouse.dir=hdfs://hadoop-namenode.demo:8020/user/hive/warehouse
     volumes:
       - ./db/postgresql-42.2.16.jre7.jar:/opt/hive/lib/postgres.jar
-      - secrets:/etc/secrets
-      - ./kerberos/krb5.conf:/etc/krb5.conf
       - ./hive/hive-site.xml:/opt/hive/conf/hive-site.xml
       - ./hive/core-site.xml:/opt/hive/conf/core-site.xml
     ports:
@@ -207,30 +155,11 @@ services:
       timeout: 10s
       retries: 3
     volumes:
-      - secrets:/etc/secrets
-      - ./kerberos/krb5.conf:/etc/krb5.conf
       - ./hive/hive-site.xml:/opt/hive/conf/hive-site.xml
       - ./hive/core-site.xml:/opt/hive/conf/core-site.xml
     ports:
       - "10000:10000"
       - "10002:10002"
-    networks:
-      - demo
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    volumes:
-      - ./conf/prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 9090"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
     networks:
       - demo
 
@@ -245,4 +174,3 @@ volumes:
   hadoop-datanode-ram-data:
   hadoop-datanode-ssd-data:
   hadoop-datanode-archive-data:
-  secrets:

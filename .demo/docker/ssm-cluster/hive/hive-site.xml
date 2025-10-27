@@ -21,19 +21,22 @@
 
 <configuration>
     <property>
-        <name>yarn.resourcemanager.principal</name>
-        <value>yarn/hadoop-namenode.demo@DEMO</value>
+        <name>hive.server2.authentication</name>
+        <value>NONE</value>
     </property>
+
     <property>
-        <name>yarn.nodemanager.principal</name>
-        <value>yarn/hadoop-namenode.demo@DEMO</value>
+        <name>hive.server2.enable.doAs</name>
+        <value>false</value>
     </property>
+
     <property>
-        <name>yarn.resourcemanager.keytab</name>
-        <value>/etc/secrets/yarn.keytab</value>
+        <name>hive.metastore.pre.event.listeners</name>
+        <value/>
     </property>
+
     <property>
-        <name>yarn.nodemanager.keytab</name>
-        <value>/etc/secrets/yarn.keytab</value>
+        <name>hive.metastore.event.db.notification.api.auth</name>
+        <value>false</value>
     </property>
 </configuration>
